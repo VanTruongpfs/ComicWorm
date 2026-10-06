@@ -1,0 +1,2 @@
+/* Page-specific tweaks for login.html (khung nền + form đã dùng .admin-gate/.gate-* trong admin-common.css) */
+body { background: var(--sidebar-bg); }

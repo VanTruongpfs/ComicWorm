@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="../../shared/styles/global-design-tokens.css" rel="stylesheet"/>
+    <link href="../css/page5.css" rel="stylesheet"/>
+    <link href="../../shared/footer/footer.css" rel="stylesheet"/>
+    <link href="../../shared/header/header.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+    <link href="../../shared/sidebar/sidebar.css" rel="stylesheet"/>
+    <link href="../css/shared-sidebar-layout.css" rel="stylesheet"/>
+    <title>MangaTrade — Khiếu Nại Đổi Trả</title>
+  </head>
+<body class="app-body thuc-sidebar-layout">
+  <div data-sidebar-mount></div>
+  <header class="site-header">
+    <div class="container header-container">
+      <!-- Logo Thương hiệu -->
+      <a href="home.html" class="brand-logo">
+        <div class="brand-logo-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div class="brand-logo-text">
+          <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+          <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+        </div>
+      </a>
+
+      <!-- Thanh tìm kiếm nhanh -->
+      <div class="header-search-bar">
+        <span class="search-category-tag">Tất cả truyện</span>
+        <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+        <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+
+      <!-- Menu chính -->
+      <nav class="main-navigation">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+          </li>
+          <li class="nav-item">
+            <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+          </li>
+          <li class="nav-item">
+            <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+          </li>
+          <li class="nav-item">
+            <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Hành động người dùng -->
+      <div class="header-actions">
+        <button type="button" class="btn-notification" aria-label="Thông báo">
+          <i class="fa-regular fa-bell"></i>
+          <span class="notification-indicator"></span>
+        </button>
+        <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-count-badge">3</span>
+        </a>
+        <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+          <i class="fa-solid fa-circle-plus"></i>
+          <span>Đăng bán/Đổi truyện</span>
+        </a>
+        <div class="user-profile-menu">
+          <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+          </a>
+        </div>
+      </div>
+    </div>
+</header>
+<main class="page-main">
+  <div class="page-wrap">
+    <div class="container">
+      <!-- Breadcrumb & Top Status Notice -->
+      <div class="breadcrumb-row">
+        <div class="breadcrumb">
+          <a href="#">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span>Đơn Hàng Của Tôi</span>
+          </a>
+        <span>/</span>
+        <span>Khiếu Nại Đổi Trả #ORD-8712</span>
+      </div>
+    <div class="escrow-pill">
+      <span class="material-symbols-outlined">shield_lock</span>
+      <span>Giao dịch bảo đảm bằng Quỹ Ký Quỹ Escrow MangaTrade</span>
+    </div>
+</div>
+<!-- Page Header Banner: Guarantee Callout -->
+<div class="hero-banner">
+  <div class="hero-glow">
+  </div>
+<div class="hero-content">
+  <div class="hero-left">
+    <div class="hero-icon">
+      <span class="policy-badge">assignment_return</span>
+    </div>
+  <div class="hero-copy">
+    <div>
+      <span>Chính sách bảo vệ Otaku</span>
+      <span>Cập nhật 2024</span>
+    </div>
+  <h1>
+    Yêu Cầu Hủy Đơn / Khiếu Nại Đổi Trả
+  </h1>
+<p>
+  MangaTrade cam kết hoàn tiền <span>100% kèm bồi thường phí ship</span> nếu truyện phát hiện là sách giả (Fake), rách gáy, ố nước nặng hoặc sai lệch nghiêm trọng so với ảnh kiểm định người bán cung cấp.
+</p>
+</div>
+</div>
+<div class="deadline">
+  <div>
+    <span>Hạn mở khiếu nại còn lại:</span>
+    <div>
+      <span class="material-symbols-outlined">timer</span>
+      <span>47 giờ 22 phút</span>
+    </div>
+</div>
+</div>
+</div>
+<!-- Segment Tabs -->
+<div class="tabs">
+  <button class="tab-button cancel-tab" id="tab-btn-cancel" onclick="switchMainTab('cancel')">
+    <span class="material-symbols-outlined">cancel</span>
+    <span>1. Hủy đơn hàng chưa gửi</span>
+    <span>Hoàn ngay</span>
+  </button>
+<button class="tab-button return-tab active" id="tab-btn-return" onclick="switchMainTab('return')">
+  <span class="material-symbols-outlined">sync_problem</span>
+  <span>2. Đổi trả / Hoàn tiền đơn đã nhận</span>
+  <span>Được bảo hộ</span>
+</button>
+</div>
+</div>
+<!-- Main Grid Content -->
+<div class="content-grid">
+  <!-- Left / Center Form Area (8 cols) -->
+  <div class="left-column">
+    <!-- Step 1: Chọn đơn hàng & Sản phẩm -->
+    <section class="card step-1">
+      <div class="card-heading">
+        <div>
+          <span>1</span>
+          <h2>Kiểm Tra Sản Phẩm Cần Hỗ Trợ</h2>
+        </div>
+      <span>Mã đơn: #ORD-8712-VN</span>
+    </div>
+  <!-- Order Summary Card -->
+  <div class="order-summary">
+    <div>
+      <img data-alt="Close-up photograph of a vintage Japanese manga set 20th Century Boys by Naoki Urasawa on wooden collector shelf with soft natural warm lighting and crisp spine details" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm4qpm8zjcBuzED2TVGLNIIsVoq3o8tlVaNTYE9Pdms9T1qVh9pkf7fYt3URonW25vUOHC1YtJUhK-uW-WSI_i1N_IhJWmFgMSc0-OmRwdm6ACVBFJu9VScAvv4dRTkae3lZeNhGnqpN76QVNYQIwy6B3IGQIK5zcWzn2ANqqcnorLfivz6MNpzNJoX7hbGOG8eS6Zj6HpMTnDg_O_GyctvkH5zut1wI4Qnz3bajTT9ODk2b2FhfbKog"/>
+      <div>11 tập</div>
+    </div>
+  <div>
+    <div>
+      <span>Manga Sưu Tầm</span>
+      <span>Đã giao 1 ngày trước</span>
+    </div>
+  <h3>
+    20th Century Boys (Chàng Trai Thế Kỷ) - Trọn Bộ Tập 1 Đến 11
+  </h3>
+<p>
+  Người bán: <strong>Minh Triết Comics</strong> (Hà Nội) • Độ mới niêm yết: <span>95% (Có Obi)</span>
+</p>
+<div>
+  <span>680.000 đ</span>
+  <span>850.000 đ</span>
+  <span>Đã thanh toán (MoMo)</span>
+</div>
+</div>
+</div>
+<!-- Item Selection Checkboxes -->
+<div class="item-selection">
+  <div>
+    <span>Chọn cuốn/sản phẩm có lỗi thực tế:</span>
+    <button id="btn-select-all" onclick="toggleSelectAll()" type="button">Chọn tất cả 11 tập</button>
+  </div>
+<div>
+  <label>
+    <input checked="" name="item_select" type="checkbox" value="vol4"/>
+    <div>
+      <div>
+        <span>Tập 4: Bìa gãy &amp; bung trang</span>
+        <span>Lỗi nặng</span>
+      </div>
+    <p>Gáy keo giòn vỡ, trang 34-56 bung hoàn toàn.</p>
+  </div>
+</label>
+<label>
+  <input checked="" name="item_select" type="checkbox" value="vol9"/>
+  <div>
+    <div>
+      <span>Tập 9: Ố vàng &amp; dính mép</span>
+      <span>Sai mô tả</span>
+    </div>
+  <p>Bị ẩm loang mép dưới, không đạt 95% như cam kết.</p>
+</div>
+</label>
+<label>
+  <input name="item_select" type="checkbox" value="bonus"/>
+  <div>
+    <div>
+      <span>Bộ Obi &amp; Bookmark tặng kèm</span>
+      <span>Thiếu quà</span>
+    </div>
+  <p>Kiện hàng gửi thiếu 2 đai Obi của tập 1 &amp; 2.</p>
+</div>
+</label>
+<label>
+  <input name="item_select" type="checkbox" value="all_set"/>
+  <div>
+    <div>
+      <span>Toàn bộ 11 tập truyện</span>
+      <span>Đổi trả toàn đơn</span>
+    </div>
+  <p>Muốn trả lại cả bộ và nhận hoàn 100%.</p>
+</div>
+</label>
+</div>
+</div>
+</section>
+<!-- Step 2: Lý do khiếu nại -->
+<section class="card step-2">
+  <div class="card-heading">
+    <span>2</span>
+    <div>
+      <h2>Lý Do Đổi Trả / Yêu Cầu Hỗ Trợ</h2>
+      <p>Vui lòng chọn lý do chính xác để MangaTrade phân xử đối soát nhanh chóng.</p>
+    </div>
+</div>
+<div>
+  <label>
+    <div>
+      <input checked="" name="dispute_reason" type="radio" value="broken_spine"/>
+      <div>
+        <span>Truyện bị gãy gáy, rách trang hoặc bung keo nghiêm trọng</span>
+        <span>Ảnh hưởng đến khả năng đọc hoặc giảm mạnh giá trị lưu trữ</span>
+      </div>
+  </div>
+<span class="material-symbols-outlined">auto_stories</span>
+</label>
+<label>
+  <div>
+    <input name="dispute_reason" type="radio" value="mold_yellow"/>
+    <div>
+      <span>Sách bị ẩm mốc, ố nước vàng nặng không như người bán cam kết</span>
+      <span>Mô tả ghi 95% like new nhưng thực tế có mùi ẩm mốc, trang quăn queo</span>
+    </div>
+</div>
+<span class="material-symbols-outlined">water_damage</span>
+</label>
+<label>
+  <div>
+    <input name="dispute_reason" type="radio" value="wrong_edition"/>
+    <div>
+      <span>Sai phiên bản / Thiếu quà tặng kèm (Obi, Card PVC, Standee)</span>
+      <span>Đăng bán bản Giới Hạn First Edition nhưng gửi bản Tái Bản thường</span>
+    </div>
+</div>
+<span class="material-symbols-outlined">card_giftcard</span>
+</label>
+<label>
+  <div>
+    <input name="dispute_reason" type="radio" value="fake_book"/>
+    <div>
+      <div>
+        <span>Nghi vấn / Phát hiện truyện in lậu, sách giả (Fake)</span>
+        <span>Xử lý ưu tiên</span>
+      </div>
+    <span>Giấy mỏng sai tiêu chuẩn NXB, mực nhòe, không có tem bản quyền</span>
+  </div>
+</div>
+<span class="material-symbols-outlined">gavel</span>
+</label>
+<label>
+  <div>
+    <input name="dispute_reason" type="radio" value="other"/>
+    <div>
+      <span>Lý do khác</span>
+      <span>Đơn hàng bị giao nhầm người hoặc gói bọc không cẩn thận khi vận chuyển</span>
+    </div>
+</div>
+<span class="material-symbols-outlined">edit_note</span>
+</label>
+</div>
+<!-- Text description box -->
+<div>
+  <label>
+    Mô tả chi tiết tình trạng lỗi (Bắt buộc):
+  </label>
+<textarea class="description" id="disputeDescription" placeholder="Ví dụ: Khi mở hộp niêm phong, tập 4 đã bị bung rời 20 trang giữa. Tập 9 có vết ố ẩm ở góc dưới bên phải dài 4cm, người bán không chụp rõ góc này trên tin đăng..." rows="3">
+</textarea>
+</div>
+</section>
+<!-- Step 3: Bằng chứng hình ảnh & video unbox -->
+<section class="card step-3">
+  <div class="card-heading">
+    <div>
+      <span>3</span>
+      <div>
+        <h2>Bằng Chứng Kiểm Định (Ảnh &amp; Video Mở Hộp)</h2>
+        <p>Tối thiểu 3 ảnh chụp rõ gáy, bìa góc và trang lỗi, kèm video mở gói hàng (nếu có).</p>
+      </div>
+  </div>
+<span>Yêu cầu bắt buộc</span>
+</div>
+<!-- Preview Slots & Upload Trigger -->
+<div class="evidence-grid">
+  <!-- Upload Slot 1: Spine damaged -->
+  <div class="evidence-card">
+    <img data-alt="Close-up macro shot of damaged manga book spine showing broken binding glue and separated pages under bright studio lamp" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZYR2wO8IfufZWpwfu_NogAWiaMH5TTzeRsY4KbXerkxJE5NxK9wmxCUPyMSNV2TV6WKIS9VETjRYxoq_Zphvk8-w3bpBjSgXtQAV1Xoqq6uaYtYxMdLqHEiJRdVYAucHsTYAPmLvsNDgJSyVkrFjE4chPYzvUZkE2ld02HBlI_jsE-hII_s7xa8iPoQdxsnNIKaj2tq_HaJyHXIyl4UQBoMOr2jS5-qArRr9trjWYMQN43FN47DxB_w"/>
+    <div>
+      <button type="button">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+  </div>
+<div>
+  Gáy vỡ bung keo
+</div>
+</div>
+<!-- Upload Slot 2: Water stain -->
+<div class="evidence-card">
+  <img data-alt="Macro detail of manga paper corner with yellow water damage stain and warped page edges on comic book page" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb1cjYL24rNZR7NNIhf77iL5n6F_jMM0vt38Rnp_2CKMUeRTMqfQF_zcZDq4neQJ8LLUM94IouEuWnJFITYRoTubk1TO3HGA9j8e92BBmrsWX6wwZA3GCmH5euedQZCjwJ4EozeF1cwmEu0sRh_-vv8kv6VJSrwAvKV3DmXEi4DaBxlJEKoFg2rkT_BXYZC2E-l2ee9k3b2lplWZD30MuDYtt0AJSw7Jb6tlQpfytiXH2BXz3DVkH02A"/>
+  <div>
+    <button type="button">
+      <span class="material-symbols-outlined">delete</span>
+    </button>
+</div>
+<div>
+  Ố vàng tập 9
+</div>
+</div>
+<!-- Upload Slot 3: Box unboxing snapshot -->
+<div class="evidence-card">
+  <img data-alt="Overhead perspective shot of an unboxing package with bubble wrap, packing slip and opened Japanese manga tankobon comic volumes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgJbIS_952kxbKB_PH-eEUrbFNQirjPNH3mHogsuX_Jz8hNt3FaCarNE1_Ug-mEy6Hd7GtxW584f7jFUdFJQvox4wTD1LMRTllVl0ZGZOBXOa6A03_5izrYV6A28-9Ktr4-1wzIfwGiOhEmaUs5iXgNxA-jeEkmsibFE7o8_j5ZNCjpnD2xbF0Ds_PWJSxPIaumWnmJy0fS2hzDumvm_KIKZ4PsqevJmZPbucmbiWnNnYI-AL9sFb_Ig"/>
+  <div>
+    <button type="button">
+      <span class="material-symbols-outlined">delete</span>
+    </button>
+</div>
+<div>
+  Kiện hàng khi nhận
+</div>
+</div>
+<!-- Add More Button / Dropzone -->
+<div class="evidence-card evidence-upload">
+  <div>
+    <span class="material-symbols-outlined">add_a_photo</span>
+  </div>
+<span>Tải thêm ảnh/clip</span>
+<span>Tối đa 50MB (MP4, JPG, PNG)</span>
+</div>
+</div>
+<div>
+  <span class="material-symbols-outlined">tips_and_updates</span>
+  <span>Mẹo: Người mua có <strong>video quay liên tục từ lúc bóc tem niêm phong</strong> sẽ được MangaTrade duyệt hoàn tiền tự động trong 6 giờ làm việc.</span>
+</div>
+</section>
+<!-- Step 4: Phương án giải quyết mong muốn -->
+<section class="card step-4">
+  <div class="card-heading">
+    <span>4</span>
+    <div>
+      <h2>Phương Án Giải Quyết Mong Muốn</h2>
+      <p>Bạn muốn xử lý tranh chấp đơn hàng này theo hình thức nào?</p>
+    </div>
+</div>
+<div class="plan-grid">
+  <label class="plan-option">
+    <div>
+      <div>
+        <input checked="" name="resolution_plan" type="radio" value="full_refund"/>
+        <span>Khuyên Dùng</span>
+      </div>
+    <h4>Trả hàng &amp; Hoàn 100%</h4>
+    <p>Shipper đến tận nhà lấy hàng miễn phí. Hoàn trả toàn bộ 680.000 đ.</p>
+  </div>
+<div>
+  <span>Hoàn lại: 680.000 đ</span>
+</div>
+</label>
+<label class="plan-option">
+  <div>
+    <div>
+      <input name="resolution_plan" type="radio" value="partial_refund"/>
+      <span>Giữ Lại Sách</span>
+    </div>
+  <h4>Hoàn một phần tiền</h4>
+  <p>Bạn giữ lại sách đọc bình thường, người bán hoàn bồi thường bù giá trị lỗi.</p>
+</div>
+<div>
+  <input placeholder="Đề xuất (vd: 150.000 đ)" type="text"/>
+</div>
+</label>
+<label class="plan-option">
+  <div>
+    <div>
+      <input name="resolution_plan" type="radio" value="exchange_book"/>
+      <span>Đổi Cuốn Mới</span>
+    </div>
+  <h4>Đổi cuốn thay thế</h4>
+  <p>Người bán gửi bù cuốn tập 4 &amp; tập 9 đạt chuẩn 95% không lỗi.</p>
+</div>
+<div>
+  <span class="material-symbols-outlined">local_shipping</span>
+  <span>Người bán chịu phí gửi bù</span>
+</div>
+</label>
+</div>
+<!-- Refund Payment Method Destination -->
+<div class="refund-box">
+  <h4>
+    <span class="material-symbols-outlined">account_balance_wallet</span>
+    <span>Phương thức nhận tiền hoàn (Khi được phê duyệt):</span>
+  </h4>
+<div>
+  <label>
+    <input checked="" name="refund_channel" type="radio" value="mangatrade_pay"/>
+    <div>
+      <span>Ví MangaTrade Pay</span>
+      <span>Hoàn tức thì (5 phút)</span>
+    </div>
+</label>
+<label>
+  <input name="refund_channel" type="radio" value="momo"/>
+  <div>
+    <span>Ví MoMo đã liên kết</span>
+    <span>0987.***.456 (2-4 giờ)</span>
+  </div>
+</label>
+<label>
+  <input name="refund_channel" type="radio" value="vietqr"/>
+  <div>
+    <span>Tài khoản VietQR</span>
+    <span>MB Bank • 8820****</span>
+  </div>
+</label>
+</div>
+</div>
+</section>
+<!-- Final Decision Buttons -->
+<div class="final-actions">
+  <button class="action-button" type="button">
+    <span class="material-symbols-outlined">close</span>
+    <span>Hủy bỏ, giữ lại đơn hàng</span>
+  </button>
+<button class="action-button" id="btn-submit-request" onclick="submitDispute()" type="button">
+  <span class="material-symbols-outlined">verified</span>
+  <span>Xác nhận gửi yêu cầu đổi trả</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Dispute Flow & Trust Pillars (4 cols) -->
+<div class="right-column">
+  <!-- Interactive Stepper Card -->
+  <div class="side-card side-1">
+    <div>
+      <span class="material-symbols-outlined">alt_route</span>
+      <h3>Tiến Trình Xử Lý Khiếu Nại</h3>
+    </div>
+  <div>
+    <!-- Connecting vertical line -->
+    <div>
+    </div>
+  <!-- Step 1 -->
+  <div>
+    <div>
+      1
+    </div>
+  <div>
+    <h4>Gửi yêu cầu khiếu nại</h4>
+    <p>
+      Cung cấp hình ảnh bằng chứng rõ ràng. Tiền thanh toán của bạn vẫn được đóng băng an toàn tại Escrow.
+    </p>
+  <span>Đang thực hiện</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div>
+  <div>
+    2
+  </div>
+<div>
+  <h4>Người bán phản hồi (24h)</h4>
+  <p>
+    Người bán sẽ đối chiếu ảnh lưu kho hoặc chấp thuận phương án đổi trả. Nếu quá 24h không phản hồi, hệ thống tự động hoàn tiền.
+  </p>
+</div>
+</div>
+<!-- Step 3 -->
+<div>
+  <div>
+    3
+  </div>
+<div>
+  <h4>Thu hồi hàng tận nơi</h4>
+  <p>
+    Đơn vị vận chuyển (GHN / Viettel Post) tới nhận hàng tại địa chỉ của bạn. Bạn không phải trả bất kỳ cước phí nào.
+  </p>
+</div>
+</div>
+<!-- Step 4 -->
+<div>
+  <div>
+    4
+  </div>
+<div>
+  <h4>Hoàn tiền 100% về ví</h4>
+  <p>
+    Ngay khi bưu tá xác nhận lấy hàng thành công, tiền ký quỹ được giải phóng chuyển thẳng vào tài khoản của bạn.
+  </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Otaku Escrow Trust Card with SVG Graph -->
+<div class="side-card side-2">
+  <div>
+    <span class="material-symbols-outlined">verified_user</span>
+    <h3>Bảo Hiểm Truyện Tranh 100%</h3>
+  </div>
+<p>
+  MangaTrade duy trì quỹ ký quỹ độc lập để bảo vệ độc giả trước nạn buôn sách in lậu, sách rách tráo hàng hoặc sai lệch độ mới sưu tầm.
+</p>
+<!-- SVG Visual Donut / Escrow status -->
+<div>
+  <div>
+    <svg viewbox="0 0 36 36">
+      <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5">
+      </path>
+    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3.5">
+    </path>
+</svg>
+<span>100%</span>
+</div>
+<div>
+  <span>Tỷ lệ hoàn tiền hợp lệ</span>
+  <span>Đã giải quyết 3.420 khiếu nại năm 2024</span>
+</div>
+</div>
+<div>
+  <div>
+    <span class="material-symbols-outlined">check_circle</span>
+    <span>Được mở hàng kiểm tra ngoại quan cùng bưu tá</span>
+  </div>
+<div>
+  <span class="material-symbols-outlined">check_circle</span>
+  <span>Đội ngũ thẩm định bìa rời, obi &amp; màng co gốc</span>
+</div>
+<div>
+  <span class="material-symbols-outlined">check_circle</span>
+  <span>Hỗ trợ bảo trợ đối với các bộ truyện hiếm tuyệt bản</span>
+</div>
+</div>
+</div>
+<!-- Direct Hotline & Otaku Dispute Arbiter -->
+<div class="side-card side-3">
+  <div>
+    <div>
+      <span class="material-symbols-outlined">headset_mic</span>
+    </div>
+  <div>
+    <span>Đường Dây Nóng Khẩn Cấp</span>
+    <h4>Ban Trọng Tài Sưu Tầm</h4>
+  </div>
+</div>
+<p>
+  Gặp khó khăn khi đàm phán với người bán đối với các bộ manga hiếm hoặc tranh chấp giá trị cao trên 2.000.000 đ?
+</p>
+<div>
+  <div>
+    <span class="material-symbols-outlined">phone_in_talk</span>
+    <span>1900 8888</span>
+  </div>
+<span>Nhánh 2</span>
+</div>
+<span>Hoạt động 24/7 • Miễn phí cước gọi độc giả</span>
+</div>
+<!-- Safety Notice Guidelines -->
+<div class="side-card side-4">
+  <strong>Lưu ý trước khi đóng gói gửi trả:</strong>
+  Độc giả vui lòng bọc truyện bằng ít nhất 2 lớp bóng khí (Bubble wrap) và chèn bìa cứng ở 4 góc để tránh cấn móp trong quá trình thu hồi về kho người bán.
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Toast Container for Interactions -->
+<div class="toast-message" id="toast-message">
+  <div>
+    <span class="material-symbols-outlined">verified</span>
+  </div>
+<div>
+  <h4>Đã Tiếp Nhận Yêu Cầu #TR-9941</h4>
+  <p>MangaTrade đã đóng băng 680.000 đ và gửi thông báo tới người bán Minh Triết.</p>
+</div>
+</div>
+</div>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div>
+          <span>MangaTrade</span>
+        </div>
+      <p>Sàn kết nối độc giả manga, truyện tranh bản quyền, sưu tầm hiếm và trao đổi tankōbon chất lượng cao đầu tiên tại Việt Nam.</p>
+      <div>
+        <span class="material-symbols-outlined">verified</span>
+        <span>Hơn 45.000 đầu truyện được kiểm duyệt</span>
+      </div>
+  </div>
+<div class="footer-col">
+  <h4>Dịch Vụ &amp; Hỗ Trợ</h4>
+  <ul>
+    <li>
+      <a href="#">Quy trình mua bán an toàn (Escrow)</a>
+    </li>
+  <li>
+    <a href="#">Chính sách đổi trả &amp; Hoàn tiền</a>
+  </li>
+<li>
+  <a href="#">Tra cứu tiến độ đơn hàng</a>
+</li>
+<li>
+  <a href="#">Biểu phí giao dịch &amp; Ký gửi</a>
+</li>
+<li>
+  <a href="#">Quy chuẩn phân hạng độ mới (Grading)</a>
+</li>
+</ul>
+</div>
+<div class="footer-col">
+  <h4>Cộng Đồng Otaku</h4>
+  <ul>
+    <li>
+      <a href="#">Hội săn truyện tranh hiếm &amp; Bìa rời</a>
+    </li>
+  <li>
+    <a href="#">Góc Review &amp; Khen chê bản dịch</a>
+  </li>
+<li>
+  <a href="#">Sự kiện Comic-Con &amp; Giao lưu tác giả</a>
+</li>
+<li>
+  <a href="#">Bảng vinh danh Top Sưu Tầm 2024</a>
+</li>
+</ul>
+</div>
+<div class="footer-col">
+  <h4>Thanh Toán &amp; Bản Tin</h4>
+  <p>Nhận thông báo khi có truyện hiếm lên sàn hoặc ưu đãi freeship.</p>
+  <div>
+    <input placeholder="Email của bạn..." type="email"/>
+    <button id="newsletterSubmit">Gửi</button>
+  </div>
+<div>
+  <span>Cổng thanh toán hỗ trợ</span>
+  <div>
+    <span>VietQR</span>
+    <span>MoMo</span>
+    <span>ZaloPay</span>
+    <span>COD</span>
+  </div>
+</div>
+</div>
+</div>
+<div>
+  <p>© 2024 MangaTrade Việt Nam. Bản quyền nội dung thuộc về các nhà xuất bản được cấp phép.</p>
+  <div>
+    <a href="#">Điều khoản dịch vụ</a>
+    <a href="#">Bảo mật thông tin</a>
+    <span>
+      <span class="material-symbols-outlined">verified_user</span>Bộ Công Thương Chứng Nhận</span>
+  </div>
+</div>
+</div>
+</footer>
+<script src="../../shared/sidebar/sidebar.js"></script>
+<script src="../../shared/footer/footer.js"></script>
+<script src="../js/page5.js">
+</script>
+</body>
+</html>

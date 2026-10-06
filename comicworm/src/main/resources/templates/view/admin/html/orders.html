@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đơn hàng | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/orders.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="sidebarContainer" data-active="orders"></div>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+                <div class="store-selector">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span>Trung tâm Quản trị</span>
+                </div>
+                <div class="global-search">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="orderSearch" placeholder="Tìm mã đơn, người mua, người bán...">
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="nav-icon-btn" title="Thông báo mới" onclick="showToast('7 đơn hàng đang tranh chấp cần xử lý')">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="notification-badge-dot"></span>
+                </button>
+                <div class="user-profile-menu">
+                    <div class="user-details">
+                        <div class="user-name" data-admin-name>Nguyễn Minh Admin</div>
+                        <div class="user-role" data-admin-role>Super Admin</div>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <div class="page-header">
+                <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">package_2</span> Tài chính &amp; vận hành • Đơn hàng</div>
+                <div class="page-title-row">
+                    <div>
+                        <h2 class="page-title">Quản lý đơn hàng</h2>
+                        <p class="page-subtitle">Giám sát toàn bộ đơn hàng phát sinh trên nền tảng, theo dõi tiến trình giao vận và hoà giải tranh chấp giữa người mua &amp; người bán</p>
+                    </div>
+                    <div class="header-action-group">
+                        <button class="btn btn-outline" onclick="showToast('Đang xuất danh sách đơn hàng (CSV)')">
+                            <span class="material-symbols-outlined">download</span> Xuất danh sách
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Đơn hàng phát sinh hôm nay</span>
+                        <span class="kpi-value">2.318</span>
+                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +8.4% so hôm qua</span>
+                    </div>
+                    <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">shopping_bag</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">GMV đơn hàng hôm nay</span>
+                        <span class="kpi-value">86.400.000 ₫</span>
+                        <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">payments</span> Trung bình 372k ₫/đơn</span>
+                    </div>
+                    <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">receipt_long</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Đang tranh chấp</span>
+                        <span class="kpi-value" style="color:#dc2626;">7</span>
+                        <span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">gavel</span> Cần hoà giải sớm</span>
+                    </div>
+                    <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">report_problem</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Tỷ lệ giao thành công</span>
+                        <span class="kpi-value" style="color:#16a34a;">96.2%</span>
+                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">local_shipping</span> Ổn định 7 ngày qua</span>
+                    </div>
+                    <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">verified</span></div>
+                </div>
+            </section>
+
+            <div class="filter-tabs-bar" id="orderFilterTabs">
+                <button class="tab-chip active" data-filter="all">Tất cả <span class="tab-count">10</span></button>
+                <button class="tab-chip" data-filter="processing">Đang xử lý <span class="tab-count">2</span></button>
+                <button class="tab-chip" data-filter="shipping">Đang giao <span class="tab-count">2</span></button>
+                <button class="tab-chip" data-filter="completed">Hoàn tất <span class="tab-count">3</span></button>
+                <button class="tab-chip" data-filter="disputed" id="disputedTabBtn">Tranh chấp <span class="tab-count">2</span></button>
+                <button class="tab-chip" data-filter="cancelled">Đã huỷ <span class="tab-count">1</span></button>
+            </div>
+
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title"><span class="material-symbols-outlined">list_alt</span> Danh sách đơn hàng</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="ordersTable">
+                        <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Người mua</th>
+                            <th>Người bán</th>
+                            <th>Sản phẩm</th>
+                            <th style="text-align:right;">Giá trị</th>
+                            <th style="text-align:center;">Trạng thái</th>
+                            <th style="text-align:center;">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination-wrapper">
+                    <div class="pagination-info" id="ordersPaginationInfo"></div>
+                    <div class="pagination-controls" id="ordersPaginationControls"></div>
+                </div>
+            </div>
+
+            <div class="policy-banner">
+                <div class="policy-banner-content">
+                    <div class="policy-icon-circle"><span class="material-symbols-outlined">gavel</span></div>
+                    <div class="policy-text">
+                        <h4>Quy trình hoà giải tranh chấp</h4>
+                        <p>Đơn hàng bị khiếu nại sẽ được giữ tiền trong ví ký quỹ cho đến khi Admin ra quyết định nghiêng về người mua hoặc người bán.</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="openModal('disputePolicyModal')">Xem quy trình đầy đủ</button>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-backdrop" id="orderDetailModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;">Chi tiết đơn hàng</h3>
+            <button onclick="closeModal('orderDetailModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <div id="orderDetailBody"></div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:22px;">
+            <div id="orderDetailExtraActions"></div>
+            <button class="btn btn-outline" onclick="closeModal('orderDetailModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- DISPUTE RESOLUTION MODAL -->
+<div class="modal-backdrop" id="disputeModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:520px; text-align:left;">
+        <h3 class="modal-title" style="text-align:center;">Xử lý tranh chấp</h3>
+        <p class="modal-desc" style="text-align:center;">Đơn <strong id="disputeOrderCode">#ORD-90XXX</strong></p>
+
+        <div class="dispute-step-label">Bước 1 · Xem lại nội dung khiếu nại</div>
+        <div id="disputeReasonBox" class="dispute-reason-box"></div>
+
+        <div class="dispute-step-label">Bước 2 · Chọn hướng xử lý</div>
+        <div id="disputeChoiceGroup" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+            <label class="dispute-choice-card">
+                <input type="radio" name="disputeChoice" value="buyer" onchange="onDisputeChoiceChange()">
+                <div>
+                    <div class="dispute-choice-title"><span class="material-symbols-outlined">person</span> Nghiêng về Người mua</div>
+                    <div class="dispute-choice-desc">Hoàn tiền toàn bộ đơn hàng cho người mua từ ví ký quỹ, huỷ giao dịch với người bán.</div>
+                </div>
+            </label>
+            <label class="dispute-choice-card">
+                <input type="radio" name="disputeChoice" value="seller" onchange="onDisputeChoiceChange()">
+                <div>
+                    <div class="dispute-choice-title"><span class="material-symbols-outlined">storefront</span> Nghiêng về Người bán</div>
+                    <div class="dispute-choice-desc">Giải ngân tiền từ ví ký quỹ cho người bán như một đơn hàng hoàn tất bình thường.</div>
+                </div>
+            </label>
+        </div>
+        <div id="disputeChoiceHint" class="dispute-choice-hint" style="display:none;"></div>
+
+        <div class="dispute-step-label">Bước 3 · Ghi chú căn cứ xử lý (bắt buộc)</div>
+        <div class="field" style="margin-bottom:22px;">
+            <textarea id="disputeNote" rows="3" placeholder="Tóm tắt bằng chứng / căn cứ ra quyết định..." style="width:100%; padding:11px 12px; border:2px solid var(--border-color); border-radius:var(--radius-sm); font-family:inherit; resize:vertical;" oninput="onDisputeChoiceChange()"></textarea>
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="closeModal('disputeModal')">Huỷ</button>
+            <button class="btn btn-primary" id="disputeConfirmBtn" disabled onclick="confirmResolveDispute()">Xác nhận xử lý</button>
+        </div>
+    </div>
+</div>
+
+<!-- DISPUTE POLICY MODAL (Quy trình hoà giải tranh chấp đầy đủ) -->
+<div class="modal-backdrop" id="disputePolicyModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;">Quy trình hoà giải tranh chấp</h3>
+            <button onclick="closeModal('disputePolicyModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Áp dụng cho mọi đơn hàng bị khiếu nại giữa người mua và người bán trên toàn hệ thống.</p>
+        <div class="policy-step-list">
+            <div class="policy-step">
+                <div class="policy-step-num">1</div>
+                <div class="policy-step-text">
+                    <h5>Tiếp nhận khiếu nại</h5>
+                    <p>Người mua hoặc người bán gửi khiếu nại trong vòng 3 ngày kể từ khi đơn được đánh dấu đã giao/hoàn tất.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">2</div>
+                <div class="policy-step-text">
+                    <h5>Giữ tiền trong ví ký quỹ</h5>
+                    <p>Hệ thống tự động tạm giữ tiền đơn hàng, dừng giải ngân cho người bán cho đến khi Admin ra quyết định.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">3</div>
+                <div class="policy-step-text">
+                    <h5>Thu thập bằng chứng</h5>
+                    <p>Admin xem xét mô tả, hình ảnh sản phẩm và lịch sử trao đổi giữa hai bên trước khi ra quyết định.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">4</div>
+                <div class="policy-step-text">
+                    <h5>Ra quyết định</h5>
+                    <p>Admin chọn nghiêng về người mua (hoàn tiền) hoặc người bán (giải ngân), kèm ghi chú căn cứ xử lý bắt buộc.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">5</div>
+                <div class="policy-step-text">
+                    <h5>Thông báo kết quả</h5>
+                    <p>Hệ thống cập nhật trạng thái đơn hàng và gửi thông báo quyết định đến cả người mua và người bán.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">6</div>
+                <div class="policy-step-text">
+                    <h5>Khiếu nại lần hai</h5>
+                    <p>Nếu không đồng ý với quyết định, các bên có thể yêu cầu xem xét lại trong vòng 48 giờ kể từ khi có kết quả.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-primary" onclick="closeModal('disputePolicyModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/orders.js"></script>
+</body>
+</html>

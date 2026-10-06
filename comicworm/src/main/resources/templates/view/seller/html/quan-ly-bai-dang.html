@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Bài Đăng - Seller ComicHub</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+</head>
+<body>
+
+  <!-- QUICK SWITCHER BAR -->
+  <div class="quick-switcher-bar">
+    <div class="switcher-title">
+      <span class="material-symbols-outlined" style="font-size: 18px;">menu_book</span>
+      <span>TRƯỜNG T - SELLER CENTER:</span>
+    </div>
+    <div class="switcher-pills">
+      <a href="post-product-hub.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">grid_view</span> Tổng quan Hub
+      </a>
+      <a href="dang-ban-truyen.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">add_circle</span> 1. Đăng bán truyện
+      </a>
+      <a href="quan-ly-bai-dang.html" class="switcher-btn active">
+        <span class="material-symbols-outlined" style="font-size: 14px;">format_list_bulleted</span> 2. Quản lý bài đăng
+      </a>
+      <a href="chinh-sua-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">edit_note</span> 3. Chỉnh sửa bài đăng
+      </a>
+      <a href="an-xoa-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> 4. Ẩn/Xóa bài đăng
+      </a>
+      <a href="quan-ly-san-pham.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> 5. Quản lý sản phẩm
+      </a>
+      <a href="quan-ly-voucher.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">confirmation_number</span> 6. Quản lý voucher
+      </a>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- SIDEBAR DÙNG CHUNG VỚI SRC/TRUONG -->
+    <div id="sidebarContainer" data-active="quan-ly-bai-dang"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">
+            <span class="material-symbols-outlined" style="color: var(--primary);">format_list_bulleted</span>
+            Danh Sách & Quản Lý Bài Đăng
+          </h1>
+          <p class="page-desc">Theo dõi, chỉnh sửa, thay đổi trạng thái và xem hiệu suất các bài đăng bán truyện tranh</p>
+        </div>
+        <div class="topbar-right">
+          <a href="an-xoa-bai-dang.html" class="btn btn-secondary">
+            <span class="material-symbols-outlined">visibility_off</span> Bài đăng đã ẩn (<span id="hiddenCountHeader">1</span>)
+          </a>
+          <a href="dang-ban-truyen.html" class="btn btn-primary">
+            <span class="material-symbols-outlined">add</span> Đăng bán truyện mới
+          </a>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- STATS OVERVIEW -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng bài đăng</span>
+              <span class="stat-value" id="statTotalPosts">0</span>
+              <span class="stat-trend up"><span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span> +3 bài tuần này</span>
+            </div>
+            <div class="stat-icon orange">
+              <span class="material-symbols-outlined">auto_stories</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Đang hiển thị bán</span>
+              <span class="stat-value" id="statActivePosts" style="color: var(--success);">0</span>
+              <span class="stat-trend up">Sẵn sàng giao dịch</span>
+            </div>
+            <div class="stat-icon green">
+              <span class="material-symbols-outlined">storefront</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng lượt xem tin</span>
+              <span class="stat-value" id="statTotalViews">0</span>
+              <span class="stat-trend up"><span class="material-symbols-outlined" style="font-size: 14px;">visibility</span> +18% tương tác</span>
+            </div>
+            <div class="stat-icon blue">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Chờ duyệt / Đã ẩn</span>
+              <span class="stat-value" id="statPendingHidden">0</span>
+              <span class="stat-trend down">Cần xử lý</span>
+            </div>
+            <div class="stat-icon purple">
+              <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER TABS & SEARCH BAR -->
+        <div class="card">
+          <div class="filter-tabs" id="statusTabs">
+            <button class="filter-tab active" onclick="setTabFilter('all', this)">
+              Tất cả bài đăng (<span id="tabCountAll">0</span>)
+            </button>
+            <button class="filter-tab" onclick="setTabFilter('active', this)">
+              Đang bán (<span id="tabCountActive">0</span>)
+            </button>
+            <button class="filter-tab" onclick="setTabFilter('pending', this)">
+              Chờ duyệt (<span id="tabCountPending">0</span>)
+            </button>
+            <button class="filter-tab" onclick="setTabFilter('hidden', this)">
+              Đã ẩn (<span id="tabCountHidden">0</span>)
+            </button>
+            <button class="filter-tab" onclick="setTabFilter('out_of_stock', this)">
+              Hết hàng (<span id="tabCountOutOfStock">0</span>)
+            </button>
+          </div>
+
+          <div class="search-filter-bar">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <div class="search-box">
+                <span class="material-symbols-outlined" style="color: var(--text-muted);">search</span>
+                <input type="text" id="searchInput" placeholder="Tìm theo tên truyện, tác giả, mã bài đăng..." oninput="applyFilters()">
+              </div>
+              
+              <select id="categoryFilter" class="form-select" style="width: 180px;" onchange="applyFilters()">
+                <option value="all">Tất cả thể loại</option>
+                <option value="Manga Shounen">Manga Shounen</option>
+                <option value="Trinh thám / Mystery">Trinh thám</option>
+                <option value="Hành động / Siêu nhiên">Hành động</option>
+                <option value="Hài hước / Thiếu nhi">Hài hước / Thiếu nhi</option>
+              </select>
+
+              <select id="sortFilter" class="form-select" style="width: 170px;" onchange="applyFilters()">
+                <option value="newest">Mới nhất</option>
+                <option value="price_asc">Giá tăng dần</option>
+                <option value="price_desc">Giá giảm dần</option>
+                <option value="views_desc">Lượt xem nhiều</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="bulkHideSelected()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">visibility_off</span> Ẩn đã chọn
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="resetSampleData()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span> Nạp lại mẫu
+              </button>
+            </div>
+          </div>
+
+          <!-- POSTS TABLE -->
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                  <th style="width: 70px;">Ảnh bìa</th>
+                  <th>Thông tin tác phẩm</th>
+                  <th>Tình trạng</th>
+                  <th>Giá bán</th>
+                  <th>Kho</th>
+                  <th>Lượt xem</th>
+                  <th>Trạng thái</th>
+                  <th style="text-align: right;">Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="postsTableBody">
+                <!-- Dynamic render -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VIEW DETAIL POST -->
+  <div class="modal-backdrop" id="viewDetailModal">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailModalTitle">Chi tiết bài đăng</h3>
+        <button class="modal-close" onclick="closeModal('viewDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="detailModalBody">
+        <!-- Content filled dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('viewDetailModal')">Đóng</button>
+        <button class="btn btn-primary" id="detailEditBtn">
+          <span class="material-symbols-outlined">edit</span> Chỉnh sửa bài này
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL QUICK HIDE WITH REASON -->
+  <div class="modal-backdrop" id="hideModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span class="material-symbols-outlined" style="color: var(--warning);">visibility_off</span>
+          Xác nhận ẩn bài đăng
+        </h3>
+        <button class="modal-close" onclick="closeModal('hideModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">
+          Bài đăng sẽ tạm thời không xuất hiện trên sàn tìm kiếm của người mua. Bạn có thể mở lại bất kỳ lúc nào trong trang "Ẩn/Xóa bài đăng".
+        </p>
+        <input type="hidden" id="hideTargetId">
+        <div class="form-group">
+          <label class="form-label" for="hideReasonSelect">Lý do ẩn bài:</label>
+          <select id="hideReasonSelect" class="form-select">
+            <option value="Tạm ngưng do có khách đang thương lượng">Tạm ngưng do có khách đang thương lượng</option>
+            <option value="Hết hàng tạm thời / Chờ nhập thêm">Hết hàng tạm thời / Chờ nhập thêm</option>
+            <option value="Cần cập nhật lại giá hoặc hình ảnh">Cần cập nhật lại giá hoặc hình ảnh</option>
+            <option value="Lý do cá nhân khác">Lý do cá nhân khác</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('hideModal')">Hủy bỏ</button>
+        <button class="btn btn-danger" onclick="confirmHidePost()">Xác nhận ẩn</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/post-management.js"></script>
+  <script>
+    let currentTab = 'all';
+
+    function setTabFilter(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('#statusTabs .filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function renderPosts() {
+      const posts = DataStore.getPosts();
+      
+      // Update stats
+      document.getElementById('statTotalPosts').innerText = posts.length;
+      document.getElementById('statActivePosts').innerText = posts.filter(p => p.status === 'active').length;
+      const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+      document.getElementById('statTotalViews').innerText = totalViews.toLocaleString('vi-VN');
+      const pendingHidden = posts.filter(p => p.status === 'pending' || p.status === 'hidden').length;
+      document.getElementById('statPendingHidden').innerText = pendingHidden;
+      document.getElementById('hiddenCountHeader').innerText = posts.filter(p => p.status === 'hidden').length;
+
+      // Update tab counts
+      document.getElementById('tabCountAll').innerText = posts.length;
+      document.getElementById('tabCountActive').innerText = posts.filter(p => p.status === 'active').length;
+      document.getElementById('tabCountPending').innerText = posts.filter(p => p.status === 'pending').length;
+      document.getElementById('tabCountHidden').innerText = posts.filter(p => p.status === 'hidden').length;
+      document.getElementById('tabCountOutOfStock').innerText = posts.filter(p => p.status === 'out_of_stock').length;
+
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const posts = DataStore.getPosts();
+      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const category = document.getElementById('categoryFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+
+      let filtered = posts.filter(p => {
+        // Tab check
+        if (currentTab !== 'all' && p.status !== currentTab) return false;
+        // Search check
+        if (query) {
+          const matchTitle = (p.title || '').toLowerCase().includes(query);
+          const matchAuthor = (p.author || '').toLowerCase().includes(query);
+          const matchId = (p.id || '').toLowerCase().includes(query);
+          if (!matchTitle && !matchAuthor && !matchId) return false;
+        }
+        // Category check
+        if (category !== 'all' && p.category !== category) return false;
+        return true;
+      });
+
+      // Sorting
+      if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+      else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+      else if (sort === 'views_desc') filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+      else filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      const tbody = document.getElementById('postsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <span class="material-symbols-outlined" style="font-size: 40px; display: block; margin-bottom: 8px;">search_off</span>
+              Không tìm thấy bài đăng nào phù hợp với bộ lọc hiện tại.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(post => {
+        let statusBadge = '';
+        if (post.status === 'active') statusBadge = '<span class="badge badge-success"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đang bán</span>';
+        else if (post.status === 'pending') statusBadge = '<span class="badge badge-warning"><span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> Chờ duyệt</span>';
+        else if (post.status === 'hidden') statusBadge = '<span class="badge badge-neutral"><span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> Đã ẩn</span>';
+        else if (post.status === 'out_of_stock') statusBadge = '<span class="badge badge-danger"><span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> Hết hàng</span>';
+
+        const tradeBadge = post.isTradeable ? '<span class="badge badge-purple" style="font-size: 0.68rem; margin-top: 4px;">Có nhận đổi truyện</span>' : '';
+
+        return `
+          <tr>
+            <td><input type="checkbox" class="post-checkbox" value="${post.id}"></td>
+            <td>
+              <img src="${post.image}" alt="Bìa" class="table-thumb" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300'">
+            </td>
+            <td>
+              <div class="manga-title-link" onclick="openDetailModal('${post.id}')" style="cursor: pointer;">
+                ${post.title}
+              </div>
+              <div class="manga-sub">
+                <span>Mã: <strong>${post.id}</strong></span> • 
+                <span>${post.publisher} (${post.year || 2023})</span>
+              </div>
+              ${tradeBadge}
+            </td>
+            <td><span style="font-size: 0.8rem; color: var(--text-secondary);">${post.condition}</span></td>
+            <td>
+              <div style="font-weight: 700; color: var(--primary);">${formatVND(post.price)}</div>
+              ${post.originalPrice > post.price ? `<div style="font-size: 0.75rem; text-decoration: line-through; color: var(--text-muted);">${formatVND(post.originalPrice)}</div>` : ''}
+            </td>
+            <td>
+              <span style="font-weight: 600; color: ${post.stock > 0 ? 'var(--text-primary)' : 'var(--danger)'};">
+                ${post.stock} cuốn
+              </span>
+            </td>
+            <td>
+              <span style="display: flex; align-items: center; gap: 4px; font-size: 0.82rem; color: var(--text-secondary);">
+                <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span> ${post.views || 0}
+              </span>
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 6px;">
+                <button class="btn btn-secondary btn-sm" title="Xem chi tiết" onclick="openDetailModal('${post.id}')">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+                </button>
+                <a href="chinh-sua-bai-dang.html?id=${post.id}" class="btn btn-secondary btn-sm" title="Chỉnh sửa bài đăng">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                </a>
+                ${post.status === 'hidden' ? `
+                  <button class="btn btn-secondary btn-sm" title="Bỏ ẩn" onclick="unhidePost('${post.id}')" style="color: var(--success);">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+                  </button>
+                ` : `
+                  <button class="btn btn-secondary btn-sm" title="Ẩn bài" onclick="openHideModal('${post.id}')">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility_off</span>
+                  </button>
+                `}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleSelectAll(master) {
+      document.querySelectorAll('.post-checkbox').forEach(cb => cb.checked = master.checked);
+    }
+
+    function openHideModal(id) {
+      document.getElementById('hideTargetId').value = id;
+      document.getElementById('hideModal').classList.add('show');
+    }
+
+    function confirmHidePost() {
+      const id = document.getElementById('hideTargetId').value;
+      const reason = document.getElementById('hideReasonSelect').value;
+      const posts = DataStore.getPosts();
+      const target = posts.find(p => p.id === id);
+      if (target) {
+        target.status = 'hidden';
+        target.hideReason = reason;
+        DataStore.savePosts(posts);
+        showToast(`Đã ẩn bài đăng ${id}`, 'info');
+        closeModal('hideModal');
+        renderPosts();
+      }
+    }
+
+    function unhidePost(id) {
+      const posts = DataStore.getPosts();
+      const target = posts.find(p => p.id === id);
+      if (target) {
+        target.status = 'active';
+        target.hideReason = '';
+        DataStore.savePosts(posts);
+        showToast(`Đã mở hiển thị lại bài đăng ${id}`, 'success');
+        renderPosts();
+      }
+    }
+
+    function bulkHideSelected() {
+      const checked = Array.from(document.querySelectorAll('.post-checkbox:checked')).map(cb => cb.value);
+      if (checked.length === 0) {
+        showToast('Vui lòng tích chọn ít nhất 1 bài đăng cần ẩn!', 'error');
+        return;
+      }
+      const posts = DataStore.getPosts();
+      posts.forEach(p => {
+        if (checked.includes(p.id)) {
+          p.status = 'hidden';
+          p.hideReason = 'Ẩn hàng loạt bởi Seller';
+        }
+      });
+      DataStore.savePosts(posts);
+      showToast(`Đã ẩn thành công ${checked.length} bài đăng đã chọn!`, 'success');
+      renderPosts();
+    }
+
+    function openDetailModal(id) {
+      const post = DataStore.getPosts().find(p => p.id === id);
+      if (!post) return;
+
+      document.getElementById('detailModalTitle').innerText = post.title;
+      document.getElementById('detailEditBtn').onclick = () => {
+        window.location.href = `chinh-sua-bai-dang.html?id=${post.id}`;
+      };
+
+      document.getElementById('detailModalBody').innerHTML = `
+        <div style="display: flex; gap: 18px; margin-bottom: 16px;">
+          <img src="${post.image}" style="width: 110px; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">${formatVND(post.price)} <span style="font-size: 0.8rem; text-decoration: line-through; color: var(--text-muted); font-weight: normal;">${formatVND(post.originalPrice)}</span></div>
+            <div><strong>Tác giả:</strong> ${post.author}</div>
+            <div><strong>Nhà xuất bản:</strong> ${post.publisher} (${post.year || 2023})</div>
+            <div><strong>Tình trạng:</strong> ${post.condition}</div>
+            <div><strong>Tồn kho:</strong> ${post.stock} cuốn | <strong>Lượt xem:</strong> ${post.views || 0}</div>
+            <div><strong>Hình thức:</strong> ${post.isTradeable ? '<span class="badge badge-purple">Bán & Nhận trao đổi truyện</span>' : '<span class="badge badge-neutral">Chỉ bán</span>'}</div>
+          </div>
+        </div>
+        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.88rem;">
+          <strong>Mô tả chi tiết:</strong>
+          <p style="margin-top: 4px; color: var(--text-secondary); line-height: 1.5;">${post.description || 'Chưa có mô tả chi tiết'}</p>
+        </div>
+        <div style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">
+          Khối lượng vận chuyển: ${post.weight || 250}g • Kích thước: ${post.dimensions || 'Chuẩn Manga'} • Ngày đăng: ${post.createdAt}
+        </div>
+      `;
+      document.getElementById('viewDetailModal').classList.add('show');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function resetSampleData() {
+      if (confirm('Khôi phục lại danh sách bài đăng mẫu mặc định ban đầu?')) {
+        DataStore.resetAll();
+        showToast('Đã nạp lại dữ liệu bài đăng mẫu!', 'info');
+        renderPosts();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPosts();
+    });
+  </script>
+</body>
+</html>
+

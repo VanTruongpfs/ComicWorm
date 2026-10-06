@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng &amp; Kèo Đổi Đang Chờ - ComicHub</title>
+    <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tệp CSS riêng -->
+    <link rel="stylesheet" href="../css/shopping_cart.css">
+</head>
+<body>
+<!-- ================= HEADER / THANH ĐIỀU HƯỚNG ================= -->
+<header class="site-header">
+
+    <div class="container header-container">
+
+        <!-- Logo Thương hiệu -->
+
+        <a href="home.html" class="brand-logo">
+
+            <div class="brand-logo-icon">
+
+                <i class="fa-solid fa-book-open"></i>
+
+            </div>
+
+            <div class="brand-logo-text">
+
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- Thanh tìm kiếm nhanh -->
+
+        <div class="header-search-bar">
+
+            <span class="search-category-tag">Tất cả truyện</span>
+
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- Menu chính -->
+
+        <nav class="main-navigation">
+
+            <ul class="nav-menu">
+
+
+                <li class="nav-item">
+
+                    <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+
+
+        <!-- Hành động người dùng -->
+
+        <div class="header-actions">
+
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+
+                <i class="fa-regular fa-bell"></i>
+
+                <span class="notification-indicator"></span>
+
+            </button>
+
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span class="cart-count-badge">3</span>
+
+            </a>
+
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+
+                <i class="fa-solid fa-circle-plus"></i>
+
+                <span>Đăng bán/Đổi truyện</span>
+
+            </a>
+
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- ================= NỘI DUNG GIỎ HÀNG ================= -->
+<main class="main-content container">
+    <!-- Breadcrumb & Tiêu đề trang -->
+    <nav class="breadcrumb-container" aria-label="Đường dẫn trang">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a href="home.html"><i class="fa-solid fa-house"></i> Trang chủ</a>
+            </li>
+            <li class="breadcrumb-separator">/</li>
+            <li class="breadcrumb-item active" aria-current="page">Giỏ Hàng &amp; Đơn Chờ Thanh Toán</li>
+        </ol>
+        <div class="cart-protection-badge">
+            <i class="fa-solid fa-shield-halved"></i> Giao dịch bảo chứng trung gian ComicHub Pay
+        </div>
+    </nav>
+
+    <!-- Header Tiêu đề & Tiến trình đặt hàng -->
+    <div class="cart-page-header">
+        <div class="cart-title-wrap">
+            <h1 class="page-headline">Giỏ Hàng Của Bạn</h1>
+            <span class="cart-items-counter">(3 sản phẩm đang chờ xử lý)</span>
+        </div>
+        <!-- Checkout Step Indicator -->
+        <div class="checkout-steps-bar">
+            <div class="step-item active">
+                <span class="step-number">1</span>
+                <span class="step-label">Giỏ hàng</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item">
+                <span class="step-number">2</span>
+                <span class="step-label">Địa chỉ &amp; Vận chuyển</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item">
+                <span class="step-number">3</span>
+                <span class="step-label">Thanh toán</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Grid Giỏ Hàng: Danh sách (Trái) & Tóm tắt đơn hàng (Phải) -->
+    <div class="cart-layout-grid">
+        <!-- CỘT TRÁI: Danh sách sản phẩm trong giỏ -->
+        <div class="cart-items-column">
+            <!-- Thanh chọn tất cả & Xóa đã chọn -->
+            <div class="cart-bulk-actions-bar">
+                <label class="custom-checkbox-label">
+                    <input type="checkbox" class="checkbox-select-all" checked>
+                    <span class="checkbox-text">Chọn tất cả (3 sản phẩm)</span>
+                </label>
+                <button type="button" class="btn-bulk-delete">
+                    <i class="fa-regular fa-trash-can"></i> Xóa mục đã chọn
+                </button>
+            </div>
+
+            <!-- ================= NHÓM SẢN PHẨM 1: MUA THẲNG (SELLER: AnVinh Collector) ================= -->
+            <section class="seller-cart-group">
+                <!-- Thông tin Người bán của nhóm hàng này -->
+                <header class="group-seller-header">
+                    <label class="custom-checkbox-label">
+                        <input type="checkbox" checked>
+                        <span class="seller-shop-name">
+                  <i class="fa-solid fa-store"></i> AnVinh Collector
+                </span>
+                    </label>
+                    <span class="seller-trust-badge">
+                <i class="fa-solid fa-certificate"></i> Đối tác uy tín (5.0★)
+              </span>
+                    <a href="#" class="btn-chat-with-seller">
+                        <i class="fa-regular fa-comment-dots"></i> Chat
+                    </a>
+                </header>
+
+                <!-- Item 1: Slam Dunk Deluxe -->
+                <article class="cart-item-card">
+                    <div class="item-select-wrap">
+                        <input type="checkbox" class="item-checkbox" checked>
+                    </div>
+                    <div class="item-thumbnail-wrap">
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80" alt="Slam Dunk Deluxe Edition" class="item-thumb-img">
+                        <span class="item-condition-badge">Near Mint 9.8</span>
+                    </div>
+                    <div class="item-details-wrap">
+                        <div class="item-badge-row">
+                            <span class="badge-type buy">Mua thẳng</span>
+                            <span class="badge-format">Trọn bộ 24 tập • NXB Kim Đồng</span>
+                        </div>
+                        <h2 class="item-title">
+                            <a href="product_details.html">Slam Dunk Deluxe Edition - Trọn Bộ 24 Tập (Bản Bìa Rời Kèm Obi &amp; Postcard)</a>
+                        </h2>
+                        <div class="item-spec-note">Quà tặng: Full 24 Postcard nguyên bao seal</div>
+                        <div class="item-pricing-mobile">
+                            <span class="item-price-current">1.850.000₫</span>
+                            <del class="item-price-original">2.300.000₫</del>
+                        </div>
+                    </div>
+                    <!-- Cột Đơn giá -->
+                    <div class="item-pricing-column">
+                        <span class="item-price-current">1.850.000₫</span>
+                        <del class="item-price-original">2.300.000₫</del>
+                        <span class="discount-pill">-20%</span>
+                    </div>
+                    <!-- Cột Bộ tăng giảm số lượng (Cập nhật) -->
+                    <div class="item-quantity-column">
+                        <div class="quantity-stepper">
+                            <button type="button" class="btn-qty-minus" aria-label="Giảm số lượng">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="number" class="qty-input" value="1" min="1" max="1" readonly>
+                            <button type="button" class="btn-qty-plus disabled" aria-label="Tăng số lượng (Chỉ có 1 bộ duy nhất)" disabled>
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <span class="stock-limit-note">Bản sưu tầm độc bản (Còn 1)</span>
+                    </div>
+                    <!-- Cột Thành tiền -->
+                    <div class="item-subtotal-column">
+                        <span class="subtotal-label">Thành tiền:</span>
+                        <span class="item-subtotal-price">1.850.000₫</span>
+                    </div>
+                    <!-- Cột Nút Xóa & Yêu thích -->
+                    <div class="item-actions-column">
+                        <button type="button" class="btn-item-action delete" aria-label="Xóa sản phẩm khỏi giỏ">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                        <button type="button" class="btn-item-action wishlist" aria-label="Lưu vào danh sách muốn mua">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                </article>
+            </section>
+
+            <!-- ================= NHÓM SẢN PHẨM 2: MUA & ĐỔI (SELLER: Otaku BookShop HCM) ================= -->
+            <section class="seller-cart-group">
+                <!-- Thông tin Người bán -->
+                <header class="group-seller-header">
+                    <label class="custom-checkbox-label">
+                        <input type="checkbox" checked>
+                        <span class="seller-shop-name">
+                  <i class="fa-solid fa-store"></i> Otaku BookShop HCM
+                </span>
+                    </label>
+                    <span class="seller-trust-badge">
+                <i class="fa-solid fa-certificate"></i> Shop Uy Tín (4.9★)
+              </span>
+                    <a href="#" class="btn-chat-with-seller">
+                        <i class="fa-regular fa-comment-dots"></i> Chat
+                    </a>
+                </header>
+
+                <!-- Item 2: Haikyu!! Trọn bộ -->
+                <article class="cart-item-card">
+                    <div class="item-select-wrap">
+                        <input type="checkbox" class="item-checkbox" checked>
+                    </div>
+                    <div class="item-thumbnail-wrap">
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80" alt="Haikyu!! - Vua Bóng Chuyền" class="item-thumb-img">
+                        <span class="item-condition-badge">Near Mint 9.5</span>
+                    </div>
+                    <div class="item-details-wrap">
+                        <div class="item-badge-row">
+                            <span class="badge-type buy">Mua thẳng</span>
+                            <span class="badge-format">Trọn bộ 45 tập</span>
+                        </div>
+                        <h2 class="item-title">
+                            <a href="#">Haikyu!! - Vua Bóng Chuyền (Trọn bộ 45 tập NXB Kim Đồng bản in đầu)</a>
+                        </h2>
+                        <div class="item-spec-note">Tình trạng: Mép sách trắng tinh, không foxing</div>
+                        <div class="item-pricing-mobile">
+                            <span class="item-price-current">2.100.000₫</span>
+                        </div>
+                    </div>
+                    <!-- Cột Đơn giá -->
+                    <div class="item-pricing-column">
+                        <span class="item-price-current">2.100.000₫</span>
+                    </div>
+                    <!-- Cột Tăng giảm số lượng (Cập nhật) -->
+                    <div class="item-quantity-column">
+                        <div class="quantity-stepper">
+                            <button type="button" class="btn-qty-minus" aria-label="Giảm số lượng">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="number" class="qty-input" value="1" min="1" max="2">
+                            <button type="button" class="btn-qty-plus" aria-label="Tăng số lượng">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <span class="stock-limit-note">Kho còn: 2 bộ</span>
+                    </div>
+                    <!-- Cột Thành tiền -->
+                    <div class="item-subtotal-column">
+                        <span class="subtotal-label">Thành tiền:</span>
+                        <span class="item-subtotal-price">2.100.000₫</span>
+                    </div>
+                    <!-- Cột Thao tác -->
+                    <div class="item-actions-column">
+                        <button type="button" class="btn-item-action delete" aria-label="Xóa sản phẩm khỏi giỏ">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                        <button type="button" class="btn-item-action wishlist" aria-label="Lưu vào yêu thích">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Item 3: Kèo Trao Đổi Barter 1-1 Kèm Tiền Bù -->
+                <article class="cart-item-card barter-cart-item">
+                    <div class="item-select-wrap">
+                        <input type="checkbox" class="item-checkbox" checked>
+                    </div>
+                    <div class="item-thumbnail-wrap">
+                        <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=300&q=80" alt="Dragon Ball Super" class="item-thumb-img">
+                        <span class="item-condition-badge amber">Kèo Đổi 1-1</span>
+                    </div>
+                    <div class="item-details-wrap">
+                        <div class="item-badge-row">
+                            <span class="badge-type barter">Giao dịch trao đổi</span>
+                            <span class="badge-format">Khớp lệnh đề xuất 1-1</span>
+                        </div>
+                        <h2 class="item-title">
+                            <a href="#">Dragon Ball Super (Tập 1 - 20) — Đổi ngang với One Piece Boxset</a>
+                        </h2>
+                        <!-- Chi tiết cặp truyện trao đổi -->
+                        <div class="barter-exchange-inline-card">
+                            <div class="exchange-part receive">
+                                <span class="exchange-tag">Nhận về:</span> Dragon Ball Super (Tập 1-20)
+                            </div>
+                            <i class="fa-solid fa-arrow-right-arrow-left exchange-icon"></i>
+                            <div class="exchange-part send">
+                                <span class="exchange-tag">Gửi đi:</span> One Piece (Boxset Vol 1)
+                            </div>
+                        </div>
+                        <div class="item-spec-note">Phí chênh lệch tiền bù thỏa thuận: <strong>120.000₫</strong></div>
+                    </div>
+                    <!-- Cột Đơn giá -->
+                    <div class="item-pricing-column">
+                        <span class="item-price-current">120.000₫</span>
+                        <span class="price-note-sub">(Tiền bù giao dịch)</span>
+                    </div>
+                    <!-- Cột Số lượng (Kèo đổi cố định 1-1) -->
+                    <div class="item-quantity-column">
+                        <div class="barter-locked-qty">
+                            <span>1 Kèo Đổi</span>
+                        </div>
+                        <span class="stock-limit-note">Đã chốt thỏa thuận</span>
+                    </div>
+                    <!-- Cột Thành tiền -->
+                    <div class="item-subtotal-column">
+                        <span class="subtotal-label">Tiền bù:</span>
+                        <span class="item-subtotal-price">120.000₫</span>
+                    </div>
+                    <!-- Cột Thao tác -->
+                    <div class="item-actions-column">
+                        <button type="button" class="btn-item-action delete" aria-label="Hủy kèo đổi khỏi giỏ">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                        <button type="button" class="btn-item-action wishlist" aria-label="Xem lại chi tiết kèo">
+                            <i class="fa-solid fa-file-contract"></i>
+                        </button>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Nút tiếp tục mua sắm & Xóa toàn bộ giỏ hàng -->
+            <div class="cart-bottom-actions">
+                <a href="home.html" class="btn-continue-shopping">
+                    <i class="fa-solid fa-arrow-left"></i> Tiếp tục tìm truyện khác
+                </a>
+                <button type="button" class="btn-clear-cart">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Làm trống giỏ hàng
+                </button>
+            </div>
+
+            <!-- Cam kết chất lượng đóng gói & kiểm định -->
+            <div class="cart-service-commitments">
+                <div class="commitment-item">
+                    <div class="commit-icon"><i class="fa-solid fa-box-archive"></i></div>
+                    <div class="commit-text">
+                        <h3 class="commit-title">Đóng gói 3 lớp chống móp gáy</h3>
+                        <p class="commit-sub">Bọc màng bóng khí + Chèn xốp góc + Thùng carton chịu lực</p>
+                    </div>
+                </div>
+                <div class="commitment-item">
+                    <div class="commit-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                    <div class="commit-text">
+                        <h3 class="commit-title">Đồng kiểm 48h khi nhận hàng</h3>
+                        <p class="commit-sub">Không đúng mô tả tình trạng được hoàn tiền 100%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: Tóm tắt đơn hàng & Mã giảm giá (Sticky Sidebar) -->
+        <aside class="cart-summary-column">
+            <!-- Khung Nhập Mã Khuyến Mãi / Voucher Otaku -->
+            <section class="voucher-box-card">
+                <h2 class="sidebar-box-title">
+                    <i class="fa-solid fa-ticket"></i> Mã Giảm Giá / Voucher
+                </h2>
+                <form class="voucher-input-group">
+                    <input type="text" class="voucher-input" placeholder="Nhập mã COMICNEW, FREESHIP..." aria-label="Mã giảm giá">
+                    <button type="button" class="btn-apply-voucher">Áp Dụng</button>
+                </form>
+                <div style="margin-top: 8px;">
+                    <a href="voucher.html" style="font-size:0.8rem; color:#f97316; text-decoration:none; font-weight:600;"><i class="fa-solid fa-ticket"></i> Mở Kho Voucher để lấy mã ưu đãi &rarr;</a>
+                </div>
+                <!-- Danh sách coupon đã áp dụng -->
+                <div class="applied-coupons-list">
+                    <div class="coupon-chip">
+                        <div class="coupon-info">
+                            <i class="fa-solid fa-tag"></i>
+                            <span class="coupon-code">COMICFREE</span>
+                            <span class="coupon-desc">(Giảm 30.000đ phí ship)</span>
+                        </div>
+                        <button type="button" class="btn-remove-coupon" aria-label="Bỏ mã giảm giá">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Thẻ Tóm Tắt Chi Phí Đơn Hàng -->
+            <section class="order-summary-card">
+                <h2 class="summary-heading">Tóm Tắt Đơn Hàng</h2>
+                <div class="summary-rows-group">
+                    <div class="summary-row">
+                        <span class="summary-label">Tạm tính tiền hàng (2 mục mua):</span>
+                        <span class="summary-value">3.950.000₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Tiền bù trao đổi (1 kèo 1-1):</span>
+                        <span class="summary-value">120.000₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Phí đóng gói chuyên dụng sưu tầm:</span>
+                        <span class="summary-value free-text">Miễn phí</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Phí vận chuyển ước tính:</span>
+                        <span class="summary-value">30.000₫</span>
+                    </div>
+                    <div class="summary-row discount">
+                        <span class="summary-label">Giảm giá vận chuyển:</span>
+                        <span class="summary-value discount-text">-30.000₫</span>
+                    </div>
+                    <div class="summary-row divider"></div>
+                    <div class="summary-total-row">
+                        <div>
+                            <span class="total-label">Tổng thanh toán:</span>
+                            <span class="total-tax-note">(Đã bao gồm VAT &amp; Phí bảo chứng)</span>
+                        </div>
+                        <div class="total-price-wrap">
+                            <span class="total-price-amount">4.070.000₫</span>
+                            <span class="total-saved-note">Tiết kiệm 480.000₫ so với giá gốc</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Nút Đặt Hàng & Thanh Toán -->
+                <div class="checkout-button-wrap">
+                    <a href="payment.html" class="btn-proceed-checkout" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fa-solid fa-lock"></i> Đặt Hàng
+                    </a>
+                    <div class="security-guarantee-note">
+                        <i class="fa-solid fa-circle-check"></i> Tiền chỉ chuyển cho người bán sau khi bạn kiểm tra đúng tình trạng sách.
+                    </div>
+                </div>
+                <!-- Phương thức thanh toán được hỗ trợ -->
+                <div class="payment-methods-supported">
+                    <span class="methods-title">Chấp nhận thanh toán:</span>
+                    <div class="methods-icons-row">
+                        <span class="pay-method-badge">VietQR / Chuyển khoản</span>
+                        <span class="pay-method-badge">Ví MoMo</span>
+                        <span class="pay-method-badge">Thẻ Visa/Master</span>
+                        <span class="pay-method-badge">COD</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Thẻ Hỗ trợ khách hàng nhanh -->
+            <aside class="cart-help-card">
+                <div class="help-icon"><i class="fa-solid fa-headset"></i></div>
+                <div class="help-text">
+                    <div class="help-title">Cần trợ giúp về đơn hàng?</div>
+                    <div class="help-sub">Tổng đài hỗ trợ Collector: <strong>1900 8828</strong> (8:00 - 22:00)</div>
+                </div>
+            </aside>
+        </aside>
+    </div>
+
+    <!-- ================= GỢI Ý THÊM VÀO GIỎ (UPSELL / WANT-LIST) ================= -->
+    <section class="suggested-addons-section">
+        <header class="section-title-bar">
+            <div>
+                <span class="sub-heading">Có Thể Bạn Muốn Sưu Tầm Thêm</span>
+                <h2 class="main-heading">Phụ Kiện Sưu Tầm &amp; Manga Cùng Tủ Sách</h2>
+            </div>
+            <a href="#" class="view-all-link">
+                Xem thêm phụ kiện <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </header>
+        <div class="suggested-grid">
+            <!-- Addon 1: Bọc sách chuyên dụng -->
+            <article class="addon-card">
+                <div class="addon-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=240&q=80" alt="Bọc sách màng OPP">
+                </div>
+                <div class="addon-info">
+                    <h3 class="addon-title">Combo 50 Màng Bọc OPP Dày Dặn Khổ Lớn 14.5x20.5cm</h3>
+                    <div class="addon-price">45.000₫</div>
+                    <button type="button" class="btn-add-addon">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </article>
+            <!-- Addon 2: Hộp chống ẩm sách -->
+            <article class="addon-card">
+                <div class="addon-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=240&q=80" alt="Túi hút ẩm">
+                </div>
+                <div class="addon-info">
+                    <h3 class="addon-title">Gói Hút Ẩm Silicagel Chuyên Dụng Tủ Sách Truyện (Set 20 gói)</h3>
+                    <div class="addon-price">35.000₫</div>
+                    <button type="button" class="btn-add-addon">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </article>
+            <!-- Addon 3: Bookmark Kim Loại -->
+            <article class="addon-card">
+                <div class="addon-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=240&q=80" alt="Bookmark kim loại">
+                </div>
+                <div class="addon-info">
+                    <h3 class="addon-title">Bookmark Kim Loại Khắc Laser Họa Tiết Manga Shohoku</h3>
+                    <div class="addon-price">29.000₫</div>
+                    <button type="button" class="btn-add-addon">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </article>
+            <!-- Addon 4: Kệ Mica Trưng Bày Bìa Manga -->
+            <article class="addon-card">
+                <div class="addon-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=240&q=80" alt="Kệ trưng bày mica">
+                </div>
+                <div class="addon-info">
+                    <h3 class="addon-title">Giá Đỡ Mica Trong Suốt Trưng Bày Manga Bản Độc Bản</h3>
+                    <div class="addon-price">39.000₫</div>
+                    <button type="button" class="btn-add-addon">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<!-- ================= FOOTER / CHÂN TRANG ================= -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="../js/shopping_cart.js"></script>
+</body>
+</html>

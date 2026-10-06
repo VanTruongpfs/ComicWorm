@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bàn làm việc Hỗ trợ CSKH (Agent Console)</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../css/customer-support.css">
+</head>
+<body>
+  <div class="app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="brand">
+        <a href="dashboard.html" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
+          <div class="app-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h2 class="brand-name">ModDash</h2>
+        </a>
+      </div>
+      
+      <div class="nav-links">
+        <a href="postModeration.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16" y1="3" x2="21" y2="3"/><line x1="21" y1="3" x2="21" y2="8"/><line x1="4" y1="20" x2="21" y2="3"/><line x1="21" y1="16" x2="21" y2="21"/><line x1="16" y1="21" x2="21" y2="21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          <span>Duyệt bài</span>
+          <span class="nav-badge">18</span>
+        </a>
+        <a href="report_resolution.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Xử lý báo cáo</span>
+        </a>
+        <a href="appeal-resolution.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span>TT Kháng nghị</span>
+        </a>
+        <a href="customer-support.html" class="nav-item nav-item-active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>CSKH Console</span>
+        </a>
+
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid rgba(0,0,0,0.08); display:flex; flex-direction:column; gap:6px;">
+          <a href="dashboard.html" class="nav-item" style="color:#7c3aed;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Admin Console</span>
+          </a>
+          <a href="../../buyer/html/home.html" class="nav-item" style="color:#2563eb;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Chợ ComicHub</span>
+          </a>
+          <a href="../../index.html" class="nav-item" style="color:#ea580c; font-weight:600;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <span>Master Portal</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="main-wrapper">
+      
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="header-left">
+          <h1 class="page-title">Không gian làm việc CSKH</h1>
+          <div class="agent-submeta">
+            <span class="online-indicator-dot"></span>
+            <span>Agent #SP-104 • Ca Trực Sáng</span>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <div class="quick-search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Tìm ID ticket #TK, @username...">
+          </div>
+          <button class="icon-btn" aria-label="Trung tâm trợ giúp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="dashboard-container">
+          
+          <!-- Top Row: Agent Profile & KPIs -->
+          <div class="dashboard-grid-top">
+            
+            <!-- Agent Status Card -->
+            <section class="card agent-profile-card">
+              <div class="agent-header-row">
+                <div class="agent-bio">
+                  <div class="avatar-wrap">
+                    <img class="avatar avatar-md" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Hoàng Lê">
+                    <span class="active-badge"></span>
+                  </div>
+                  <div>
+                    <div class="name-badge-row">
+                      <strong class="agent-name">Mod.04 / Hoàng Lê</strong>
+                      <span class="role-badge">TIER-1 PRO</span>
+                    </div>
+                    <p class="agent-dept">Bộ phận: Hỗ trợ & Kháng nghị</p>
+                  </div>
+                </div>
+                <!-- Online Switch -->
+                <label class="switch-toggle" aria-label="Trạng thái trực">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="capacity-box">
+                <div class="capacity-labels">
+                  <span>TẢI HÀNG ĐỢI HIỆN TẠI (ACTIVE CAPACITY)</span>
+                  <strong>8 / 10 vé đang giữ (80%)</strong>
+                </div>
+                <div class="capacity-track">
+                  <div class="capacity-bar" style="width: 80%;"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Shift KPIs -->
+            <section class="card kpi-section">
+              <div class="section-head-row">
+                <div class="title-with-icon">
+                  <svg class="icon-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  <h2 class="section-heading">Chỉ Số Ca Trực Hôm Nay</h2>
+                </div>
+                <span class="text-meta">Cập nhật: 2 phút trước</span>
+              </div>
+              
+              <div class="kpi-grid">
+                <div class="kpi-cell">
+                  <div class="kpi-head">
+                    <span class="kpi-label">ĐÃ GIẢI QUYẾT</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </div>
+                  <div class="kpi-metric">18 <span class="kpi-badge-gain">+4 KPI</span></div>
+                  <span class="kpi-footnote">Hạn ngạch ca: 20 vé</span>
+                </div>
+                
+                <div class="kpi-cell">
+                  <div class="kpi-head">
+                    <span class="kpi-label">CHỜ PHẢN HỒI</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div class="kpi-metric">04 <small class="text-muted">Đang Hold</small></div>
+                  <span class="kpi-footnote">Đóng tự động sau 48h</span>
+                </div>
+                
+                <div class="kpi-cell">
+                  <div class="kpi-head">
+                    <span class="kpi-label">TỶ LỆ ĐẠT SLA</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <div class="kpi-metric text-success">96.4% <span class="kpi-badge-gain">↑ 1.2%</span></div>
+                  <span class="kpi-footnote">Ngưỡng cam kết: 92%</span>
+                </div>
+                
+                <div class="kpi-cell">
+                  <div class="kpi-head">
+                    <span class="kpi-label">TG PHẢN HỒI</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                  </div>
+                  <div class="kpi-metric">1.8 <small>phút</small></div>
+                  <span class="kpi-footnote">Mục tiêu: &lt; 2.5 phút</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Main Row: Triage Queue (Left) & Workspace (Right) -->
+          <div class="dashboard-grid-main">
+            
+            <!-- Left Column -->
+            <div class="col-left">
+              <!-- Queue & Triage -->
+              <section class="card triage-card">
+                <div class="section-head-row">
+                  <div class="title-with-icon">
+                    <svg class="icon-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <h2 class="section-heading">Hàng Đợi Tiếp Nhận</h2>
+                  </div>
+                  <button class="btn-refresh" aria-label="Làm mới">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Làm mới
+                  </button>
+                </div>
+                
+                <div class="queue-chips-bar">
+                  <button class="chip chip-active">Khẩn cấp <span class="badge-chip">2</span></button>
+                  <button class="chip">Kháng nghị <span class="badge-chip neutral">3</span></button>
+                  <button class="chip">Khác</button>
+                </div>
+                
+                <!-- Urgent Ticket Alert -->
+                <div class="urgent-card-alert">
+                  <div class="urgent-left">
+                    <div class="sla-badge">SLA CÒN 04:12</div>
+                    <div class="urgent-info">
+                      <strong class="urgent-code">#TK-9923 • Tố cáo mạo danh</strong>
+                      <p>Tài khoản VIP yêu cầu can thiệp khẩn...</p>
+                    </div>
+                  </div>
+                  <button class="btn-accept">Nhận ngay</button>
+                </div>
+                
+                <!-- Normal Ticket Item -->
+                <div class="queue-list-item">
+                  <div class="queue-item-head">
+                    <strong>#TK-9924 • Lỗi nạp tiền</strong>
+                    <span class="time-wait">10 phút</span>
+                  </div>
+                  <p>Người dùng @khanh_linh báo lỗi nạp...</p>
+                </div>
+              </section>
+
+              <!-- Agent Toolkit -->
+              <section class="card toolkit-card">
+                <div class="section-head-row">
+                  <div class="title-with-icon">
+                    <svg class="icon-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <h2 class="section-heading">Công Cụ Nghiệp Vụ</h2>
+                  </div>
+                </div>
+                
+                <div class="toolkit-grid">
+                  <button class="tool-card">
+                    <div class="tool-icon-wrap icon-orange-subtle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-title-row">
+                        <strong>Phản Hồi Mẫu</strong>
+                        <span class="tag-shortcut">F2</span>
+                      </div>
+                      <p>Kịch bản giải trình</p>
+                    </div>
+                  </button>
+                  <button class="tool-card">
+                    <div class="tool-icon-wrap icon-blue-subtle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-title-row">
+                        <strong>Tra Cứu Acc</strong>
+                        <span class="tag-shortcut">Search</span>
+                      </div>
+                      <p>Lịch sử & IP</p>
+                    </div>
+                  </button>
+                  <button class="tool-card">
+                    <div class="tool-icon-wrap icon-amber-subtle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-title-row">
+                        <strong>Quy Chuẩn</strong>
+                        <span class="tag-shortcut">SOP</span>
+                      </div>
+                      <p>Khung chế tài</p>
+                    </div>
+                  </button>
+                  <button class="tool-card">
+                    <div class="tool-icon-wrap icon-slate-subtle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </div>
+                    <div class="tool-info">
+                      <div class="tool-title-row">
+                        <strong>Ghi Chú</strong>
+                        <span class="tag-shortcut">Log</span>
+                      </div>
+                      <p>Lưu vết ca trực</p>
+                    </div>
+                  </button>
+                </div>
+              </section>
+            </div>
+
+            <!-- Right Column (Active Workspace) -->
+            <div class="col-right">
+              <section class="card active-ticket-workspace">
+                <div class="workspace-header">
+                  <div class="title-with-pulse">
+                    <span class="orange-dot"></span>
+                    <h2 class="section-heading">Phiếu Đang Xử Lý Trực Tiếp</h2>
+                  </div>
+                  <span class="badge-holding">ĐANG GIỮ</span>
+                </div>
+                
+                <div class="ticket-content-area">
+                  <div class="ticket-user-header">
+                    <div class="user-profile-meta">
+                      <img class="avatar avatar-lg" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="User">
+                      <div>
+                        <div class="user-row">
+                          <strong class="username">@hoangnam_tech</strong>
+                          <span class="user-tier">User Cấp 1</span>
+                          <div class="risk-pill">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                            <span>CẢNH BÁO BOT</span>
+                          </div>
+                        </div>
+                        <div class="ticket-meta-detail">Gửi lúc: 10:24 (12 phút trước) • ID #TK-9921</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <h3 class="ticket-title-bold">
+                    <svg class="icon-appeal" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    Kháng nghị mở khóa tài khoản sau cảnh báo bot AI
+                  </h3>
+                  
+                  <div class="user-message-box">
+                    <p>
+                      "Chào đội ngũ CSKH, tài khoản của tôi vừa bị hệ thống tự động khóa tính năng đăng bài với lý do <mark class="mark-highlight">Nghi vấn spam tự động bot v3</mark>. Tôi chỉ chia sẻ bộ tài liệu lập trình cho nhóm bạn lúc 10:15. Mong admin kiểm tra lại lịch sử log thiết bị và mở khóa giúp tôi."
+                    </p>
+                  </div>
+                  
+                  <div class="ai-detect-box">
+                    <div class="detect-header">
+                      <span class="detect-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> PHÁT HIỆN TỪ HỆ THỐNG SENTINEL AI</span>
+                      <span class="detect-val">Trùng khớp 94% mẫu bot spam</span>
+                    </div>
+                    <div class="detect-tags">
+                      <span class="chip-flag-danger">Tần suất: 18 bài / 60 giây</span>
+                      <span class="chip-flag-neutral">IP: 14.162.xx.xx (Việt Nam)</span>
+                      <span class="chip-flag-neutral">Thiết bị: Chrome Win64</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons Row (Web Layout) -->
+                <div class="workspace-action-bar">
+                  <div class="action-left">
+                    <button class="btn btn-outline-action">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                      Chuyển Tier-2 / An Ninh
+                    </button>
+                    <button class="btn btn-outline-action">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      Áp Dụng Phản Hồi Mẫu
+                    </button>
+                  </div>
+                  <div class="action-right">
+                    <button class="btn btn-dark-action">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                      Xem Log Bằng Chứng
+                    </button>
+                    <button class="btn btn-primary-action">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                      Vào Trò Chuyện (Chat 1:1)
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+            
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/customer-support.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ẩn Bài Đăng Vi Phạm - Kiểm Duyệt BookMooch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/postModeration.css">
+  <style>
+    .hide-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 680px;
+      margin: 40px auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .badge-ban { background: #fee2e2; color: #dc2626; }
+    .badge-warn { background: #fef3c7; color: #d97706; }
+    .reason-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+    .notes-area {
+      width: 100%;
+      height: 120px;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: vertical;
+    }
+    .action-group {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="brand">
+        <a href="dashboard.html" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
+          <div class="app-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h2 class="brand-name">ModDash</h2>
+        </a>
+      </div>
+
+      <div class="nav-links">
+        <a href="postModeration.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="21 8 21 21 3 21 3 8" />
+            <rect x="1" y="3" width="22" height="5" />
+          </svg>
+          <span>Duyệt bài</span>
+        </a>
+        <a href="report_resolution.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          </svg>
+          <span>Xử lý báo cáo</span>
+        </a>
+        <a href="appeal-resolution.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+          <span>TT Kháng nghị</span>
+        </a>
+        <a href="customer-support.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+          </svg>
+          <span>CSKH Console</span>
+        </a>
+        <div style="margin-top:20px; padding-top:14px; border-top:1px solid rgba(0,0,0,0.08);">
+          <a href="dashboard.html" class="nav-item" style="color:#7c3aed;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span>Admin Portal</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="hide-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <h2 style="font-size:1.4rem; font-weight:700;">Xử lý bài đăng vi phạm</h2>
+          <span id="actionBadge" class="badge-status badge-ban">Cấm vĩnh viễn (Ban)</span>
+        </div>
+
+        <p style="color:#64748b; font-size:0.95rem; margin-bottom:20px;">
+          Bài đăng sẽ bị gỡ khỏi sàn giao dịch và người bán sẽ nhận được thông báo giải trình kèm biên bản xử phạt.
+        </p>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:24px;">
+          <div style="font-weight:700; color:#1e293b;" id="postTitle">Bài đăng: Bộ truyện tranh Slam Dunk Deluxe 1-24</div>
+          <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">Người bán: <strong>otakushop_vn</strong> • Mã bài: #POST-8821</div>
+        </div>
+
+        <label style="font-weight:600; font-size:0.9rem; color:#334155;">Lý do áp dụng hình phạt *</label>
+        <select class="reason-select" id="reasonSelect">
+          <option value="fake_print">Nghi ngờ truyện in lậu / sách scan không bản quyền</option>
+          <option value="misleading">Sai lệch tình trạng thực tế (mô tả Like New nhưng rách bìa/mất trang)</option>
+          <option value="prohibited">Nội dung không phù hợp hoặc ngôn từ bạo lực cấm</option>
+          <option value="spam">Spam bài đăng trùng lặp hoặc giá khống bất thường</option>
+          <option value="other">Lý do khác</option>
+        </select>
+
+        <label style="font-weight:600; font-size:0.9rem; color:#334155; display:block; margin-top:16px;">Ghi chú chi tiết cho Người bán & CSKH</label>
+        <textarea class="notes-area" id="notesInput" placeholder="Nhập căn cứ thẩm định hình ảnh hoặc trích dẫn quy định vi phạm..."></textarea>
+
+        <div class="action-group">
+          <button class="btn btn-outline" onclick="window.history.back()">Hủy bỏ</button>
+          <button class="btn btn-danger" id="submitActionBtn" onclick="confirmAction()">Xác nhận gỡ bài</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action') || 'ban';
+    const badge = document.getElementById('actionBadge');
+    const submitBtn = document.getElementById('submitActionBtn');
+
+    if (action === 'warn') {
+      badge.textContent = 'Cảnh cáo & Tạm ẩn';
+      badge.className = 'badge-status badge-warn';
+      submitBtn.textContent = 'Gửi cảnh cáo & Tạm ẩn';
+      submitBtn.className = 'btn btn-warning';
+    }
+
+    function confirmAction() {
+      const reason = document.getElementById('reasonSelect').value;
+      alert(`Đã thực hiện thao tác ${action === 'warn' ? 'Cảnh cáo' : 'Cấm/Gỡ bài'} thành công! Mã lý do: ${reason}`);
+      window.location.href = 'postModeration.html';
+    }
+  </script>
+</body>
+</html>

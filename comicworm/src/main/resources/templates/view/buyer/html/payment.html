@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Đơn Hàng &amp; Kèo Trao Đổi - ComicHub</title>
+
+    <!-- Favicon & PWA Icons -->
+    
+    
+
+    <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- File CSS riêng biệt liên kết tại đây -->
+    <link rel="stylesheet" href="../css/payment.css">
+</head>
+<body>
+<!-- ================= SITE HEADER (DÙNG CHUNG) ================= -->
+<header class="site-header">
+
+    <div class="container header-container">
+
+        <!-- Logo Thương hiệu -->
+
+        <a href="home.html" class="brand-logo">
+
+            <div class="brand-logo-icon">
+
+                <i class="fa-solid fa-book-open"></i>
+
+            </div>
+
+            <div class="brand-logo-text">
+
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- Thanh tìm kiếm nhanh -->
+
+        <div class="header-search-bar">
+
+            <span class="search-category-tag">Tất cả truyện</span>
+
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- Menu chính -->
+
+        <nav class="main-navigation">
+
+            <ul class="nav-menu">
+
+
+                <li class="nav-item">
+
+                    <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+
+
+        <!-- Hành động người dùng -->
+
+        <div class="header-actions">
+
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+
+                <i class="fa-regular fa-bell"></i>
+
+                <span class="notification-indicator"></span>
+
+            </button>
+
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span class="cart-count-badge">3</span>
+
+            </a>
+
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+
+                <i class="fa-solid fa-circle-plus"></i>
+
+                <span>Đăng bán/Đổi truyện</span>
+
+            </a>
+
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ================= MAIN CHECKOUT CONTENT ================= -->
+<main class="main-content checkout-page">
+    <div class="container">
+        <!-- Breadcrumb & Safety Escrow Badge -->
+        <nav class="breadcrumb-container" aria-label="Breadcrumb">
+            <ul class="breadcrumb-list">
+                <li class="breadcrumb-item">
+                    <a href="home.html"><i class="fa-solid fa-house"></i> Trang chủ</a>
+                </li>
+                <li class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></li>
+                <li class="breadcrumb-item">
+                    <a href="shopping_cart.html">Giỏ hàng</a>
+                </li>
+                <li class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></li>
+                <li class="breadcrumb-item active" aria-current="page">Thanh toán bảo đảm</li>
+            </ul>
+            <div class="checkout-guarantee-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>ComicHub Escrow Vault Bảo Vệ Tiền 100% Trong 48 Giờ Đồng Kiểm</span>
+            </div>
+        </nav>
+
+        <!-- Checkout 3-Step Progress Bar -->
+        <div class="checkout-stepper-card">
+            <ol class="stepper-list">
+                <li class="stepper-item step-completed">
+                    <div class="step-icon-wrap">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="step-label-group">
+                        <span class="step-sub">Bước 1</span>
+                        <span class="step-title">Giỏ hàng đã chọn</span>
+                    </div>
+                </li>
+                <li class="stepper-divider step-completed-divider"></li>
+                <li class="stepper-item step-completed">
+                    <div class="step-icon-wrap">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="step-label-group">
+                        <span class="step-sub">Bước 2</span>
+                        <span class="step-title">Địa chỉ giao nhận</span>
+                    </div>
+                </li>
+                <li class="stepper-divider step-active-divider"></li>
+                <li class="stepper-item step-active">
+                    <div class="step-icon-wrap">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div class="step-label-group">
+                        <span class="step-sub">Bước 3</span>
+                        <span class="step-title">Thanh toán &amp; Xác nhận</span>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Checkout Form & Grid Layout -->
+        <form class="checkout-layout-grid" action="order-confirmation.html" method="POST">
+            <!-- CỘT TRÁI: THÔNG TIN GIAO NHẬN, VẬN CHUYỂN, PHƯƠNG THỨC THANH TOÁN & KIỆN HÀNG -->
+            <div class="checkout-left-column">
+
+                <!-- 1. ĐỊA CHỈ NHẬN HÀNG SƯU TẦM -->
+                <section class="checkout-section-card address-card">
+                    <div class="card-header-bar">
+                        <div class="card-header-title">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <h2>Địa Chỉ Nhận Hàng Sưu Tầm</h2>
+                        </div>
+                        <button type="button" class="btn-text-action">Thay đổi địa chỉ</button>
+                    </div>
+                    <div class="address-details">
+                        <div class="recipient-row">
+                            <strong class="recipient-name">Nguyễn An Vinh</strong>
+                            <span class="recipient-divider">•</span>
+                            <span class="recipient-phone">0988.123.456</span>
+                            <span class="badge-address-default">Mặc định</span>
+                        </div>
+                        <p class="recipient-address">
+                            124 Hoàng Hoa Thám, Phường Liễu Giai, Quận Ba Đình, Hà Nội
+                        </p>
+                        <div class="collector-delivery-note">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span><strong>Ghi chú lưu kho:</strong> "Hàng truyện tranh sưu tầm dễ móp gáy, vui lòng nhẹ tay. Giao ngoài giờ hành chính nếu sau 18h."</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. PHƯƠNG THỨC GÓI & VẬN CHUYỂN -->
+                <section class="checkout-section-card shipping-card">
+                    <div class="card-header-bar">
+                        <div class="card-header-title">
+                            <i class="fa-solid fa-box-open"></i>
+                            <div>
+                                <h2>Phương Thức Gói &amp; Vận Chuyển Chuyên Dụng</h2>
+                                <p class="section-subtext">Chuẩn chống sốc, ép bìa cứng và túi nilon zip chống nước 100%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shipping-options-grid">
+                        <!-- Hỏa Tốc SafeShip -->
+                        <label class="shipping-option-item">
+                            <input type="radio" name="shipping_method" value="express" class="shipping-radio">
+                            <div class="shipping-content">
+                                <div class="shipping-main-info">
+                                    <span class="shipping-name">Hỏa Tốc ComicHub SafeShip</span>
+                                    <span class="shipping-price">45.000₫</span>
+                                </div>
+                                <p class="shipping-desc">Xe chuyên dụng chở sách, giao trong 2h tại Hà Nội &amp; TP.HCM</p>
+                                <span class="shipping-perk"><i class="fa-solid fa-box"></i> Thùng carton 3 lớp chèn túi khí bóng</span>
+                            </div>
+                        </label>
+
+                        <!-- Tiêu Chuẩn Bảo Đảm (Mặc định chọn) -->
+                        <label class="shipping-option-item selected">
+                            <input type="radio" name="shipping_method" value="standard" class="shipping-radio" checked>
+                            <div class="shipping-content">
+                                <div class="shipping-main-info">
+                                    <div class="shipping-title-row">
+                                        <span class="shipping-name">Tiêu Chuẩn Bảo Đảm</span>
+                                        <span class="badge-chosen">ĐÃ CHỌN</span>
+                                    </div>
+                                    <div class="shipping-pricing-discount">
+                                        <span class="shipping-price-old">35.000₫</span>
+                                        <span class="shipping-price-free">0₫</span>
+                                    </div>
+                                </div>
+                                <p class="shipping-desc">Nhận hàng sau 1–2 ngày (Hà Nội – TP.HCM)</p>
+                                <span class="shipping-perk perk-applied"><i class="fa-solid fa-tag"></i> Đã áp dụng mã freeship COMICFREE</span>
+                            </div>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- 3. PHƯƠNG THỨC THANH TOÁN (CHỈ GỒM: CHUYỂN KHOẢN QR & COD) -->
+                <section class="checkout-section-card payment-methods-card">
+                    <div class="card-header-bar">
+                        <div class="card-header-title">
+                            <i class="fa-solid fa-wallet"></i>
+                            <div>
+                                <h2>Phương Thức Thanh Toán Bảo Đảm</h2>
+                                <p class="section-subtext">ComicHub giữ tiền ký quỹ trong 48 giờ để bạn an tâm mở hộp kiểm tra</p>
+                            </div>
+                        </div>
+                        <span class="escrow-safe-badge"><i class="fa-solid fa-shield-check"></i> Escrow Vault 100%</span>
+                    </div>
+                    <div class="payment-selection-list">
+                        <!-- Lựa chọn 1: Chuyển khoản QR (Khuyên dùng) -->
+                        <div class="payment-method-item selected">
+                            <label class="payment-label">
+                                <input type="radio" name="payment_method" value="vnpay" class="payment-radio" checked>
+                                <div class="payment-header-row">
+            <span class="payment-title">
+                Thanh Toán Bằng VNPAY-QR
+            </span>
+            <span class="badge-recommend">Khuyên dùng</span>
+                 </div>
+                                <span class="payment-subtitle">Quét mã QR bằng ứng dụng VNPAY để thanh toán nhanh chóng và an toàn</span>
+                            </label>
+                            <!-- Box hiển thị thông tin VNPAY-QR -->
+                            <div class="qr-payment-details-box">
+                                <div class="qr-code-wrapper">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=VNPAY-COMICHUB-CHUB99882-5050000" alt="Mã QR thanh toán VNPAY" class="qr-code-img">
+                                    <span class="qr-scan-instruction">
+                <i class="fa-solid fa-qrcode"></i>
+                Mở VNPAY và quét mã QR
+            </span>
+                                </div>
+                                <div class="bank-transfer-info-table">
+
+                                    <div class="info-row">
+                <span class="info-label">
+                    Đơn vị thanh toán:
+                </span>
+
+                                        <strong class="info-value">
+                                            VNPAY
+                                        </strong>
+                                    </div>
+
+                                    <div class="info-row">
+                <span class="info-label">
+                    Đơn vị chấp nhận thanh toán:
+                </span>
+
+                                        <strong class="info-value">
+                                            COMICHUB
+                                        </strong>
+                                    </div>
+
+                                    <div class="info-row">
+                <span class="info-label">
+                    Số tiền:
+                </span>
+
+                                        <strong class="info-value highlight-amount">
+                                            5.050.000₫
+                                        </strong>
+                                    </div>
+
+                                    <div class="info-row">
+                <span class="info-label">
+                    Mã đơn hàng:
+                </span>
+
+                                        <div class="copyable-value">
+
+                                            <strong class="transfer-code">
+                                                CHUB 99882
+                                            </strong>
+
+                                            <button
+                                                    type="button"
+                                                    class="btn-copy"
+                                                    aria-label="Sao chép mã đơn hàng"
+                                            >
+                                                <i class="fa-regular fa-copy"></i>
+                                            </button>
+
+                                        </div>
+                                    </div>
+
+                                    <p class="qr-security-note">
+                                        <i class="fa-solid fa-shield-halved"></i>
+
+                                        Mở ứng dụng VNPAY và quét mã QR để thanh toán.
+                                        Sau khi thanh toán thành công, hệ thống sẽ xác nhận đơn hàng.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Lựa chọn 2: COD Đồng kiểm -->
+                        <div class="payment-method-item">
+                            <label class="payment-label">
+                                <input type="radio" name="payment_method" value="cod" class="payment-radio">
+                                <div class="payment-header-row">
+                                    <span class="payment-title">Thanh Toán Khi Nhận Hàng (COD Có Đồng Kiểm)</span>
+                                </div>
+                                <span class="payment-subtitle">Được mở kiện bọc màng kiếng kiểm tra tình trạng bìa gáy đúng như mô tả trước khi trả tiền</span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. KIỆN HÀNG THANH TOÁN (CHI TIẾT MUA THẲNG & KÈO BARTER) -->
+                <section class="checkout-section-card package-summary-card">
+                    <div class="card-header-bar">
+                        <div class="card-header-title">
+                            <i class="fa-solid fa-boxes-packing"></i>
+                            <h2>Kiện Hàng Thanh Toán (2 Gói)</h2>
+                        </div>
+                        <span class="package-count-tag">Tổng 4 truyện / set</span>
+                    </div>
+
+                    <!-- Gói 1: Giao dịch cùng Collector @minhtri_manga -->
+                    <div class="package-group-card">
+                        <div class="package-shop-header">
+                            <div class="shop-title-wrap">
+                                <i class="fa-solid fa-user-ninja"></i>
+                                <span>Gói 1: Giao dịch cùng Collector <strong>@minhtri_manga</strong></span>
+                                <span class="location-badge">Hà Nội</span>
+                            </div>
+                            <span class="trade-type-pill">Kèo Barter &amp; Trực tiếp</span>
+                        </div>
+                        <ul class="package-items-list">
+                            <!-- Sản phẩm 1.1: Mua thẳng -->
+                            <li class="package-item-row">
+                                <div class="package-thumb">
+                                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=150&q=80" alt="Akira 35th Anniversary Complete Boxset">
+                                </div>
+                                <div class="package-item-details">
+                                    <h3 class="package-item-name">Akira 35th Anniversary Complete Boxset</h3>
+                                    <p class="package-item-meta">Bản Hardcover kỷ niệm • Katsuhiro Otomo • Tình trạng: Near Mint (9.8/10)</p>
+                                    <div class="package-item-tags">
+                                        <span class="tag-limited">Bản giới hạn nguyên seal</span>
+                                        <span class="tag-qty">SL: 01 box</span>
+                                    </div>
+                                </div>
+                                <div class="package-item-price">
+                                    <span class="price-value">2.850.000₫</span>
+                                </div>
+                            </li>
+
+                            <!-- Sản phẩm 1.2: Kèo đổi ngang có bù tiền -->
+                            <li class="package-item-row barter-item-row">
+                                <div class="package-thumb">
+                                    <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=150&q=80" alt="Berserk Deluxe Edition Vol 1">
+                                </div>
+                                <div class="package-item-details">
+                                    <div class="barter-badge-tag">
+                                        <i class="fa-solid fa-arrows-rotate"></i> ĐỔI NGANG CÓ BÙ
+                                    </div>
+                                    <h3 class="package-item-name">Berserk Deluxe Vol 1 (Đã bìa cứng)</h3>
+                                    <p class="package-item-meta">Đổi với tập: Vagabond Vizbig Vol 1 (Bạn gửi) • Tình trạng: Fine 9.2</p>
+                                </div>
+                                <div class="package-item-price">
+                                    <span class="barter-fee-label">Tiền bù giao dịch:</span>
+                                    <span class="barter-fee-value">+150.000₫</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Gói 2: Shop Uy Tín - Otaku BookShop HCM -->
+                    <div class="package-group-card">
+                        <div class="package-shop-header">
+                            <div class="shop-title-wrap">
+                                <i class="fa-solid fa-store"></i>
+                                <span>Gói 2: Shop Uy Tín - <strong>Otaku BookShop HCM</strong></span>
+                                <span class="badge-shop-pro"><i class="fa-solid fa-certificate"></i> Shop Pro</span>
+                            </div>
+                            <span class="location-badge">Giao từ TP. Hồ Chí Minh</span>
+                        </div>
+                        <ul class="package-items-list">
+                            <!-- Sản phẩm 2.1: Slam Dunk -->
+                            <li class="package-item-row">
+                                <div class="package-thumb">
+                                    <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=150&q=80" alt="Slam Dunk Deluxe Edition">
+                                </div>
+                                <div class="package-item-details">
+                                    <h3 class="package-item-name">Slam Dunk Deluxe Edition (Trọn bộ 24 tập)</h3>
+                                    <p class="package-item-meta">NXB Kim Đồng bản bìa gập cao cấp • Like New 9.9/10 kèm Obi</p>
+                                    <div class="package-item-tags">
+                                        <span class="tag-bonus">Full Box kèm Postcard</span>
+                                        <span class="tag-qty">SL: 01 set</span>
+                                    </div>
+                                </div>
+                                <div class="package-item-price">
+                                    <span class="price-value">1.680.000₫</span>
+                                </div>
+                            </li>
+
+                            <!-- Sản phẩm 2.2: Spider-Man hiếm -->
+                            <li class="package-item-row">
+                                <div class="package-thumb">
+                                    <img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?auto=format&fit=crop&w=150&q=80" alt="Spider-Man #1 Silver Polybagged">
+                                </div>
+                                <div class="package-item-details">
+                                    <h3 class="package-item-name">Spider-Man #1 Silver Polybagged (1990)</h3>
+                                    <p class="package-item-meta">Todd McFarlane Cover • Marvel Comics US • Nguyên túi bạc gốc</p>
+                                    <div class="package-item-tags">
+                                        <span class="tag-bagged">Bagged &amp; Boarded</span>
+                                        <span class="tag-qty">SL: 01 cuốn</span>
+                                    </div>
+                                </div>
+                                <div class="package-item-price">
+                                    <span class="price-value">420.000₫</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Cam kết hoàn tiền & đồng kiểm -->
+                    <div class="inspection-policy-banner">
+                        <div class="policy-icon">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div class="policy-text">
+                            <strong>Chính Sách Đồng Kiểm &amp; Hoàn Tiền 100% Trong 48 Giờ</strong>
+                            <p>Tiền của bạn được khóa an toàn tại Escrow Vault. Sau khi nhận kiện hàng, bạn có 48 giờ để quay video mở hộp kiểm tra tình trạng gáy, góc bìa và phụ kiện. Nếu phát hiện tráo hàng fake, rách trang hoặc va đập do vận chuyển, ComicHub thu hồi và hoàn tiền toàn bộ ngay lập tức.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- CỘT PHẢI: STICKY SIDEBAR CHI TIẾT ĐƠN HÀNG, MÃ GIẢM GIÁ & NÚT XÁC NHẬN -->
+            <aside class="checkout-right-column">
+                <div class="order-summary-sticky-card">
+                    <div class="summary-card-header">
+                        <h2 class="summary-card-title">Chi Tiết Đơn Hàng</h2>
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+
+                    <!-- KHU VỰC NHẬP MÃ GIẢM GIÁ (VOUCHER) -->
+                    <div class="voucher-input-section">
+                        <div class="voucher-section-top">
+                            <label for="coupon-code" class="voucher-label">Mã giảm giá / Voucher:</label>
+                            <a href="#voucher-modal" class="voucher-explore-link">Xem kho voucher (5)</a>
+                        </div>
+                        <div class="voucher-input-bar">
+                            <i class="fa-solid fa-ticket voucher-input-icon"></i>
+                            <input type="text" id="coupon-code" name="voucher_code" class="voucher-field" placeholder="Nhập mã voucher...">
+                            <button type="button" class="btn-apply-voucher">Áp dụng</button>
+                        </div>
+
+                        <!-- Danh sách mã đã áp dụng thành công -->
+                        <div class="applied-vouchers-group">
+                            <div class="applied-voucher-pill">
+                                <i class="fa-solid fa-tag"></i>
+                                <span class="pill-name">OTAKU50K (-50k)</span>
+                                <button type="button" class="btn-remove-pill" aria-label="Gỡ mã OTAKU50K">×</button>
+                            </div>
+                            <div class="applied-voucher-pill">
+                                <i class="fa-solid fa-truck-fast"></i>
+                                <span class="pill-name">COMICFREE (-35k)</span>
+                                <button type="button" class="btn-remove-pill" aria-label="Gỡ mã COMICFREE">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG TÍNH TOÁN CHI PHÍ -->
+                    <div class="summary-breakdown-list">
+                        <div class="breakdown-item">
+                            <span class="item-label">Tạm tính tiền sách (4 món):</span>
+                            <span class="item-value">4.950.000₫</span>
+                        </div>
+                        <div class="breakdown-item">
+                  <span class="item-label">
+                    Tiền bù trao đổi 1–1:
+                    <i class="fa-regular fa-circle-question" title="Tiền thỏa thuận bù thêm cho Collector bên kia"></i>
+                  </span>
+                            <span class="item-value">150.000₫</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">Đóng gói chống sốc 3 lớp:</span>
+                            <span class="item-value text-free">Miễn phí</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="item-label">Phí vận chuyển tiêu chuẩn:</span>
+                            <span class="item-value">35.000₫</span>
+                        </div>
+                        <div class="breakdown-item discount-item">
+                            <span class="item-label">Voucher giảm giá sách:</span>
+                            <span class="item-value text-discount">-50.000₫</span>
+                        </div>
+                        <div class="breakdown-item discount-item">
+                            <span class="item-label">Ưu đãi miễn phí vận chuyển:</span>
+                            <span class="item-value text-discount">-35.000₫</span>
+                        </div>
+                        <div class="summary-separator-line"></div>
+
+                        <!-- TỔNG THANH TOÁN -->
+                        <div class="total-payable-row">
+                            <div class="total-text-group">
+                                <span class="total-title">Tổng Thanh Toán:</span>
+                                <span class="total-note">Đã bao gồm VAT &amp; Phí bảo hiểm truyện hiếm 100%</span>
+                            </div>
+                            <div class="total-price-display">
+                                <span class="grand-total-amount">5.050.000₫</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NÚT XÁC NHẬN THANH TOÁN BẢO ĐẢM -->
+                    <div class="checkout-submit-group">
+                        <button type="button" class="btn-submit-checkout" onclick="alert('Đặt hàng & Thanh toán thành công! Đang chuyển tới trang theo dõi đơn hàng GHN...'); window.location.href='page3.html';">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>Xác Nhận Thanh Toán</span>
+                        </button>
+                        <p class="terms-disclaimer">
+                            Nhấn xác nhận đồng nghĩa với việc bạn đồng ý với <a href="page2.html">Quy chế Escrow ký quỹ</a> của ComicHub.
+                        </p>
+                    </div>
+
+                    <!-- BẢO MẬT & HỖ TRỢ CAM KẾT -->
+                    <div class="checkout-trust-badges">
+                        <div class="trust-badge-item">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>256-Bit SSL<br><small>Mã hóa tuyệt đối</small></span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Hoàn Tiền 100%<br><small>Nếu gãy gáy / fake</small></span>
+                        </div>
+                        <div class="trust-badge-item">
+                            <i class="fa-solid fa-headset"></i>
+                            <span>Hỗ Trợ 24/7<br><small>Hotline 1900 8828</small></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASIDE CARD: KÊNH LIÊN HỆ ĐỒNG KIỂM -->
+                <a href="../../exchange/html/dealing-chat.html" class="escrow-contact-card" style="text-decoration:none; color:inherit; display:flex; gap:12px; align-items:center;">
+                    <i class="fa-regular fa-comments"></i>
+                    <div>
+                        <strong>Cần kiểm định lại sách trước thanh toán?</strong>
+                        <p>Nhắn tin trực tiếp với người bán qua kênh chat bảo đảm của sàn &rarr;</p>
+                    </div>
+                </a>
+            </aside>
+        </form>
+
+        <!-- CAM KẾT SÀN GIAO DỊCH DƯỚI CÙNG -->
+        <section class="trust-features-row">
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="feature-content">
+                    <h3>Giao Dịch Bảo Đảm 100%</h3>
+                    <p>Giữ tiền trung gian bảo vệ cả người mua &amp; đổi truyện</p>
+                </div>
+            </div>
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-certificate"></i></div>
+                <div class="feature-content">
+                    <h3>Kiểm Định Tình Trạng</h3>
+                    <p>Chuẩn phân loại Near Mint, Fine, Good minh bạch</p>
+                </div>
+            </div>
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="feature-content">
+                    <h3>Cộng Đồng 100K+ Collector</h3>
+                    <p>Hệ sinh thái trao đổi đam mê Manga &amp; Comic lớn nhất</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- ================= SITE FOOTER (DÙNG CHUNG) ================= -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="../js/payment.js"></script>
+</body>
+</html>

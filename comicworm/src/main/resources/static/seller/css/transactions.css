@@ -1,0 +1,39 @@
+/* ==========================================================================
+   TRANSACTIONS PAGE STYLES (Chuyên biệt cho transactions.html)
+   ========================================================================== */
+
+.txn-positive {
+  color: var(--success);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.txn-negative {
+  color: var(--danger);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.txn-neutral {
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.txn-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.txn-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

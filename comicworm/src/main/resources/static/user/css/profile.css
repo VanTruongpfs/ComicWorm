@@ -1,0 +1,24 @@
+/* Profile-only styles; colors and layout foundations come from shared tokens. */
+.profile-card { min-width: 0; }
+.profile-identity { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+.profile-avatar { display: grid; width: 76px; height: 76px; flex: 0 0 76px; place-items: center; overflow: hidden; border-radius: 50%; color: #fff; background: var(--primary); font-size: 1.4rem; font-weight: 900; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-identity strong { color: var(--text-main); font-size: 1.1rem; }
+.profile-identity p { margin: 5px 0 10px; color: var(--text-muted); font-size: .86rem; }
+.avatar-button { min-height: 34px; padding: 7px 10px; font-size: .78rem; }
+.role-card { text-align: center; }
+.role-symbol { display: grid; width: 64px; height: 64px; margin: 2px auto 14px; place-items: center; border-radius: 50%; color: var(--secondary-default); background: var(--tertiary-default); font-size: 1.6rem; font-weight: 900; }
+.role-card h3 { margin: 0; color: var(--text-main); }
+.role-card .button { margin-top: 18px; text-decoration: none; }
+.role-hint { margin: 20px 0 0; color: var(--text-muted); font-size: .74rem; }
+.security-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 20px; }
+.security-card h2 { margin: 0; color: var(--text-main); }
+.security-card .page-subtitle { margin-bottom: 0; }
+.field-note { color: var(--text-muted); font-size: .78rem; }
+.wishlist-profile-card { margin-top: 20px; }
+.wishlist-profile-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.wishlist-profile-heading h2 { margin: 0; color: var(--text-main); }
+.wishlist-profile-heading .eyebrow { margin-bottom: 6px; }
+.wishlist-count { flex: 0 0 auto; padding: 6px 10px; border-radius: 999px; color: var(--tertiary-dark); background: var(--tertiary-light); font-size: .78rem; font-weight: 800; }
+.wishlist-profile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+@media (max-width: 600px) { .wishlist-profile-heading { flex-direction: column; } .wishlist-profile-actions .button { width: 100%; } .security-card { align-items: stretch; flex-direction: column; } }

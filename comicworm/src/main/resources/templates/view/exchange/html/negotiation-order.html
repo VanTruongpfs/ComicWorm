@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tạo đơn hàng đàm phán</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../../shared/header/header.css">
+    <link rel="stylesheet" href="../../shared/footer/footer.css">
+    <link rel="stylesheet" href="../css/negotiation-order.css">
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container header-container">
+        <!-- Logo Thương hiệu -->
+        <a href="../../buyer/html/home.html" class="brand-logo">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="brand-logo-text">
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+            </div>
+        </a>
+
+        <!-- Thanh tìm kiếm nhanh -->
+        <div class="header-search-bar">
+            <span class="search-category-tag">Tất cả truyện</span>
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Menu chính -->
+        <nav class="main-navigation">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../../buyer/html/home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+                </li>
+                <li class="nav-item">
+                    <a href="dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hành động người dùng -->
+        <div class="header-actions">
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <a href="../../buyer/html/shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="cart-count-badge">3</span>
+            </a>
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Đăng bán/Đổi truyện</span>
+            </a>
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="page">
+    <div class="breadcrumb">
+        <a href="../../buyer/html/home.html" style="color:inherit; text-decoration:none;">Trang chủ</a>
+        <span>/</span>
+        <a href="dealing-room.html" style="color:inherit; text-decoration:none;">Phòng trao đổi giá</a>
+        <span>/</span>
+        <a href="dealing-chat.html" style="color:inherit; text-decoration:none;">Phòng #PT2049</a>
+        <span>/</span>
+        <strong>Tạo đơn hàng</strong>
+    </div>
+
+    <div class="page-heading">
+
+        <div>
+            <h1>Tạo đơn hàng đàm phán</h1>
+
+            <p>
+                Kiểm tra thông tin Deal trước khi chuyển sang bước tính phí vận chuyển.
+            </p>
+        </div>
+
+        <div class="deal-status">
+            <span class="status-dot"></span>
+            Deal đã chốt
+        </div>
+
+    </div>
+
+    <div class="order-layout">
+        <section class="left-column">
+            <div class="card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Sản phẩm</h2>
+                        <p>Thông tin sản phẩm trong Deal</p>
+                    </div>
+
+                    <span class="deal-code">
+                        #NG-2298
+                    </span>
+                </div>
+
+
+                <div class="product">
+
+                    <div class="product-image">
+                        <img
+                                src="https://placehold.co/120x160/1e293b/FFF7E6?text=OP"
+                                alt="One Piece"
+                        >
+                    </div>
+
+                    <div class="product-info">
+
+                        <h3>
+                            One Piece — Trọn bộ tập 1–10
+                        </h3>
+
+                        <p class="product-condition">
+                            Tình trạng: Đã đọc, còn khoảng 90% · Bìa mềm
+                        </p>
+
+                        <div class="seller">
+                            <div class="seller-avatar">
+                                BN
+                            </div>
+
+                            <div>
+                                <strong>Bủ Nguyên</strong>
+
+                                <span>
+                                    Người bán
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DEAL -->
+
+            <div class="card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Thông tin Deal</h2>
+                        <p>Mức giá hai bên đã thống nhất</p>
+                    </div>
+
+                    <span class="accepted-badge">
+                        ✓ Đã chốt
+                    </span>
+                </div>
+
+
+                <div class="deal-box">
+
+                    <div class="deal-row">
+                        <span>Giá niêm yết</span>
+
+                        <strong class="old-price">
+                            320.000₫
+                        </strong>
+                    </div>
+
+
+                    <div class="deal-row">
+                        <span>Giá Deal</span>
+
+                        <strong class="deal-price">
+                            275.000₫
+                        </strong>
+                    </div>
+
+
+                    <div class="deal-row">
+                        <span>Tiết kiệm</span>
+
+                        <strong class="saving">
+                            45.000₫
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="deal-note">
+
+                    <span class="note-icon">✓</span>
+
+                    <p>
+                        Mức giá này đã được hai bên xác nhận trong
+                        phòng trao đổi giá #PT2049.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ADDRESS -->
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Địa chỉ nhận hàng</h2>
+
+                        <p>
+                            Chọn địa chỉ bạn muốn nhận đơn hàng.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="addr-options">
+
+                    <!-- ĐỊA CHỈ 1 -->
+
+                    <label class="addr-option selected">
+
+                        <input
+                                type="radio"
+                                name="address"
+                                value="address-1"
+                                checked
+                        >
+
+                        <span class="addr-radio"></span>
+
+                        <div class="addr-content">
+
+                            <div class="addr-name-row">
+
+                    <span class="addr-name">
+                        Huy Dương
+                    </span>
+
+                                <span class="addr-phone">
+                        0909 123 456
+                    </span>
+
+                                <span class="default-badge">
+                        Mặc định
+                    </span>
+
+                            </div>
+
+                            <p class="addr-text">
+                                123 Đường Nguyễn Văn Cừ, P.4,
+                                Q.5, TP. Hồ Chí Minh
+                            </p>
+
+                        </div>
+
+                    </label>
+
+
+                    <!-- ĐỊA CHỈ 2 -->
+
+                    <label class="addr-option">
+
+                        <input
+                                type="radio"
+                                name="address"
+                                value="address-2"
+                        >
+
+                        <span class="addr-radio"></span>
+
+                        <div class="addr-content">
+
+                            <div class="addr-name-row">
+
+                    <span class="addr-name">
+                        Huy Dương
+                    </span>
+
+                                <span class="addr-label">
+                        Công ty
+                    </span>
+
+                                <span class="addr-phone">
+                        0909 123 456
+                    </span>
+
+                            </div>
+
+                            <p class="addr-text">
+                                Tòa nhà ABC, Đường Nguyễn Huệ,
+                                P. Bến Nghé, Q.1, TP. Hồ Chí Minh
+                            </p>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+                <div class="address-footer">
+
+                    <button
+                            type="button"
+                            class="add-address-btn"
+                            onclick="addNewAddress()"
+                    >
+                        + Thêm địa chỉ mới
+                    </button>
+
+                    <span class="address-count">
+                        2 địa chỉ
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!--
+                TRƯỜNG HỢP CHƯA CÓ ĐỊA CHỈ:
+
+                Có thể đổi phần trên thành block này.
+
+                <div class="empty-address">
+                    <div class="empty-icon">⌖</div>
+                    <strong>Chưa có địa chỉ nhận hàng</strong>
+                    <p>
+                        Bạn cần thêm địa chỉ trước khi tiếp tục.
+                    </p>
+                    <button class="btn btn-outline">
+                        + Thêm địa chỉ
+                    </button>
+                </div>
+            -->
+
+
+            <!-- NOTE -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Ghi chú cho người bán</h2>
+
+                        <p>
+                            Không bắt buộc
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <textarea
+                        id="orderNote"
+                        class="note-input"
+                        rows="4"
+                        placeholder="Ví dụ: Nhờ shop đóng gói kỹ giúp mình..."
+                ></textarea>
+
+            </div>
+
+        </section>
+
+        <aside class="right-column">
+
+            <!-- ORDER SUMMARY -->
+
+            <div class="card summary-card">
+
+                <h2>Thông tin đơn hàng</h2>
+
+                <div class="summary-product">
+
+                    <div class="mini-image">
+                        <img
+                                src="https://placehold.co/80x100/1e293b/FFF7E6?text=OP"
+                                alt="One Piece"
+                        >
+                    </div>
+
+                    <div>
+                        <strong>
+                            One Piece — Trọn bộ tập 1–10
+                        </strong>
+
+                        <span>
+                            Số lượng: 1
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="summary-line">
+                    <span>Giá niêm yết</span>
+                    <span class="strike">320.000₫</span>
+                </div>
+
+                <div class="summary-line">
+                    <span>Giá Deal</span>
+                    <strong>275.000₫</strong>
+                </div>
+
+                <div class="summary-line">
+                    <span>Phí vận chuyển</span>
+                    <span class="waiting">
+                        Chưa tính
+                    </span>
+                </div>
+
+
+                <div class="summary-divider"></div>
+
+
+                <div class="total-row">
+
+                    <span>
+                        Tạm tính
+                    </span>
+
+                    <strong>
+                        275.000₫
+                    </strong>
+
+                </div>
+
+
+                <p class="summary-note">
+                    Phí vận chuyển sẽ được tính ở bước tiếp theo
+                    dựa trên địa chỉ nhận hàng và hình thức vận chuyển.
+                </p>
+
+            </div>
+
+            <div class="card flow-card">
+
+                <h2>Tiến trình</h2>
+
+                <div class="step active">
+
+                    <div class="step-number">
+                        ✓
+                    </div>
+
+                    <div>
+                        <strong>
+                            Deal đã chốt
+                        </strong>
+
+                        <span>
+                            Hai bên đã thống nhất giá
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="step-line"></div>
+
+
+                <div class="step current">
+
+                    <div class="step-number">
+                        2
+                    </div>
+
+                    <div>
+                        <strong>
+                            Tạo đơn hàng
+                        </strong>
+
+                        <span>
+                            Kiểm tra thông tin đơn
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="step-line"></div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        3
+                    </div>
+
+                    <div>
+                        <strong>
+                            Tính phí vận chuyển
+                        </strong>
+
+                        <span>
+                            Chọn hình thức giao hàng
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="step-line"></div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        4
+                    </div>
+
+                    <div>
+                        <strong>
+                            Thanh toán
+                        </strong>
+
+                        <span>
+                            Hoàn tất đơn hàng
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTION -->
+
+            <div class="card action-card">
+
+                <div class="secure-note">
+
+                    <span>🔒</span>
+
+                    <p>
+                        Thông tin đơn hàng được bảo mật.
+                    </p>
+
+                </div>
+
+
+                <button
+                        type="button"
+                        class="btn btn-primary btn-block"
+                        onclick="continueToShipping()"
+                >
+                    Tiếp tục tính phí vận chuyển
+                    <span>→</span>
+                </button>
+
+
+                <button
+                        type="button"
+                        class="btn btn-outline btn-block"
+                        onclick="backToRoom()"
+                >
+                    ← Quay lại phòng trao đổi
+                </button>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+
+<script src="../js/negotiation-order.js"></script>
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../../shared/footer/footer.js"></script>
+
+</body>
+</html>
+

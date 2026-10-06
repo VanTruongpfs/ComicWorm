@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Mục Truyện &amp; Bộ Sưu Tập | ComicHub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+
+    <style>
+        .category-page-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 30px 20px 80px;
+        }
+
+        .category-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .category-breadcrumb a {
+            color: #475569;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .category-breadcrumb a:hover {
+            color: #f97316;
+        }
+
+        .category-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 20px;
+            padding: 32px 36px;
+            color: #ffffff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+        }
+        .category-hero::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            bottom: -60px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .category-hero-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .category-hero-desc {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            max-width: 620px;
+            line-height: 1.5;
+        }
+        .category-match-badge {
+            background: rgba(249, 115, 22, 0.2);
+            border: 1px solid rgba(249, 115, 22, 0.5);
+            color: #fb923c;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .catalog-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .catalog-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Filter Sidebar */
+        .filter-sidebar {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 90px;
+        }
+        .filter-group {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 18px;
+            margin-bottom: 18px;
+        }
+        .filter-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .filter-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .filter-item-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #475569;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .filter-item-label:hover {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+        .filter-item-label input {
+            accent-color: #f97316;
+            margin-right: 8px;
+        }
+        .filter-count {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        /* Top Action / Sort Bar */
+        .catalog-main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .catalog-top-bar {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .sort-options {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .sort-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            color: #475569;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .sort-pill:hover, .sort-pill.active {
+            background: #ea580c;
+            color: #ffffff;
+            border-color: #ea580c;
+        }
+
+        /* Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+        }
+        .comic-catalog-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .comic-catalog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 30px -10px rgba(0,0,0,0.12);
+            border-color: #fdba74;
+        }
+        .card-cover-wrap {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+        .card-cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .comic-catalog-card:hover .card-cover-img {
+            transform: scale(1.06);
+        }
+        .card-condition-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
+            backdrop-filter: blur(4px);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .card-trade-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .card-body {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .card-genre {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #ea580c;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 4px;
+        }
+        .card-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        .card-title:hover {
+            color: #ea580c;
+        }
+        .card-meta {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .card-price-row {
+            margin-top: auto;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .card-price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ea580c;
+        }
+        .card-old-price {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+        .btn-view-detail {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px solid #ffedd5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .btn-view-detail:hover {
+            background: #ea580c;
+            color: #ffffff;
+            border-color: #ea580c;
+        }
+        .btn-add-cart-icon {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-add-cart-icon:hover {
+            background: #0f172a;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER / NAVBAR -->
+<header class="site-header">
+    <div class="container header-container">
+        <!-- Logo -->
+        <a href="home.html" class="brand-logo">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="brand-logo-text">
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+            </div>
+        </a>
+
+        <!-- Thanh tìm kiếm nhanh -->
+        <div class="header-search-bar">
+            <span class="search-category-tag">Tất cả truyện</span>
+            <input type="text" class="search-input" id="catalogSearchInput" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+            <button type="button" class="search-btn" id="catalogSearchBtn" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Menu chính -->
+        <nav class="main-navigation">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="category.html" class="nav-link active"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+                <li class="nav-item">
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hành động người dùng -->
+        <div class="header-actions">
+            <button type="button" class="btn-notification" aria-label="Thông báo" onclick="showToast('Bạn có 2 lời mời trao đổi mới!', 'info')">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="cart-count-badge">3</span>
+            </a>
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Đăng bán/Đổi truyện</span>
+            </a>
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="category-page-container">
+    
+    <!-- Breadcrumb -->
+    <div class="category-breadcrumb">
+        <a href="home.html"><i class="fa-solid fa-house"></i> Trang chủ</a>
+        <span>/</span>
+        <a href="category.html">Chợ truyện</a>
+        <span>/</span>
+        <span id="breadcrumbCurrent" style="color: #0f172a; font-weight: 700;">Tất cả thể loại</span>
+    </div>
+
+    <!-- Category Hero Header -->
+    <div class="category-hero">
+        <div>
+            <h1 class="category-hero-title" id="catalogHeroTitle">
+                <i class="fa-solid fa-layer-group" style="color: #f97316;"></i>
+                <span id="heroTitleText">Chợ Truyện Tranh ComicHub</span>
+            </h1>
+            <p class="category-hero-desc" id="heroDescText">
+                Khám phá hơn 1.200+ bộ manga, comic Marvel &amp; DC, graphic novel hiếm. Toàn bộ giao dịch đều được bảo chứng 100% qua ComicHub Escrow Vault.
+            </p>
+        </div>
+        <div class="category-match-badge" id="catalogMatchBadge">
+            <i class="fa-solid fa-check-circle"></i>
+            <span>Tìm thấy 12 bộ truyện</span>
+        </div>
+    </div>
+
+    <!-- Catalog 2-Column Layout -->
+    <div class="catalog-layout">
+        
+        <!-- SIDEBAR FILTERS -->
+        <aside class="filter-sidebar">
+            <!-- Filter: Thể loại -->
+            <div class="filter-group">
+                <div class="filter-title">
+                    <span>Thể loại truyện</span>
+                    <i class="fa-solid fa-filter" style="font-size: 13px; color: #94a3b8;"></i>
+                </div>
+                <ul class="filter-list" id="genreFilterList">
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="all" checked onchange="filterCatalog()"> Tất cả thể loại</span>
+                            <span class="filter-count">1.240</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="Comic Marvel & DC" onchange="filterCatalog()"> Comic Marvel &amp; DC</span>
+                            <span class="filter-count">340</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="Manga Shonen" onchange="filterCatalog()"> Manga Shonen</span>
+                            <span class="filter-count">580</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="Truyện Dài Doraemon" onchange="filterCatalog()"> Truyện Dài Doraemon</span>
+                            <span class="filter-count">120</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="Trinh Thám / Mystery" onchange="filterCatalog()"> Trinh Thám / Mystery</span>
+                            <span class="filter-count">95</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="Light Novel" onchange="filterCatalog()"> Light Novel &amp; Sách Art</span>
+                            <span class="filter-count">105</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Filter: Tình trạng sách -->
+            <div class="filter-group">
+                <div class="filter-title">
+                    <span>Tình trạng sách</span>
+                </div>
+                <ul class="filter-list">
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="new" onchange="filterCatalog()"> Mới 100% Nguyên Seal</span>
+                            <span class="filter-count">640</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="likenew" onchange="filterCatalog()"> Like New 99% (Sưu tầm)</span>
+                            <span class="filter-count">480</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="checkbox" value="good" onchange="filterCatalog()"> Đã đọc (90% - 95%)</span>
+                            <span class="filter-count">120</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Filter: Khoảng giá -->
+            <div class="filter-group">
+                <div class="filter-title">
+                    <span>Khoảng giá bán</span>
+                </div>
+                <ul class="filter-list">
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="radio" name="priceRange" value="all" checked onchange="filterCatalog()"> Tất cả mức giá</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="radio" name="priceRange" value="under100" onchange="filterCatalog()"> Dưới 100.000 ₫</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="radio" name="priceRange" value="100to300" onchange="filterCatalog()"> 100.000 ₫ - 300.000 ₫</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="filter-item-label">
+                            <span><input type="radio" name="priceRange" value="above300" onchange="filterCatalog()"> Trên 300.000 ₫</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Nút Reset -->
+            <button class="btn btn-outline" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="resetCatalogFilters()">
+                <i class="fa-solid fa-arrows-rotate"></i> Đặt lại bộ lọc
+            </button>
+        </aside>
+
+        <!-- MAIN CATALOG LIST -->
+        <main class="catalog-main">
+            <!-- Top Controls -->
+            <div class="catalog-top-bar">
+                <div class="sort-options">
+                    <span><i class="fa-solid fa-arrow-down-wide-short"></i> Sắp xếp:</span>
+                    <button class="sort-pill active" onclick="setSort(this, 'popular')">Phổ biến</button>
+                    <button class="sort-pill" onclick="setSort(this, 'price_asc')">Giá thấp ➔ cao</button>
+                    <button class="sort-pill" onclick="setSort(this, 'price_desc')">Giá cao ➔ thấp</button>
+                    <button class="sort-pill" onclick="setSort(this, 'newest')">Mới nhất</button>
+                </div>
+                <div style="font-size: 0.82rem; color: #64748b;">
+                    Đảm bảo <strong style="color: #16a34a;"><i class="fa-solid fa-shield-halved"></i> Đồng kiểm 48h</strong>
+                </div>
+            </div>
+
+            <!-- Book Cards Grid -->
+            <div class="books-grid" id="catalogBooksGrid">
+                
+                <!-- CARD 1 -->
+                <div class="comic-catalog-card" data-genre="Comic Marvel & DC" data-price="450000" data-condition="new">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1618365908648-e71bd5716cba?w=500&q=80" alt="Batman The Killing Joke" class="card-cover-img">
+                        <span class="card-condition-tag">Mới 100% Seal</span>
+                        <span class="card-trade-badge"><i class="fa-solid fa-right-left"></i> Nhận Đổi</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Comic Marvel &amp; DC</span>
+                        <a href="product_details.html" class="card-title">Batman: The Killing Joke (Bản Bìa Cứng Deluxe Edition)</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Alan Moore • Brian Bolland
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">450.000 ₫</span>
+                            <span class="card-old-price">550.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Batman vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2 -->
+                <div class="comic-catalog-card" data-genre="Comic Marvel & DC" data-price="380000" data-condition="likenew">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&q=80" alt="Spider-Man Into The Spider-Verse" class="card-cover-img">
+                        <span class="card-condition-tag">Like New 99%</span>
+                        <span class="card-trade-badge"><i class="fa-solid fa-right-left"></i> Nhận Đổi</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Comic Marvel &amp; DC</span>
+                        <a href="product_details.html" class="card-title">Spider-Man: Into The Spider-Verse Artbook Limited</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Marvel Comics • Sony Art
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">380.000 ₫</span>
+                            <span class="card-old-price">480.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Spider-Man vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="comic-catalog-card" data-genre="Manga Shonen" data-price="850000" data-condition="new">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80" alt="One Piece Wano" class="card-cover-img">
+                        <span class="card-condition-tag">Boxset Nguyên Seal</span>
+                        <span class="card-trade-badge"><i class="fa-solid fa-right-left"></i> Nhận Đổi</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Manga Shonen</span>
+                        <a href="product_details.html" class="card-title">One Piece – Boxset Wano Quốc (Tập 91 – 105)</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Eiichiro Oda • NXB Kim Đồng
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">850.000 ₫</span>
+                            <span class="card-old-price">1.050.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Boxset One Piece vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4 -->
+                <div class="comic-catalog-card" data-genre="Manga Shonen" data-price="120000" data-condition="new">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&q=80" alt="Dragon Ball Super" class="card-cover-img">
+                        <span class="card-condition-tag">Bản Màu Giới Hạn</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Manga Shonen</span>
+                        <a href="product_details.html" class="card-title">Dragon Ball Super – Full Color Tập 12 Kèm Poster</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Akira Toriyama • Toyotarou
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">120.000 ₫</span>
+                            <span class="card-old-price">150.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Dragon Ball vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 5 -->
+                <div class="comic-catalog-card" data-genre="Truyện Dài Doraemon" data-price="290000" data-condition="likenew">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=500&q=80" alt="Doraemon" class="card-cover-img">
+                        <span class="card-condition-tag">Trọn Bộ 24 Tập Màu</span>
+                        <span class="card-trade-badge"><i class="fa-solid fa-right-left"></i> Nhận Đổi</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Truyện Dài Doraemon</span>
+                        <a href="product_details.html" class="card-title">Doraemon Truyện Dài – Tuyển Tập 24 Cuộc Phiêu Lưu Kỷ Niệm</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Fujiko F. Fujio
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">290.000 ₫</span>
+                            <span class="card-old-price">360.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Doraemon vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 6 -->
+                <div class="comic-catalog-card" data-genre="Trinh Thám / Mystery" data-price="320000" data-condition="likenew">
+                    <div class="card-cover-wrap">
+                        <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80" alt="Conan Mau" class="card-cover-img">
+                        <span class="card-condition-tag">Like New 99%</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-genre">Trinh Thám / Mystery</span>
+                        <a href="product_details.html" class="card-title">Thám Tử Lừng Danh Conan – Bộ Tuyển Chọn Màu Đặc Biệt</a>
+                        <div class="card-meta">
+                            <i class="fa-solid fa-user-pen"></i> Gosho Aoyama
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">320.000 ₫</span>
+                            <span class="card-old-price">400.000 ₫</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="product_details.html" class="btn-view-detail">Xem chi tiết</a>
+                            <button class="btn-add-cart-icon" title="Thêm vào giỏ hàng" onclick="showToast('Đã thêm Conan vào giỏ hàng!', 'success')">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    // Xử lý params từ URL: ?genre=... & ?q=... & ?seller=...
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const genreParam = urlParams.get('genre');
+        const queryParam = urlParams.get('q');
+        const sellerParam = urlParams.get('seller');
+
+        const heroTitle = document.getElementById('heroTitleText');
+        const heroDesc = document.getElementById('heroDescText');
+        const breadcrumb = document.getElementById('breadcrumbCurrent');
+        const searchInput = document.getElementById('catalogSearchInput');
+
+        if (genreParam) {
+            heroTitle.textContent = `Thể loại: ${genreParam}`;
+            heroDesc.textContent = `Tuyển tập các tác phẩm ${genreParam} đặc sắc nhất được cộng đồng sưu tầm và trao đổi tích cực.`;
+            breadcrumb.textContent = genreParam;
+
+            // Highlight checkbox
+            const checkboxes = document.querySelectorAll('#genreFilterList input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.value.toLowerCase() === genreParam.toLowerCase()) {
+                    cb.checked = true;
+                    // Uncheck 'all'
+                    const allCb = document.querySelector('#genreFilterList input[value="all"]');
+                    if (allCb) allCb.checked = false;
+                } else if (cb.value !== 'all') {
+                    cb.checked = false;
+                }
+            });
+            filterCatalog();
+        } else if (queryParam) {
+            heroTitle.textContent = `Tìm kiếm: "${queryParam}"`;
+            heroDesc.textContent = `Hiển thị danh sách kết quả phù hợp nhất với từ khóa tìm kiếm của bạn.`;
+            breadcrumb.textContent = `Tìm kiếm "${queryParam}"`;
+            if (searchInput) searchInput.value = queryParam;
+            filterCatalog(queryParam);
+        } else if (sellerParam) {
+            heroTitle.textContent = `Tủ sách của: ${sellerParam} Collector`;
+            heroDesc.textContent = `Bộ sưu tập cá nhân uy tín, hỗ trợ bảo chứng thanh toán qua ComicHub Escrow Vault.`;
+            breadcrumb.textContent = `Gian hàng ${sellerParam}`;
+        }
+
+        // Search bar listener
+        const searchBtn = document.getElementById('catalogSearchBtn');
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', () => {
+                const q = searchInput.value.trim();
+                if (q) filterCatalog(q);
+            });
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const q = searchInput.value.trim();
+                    if (q) filterCatalog(q);
+                }
+            });
+        }
+    });
+
+    function filterCatalog(searchKw = '') {
+        const cards = document.querySelectorAll('.comic-catalog-card');
+        const selectedGenres = Array.from(document.querySelectorAll('#genreFilterList input[type="checkbox"]:checked'))
+            .map(cb => cb.value.toLowerCase());
+        const selectedPrice = document.querySelector('input[name="priceRange"]:checked')?.value || 'all';
+
+        let matchCount = 0;
+
+        cards.forEach(card => {
+            const cardGenre = (card.getAttribute('data-genre') || '').toLowerCase();
+            const cardPrice = parseInt(card.getAttribute('data-price') || '0', 10);
+            const cardTitle = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+
+            // Genre check
+            let genreOk = selectedGenres.includes('all') || selectedGenres.some(g => cardGenre.includes(g) || g.includes(cardGenre));
+            
+            // Price check
+            let priceOk = true;
+            if (selectedPrice === 'under100') priceOk = cardPrice < 100000;
+            else if (selectedPrice === '100to300') priceOk = cardPrice >= 100000 && cardPrice <= 300000;
+            else if (selectedPrice === 'above300') priceOk = cardPrice > 300000;
+
+            // Search kw
+            let kwOk = true;
+            if (searchKw) {
+                kwOk = cardTitle.includes(searchKw.toLowerCase()) || cardGenre.includes(searchKw.toLowerCase());
+            }
+
+            if (genreOk && priceOk && kwOk) {
+                card.style.display = 'flex';
+                matchCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const badge = document.getElementById('catalogMatchBadge');
+        if (badge) {
+            badge.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>Tìm thấy ${matchCount} bộ truyện</span>`;
+        }
+    }
+
+    function resetCatalogFilters() {
+        document.querySelectorAll('#genreFilterList input[type="checkbox"]').forEach(cb => {
+            cb.checked = (cb.value === 'all');
+        });
+        const allRadio = document.querySelector('input[name="priceRange"][value="all"]');
+        if (allRadio) allRadio.checked = true;
+        const searchInput = document.getElementById('catalogSearchInput');
+        if (searchInput) searchInput.value = '';
+        
+        filterCatalog();
+        showToast('Đã đặt lại toàn bộ bộ lọc!', 'info');
+    }
+
+    function setSort(btn, sortType) {
+        document.querySelectorAll('.sort-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        showToast(`Đã sắp xếp danh sách theo tiêu chí vừa chọn!`, 'primary', 'fa-arrow-down-wide-short');
+    }
+
+    function showToast(message, type = 'info', icon = 'fa-info-circle') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = 'background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 12px; margin-top: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-size: 0.85rem; z-index: 99999; animation: slideInUp 0.3s ease;';
+        toast.innerHTML = `<i class="fa-solid ${icon}" style="color: #f97316;"></i> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+</body>
+</html>

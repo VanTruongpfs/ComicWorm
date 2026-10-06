@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài khoản | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/accounts.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="sidebarContainer" data-active="accounts"></div>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+                <div class="store-selector">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span>Trung tâm Quản trị</span>
+                </div>
+                <div class="global-search">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="accountSearch" placeholder="Tìm tên, email, SĐT tài khoản...">
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="nav-icon-btn" title="Thông báo mới" onclick="showToast('Bạn có 3 báo cáo tài khoản mới')">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="notification-badge-dot"></span>
+                </button>
+                <div class="user-profile-menu">
+                    <div class="user-details">
+                        <div class="user-name" data-admin-name>Nguyễn Minh Admin</div>
+                        <div class="user-role" data-admin-role>Super Admin</div>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Tổng số tài khoản</span>
+                        <span class="kpi-value">128.940</span>
+                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +412 hôm nay</span>
+                    </div>
+                    <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">groups</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Người bán đang hoạt động</span>
+                        <span class="kpi-value" style="color:#2563eb;">4.208</span>
+                        <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">storefront</span> 96 chờ duyệt gian hàng</span>
+                    </div>
+                    <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">storefront</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Tài khoản bị báo cáo</span>
+                        <span class="kpi-value" style="color:#dc2626;">17</span>
+                        <span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">flag</span> 3 cần xử lý gấp</span>
+                    </div>
+                    <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">report</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Đang bị khoá</span>
+                        <span class="kpi-value">86</span>
+                        <span class="kpi-trend neutral">Vi phạm chính sách sàn</span>
+                    </div>
+                    <div class="kpi-icon-wrapper danger" style="background: var(--danger-bg); color: var(--danger);"><span class="material-symbols-outlined" style="font-size:26px;">block</span></div>
+                </div>
+            </section>
+
+            <div class="page-header">
+                <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">manage_accounts</span> Quản trị hệ thống • Tài khoản</div>
+                <div class="page-title-row">
+                    <div>
+                        <h2 class="page-title">Quản lý tài khoản</h2>
+                        <p class="page-subtitle">Theo dõi, xác minh và xử lý vi phạm cho toàn bộ tài khoản người mua &amp; người bán trên nền tảng</p>
+                    </div>
+                    <div class="header-action-group">
+                        <button class="btn btn-outline" onclick="showToast('Đang xuất danh sách tài khoản (CSV)')">
+                            <span class="material-symbols-outlined">download</span> Xuất danh sách
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal('createStaffAccModal')">
+                            <span class="material-symbols-outlined">person_add</span> Thêm tài khoản
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="seg-control" id="accountsSegControl">
+                <button class="seg-btn active" data-view="list">Danh sách tài khoản</button>
+                <button class="seg-btn" data-view="sellerApps">Quản lý đăng ký người bán <span class="nav-badge" id="sellerAppPendingCount" style="margin-left:6px;">0</span></button>
+            </div>
+
+            <div id="accountsListView">
+                <div class="filter-tabs-bar" id="accFilterTabs">
+                    <button class="tab-chip active" data-filter="all">Tất cả <span class="tab-count">10</span></button>
+                    <button class="tab-chip" data-filter="buyer">Người mua <span class="tab-count">4</span></button>
+                    <button class="tab-chip" data-filter="seller">Người bán <span class="tab-count">4</span></button>
+                    <button class="tab-chip" data-filter="reported">Bị báo cáo <span class="tab-count">2</span></button>
+                    <button class="tab-chip" data-filter="banned">Đang khoá <span class="tab-count">1</span></button>
+                </div>
+
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <div class="content-card-title"><span class="material-symbols-outlined">list_alt</span> Danh sách tài khoản</div>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.82rem; color: var(--text-muted); font-weight:600;">
+                            <input type="checkbox" class="custom-checkbox" id="selectAllAcc"> Chọn tất cả
+                        </label>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="accountsTable">
+                            <thead>
+                            <tr>
+                                <th style="width:36px;"></th>
+                                <th>Người dùng</th>
+                                <th>Vai trò</th>
+                                <th>Liên hệ</th>
+                                <th>Ngày tham gia</th>
+                                <th>Tổng giao dịch</th>
+                                <th style="text-align:center;">Trạng thái</th>
+                                <th style="text-align:center;">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody id="accountsTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">Hiển thị <strong>1 - 10</strong> của <strong>128.940</strong> tài khoản</div>
+                        <div class="pagination-controls">
+                            <button class="page-btn" disabled><span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <span style="padding:0 4px; color:var(--text-muted);">...</span>
+                            <button class="page-btn">2894</button>
+                            <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="policy-banner">
+                    <div class="policy-banner-content">
+                        <div class="policy-icon-circle"><span class="material-symbols-outlined">gavel</span></div>
+                        <div class="policy-text">
+                            <h4>Quy trình xử lý vi phạm tài khoản</h4>
+                            <p>Tài khoản bị báo cáo ≥ 3 lần trong 30 ngày sẽ tự động được đưa vào hàng chờ xác minh thủ công trước khi có thể bị khoá.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="openModal('violationPolicyModal')">Xem quy trình đầy đủ</button>
+                </div>
+            </div>
+
+            <div id="sellerAppView" style="display:none;">
+                <div class="filter-tabs-bar" id="sellerAppFilterTabs">
+                    <button class="tab-chip active" data-filter="pending">Chờ duyệt <span class="tab-count" id="sellerAppPendingTabCount">0</span></button>
+                    <button class="tab-chip" data-filter="approved">Đã duyệt</button>
+                    <button class="tab-chip" data-filter="rejected">Đã từ chối</button>
+                </div>
+
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <div class="content-card-title"><span class="material-symbols-outlined">storefront</span> Đơn đăng ký mở gian hàng</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="sellerAppTable">
+                            <thead>
+                            <tr>
+                                <th>Người đăng ký</th>
+                                <th>Tên gian hàng</th>
+                                <th>Danh mục kinh doanh</th>
+                                <th>Ngày nộp</th>
+                                <th style="text-align:center;">Trạng thái</th>
+                                <th style="text-align:center;">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody id="sellerAppTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="policy-banner">
+                    <div class="policy-banner-content">
+                        <div class="policy-icon-circle"><span class="material-symbols-outlined">storefront</span></div>
+                        <div class="policy-text">
+                            <h4>Quy trình duyệt đăng ký người bán</h4>
+                            <p>Hồ sơ cần xác minh CMND/CCCD và thông tin gian hàng hợp lệ trước khi được cấp quyền đăng bán trên sàn.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="openModal('sellerPolicyModal')">Xem quy trình đầy đủ</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ACCOUNT DETAIL MODAL -->
+<div class="modal-backdrop" id="accountDetailModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:520px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <h3 class="modal-title" style="margin:0;">Chi tiết tài khoản</h3>
+            <button onclick="closeModal('accountDetailModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <div id="accountDetailBody"></div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:22px;">
+            <button class="btn btn-outline" onclick="closeModal('accountDetailModal')">Đóng</button>
+            <button class="btn btn-primary" id="detailPrimaryAction">Xác minh tài khoản</button>
+        </div>
+    </div>
+</div>
+
+<!-- BAN / UNBAN CONFIRM MODAL -->
+<div class="modal-backdrop" id="banConfirmModal" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-icon-circle danger"><span class="material-symbols-outlined" style="font-size:32px;">block</span></div>
+        <h3 class="modal-title" id="banModalTitle">Xác nhận khoá tài khoản</h3>
+        <p class="modal-desc" id="banModalDesc">Bạn có chắc chắn muốn khoá tài khoản <strong id="banModalUser">username</strong> không?</p>
+        <div style="text-align:left; margin-bottom:20px;" id="banReasonWrap">
+            <label style="font-size:.82rem; font-weight:700; display:block; margin-bottom:6px; color:var(--text-main);">Lý do khoá tài khoản:</label>
+            <select id="banReasonSelect" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:.85rem; background:#fff;">
+                <option value="fraud">Gian lận giao dịch / lừa đảo</option>
+                <option value="fake_listing">Đăng bán sách giả, sai mô tả</option>
+                <option value="abuse">Quấy rối, ngôn từ không phù hợp</option>
+                <option value="policy">Vi phạm chính sách sàn nhiều lần</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('banConfirmModal')">Quay lại</button>
+            <button class="btn btn-danger" id="confirmBanBtn" onclick="confirmBanAction()">
+                <span class="material-symbols-outlined" style="font-size:16px;">check</span> Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- CREATE STAFF/ADMIN-INITIATED ACCOUNT MODAL -->
+<div class="modal-backdrop" id="createStaffAccModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:480px; text-align:left;">
+        <h3 class="modal-title" style="text-align:center;">Thêm tài khoản thủ công</h3>
+        <p class="modal-desc" style="text-align:center;">Tạo tài khoản người mua/người bán thay mặt cho bộ phận CSKH.</p>
+        <div class="form-grid" style="margin-bottom:20px;">
+            <div class="field"><label>Họ và tên</label><input type="text" id="newAccName" placeholder="Nguyễn Văn A"></div>
+            <div class="field"><label>Email</label><input type="email" id="newAccEmail" placeholder="email@vidu.vn"></div>
+            <div class="field"><label>Vai trò</label>
+                <select id="newAccRole" style="width:100%; padding:11px 12px; border:2px solid var(--neutral-light, #cbd5e1); border-radius:7px;">
+                    <option value="buyer">Người mua</option>
+                    <option value="seller">Người bán</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions" style="justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="closeModal('createStaffAccModal')">Huỷ</button>
+            <button class="btn btn-primary" onclick="createManualAccount()">Tạo tài khoản</button>
+        </div>
+    </div>
+</div>
+
+<!-- SELLER APPLICATION DETAIL MODAL -->
+<div class="modal-backdrop" id="sellerAppDetailModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;">Hồ sơ đăng ký người bán</h3>
+            <button onclick="closeModal('sellerAppDetailModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <div id="sellerAppDetailBody"></div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:22px;" id="sellerAppDetailActions"></div>
+    </div>
+</div>
+
+<!-- APPROVE SELLER APPLICATION MODAL -->
+<div class="modal-backdrop" id="sellerAppApproveModal" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-icon-circle success"><span class="material-symbols-outlined" style="font-size:32px;">check_circle</span></div>
+        <h3 class="modal-title">Duyệt gian hàng</h3>
+        <p class="modal-desc">Xác nhận duyệt gian hàng <strong id="approveAppShopName">...</strong> của <strong id="approveAppApplicant">...</strong>? Tài khoản sẽ được cấp quyền Người bán ngay sau khi xác nhận.</p>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('sellerAppApproveModal')">Huỷ</button>
+            <button class="btn btn-primary" onclick="confirmApproveApp()"><span class="material-symbols-outlined" style="font-size:16px;">check</span> Xác nhận duyệt</button>
+        </div>
+    </div>
+</div>
+
+<!-- REJECT SELLER APPLICATION MODAL -->
+<div class="modal-backdrop" id="sellerAppRejectModal" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-icon-circle danger"><span class="material-symbols-outlined" style="font-size:32px;">block</span></div>
+        <h3 class="modal-title">Từ chối đăng ký người bán</h3>
+        <p class="modal-desc">Vui lòng chọn lý do từ chối hồ sơ <strong id="rejectAppShopName">...</strong>. Người đăng ký sẽ nhận được thông báo lý do này.</p>
+        <div style="text-align:left; margin-bottom:20px;">
+            <label style="font-size:.82rem; font-weight:700; display:block; margin-bottom:6px; color:var(--text-main);">Lý do từ chối:</label>
+            <select id="rejectAppReasonSelect" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:.85rem; background:#fff;">
+                <option value="doc_invalid">Giấy tờ tuỳ thân không hợp lệ / không rõ nét</option>
+                <option value="info_mismatch">Thông tin gian hàng không khớp hồ sơ</option>
+                <option value="duplicate">Trùng với gian hàng đã đăng ký trước đó</option>
+                <option value="policy_violation">Danh mục kinh doanh vi phạm chính sách sàn</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('sellerAppRejectModal')">Quay lại</button>
+            <button class="btn btn-danger" onclick="confirmRejectApp()"><span class="material-symbols-outlined" style="font-size:16px;">check</span> Xác nhận từ chối</button>
+        </div>
+    </div>
+</div>
+
+<!-- SELLER APPROVAL POLICY MODAL -->
+<div class="modal-backdrop" id="sellerPolicyModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;">Quy trình duyệt đăng ký người bán</h3>
+            <button onclick="closeModal('sellerPolicyModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Áp dụng cho mọi tài khoản đăng ký mở gian hàng bán sách trên nền tảng.</p>
+        <div class="policy-step-list">
+            <div class="policy-step">
+                <div class="policy-step-num">1</div>
+                <div class="policy-step-text">
+                    <h5>Nộp hồ sơ đăng ký</h5>
+                    <p>Người dùng điền tên gian hàng, danh mục kinh doanh, địa chỉ và ảnh CMND/CCCD trong ứng dụng.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">2</div>
+                <div class="policy-step-text">
+                    <h5>Kiểm tra tự động</h5>
+                    <p>Hệ thống rà soát trùng lặp thông tin gian hàng và định dạng giấy tờ trước khi chuyển cho Admin.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">3</div>
+                <div class="policy-step-text">
+                    <h5>Xác minh hồ sơ</h5>
+                    <p>Admin đối chiếu giấy tờ tuỳ thân, thông tin liên hệ và danh mục kinh doanh với chính sách sàn.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">4</div>
+                <div class="policy-step-text">
+                    <h5>Ra quyết định</h5>
+                    <p>Duyệt gian hàng hoặc từ chối kèm lý do cụ thể để người đăng ký biết cách bổ sung hồ sơ.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">5</div>
+                <div class="policy-step-text">
+                    <h5>Cấp quyền người bán</h5>
+                    <p>Nếu được duyệt, tài khoản được cấp quyền Người bán ngay lập tức và có thể bắt đầu đăng sách.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">6</div>
+                <div class="policy-step-text">
+                    <h5>Đăng ký lại nếu bị từ chối</h5>
+                    <p>Người dùng có thể chỉnh sửa hồ sơ và nộp lại đơn đăng ký sau 7 ngày kể từ khi bị từ chối.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-primary" onclick="closeModal('sellerPolicyModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<!-- ACCOUNT VIOLATION POLICY MODAL -->
+<div class="modal-backdrop" id="violationPolicyModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;">Quy trình xử lý vi phạm tài khoản</h3>
+            <button onclick="closeModal('violationPolicyModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Áp dụng cho báo cáo vi phạm từ người dùng đối với tài khoản mua/bán trên sàn.</p>
+        <div class="policy-step-list">
+            <div class="policy-step">
+                <div class="policy-step-num">1</div>
+                <div class="policy-step-text">
+                    <h5>Ghi nhận báo cáo</h5>
+                    <p>Người dùng gửi báo cáo vi phạm kèm lý do (gian lận, sách giả, quấy rối...) đối với một tài khoản.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">2</div>
+                <div class="policy-step-text">
+                    <h5>Tự động đưa vào hàng chờ</h5>
+                    <p>Tài khoản bị báo cáo ≥ 3 lần trong 30 ngày sẽ tự động chuyển sang trạng thái "Bị báo cáo" chờ xác minh.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">3</div>
+                <div class="policy-step-text">
+                    <h5>Xác minh thủ công</h5>
+                    <p>Admin xem lịch sử giao dịch, các báo cáo liên quan và bằng chứng đính kèm trước khi ra quyết định.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">4</div>
+                <div class="policy-step-text">
+                    <h5>Ra quyết định</h5>
+                    <p>Khoá tài khoản kèm lý do cụ thể, hoặc bỏ qua báo cáo nếu không đủ căn cứ vi phạm.</p>
+                </div>
+            </div>
+            <div class="policy-step">
+                <div class="policy-step-num">5</div>
+                <div class="policy-step-text">
+                    <h5>Thông báo & khiếu nại</h5>
+                    <p>Tài khoản bị khoá nhận thông báo lý do và có thể gửi khiếu nại lên đội Vận hành trong 7 ngày.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions" style="justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-primary" onclick="closeModal('violationPolicyModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/accounts.js"></script>
+</body>
+</html>

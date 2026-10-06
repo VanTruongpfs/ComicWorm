@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ComicHub - Đăng Tin Tìm Mua</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../shared/styles/global-design-tokens.css">
+  <link rel="stylesheet" href="../css/page1.css">
+  <link rel="stylesheet" href="../../shared/footer/footer.css">
+  <link rel="stylesheet" href="../../shared/header/header.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+<header class="site-header">
+  <div class="container header-container">
+    <!-- Logo Thương hiệu -->
+    <a href="home.html" class="brand-logo">
+      <div class="brand-logo-icon">
+        <i class="fa-solid fa-book-open"></i>
+      </div>
+      <div class="brand-logo-text">
+        <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+        <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+      </div>
+    </a>
+
+    <!-- Thanh tìm kiếm nhanh -->
+    <div class="header-search-bar">
+      <span class="search-category-tag">Tất cả truyện</span>
+      <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+      <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </div>
+
+    <!-- Menu chính -->
+    <nav class="main-navigation">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+        </li>
+        <li class="nav-item">
+          <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+        </li>
+        <li class="nav-item">
+          <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+        </li>
+        <li class="nav-item">
+          <a href="page1.html" class="nav-link active"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Hành động người dùng -->
+    <div class="header-actions">
+      <button type="button" class="btn-notification" aria-label="Thông báo">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-indicator"></span>
+      </button>
+      <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="cart-count-badge">3</span>
+      </a>
+      <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>Đăng bán/Đổi truyện</span>
+      </a>
+      <div class="user-profile-menu">
+        <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="page-main">
+  <div class="page-content">
+
+
+    <section class="container breadcrumb-section">
+      <div class="breadcrumb-row">
+        <div class="breadcrumbs">
+          <a href="#">
+            <span class="material-symbols-outlined icon-small">home</span>
+            Trang chủ
+          </a>
+          <span class="material-symbols-outlined breadcrumb-arrow">chevron_right</span>
+          <span class="breadcrumb-current">Đăng tin tìm mua (ISO Bounty)</span>
+        </div>
+
+        <div class="context-stats">
+          <span>
+            <span class="material-symbols-outlined stat-icon primary-icon">bolt</span>
+            Thời gian khớp tin trung bình:
+            <strong>3.4 giờ</strong>
+          </span>
+
+          <span class="vertical-divider"></span>
+
+          <span>
+            <span class="material-symbols-outlined stat-icon tertiary-icon">verified</span>
+            Đảm bảo kiểm duyệt 100%
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container hero-section">
+      <div class="hero-card">
+        <div class="hero-glow"></div>
+
+        <div class="hero-word">WANTED</div>
+
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="status-dot status-dot-ping"></span>
+            <span>Cộng đồng thèm đọc • Săn tập thiếu</span>
+          </div>
+
+          <h1>Đăng Tin Tìm Mua Truyện Tranh</h1>
+
+          <p>
+            Hơn <span>50.000 thành viên &amp; nhà sưu tập</span> trên toàn quốc
+            sẵn sàng sang nhượng lại các tập lẻ, bản giới hạn, boxset hoặc bản
+            dịch hiếm mà giá bìa đã tuyệt bản!
+          </p>
+
+          <div class="hero-stats">
+            <div>
+              <span class="material-symbols-outlined">library_books</span>
+              <span>12.450+ Đơn đã khớp tháng này</span>
+            </div>
+            <div>
+              <span class="material-symbols-outlined">shield</span>
+              <span>Bảo chứng Escrow 72h</span>
+            </div>
+            <div>
+              <span class="material-symbols-outlined">local_shipping</span>
+              <span>Đồng kiểm ngoại quan lúc nhận</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container form-section">
+      <div class="content-layout">
+
+        <div class="main-form-column">
+          <form id="manga-bounty-form" class="bounty-form">
+
+            <!-- CARD 1 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">1</span>
+                  <h2>Thông tin bộ truyện &amp; Tập cần tìm</h2>
+                </div>
+                <span class="card-label">Bắt buộc</span>
+              </div>
+
+              <div class="form-group">
+                <label for="series-name">
+                  <span>
+                    Tên tác phẩm &amp; Số tập cụ thể
+                    <span class="required">*</span>
+                  </span>
+                  <span class="label-hint">Gợi ý: Tên gốc tiếng Nhật/Anh giúp tìm nhanh hơn</span>
+                </label>
+
+                <div class="input-with-icon">
+                  <span class="material-symbols-outlined input-icon">auto_stories</span>
+                  <input
+                    id="series-name"
+                    name="seriesName"
+                    type="text"
+                    required
+                    value="One Piece Tập 100 Bản Giới Hạn bìa gập vàng"
+                    placeholder="Vd: One Piece Tập 100 Bản Giới Hạn bìa gập, Chainsaw Man Tập 1-11..."
+                  >
+                  <button class="text-button" type="button" id="suggest-name-button">Gợi ý tên</button>
+                </div>
+              </div>
+
+              <div class="scope-tags">
+                <span class="scope-label">Hình thức tìm:</span>
+
+                <label class="pill-option">
+                  <input checked type="radio" name="scope-type" value="single">
+                  <span>Tập lẻ còn thiếu</span>
+                </label>
+
+                <label class="pill-option">
+                  <input type="radio" name="scope-type" value="set">
+                  <span>Nguyên bộ (Full Set)</span>
+                </label>
+
+                <label class="pill-option">
+                  <input type="radio" name="scope-type" value="boxset">
+                  <span>Boxset đặc biệt / Kỷ niệm</span>
+                </label>
+
+                <label class="pill-option">
+                  <input type="radio" name="scope-type" value="artbook">
+                  <span>Artbook / Fanbook</span>
+                </label>
+              </div>
+            </section>
+
+            <!-- CARD 2 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">2</span>
+                  <h2>Phân loại, Nhà xuất bản &amp; Tình trạng mong muốn</h2>
+                </div>
+                <span class="card-label">Quy chuẩn Grading</span>
+              </div>
+
+              <div class="two-column-grid">
+                <div class="form-group">
+                  <label for="genre-select">Thể loại chính</label>
+                  <div class="select-wrap">
+                    <select id="genre-select">
+                      <option selected value="shounen">Shounen Manga</option>
+                      <option value="seinen">Seinen (Trưởng thành)</option>
+                      <option value="shoujo">Shoujo / Josei</option>
+                      <option value="comic">Comics Marvel / DC / Âu Mỹ</option>
+                      <option value="light-novel">Light Novel</option>
+                      <option value="webtoon">Manhwa / Manhua</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="publisher-select">Nhà xuất bản / Phiên bản</label>
+                  <div class="select-wrap">
+                    <select id="publisher-select">
+                      <option selected value="kimdong">NXB Kim Đồng (Bản quyền)</option>
+                      <option value="tre">NXB Trẻ</option>
+                      <option value="ipm">IPM Việt Nam</option>
+                      <option value="wings">Wings Books</option>
+                      <option value="amry">Amak Books / Uranix</option>
+                      <option value="jp-raw">Bản gốc Nhật Bản (Raw/Tankōbon)</option>
+                      <option value="us-eng">Bản tiếng Anh (Viz / Kodansha US)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="condition-section">
+                <span class="field-label">Tình trạng độ mới tối thiểu chấp nhận:</span>
+
+                <div class="condition-grid">
+                  <label class="condition-card">
+                    <input type="radio" name="condition" value="seal">
+                    <span class="condition-card-body">
+                      <span class="condition-top">
+                        <strong>Mới 100% (Seal)</strong>
+                        <span class="material-symbols-outlined">check_circle</span>
+                      </span>
+                      <span class="condition-description">
+                        Còn nguyên màng co nhà xuất bản, chưa bóc đọc, không cấn góc.
+                      </span>
+                      <span class="condition-note">Dành cho Collector</span>
+                    </span>
+                  </label>
+
+                  <label class="condition-card">
+                    <input checked type="radio" name="condition" value="like-new">
+                    <span class="condition-card-body">
+                      <span class="condition-top">
+                        <strong>Like New (95 - 99%)</strong>
+                        <span class="material-symbols-outlined">check_circle</span>
+                      </span>
+                      <span class="condition-description">
+                        Đã bóc màng co hoặc đọc 1 lần. Ruột giấy trắng, bìa phẳng lỳ, có bọc OPP.
+                      </span>
+                      <span class="condition-note tertiary-text">Phổ biến &amp; Dễ khớp</span>
+                    </span>
+                  </label>
+
+                  <label class="condition-card">
+                    <input type="radio" name="condition" value="reader">
+                    <span class="condition-card-body">
+                      <span class="condition-top">
+                        <strong>Đọc Ổn (80 - 90%)</strong>
+                        <span class="material-symbols-outlined">check_circle</span>
+                      </span>
+                      <span class="condition-description">
+                        Gáy có nếp gấp nhẹ, mép giấy có thể ngả vàng theo thời gian, đủ trang.
+                      </span>
+                      <span class="condition-note secondary-text">Tiết kiệm ngân sách</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD 3 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">3</span>
+                  <h2>Giá mong muốn (Ngân sách chi trả)</h2>
+                </div>
+                <span class="card-label">VNĐ / Đồng</span>
+              </div>
+
+              <div class="two-column-grid align-end">
+                <div class="form-group">
+                  <label for="price-min">Khoảng giá từ:</label>
+                  <div class="price-input">
+                    <input id="price-min" type="number" value="150000" placeholder="100.000">
+                    <span>đ</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="price-max">Đến tối đa (Trần ngân sách):</label>
+                  <div class="price-input price-input-primary">
+                    <input id="price-max" type="number" value="250000" placeholder="300.000">
+                    <span>đ</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="negotiable-row">
+                <label class="checkbox-label">
+                  <input id="price-negotiable" type="checkbox">
+                  <span>
+                    Chấp nhận thương lượng nếu có kèm phụ kiện quà tặng hiếm
+                  </span>
+                </label>
+                <span class="market-note">Thị trường hiện tại: ~180.000đ - 220.000đ</span>
+              </div>
+            </section>
+
+            <!-- CARD 4 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">4</span>
+                  <h2>Hình ảnh bìa mẫu &amp; Chi tiết nhận diện</h2>
+                </div>
+                <span class="card-label">Tối đa 5 ảnh (Tỉ lệ 2:3 khuyến nghị)</span>
+              </div>
+
+              <p class="form-description">
+                Đăng ảnh bìa tập truyện bạn cần tìm hoặc chụp kệ sách chỗ còn thiếu để
+                người bán đối chiếu chính xác phiên bản bìa gập, obi hoặc quà tặng đính kèm.
+              </p>
+
+              <div class="image-upload-grid">
+                <button class="upload-zone" type="button" id="upload-button">
+                  <span class="material-symbols-outlined upload-icon">add_photo_alternate</span>
+                  <strong>Thêm ảnh mẫu</strong>
+                  <span>PNG, JPG dưới 5MB</span>
+                </button>
+
+                <div class="image-preview">
+                  <img
+                    alt="Bìa One Piece tập 100"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuABZaRHQaM9EVWAoT7F-Efqe8O_0VN_mQN_X99ymqi3jSFvQ1-htPT4MTOx3imbTGzryTI87PA7voTcFwr1pWPyxzlW__ykVoRqNIymyx4uIRJ0wwuMoZoGNpYT-D6xeKAae8wVweg-7rjBxLuHOPLFQgyoYqyyk2YlBgbQOOhlCxMIgcmuAcnBEOZ5zXR1rj5O0VYZljjU7u-2iVWAKUtvNxVu68lbJF3tYHPIY5FQlCHOQViNHXd9Rw"
+                  >
+                  <div class="image-overlay">
+                    <span class="image-type-badge">Bìa chính</span>
+                    <div class="image-bottom">
+                      <span>Bia_Vang_Tap100.jpg</span>
+                      <button class="remove-image" type="button" aria-label="Xóa ảnh">
+                        <span class="material-symbols-outlined">cancel</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="image-preview">
+                  <img
+                    alt="Chi tiết Obi"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6j83RK42mu1x_MtlFjMfboZNpHWRVGqOVZKl7muT3qYKqH8jybZnUeHwBRc4UP9NiN47-YmyERL_worCscd7vZFuy7X7LR1wfAjcde2QwuGAWMYy0il6JgeOUSWo_sXl0zlSi6VvajEaavjA2ttdBvgfklx50I8OvlhLA0UhB4-TsiRzW99h6_-F3AMFmntZfc-yDNEArUhGcRyXcw7fltnMyiJSee3vNoKIXDOsBYh8GFSSDgd9FJA"
+                  >
+                  <div class="image-overlay">
+                    <span class="image-type-badge muted">Mẫu Obi</span>
+                    <div class="image-bottom">
+                      <span>ChiTiet_Obi.png</span>
+                      <button class="remove-image" type="button" aria-label="Xóa ảnh">
+                        <span class="material-symbols-outlined">cancel</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="empty-image-slot">
+                  <span class="material-symbols-outlined">image</span>
+                  <span>Ảnh phụ kiện (Postcard/Bookmark)</span>
+                </div>
+              </div>
+
+              <input id="image-input" type="file" accept="image/png,image/jpeg" multiple hidden>
+            </section>
+
+            <!-- CARD 5 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">5</span>
+                  <h2>Khu vực nhận truyện &amp; Giao dịch</h2>
+                </div>
+                <span class="card-label">Toàn quốc</span>
+              </div>
+
+              <div class="two-column-grid">
+                <div class="form-group">
+                  <label for="city-target">Tỉnh / Thành phố ưu tiên</label>
+                  <div class="select-wrap select-with-icon">
+                    <span class="material-symbols-outlined">location_on</span>
+                    <select id="city-target">
+                      <option value="all">Toàn quốc (Nhận COD mọi tỉnh thành)</option>
+                      <option selected value="hanoi">Hà Nội (Ưu tiên GDTT hoặc hỏa tốc)</option>
+                      <option value="hcm">TP. Hồ Chí Minh</option>
+                      <option value="danang">Đà Nẵng</option>
+                      <option value="haiphong">Hải Phòng</option>
+                      <option value="cantho">Cần Thơ</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Phương thức giao hàng mong muốn</label>
+                  <div class="delivery-options">
+                    <label class="delivery-option">
+                      <input checked type="checkbox" value="cod">
+                      <span>Ship COD qua sàn</span>
+                    </label>
+                    <label class="delivery-option">
+                      <input checked type="checkbox" value="direct">
+                      <span>Gặp GD trực tiếp</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- CARD 6 -->
+            <section class="form-card">
+              <div class="card-heading">
+                <div class="card-title-wrap">
+                  <span class="step-number">6</span>
+                  <h2>Mô tả chi tiết &amp; Yêu cầu kèm theo</h2>
+                </div>
+                <span class="card-label">Rõ ràng = Khớp nhanh</span>
+              </div>
+
+              <div class="form-group">
+                <label for="post-description">Ghi chú cho người bán</label>
+                <textarea
+                  id="post-description"
+                  rows="4"
+                  placeholder="Ghi rõ tình trạng chấp nhận được..."
+                >Mình đang cần gấp tập 100 One Piece ấn bản kỷ niệm bìa gập màu vàng của Kim Đồng để hoàn thiện kệ truyện trưng bày. Yêu cầu: Bắt buộc còn đai OBI đỏ nguyên vẹn không rách, kèm tấm postcard metallic. Bạn nào có nhượng lại vui lòng bấm liên hệ hoặc gửi hình góc cạnh qua chat nhé!</textarea>
+              </div>
+
+              <div class="quick-tags">
+                <span class="quick-tags-label">Yêu cầu nhanh:</span>
+                <button class="quick-tag" type="button" data-tag="Còn Obi gốc">+ Còn Obi gốc</button>
+                <button class="quick-tag" type="button" data-tag="Có postcard tặng kèm">+ Có postcard tặng kèm</button>
+                <button class="quick-tag" type="button" data-tag="Không ố vàng gáy">+ Không ố vàng gáy</button>
+                <button class="quick-tag" type="button" data-tag="Đã bọc màng bảo vệ OPP">+ Đã bọc màng bảo vệ OPP</button>
+              </div>
+            </section>
+
+            <!-- CARD 7 -->
+            <section class="vip-card">
+              <div class="vip-heading">
+                <div class="vip-title-wrap">
+                  <span class="vip-icon">
+                    <span class="material-symbols-outlined">workspace_premium</span>
+                  </span>
+                  <div>
+                    <div class="vip-title-line">
+                      <h2>Đẩy Tin VIP Lên Đầu Trang &amp; Bắn Thông Báo</h2>
+                      <span class="speed-badge">Nhanh hơn 3x</span>
+                    </div>
+                    <p>
+                      Ghim tin vào mục "Lệnh Săn Hot" trang chủ + Gửi thông báo đến
+                      1.200 thành viên đang theo dõi tag <strong>#OnePiece</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vip-options">
+                <label class="vip-option">
+                  <span class="vip-option-left">
+                    <input type="radio" name="vip-tier" value="standard">
+                    <span>
+                      <strong>Tin Thường (Miễn Phí)</strong>
+                      <small>Hiển thị dòng thời gian tiêu chuẩn</small>
+                    </span>
+                  </span>
+                  <strong>0 đ</strong>
+                </label>
+
+                <label class="vip-option">
+                  <span class="vip-option-left">
+                    <input checked type="radio" name="vip-tier" value="vip">
+                    <span>
+                      <strong class="primary-text">Ghim VIP 7 Ngày (Khuyên dùng)</strong>
+                      <small>Huy hiệu Lửa Cam + Ưu tiên thông báo</small>
+                    </span>
+                  </span>
+                  <span class="vip-price">
+                    <strong>15.000 đ</strong>
+                    <small>30.000 đ</small>
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <!-- ACTION BAR -->
+            <div class="action-bar">
+              <div class="protection-message">
+                <span class="material-symbols-outlined">lock</span>
+                <span>Thông tin được bảo vệ bởi quy chuẩn cộng đồng MangaTrade</span>
+              </div>
+
+              <div class="action-buttons">
+                <button class="btn btn-secondary" type="button" id="save-draft-button">
+                  Lưu bản nháp
+                </button>
+
+                <button class="btn btn-primary" type="submit" id="submit-button">
+                  <span class="material-symbols-outlined">send</span>
+                  <span>Đăng Tin Tìm Mua Ngay</span>
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+          <section class="sidebar-card">
+            <div class="sidebar-heading">
+              <span class="sidebar-icon primary-bg">
+                <span class="material-symbols-outlined">verified_user</span>
+              </span>
+              <div>
+                <h3>An Tâm Săn Truyện</h3>
+                <p>Cơ chế bảo vệ người tìm mua 100%</p>
+              </div>
+            </div>
+
+            <div class="sidebar-list">
+              <div class="sidebar-item">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                <div>
+                  <strong>Giữ tiền bảo chứng (Escrow)</strong>
+                  <p>Tiền chỉ chuyển cho người bán sau khi bạn kiểm đúng truyện và bấm hài lòng trong 72h.</p>
+                </div>
+              </div>
+
+              <div class="sidebar-item">
+                <span class="material-symbols-outlined">fact_check</span>
+                <div>
+                  <strong>Được quyền đồng kiểm</strong>
+                  <p>Mở hộp kiểm tra bìa, obi và số trang trước khi thanh toán tiền ship.</p>
+                </div>
+              </div>
+
+              <div class="sidebar-item">
+                <span class="material-symbols-outlined">assignment_return</span>
+                <div>
+                  <strong>Đổi trả &amp; Hoàn tiền tức thì</strong>
+                  <p>Nếu phát hiện truyện giả (sách in lậu), cấn móp không báo trước, hoàn tiền 100%.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sidebar-card">
+            <div class="sidebar-heading">
+              <span class="sidebar-icon tertiary-bg">
+                <span class="material-symbols-outlined">lightbulb</span>
+              </span>
+              <h3>Mẹo Tìm Nhanh &amp; Giá Tốt</h3>
+            </div>
+
+            <ul class="tips-list">
+              <li>
+                <span>•</span>
+                <p><strong>Ghi rõ số ấn bản (First Print):</strong> Nhiều collector chỉ tìm ấn bản đầu có kèm thiệp cảm ơn.</p>
+              </li>
+              <li>
+                <span>•</span>
+                <p><strong>Tình trạng Obi &amp; Màng seal:</strong> Nếu không quá kỹ tính về Obi, bạn có thể mua rẻ hơn 30% - 40%.</p>
+              </li>
+              <li>
+                <span>•</span>
+                <p><strong>Để khoảng giá linh hoạt:</strong> Đừng đặt giá quá cứng nhắc khiến người giữ truyện ngại nhắn tin chào hàng.</p>
+              </li>
+            </ul>
+          </section>
+
+          <section class="sidebar-card">
+            <div class="market-heading">
+              <div class="sidebar-heading">
+                <span class="sidebar-icon neutral-bg">
+                  <span class="material-symbols-outlined">trending_up</span>
+                </span>
+                <h3>Thị Giá Truyện Hot</h3>
+              </div>
+              <span class="market-period">Tuần này</span>
+            </div>
+
+            <div class="market-list">
+              <div class="market-item">
+                <div>
+                  <span class="market-dot primary-dot"></span>
+                  <span>Dr. Slump (Bộ 18T NXB Trẻ)</span>
+                </div>
+                <strong>1.2M - 1.6M</strong>
+              </div>
+
+              <div class="market-item">
+                <div>
+                  <span class="market-dot tertiary-dot"></span>
+                  <span>Dragon Ball Bìa Đỏ (Full 42T)</span>
+                </div>
+                <strong>850k - 1.1M</strong>
+              </div>
+
+              <div class="market-item">
+                <div>
+                  <span class="market-dot primary-dot"></span>
+                  <span>Berserk Deluxe Vol 1-14 US</span>
+                </div>
+                <strong>850k/cuốn</strong>
+              </div>
+
+              <div class="market-item">
+                <div>
+                  <span class="market-dot secondary-dot"></span>
+                  <span>Monster Kanzenban (IPM Full)</span>
+                </div>
+                <strong>900k - 1.1M</strong>
+              </div>
+            </div>
+
+            <a class="market-link" href="#">
+              Xem biểu đồ biến động giá 60 ngày
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </section>
+
+          <section class="community-card">
+            <img
+              alt="Anime manga collector mascot"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcKJx6NUM8krQyltOI9Q3BGVxJGCA2UYzOG1jTB8q5ahJvP4ysWiqhKNrinZS-jln4EiFldiaFxTS_AOuDjtGFjt_pHSc5XyrjjOIJlMuDWNBMJdH15ydMStXLwXbqxSoUHz-G-kh593W5wJGAstHbCeQeXDdho9EuugARXUhnByLODTEExezYEu-2-PBPUr4ozwkdC_ojBo5wcauPtwLrJ-M2PZGLiE-cAr-NfaI0Jge1-MFnjsXimQ"
+            >
+            <div>
+              <strong>Bạn cần hỗ trợ định giá?</strong>
+              <p>Hỏi ngay các kiểm duyệt viên trên Discord &amp; Group Manga Collector.</p>
+              <a href="#">Tham gia nhóm trao đổi →</a>
+            </div>
+          </section>
+
+        </aside>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-content">
+    <div class="footer-grid">
+
+      <div class="footer-column">
+        <div class="footer-brand">MangaTrade</div>
+        <p>
+          Sàn kết nối độc giả manga, truyện tranh bản quyền, sưu tầm hiếm và
+          trao đổi tankōbon chất lượng cao đầu tiên tại Việt Nam.
+        </p>
+        <div class="footer-verified">
+          <span class="material-symbols-outlined">verified</span>
+          <span>Hơn 45.000 đầu truyện được kiểm duyệt</span>
+        </div>
+      </div>
+
+      <div class="footer-column">
+        <h4>Dịch Vụ &amp; Hỗ Trợ</h4>
+        <ul>
+          <li><a href="#">Quy trình mua bán an toàn (Escrow)</a></li>
+          <li><a href="#">Chính sách đổi trả &amp; Hoàn tiền</a></li>
+          <li><a href="#">Tra cứu tiến độ đơn hàng</a></li>
+          <li><a href="#">Biểu phí giao dịch &amp; Ký gửi</a></li>
+          <li><a href="#">Quy chuẩn phân hạng độ mới (Grading)</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-column">
+        <h4>Cộng Đồng Otaku</h4>
+        <ul>
+          <li><a href="#">Hội săn truyện tranh hiếm &amp; Bìa rời</a></li>
+          <li><a href="#">Góc Review &amp; Khen chê bản dịch</a></li>
+          <li><a href="#">Sự kiện Comic-Con &amp; Giao lưu tác giả</a></li>
+          <li><a href="#">Bảng vinh danh Top Sưu Tầm 2024</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-column">
+        <h4>Thanh Toán &amp; Bản Tin</h4>
+        <p>Nhận thông báo khi có truyện hiếm lên sàn hoặc ưu đãi freeship.</p>
+
+        <div class="newsletter">
+          <input type="email" placeholder="Email của bạn..." aria-label="Email nhận bản tin">
+          <button type="button" id="newsletter-button">Gửi</button>
+        </div>
+
+        <div class="payment-section">
+          <span>Cổng thanh toán hỗ trợ</span>
+          <div class="payment-list">
+            <span>VietQR</span>
+            <span>MoMo</span>
+            <span>ZaloPay</span>
+            <span>COD</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2024 MangaTrade Việt Nam. Bản quyền nội dung thuộc về các nhà xuất bản được cấp phép.</p>
+      <div>
+        <a href="#">Điều khoản dịch vụ</a>
+        <a href="#">Bảo mật thông tin</a>
+        <span class="footer-certified">
+          <span class="material-symbols-outlined">verified_user</span>
+          Bộ Công Thương Chứng Nhận
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../../shared/footer/footer.js"></script>
+<script src="../js/page1.js"></script>
+</body>
+</html>

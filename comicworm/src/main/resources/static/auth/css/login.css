@@ -1,0 +1,2 @@
+/* Login-only adjustment; the shared stylesheet owns the form system. */
+.auth-card { border-top: 4px solid var(--primary-default); }

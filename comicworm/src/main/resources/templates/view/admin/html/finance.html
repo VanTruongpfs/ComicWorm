@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doanh thu & Dòng tiền | BookMooch Admin Console</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-common.css">
+  <link rel="stylesheet" href="../css/finance.css">
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebarContainer" data-active="finance"></div>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+        <div class="store-selector"><span class="material-symbols-outlined">admin_panel_settings</span><span>Trung tâm Quản trị</span></div>
+        <div class="global-search"><span class="material-symbols-outlined">search</span><input type="text" id="financeSearch" placeholder="Tìm mã giao dịch, người bán..."><span class="search-shortcut">⌘K</span></div>
+      </div>
+      <div class="header-right">
+        <button class="nav-icon-btn" onclick="showToast('14 yêu cầu rút tiền đang chờ duyệt')"><span class="material-symbols-outlined">notifications</span><span class="notification-badge-dot"></span></button>
+        <div class="user-profile-menu">
+          <div class="user-details"><div class="user-name" data-admin-name>Nguyễn Minh Admin</div><div class="user-role" data-admin-role>Super Admin</div></div>
+          <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <div class="page-header">
+        <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">monitoring</span> Quản trị hệ thống • Tài chính</div>
+        <div class="page-title-row">
+          <div>
+            <h2 class="page-title">Doanh thu tổng, duyệt rút tiền &amp; dòng tiền</h2>
+            <p class="page-subtitle">Bức tranh tài chính toàn sàn: doanh thu, hoa hồng, hàng chờ duyệt rút tiền và dòng tiền vào/ra</p>
+          </div>
+          <div class="header-action-group">
+            <button class="btn btn-outline" onclick="showToast('Đang xuất báo cáo tài chính (Excel)')">
+              <span class="material-symbols-outlined">download</span> Xuất báo cáo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Tổng doanh thu (GMV) tháng 09</span><span class="kpi-value">4.286.500.000 ₫</span><span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +14.2% so tháng trước</span></div>
+          <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">payments</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Hoa hồng sàn thu được</span><span class="kpi-value">342.900.000 ₫</span><span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> Biên lợi nhuận 8.0%</span></div>
+          <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">savings</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Chờ duyệt rút tiền</span><span class="kpi-value" style="color:#ea580c;">320.500.000 ₫</span><span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">schedule</span> 14 yêu cầu</span></div>
+          <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">account_balance_wallet</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Dòng tiền ròng 7 ngày</span><span class="kpi-value" style="color:#16a34a;">+186.400.000 ₫</span><span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">north_east</span> Dương liên tục 12 ngày</span></div>
+          <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">swap_vert</span></div>
+        </div>
+      </section>
+
+      <div class="seg-control" id="financeSegControl">
+        <button class="seg-btn active" data-view="overview">Tổng quan doanh thu</button>
+        <button class="seg-btn" data-view="withdraw" id="withdrawTabBtn">Duyệt rút tiền</button>
+        <button class="seg-btn" data-view="cashflow">Dòng tiền</button>
+      </div>
+
+      <!-- TAB 1: REVENUE OVERVIEW -->
+      <div id="financeViewOverview" class="finance-view">
+        <div class="content-card">
+          <div class="content-card-header">
+            <div class="content-card-title"><span class="material-symbols-outlined">bar_chart</span> Doanh thu theo thời gian</div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+              <div class="legend-row">
+                <div class="legend-item"><span class="legend-dot" style="background:var(--primary-container);"></span> Doanh thu (GMV)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#0ea5e9;"></span> Hoa hồng sàn</div>
+              </div>
+              <div class="seg-control" id="revenueRangeFilter" style="margin-bottom:0;">
+                <button class="seg-btn" data-range="7">7 ngày</button>
+                <button class="seg-btn active" data-range="30">30 ngày</button>
+                <button class="seg-btn" data-range="90">90 ngày</button>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 20px 24px 8px;">
+            <div class="mini-bar-chart" id="revenueChart"></div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="content-card-header"><div class="content-card-title"><span class="material-symbols-outlined">category</span> Doanh thu theo danh mục</div></div>
+          <div style="padding: 8px 24px 20px;" id="revenueByCategory"></div>
+        </div>
+
+        <div class="content-card" style="margin-top:20px;">
+          <div class="content-card-header">
+            <div class="content-card-title"><span class="material-symbols-outlined">storefront</span> Doanh thu theo cửa hàng</div>
+          </div>
+          <div class="store-filter-bar">
+            <span class="store-filter-label">Xem thống kê theo ngày:</span>
+            <select id="storeFilterDay" class="date-part-select"></select>
+            <span class="date-sep">/</span>
+            <select id="storeFilterMonth" class="date-part-select"></select>
+            <span class="date-sep">/</span>
+            <select id="storeFilterYear" class="date-part-select"></select>
+            <button class="btn btn-primary btn-sm" onclick="applyStoreDateFilter()"><span class="material-symbols-outlined" style="font-size:16px;">search</span> Xem thống kê</button>
+            <button class="btn btn-outline btn-sm" onclick="resetStoreDateFilter()">Toàn thời gian</button>
+            <span class="store-filter-hint" id="storeFilterHint"></span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>Cửa hàng</th>
+                <th style="text-align:right;">Số đơn</th>
+                <th style="text-align:right;">Doanh thu</th>
+                <th style="text-align:right;">Hoa hồng sàn</th>
+                <th style="text-align:center;">Xu hướng</th>
+                <th style="text-align:center;">Thao tác</th>
+              </tr>
+              </thead>
+              <tbody id="storeRevenueBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: WITHDRAW APPROVAL -->
+      <div id="financeViewWithdraw" class="finance-view" style="display:none;">
+        <div class="filter-tabs-bar" id="withdrawFilterTabs">
+          <button class="tab-chip active" data-filter="pending">Chờ duyệt <span class="tab-count">14</span></button>
+          <button class="tab-chip" data-filter="approved">Đã duyệt <span class="tab-count">3</span></button>
+          <button class="tab-chip" data-filter="rejected">Từ chối <span class="tab-count">1</span></button>
+        </div>
+        <div class="content-card">
+          <div class="content-card-header"><div class="content-card-title"><span class="material-symbols-outlined">account_balance_wallet</span> Yêu cầu rút tiền từ người bán</div></div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+              <tr><th>Người bán</th><th>Số tiền</th><th>Ngân hàng nhận</th><th>Thời gian yêu cầu</th><th style="text-align:center;">Trạng thái</th><th style="text-align:center;">Thao tác</th></tr>
+              </thead>
+              <tbody id="withdrawTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: CASH FLOW -->
+      <div id="financeViewCashflow" class="finance-view" style="display:none;">
+        <div class="content-card">
+          <div class="content-card-header">
+            <div class="content-card-title"><span class="material-symbols-outlined">swap_vert</span> Dòng tiền vào / ra theo ngày</div>
+            <div class="legend-row">
+              <div class="legend-item"><span class="legend-dot" style="background:var(--success);"></span> Tiền vào</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--danger);"></span> Tiền ra</div>
+            </div>
+          </div>
+          <div style="padding: 20px 24px 8px;">
+            <div class="mini-bar-chart" id="cashflowChart"></div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="content-card-header"><div class="content-card-title"><span class="material-symbols-outlined">receipt_long</span> Chi tiết dòng tiền gần đây</div></div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Thời gian</th><th>Loại giao dịch</th><th>Diễn giải</th><th style="text-align:right;">Số tiền</th><th style="text-align:center;">Chiều</th></tr></thead>
+              <tbody id="cashflowTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- APPROVE / REJECT WITHDRAW MODAL -->
+<div class="modal-backdrop" id="withdrawActionModal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-icon-circle" id="withdrawModalIcon"><span class="material-symbols-outlined" style="font-size:32px;">check_circle</span></div>
+    <h3 class="modal-title" id="withdrawModalTitle">Duyệt yêu cầu rút tiền</h3>
+    <p class="modal-desc" id="withdrawModalDesc">Xác nhận duyệt yêu cầu rút tiền của <strong>Tiệm Truyện Vũ Trụ</strong> - 12.000.000 ₫?</p>
+    <div id="withdrawRejectReasonWrap" style="display:none; text-align:left; margin-bottom:20px;">
+      <label style="font-size:.82rem; font-weight:700; display:block; margin-bottom:6px; color:var(--text-main);">Lý do từ chối:</label>
+      <select id="withdrawRejectReason" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:.85rem; background:#fff;">
+        <option value="info_mismatch">Thông tin ngân hàng không khớp hồ sơ</option>
+        <option value="fraud_suspect">Nghi vấn gian lận / giao dịch bất thường</option>
+        <option value="policy_violation">Vi phạm chính sách rút tiền</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('withdrawActionModal')">Quay lại</button>
+      <button class="btn btn-primary" id="confirmWithdrawActionBtn" onclick="confirmWithdrawAction()">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORE DETAIL MODAL -->
+<div class="modal-backdrop" id="storeDetailModal" style="display:none;">
+  <div class="modal-dialog" style="max-width:600px; text-align:left;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+      <h3 class="modal-title" style="margin:0;">Chi tiết cửa hàng</h3>
+      <button onclick="closeModal('storeDetailModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+    </div>
+    <div id="storeDetailBody"></div>
+    <div class="modal-actions" style="justify-content:flex-end; margin-top:22px;">
+      <button class="btn btn-outline" onclick="closeModal('storeDetailModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/finance.js"></script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Phòng trao đổi giá - Comic Exchange</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../../shared/header/header.css">
+    <link rel="stylesheet" href="../../shared/footer/footer.css">
+    <link rel="stylesheet" href="../css/dealing-chat.css">
+</head>
+
+<body>
+
+<header class="site-header">
+    <div class="container header-container">
+        <!-- Logo Thương hiệu -->
+        <a href="../../buyer/html/home.html" class="brand-logo">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="brand-logo-text">
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+            </div>
+        </a>
+
+        <!-- Thanh tìm kiếm nhanh -->
+        <div class="header-search-bar">
+            <span class="search-category-tag">Tất cả truyện</span>
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Menu chính -->
+        <nav class="main-navigation">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../../buyer/html/home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+                </li>
+                <li class="nav-item">
+                    <a href="dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hành động người dùng -->
+        <div class="header-actions">
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <a href="../../buyer/html/shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="cart-count-badge">3</span>
+            </a>
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Đăng bán/Đổi truyện</span>
+            </a>
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="page">
+
+    <div class="breadcrumb">
+        <a href="../../buyer/html/home.html" style="color:inherit; text-decoration:none;">Trang chủ</a>
+        <span>/</span>
+        <a href="dealing-room.html" style="color:inherit; text-decoration:none;">Phòng trao đổi giá</a>
+        <span>/</span>
+        <strong>#PT2049</strong>
+    </div>
+
+    <div class="page-title">
+        <div>
+            <h1>Phòng trao đổi giá #PT2049</h1>
+            <p>
+                Trao đổi trực tiếp với đối phương: chọn truyện bạn có, bù thêm tiền nếu cần,
+                và chốt giá để tạo đơn hàng đàm phán.
+            </p>
+        </div>
+
+        <div class="dc-roleswitch" role="tablist" aria-label="Chọn góc nhìn">
+            <span class="dc-roleswitch-label"><i class="fa-solid fa-eye"></i> Góc nhìn</span>
+            <button type="button" role="tab" data-role="proposer" class="is-on" aria-selected="true">
+                <i class="fa-solid fa-hand-holding-heart"></i> Người đề nghị
+            </button>
+            <button type="button" role="tab" data-role="owner" aria-selected="false">
+                <i class="fa-solid fa-crown"></i> Chủ sở hữu
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================
+         THÔNG TIN 2 BÊN
+    ========================= -->
+    <section class="dc-hero" id="hero" aria-label="Thông tin phòng và thành viên"></section>
+
+    <!-- =========================
+         MÓN MUỐN TRAO ĐỔI
+    ========================= -->
+    <section class="dc-item" id="itemCard" aria-label="Sản phẩm trong phòng deal"></section>
+
+    <!-- =========================
+         CHAT + BẢNG ĐIỀU KHIỂN
+    ========================= -->
+    <div class="dc-layout">
+
+        <section class="dc-chat" aria-label="Khung chat đàm phán">
+
+            <div class="dc-chat-head" id="chatHead"></div>
+
+            <div class="dc-chat-scroll" id="chatScroll" aria-live="polite"></div>
+
+            <div class="dc-quick" id="quickReplies"></div>
+
+            <form class="dc-composer" id="composer" autocomplete="off">
+                <button type="button" class="dc-btn dc-btn--outline dc-btn--sm" id="composerOffer">
+                    <i class="fa-solid fa-coins"></i> Đề xuất tiền
+                </button>
+
+                <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Nhập tin nhắn…"
+                >
+
+                <button type="submit" class="dc-btn dc-btn--primary" id="sendBtn">
+                    <i class="fa-solid fa-paper-plane"></i> Gửi
+                </button>
+            </form>
+
+        </section>
+
+        <aside class="dc-side" id="sidePanel" aria-label="Bảng đề xuất"></aside>
+
+    </div>
+
+</main>
+
+
+<!-- =========================
+     TOAST
+========================= -->
+<div class="dc-toast" id="toast" role="status" aria-live="polite"></div>
+
+
+<!-- =========================
+     MODAL: SỐ TIỀN
+========================= -->
+<div class="dc-modal" id="offerModal" hidden>
+    <div class="dc-modal-box" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
+
+        <div class="dc-modal-head">
+            <h3 id="offerModalTitle">Đưa ra số tiền</h3>
+            <button type="button" class="dc-modal-x" data-close aria-label="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="dc-modal-body">
+
+            <div class="dc-field">
+                <label>Bạn muốn làm gì với khoản tiền?</label>
+                <div class="dc-seg dc-seg--2" id="dirSeg" role="tablist" aria-label="Chiều bù tiền">
+                    <button type="button" role="tab" data-dir="pay" id="dirPay" class="is-on">Tôi bù thêm tiền</button>
+                    <button type="button" role="tab" data-dir="get" id="dirGet">Tôi muốn nhận thêm</button>
+                </div>
+            </div>
+
+            <div class="dc-field">
+                <label for="amountInput">Số tiền</label>
+                <div class="dc-amount">
+                    <input
+                            type="text"
+                            id="amountInput"
+                            inputmode="numeric"
+                            placeholder="0"
+                    >
+                    <span>₫</span>
+                </div>
+
+                <div class="dc-chips" id="amountChips">
+                    <button type="button" data-add="10000">+10.000</button>
+                    <button type="button" data-add="20000">+20.000</button>
+                    <button type="button" data-add="50000">+50.000</button>
+                    <button type="button" data-add="100000">+100.000</button>
+                    <button type="button" data-add="reset">Xóa</button>
+                </div>
+            </div>
+
+            <div class="dc-field" id="offerNoteField">
+                <label for="offerNote">Lời nhắn kèm đề xuất</label>
+                <textarea
+                        id="offerNote"
+                        rows="2"
+                        placeholder="Ví dụ: Bộ của mình còn rất mới, bạn bù giúp mình nhé…"
+                ></textarea>
+            </div>
+
+            <div class="dc-preview" id="offerPreview"></div>
+
+            <div class="dc-modal-summary" id="offerModalSummary"></div>
+
+        </div>
+
+        <div class="dc-modal-foot">
+            <button type="button" class="dc-btn dc-btn--outline" data-close>Hủy</button>
+            <button type="button" class="dc-btn dc-btn--primary" id="offerSubmit">Gửi đề xuất</button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- =========================
+     MODAL: CHỐT GIÁ & KHÓA PHÒNG
+========================= -->
+<div class="dc-modal" id="lockModal" hidden>
+    <div class="dc-modal-box dc-modal-box--sm" role="dialog" aria-modal="true" aria-labelledby="lockModalTitle">
+
+        <div class="dc-modal-head">
+            <h3 id="lockModalTitle"><i class="fa-solid fa-lock"></i> Xác nhận chốt giá</h3>
+            <button type="button" class="dc-modal-x" data-close aria-label="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="dc-modal-body">
+
+            <div id="lockSummary"></div>
+
+            <label class="dc-check" style="margin-top:14px;">
+                <input type="checkbox" id="lockConfirm">
+                <span>
+                    Tôi xác nhận chọn request này theo giá niêm yết và thông tin hiển thị.
+                    Sau khi chốt, phòng ngừng nhận request mới; hai bên sẽ xác nhận địa chỉ và phí giao hàng ở bước tiếp theo.
+                </span>
+            </label>
+
+        </div>
+
+        <div class="dc-modal-foot">
+            <button type="button" class="dc-btn dc-btn--outline" data-close>Quay lại</button>
+            <button type="button" class="dc-btn dc-btn--dark" id="lockSubmit" disabled>
+                <i class="fa-solid fa-circle-check"></i> Xác nhận request
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<div class="dc-modal" id="dealEditModal" hidden>
+    <div class="dc-modal-box" role="dialog" aria-modal="true" aria-labelledby="dealEditTitle">
+        <div class="dc-modal-head">
+            <h3 id="dealEditTitle">Chỉnh sửa deal</h3>
+            <button type="button" class="dc-modal-x" data-close aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="dc-modal-body">
+            <div id="dealEditType" class="dc-type-locked"></div>
+            <div id="dealEditFields"></div>
+        </div>
+        <div class="dc-modal-foot">
+            <button type="button" class="dc-btn dc-btn--outline" data-close>Hủy</button>
+            <button type="button" class="dc-btn dc-btn--primary" data-act="save-deal-edit">Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="../js/dealing-chat.js"></script>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../../shared/footer/footer.js"></script>
+
+</body>
+</html>

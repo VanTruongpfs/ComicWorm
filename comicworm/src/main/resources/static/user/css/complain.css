@@ -1,0 +1,32 @@
+/* Complaint-only styles for evidence and history presentation. */
+.file-note { color: var(--neutral-default); font-size: .78rem; }
+.complaint-layout { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(280px, .9fr); gap: 20px; align-items: start; }
+.complaint-main { display: grid; gap: 20px; }
+.order-panel { display: grid; gap: 16px; }
+.order-toolbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.field.compact { margin: 0; }
+.field.compact label { display: block; margin-bottom: 6px; font-size: .75rem; color: var(--neutral-default); }
+.field.compact input,
+.field.compact select { width: 100%; }
+.table-wrap { max-height: 290px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; }
+.order-table { width: 100%; border-collapse: collapse; background: #fff; }
+.order-table th,
+.order-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: .82rem; }
+.order-table th { position: sticky; top: 0; z-index: 1; background: rgba(15, 23, 42, 0.04); color: var(--text-main); font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; }
+.order-row:hover { background: rgba(249, 115, 22, 0.03); }
+.order-link { border: none; background: transparent; color: var(--primary-default); font-weight: 700; cursor: pointer; padding: 0; }
+.order-status { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; }
+.status-đã-giao { background: rgba(34, 197, 94, 0.12); color: #166534; }
+.status-đang-giao { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+.status-đang-xử-lý { background: rgba(245, 158, 11, 0.12); color: #b45309; }
+.status-đã-hủy { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+.empty-table { padding: 18px 12px; text-align: center; color: var(--neutral-default); }
+.complaint-side .surface-card { height: 100%; }
+.history-list { display: grid; gap: 12px; }
+.history-item { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-muted); }
+.history-item header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.history-item strong { color: var(--text-main); font-size: .9rem; }
+.history-item p { margin: 9px 0 0; color: var(--text-secondary); font-size: .82rem; line-height: 1.45; }
+.history-item time { display: block; margin-top: 10px; color: var(--neutral-default); font-size: .72rem; }
+@media (max-width: 900px) { .complaint-layout { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .order-toolbar { grid-template-columns: 1fr; } }

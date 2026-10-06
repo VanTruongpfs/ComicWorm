@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhân sự & phân quyền | BookMooch Admin Console</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-common.css">
+  <link rel="stylesheet" href="../css/staff.css">
+</head>
+<body>
+<div class="app-container">
+  <div id="sidebarContainer" data-active="staff"></div>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+        <div class="store-selector"><span class="material-symbols-outlined">admin_panel_settings</span><span>Trung tâm Quản trị</span></div>
+        <div class="global-search">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="staffSearch" placeholder="Tìm nhân viên theo tên, email...">
+          <span class="search-shortcut">⌘K</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="nav-icon-btn" onclick="showToast('Không có thông báo mới về nhân sự')"><span class="material-symbols-outlined">notifications</span><span class="notification-badge-dot"></span></button>
+        <div class="user-profile-menu">
+          <div class="user-details"><div class="user-name" data-admin-name>Nguyễn Minh Admin</div><div class="user-role" data-admin-role>Super Admin</div></div>
+          <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <div class="page-header">
+        <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">badge</span> Quản trị hệ thống • Nhân sự</div>
+        <div class="page-title-row">
+          <div>
+            <h2 class="page-title">Quản trị nhân sự &amp; phân quyền</h2>
+            <p class="page-subtitle">Quản lý tài khoản nhân viên nội bộ và cấu hình nhóm quyền truy cập từng phân hệ hệ thống</p>
+          </div>
+          <div class="header-action-group">
+            <button class="btn btn-primary" onclick="openModal('addStaffModal')">
+              <span class="material-symbols-outlined">person_add</span> Thêm nhân viên
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Tổng nhân sự nội bộ</span><span class="kpi-value">24</span><span class="kpi-trend neutral">4 phòng ban</span></div>
+          <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">groups</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Quản trị viên (Admin)</span><span class="kpi-value">3</span><span class="kpi-trend info">Toàn quyền hệ thống</span></div>
+          <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">shield_person</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Kiểm duyệt viên</span><span class="kpi-value">9</span><span class="kpi-trend neutral">Xử lý báo cáo &amp; nội dung</span></div>
+          <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">fact_check</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content"><span class="kpi-label">Tài khoản tạm khoá</span><span class="kpi-value" style="color:#dc2626;">1</span><span class="kpi-trend warning">Đang xác minh nội bộ</span></div>
+          <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">lock_clock</span></div>
+        </div>
+      </section>
+
+      <div class="seg-control" id="staffSegControl">
+        <button class="seg-btn active" data-view="list">Danh sách nhân sự</button>
+        <button class="seg-btn" data-view="permissions">Chỉnh sửa phân quyền</button>
+      </div>
+
+      <!-- VIEW: STAFF LIST -->
+      <div id="staffViewList" class="staff-view">
+        <div class="content-card">
+          <div class="content-card-header">
+            <div class="content-card-title"><span class="material-symbols-outlined">list_alt</span> Danh sách nhân sự nội bộ</div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="staffTable">
+              <thead>
+              <tr><th>Nhân viên</th><th>Vai trò</th><th>Phòng ban</th><th>Đăng nhập gần nhất</th><th style="text-align:center;">Trạng thái</th><th style="text-align:center;">Thao tác</th></tr>
+              </thead>
+              <tbody id="staffTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW: PERMISSION MATRIX -->
+      <div id="staffViewPermissions" class="staff-view" style="display:none;">
+        <div class="content-card">
+          <div class="content-card-header">
+            <div class="content-card-title"><span class="material-symbols-outlined">rule_settings</span>Phân quyền theo nhóm vai trò</div>
+            <div class="header-action-group">
+              <button class="btn btn-outline btn-sm" onclick="openAddGroupModal()"><span class="material-symbols-outlined" style="font-size:16px;">add</span> Thêm nhóm quyền</button>
+              <button class="btn btn-primary btn-sm" onclick="savePermissions()"><span class="material-symbols-outlined" style="font-size:16px;">save</span> Lưu thay đổi</button>
+            </div>
+          </div>
+          <div class="table-responsive" style="padding: 4px 4px 12px;">
+            <table class="perm-matrix" id="permMatrix">
+              <thead>
+              <tr id="permMatrixHeadRow"></tr>
+              </thead>
+              <tbody id="permMatrixBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="policy-banner">
+          <div class="policy-banner-content">
+            <div class="policy-icon-circle"><span class="material-symbols-outlined">info</span></div>
+            <div class="policy-text">
+              <h4>Lưu ý về phân quyền</h4>
+              <p>Nhóm <strong>Super Admin</strong> luôn có toàn quyền và không thể chỉnh sửa. Các thay đổi ở nhóm còn lại sẽ có hiệu lực ngay sau khi lưu.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="modal-backdrop" id="addStaffModal" style="display:none;">
+  <div class="modal-dialog" style="max-width:480px; text-align:left;">
+    <h3 class="modal-title" style="text-align:center;">Thêm nhân viên mới</h3>
+    <p class="modal-desc" style="text-align:center;">Tạo tài khoản nội bộ và gán nhóm quyền phù hợp</p>
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="field"><label>Họ và tên</label><input type="text" id="newStaffName" placeholder="Phạm Văn Duy"></div>
+      <div class="field"><label>Email nội bộ</label><input type="email" id="newStaffEmail" placeholder="ten.nhanvien@bookmooch.vn"></div>
+      <div class="form-grid two-columns">
+        <div class="field"><label>Vai trò</label>
+          <select id="newStaffRole" data-role-select style="width:100%; padding:11px 12px; border:2px solid #cbd5e1; border-radius:7px;"></select>
+        </div>
+        <div class="field"><label>Phòng ban</label>
+          <select id="newStaffDept" style="width:100%; padding:11px 12px; border:2px solid #cbd5e1; border-radius:7px;">
+            <option>Vận hành</option>
+            <option>Kiểm duyệt nội dung</option>
+            <option>Chăm sóc khách hàng</option>
+            <option>Tài chính</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('addStaffModal')">Huỷ</button>
+      <button class="btn btn-primary" onclick="addStaff()">Tạo tài khoản nhân viên</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCK STAFF CONFIRM -->
+<div class="modal-backdrop" id="lockStaffModal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-icon-circle warning"><span class="material-symbols-outlined" style="font-size:32px;">lock</span></div>
+    <h3 class="modal-title" id="lockStaffTitle">Xác nhận khoá tài khoản nhân viên</h3>
+    <p class="modal-desc" id="lockStaffDesc">Nhân viên sẽ không thể đăng nhập hệ thống quản trị cho đến khi được mở khoá.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('lockStaffModal')">Quay lại</button>
+      <button class="btn btn-danger" onclick="confirmLockStaff()"><span class="material-symbols-outlined" style="font-size:16px;">check</span> Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT STAFF MODAL -->
+<div class="modal-backdrop" id="editStaffModal" style="display:none;">
+  <div class="modal-dialog" style="max-width:480px; text-align:left;">
+    <h3 class="modal-title" style="text-align:center;">Chỉnh sửa nhân viên</h3>
+    <p class="modal-desc" style="text-align:center;">Cập nhật vai trò, phòng ban và quyền truy cập của nhân viên</p>
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="field"><label>Họ và tên</label><input type="text" id="editStaffName"></div>
+      <div class="field"><label>Email nội bộ</label><input type="email" id="editStaffEmail"></div>
+      <div class="form-grid two-columns">
+        <div class="field"><label>Vai trò</label>
+          <select id="editStaffRole" data-role-select style="width:100%; padding:11px 12px; border:2px solid #cbd5e1; border-radius:7px;"></select>
+        </div>
+        <div class="field"><label>Phòng ban</label>
+          <select id="editStaffDept" style="width:100%; padding:11px 12px; border:2px solid #cbd5e1; border-radius:7px;">
+            <option>Vận hành</option>
+            <option>Kiểm duyệt nội dung</option>
+            <option>Chăm sóc khách hàng</option>
+            <option>Tài chính</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('editStaffModal')">Huỷ</button>
+      <button class="btn btn-primary" onclick="saveStaffEdit()">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PERMISSION GROUP MODAL -->
+<div class="modal-backdrop" id="addGroupModal" style="display:none;">
+  <div class="modal-dialog" style="max-width:420px; text-align:left;">
+    <h3 class="modal-title" style="text-align:center;">Thêm nhóm quyền mới</h3>
+    <p class="modal-desc" style="text-align:center;">Tạo một nhóm vai trò tuỳ chỉnh và cấu hình quyền truy cập từng phân hệ ngay sau khi tạo.</p>
+    <div class="field" style="margin-bottom:20px;">
+      <label>Tên nhóm quyền</label>
+      <input type="text" id="newGroupName" placeholder="VD: Kế toán, Marketing...">
+    </div>
+    <div class="modal-actions" style="justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('addGroupModal')">Huỷ</button>
+      <button class="btn btn-primary" onclick="confirmAddGroup()">Tạo nhóm quyền</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/staff.js"></script>
+</body>
+</html>

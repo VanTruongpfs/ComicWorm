@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Voucher &amp; Trung Tâm Ưu Đãi - ComicHub</title>
+
+    <!-- Favicon & PWA Icons -->
+    
+    
+
+    <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- File CSS độc lập -->
+    <link rel="stylesheet" href="../css/voucher.css">
+</head>
+<body>
+<!-- ================= SITE HEADER (DÙNG CHUNG) ================= -->
+<header class="site-header">
+
+    <div class="container header-container">
+
+        <!-- Logo Thương hiệu -->
+
+        <a href="home.html" class="brand-logo">
+
+            <div class="brand-logo-icon">
+
+                <i class="fa-solid fa-book-open"></i>
+
+            </div>
+
+            <div class="brand-logo-text">
+
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- Thanh tìm kiếm nhanh -->
+
+        <div class="header-search-bar">
+
+            <span class="search-category-tag">Tất cả truyện</span>
+
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- Menu chính -->
+
+        <nav class="main-navigation">
+
+            <ul class="nav-menu">
+
+
+                <li class="nav-item">
+
+                    <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+
+
+        <!-- Hành động người dùng -->
+
+        <div class="header-actions">
+
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+
+                <i class="fa-regular fa-bell"></i>
+
+                <span class="notification-indicator"></span>
+
+            </button>
+
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span class="cart-count-badge">3</span>
+
+            </a>
+
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+
+                <i class="fa-solid fa-circle-plus"></i>
+
+                <span>Đăng bán/Đổi truyện</span>
+
+            </a>
+
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ================= MAIN CONTENT KHO VOUCHER ================= -->
+<main class="main-content voucher-page">
+    <div class="container">
+        <!-- Breadcrumb & Trạng thái giỏ hàng -->
+        <div class="breadcrumb-container">
+            <nav aria-label="Breadcrumb">
+                <ul class="breadcrumb-list">
+                    <li class="breadcrumb-item"><a href="home.html"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
+                    <li class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></li>
+                    <li class="breadcrumb-item"><a href="payment.html">Thanh toán đơn hàng</a></li>
+                    <li class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></li>
+                    <li class="breadcrumb-item active" aria-current="page">Kho Voucher ComicHub</li>
+                </ul>
+            </nav>
+            <div class="cart-context-badge">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Đơn đang thanh toán: <strong>5.050.000₫</strong> (4 truyện)</span>
+                <span class="tag-auto-applied">TỰ ĐỘNG TỐI ƯU 2 MÃ (-85K)</span>
+            </div>
+        </div>
+
+        <!-- BANNER TIÊU ĐIỂM & WIDGET VÍ VOUCHER SHOPEE-STYLE -->
+        <section class="voucher-hero-section">
+            <div class="voucher-hero-card">
+                <div class="voucher-search-area">
+                    <div class="hero-tag-row">
+                        <span class="badge-tag-orange">KHO VOUCHER COMICHUB</span>
+                        <span class="refresh-time-text">Cập nhật mỗi ngày lúc 0H - 12H - 21H</span>
+                    </div>
+                    <h1 class="hero-voucher-title">Săn Mã Giảm Giá &amp; Ưu Đãi Độc Quyền Sưu Tầm</h1>
+
+                    <!-- Thanh nhập mã voucher -->
+                    <form class="voucher-code-input-form" action="#" method="POST">
+                        <div class="voucher-input-wrapper">
+                            <i class="fa-solid fa-ticket input-leading-icon"></i>
+                            <input type="text" class="voucher-text-input" placeholder="Nhập mã ưu đãi (VD: OTAKU50K, FREESHIP35K...)" aria-label="Nhập mã ưu đãi">
+                            <button type="submit" class="btn-save-voucher">LƯU MÃ</button>
+                        </div>
+                    </form>
+
+                    <!-- Gợi ý mã hot & liên kết nhanh -->
+                    <div class="voucher-quick-links">
+                        <div class="hot-suggestions">
+                            <span class="suggest-label">Gợi ý:</span>
+                            <button type="button" class="btn-suggest-code">OTAKU50K</button>
+                            <button type="button" class="btn-suggest-code">COMICFREE</button>
+                            <button type="button" class="btn-suggest-code">MANGA100K</button>
+                            <button type="button" class="btn-suggest-code">BARTERSAFE</button>
+                        </div>
+                        <div class="auxiliary-links">
+                            <a href="#rules" class="text-link"><i class="fa-regular fa-circle-question"></i> Quy chế &amp; Thể lệ</a>
+                            <a href="#history" class="text-link"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử voucher</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget Ví Voucher của tôi -->
+                <div class="voucher-wallet-widget">
+                    <div class="wallet-header">
+                        <div class="wallet-title">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>Ví Voucher Của Tôi</span>
+                        </div>
+                        <a href="#my-vouchers" class="wallet-all-link">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+                    </div>
+                    <div class="wallet-stats-grid">
+                        <div class="stat-cell available">
+                            <span class="stat-number">18</span>
+                            <span class="stat-desc">Voucher có sẵn</span>
+                        </div>
+                        <div class="stat-cell expiring">
+                            <span class="stat-number">3</span>
+                            <span class="stat-desc">Sắp hết hạn trong 24h</span>
+                        </div>
+                    </div>
+                    <div class="wallet-coins-footer">
+                        <div class="coins-amount">
+                            <i class="fa-solid fa-coins icon-coin"></i>
+                            <span>Otaku Coins: <strong>1.250 xu</strong></span>
+                        </div>
+                        <button type="button" class="btn-exchange-coin">Đổi xu lấy mã</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THANH DANH MỤC TABS (SHOPEE-STYLE TABS) -->
+        <nav class="voucher-tabs-bar" aria-label="Phân loại voucher">
+            <div class="tabs-scroll-wrapper">
+                <button type="button" class="voucher-tab-item active">Tất Cả <span class="count-pill">18</span></button>
+                <button type="button" class="voucher-tab-item"><i class="fa-solid fa-truck-fast"></i> Miễn Phí Vận Chuyển (SafeShip) <span class="count-pill">4</span></button>
+                <button type="button" class="voucher-tab-item"><i class="fa-solid fa-book"></i> Voucher ComicHub Toàn Sàn <span class="count-pill">6</span></button>
+                <button type="button" class="voucher-tab-item"><i class="fa-solid fa-coins"></i> Hoàn Xu Otaku Xtra <span class="count-pill">3</span></button>
+                <button type="button" class="voucher-tab-item"><i class="fa-solid fa-store"></i> Voucher Shop Uy Tín <span class="count-pill">3</span></button>
+                <button type="button" class="voucher-tab-item"><i class="fa-solid fa-arrows-rotate"></i> Barter &amp; Escrow <span class="count-pill">2</span></button>
+            </div>
+            <div class="sort-dropdown-wrap">
+                <span class="sort-label">Sắp xếp:</span>
+                <select class="sort-select" aria-label="Sắp xếp danh sách voucher">
+                    <option value="newest" selected>Mới nhất</option>
+                    <option value="discount-high">Giảm nhiều nhất</option>
+                    <option value="expiring-soon">Sắp hết hạn</option>
+                </select>
+            </div>
+        </nav>
+
+        <!-- THÔNG BÁO CƠ CHẾ GỘP MÃ TỰ ĐỘNG -->
+        <div class="stacking-rules-card">
+            <div class="rule-icon-box">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div class="rule-content-text">
+                <strong>Cơ chế áp dụng cùng lúc tối đa 3 loại mã cho mỗi đơn hàng ComicHub:</strong>
+                <span>1 Mã Giảm Giá Sách + 1 Mã Miễn Phí Vận Chuyển SafeShip + 1 Mã Trợ Giá Trao Đổi Barter Ký Quỹ hoặc Hoàn Xu.</span>
+            </div>
+            <div class="rule-auto-applied-tag">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Tự động chọn voucher tốt nhất khi thanh toán</span>
+            </div>
+        </div>
+
+        <!-- ================= DANH SÁCH CÁC PHÂN KHU VOUCHER ================= -->
+        <!-- 1. VOUCHER MIỄN PHÍ VẬN CHUYỂN SAFESHIP -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-teal"></span>
+                    <h2>Voucher Miễn Phí Vận Chuyển</h2>
+                    <span class="badge-sub">SafeShip Đóng Hộp Chống Sốc</span>
+                </div>
+                <span class="category-subtext">Có thể áp dụng cùng mã giảm giá toàn sàn</span>
+            </div>
+            <div class="voucher-cards-grid">
+                <!-- Card 1: Freeship 35k (Đang áp dụng) -->
+                <article class="voucher-ticket-card applied-border">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <!-- Cuống vé -->
+                    <div class="ticket-left-stub bg-teal">
+                        <i class="fa-solid fa-truck-fast stub-icon"></i>
+                        <span class="stub-title">FREESHIP<br>XTRA</span>
+                        <span class="stub-sub">MỌI HÌNH THỨC</span>
+                        <span class="stub-badge">SafeShip 4 Lớp</span>
+                    </div>
+                    <!-- Thân vé -->
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-in-use">ĐANG ÁP DỤNG TRONG GIỎ</span>
+                                <span class="ticket-code-badge">COMICFREE</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm tối đa 35.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 300.000₫. Gói chống sốc xốp bóng khí 4 lớp bảo vệ góc bìa manga.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time warning-orange"><i class="fa-regular fa-clock"></i> HSD: Còn 3 ngày</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-cancel">Bỏ Chọn</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 2: Freeship Hỏa Tốc 70k -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <!-- Cuống vé -->
+                    <div class="ticket-left-stub bg-teal">
+                        <i class="fa-solid fa-paper-plane stub-icon"></i>
+                        <span class="stub-title">FREESHIP<br>HỎA TỐC</span>
+                        <span class="stub-sub">HÀ NỘI &amp; TP.HCM</span>
+                        <span class="stub-badge">Giao 2 Giờ</span>
+                    </div>
+                    <!-- Thân vé -->
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-hot">SỐ LƯỢNG CÓ HẠN</span>
+                                <span class="ticket-code-badge">SHIP2H70K</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 70.000₫ phí ship</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 1.500.000₫. Áp dụng các shop truyện nội thành cùng khu vực.</p>
+                            <!-- Thanh tiến độ đã dùng -->
+                            <div class="ticket-progress-bar-wrap">
+                                <div class="progress-track"><div class="progress-fill" style="width: 74%;"></div></div>
+                                <span class="progress-label">Đã dùng 74%</span>
+                            </div>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 30/11/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-primary-orange">Dùng Ngay</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 2. VOUCHER COMICHUB TOÀN SÀN -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-orange"></span>
+                    <h2>Voucher ComicHub Toàn Sàn</h2>
+                    <span class="badge-sub">Tất Cả Manga &amp; Comic</span>
+                </div>
+                <span class="category-subtext">Chọn 1 mã giảm giá sách tốt nhất</span>
+            </div>
+            <div class="voucher-cards-grid grid-3-cols">
+                <!-- Card 1: Giảm 50k (Đang áp dụng) -->
+                <article class="voucher-ticket-card applied-border">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-orange">
+                        <i class="fa-solid fa-book-open stub-icon"></i>
+                        <span class="stub-title">GIẢM SÁCH<br>50K</span>
+                        <span class="stub-badge">TOÀN SÀN</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-in-use">ĐANG ÁP DỤNG (-50K)</span>
+                                <span class="ticket-code-badge">OTAKU50K</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 50.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 500.000₫. Áp dụng cho mọi thể loại manga &amp; comic.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 31/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <div class="ticket-actions-cluster">
+                                <span class="badge-saved">ĐÃ LƯU</span>
+                                <button type="button" class="btn-ticket-action btn-outline-cancel">Bỏ Chọn</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 2: Giảm 100k (Tiết kiệm hơn cho đơn này) -->
+                <article class="voucher-ticket-card highlight-border">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-orange">
+                        <i class="fa-solid fa-tags stub-icon"></i>
+                        <span class="stub-title">GIẢM SÁCH<br>100K</span>
+                        <span class="stub-badge">ĐƠN LỚN</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-recommend">TIẾT KIỆM HƠN CHO ĐƠN HIỆN TẠI</span>
+                                <span class="ticket-code-badge">MANGA100K</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 100.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 2.500.000₫. Phù hợp bộ truyện tranh nguyên bộ/boxset.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 18/11/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <div class="ticket-actions-cluster">
+                                <span class="badge-saved">ĐÃ LƯU</span>
+                                <button type="button" class="btn-ticket-action btn-primary-orange">Đổi Mã Này</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 3: Giảm 200k (Hộp đặc biệt) -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-orange">
+                        <i class="fa-solid fa-box-archive stub-icon"></i>
+                        <span class="stub-title">BOXSET<br>200K</span>
+                        <span class="stub-badge">HARDCOVER</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-danger">SẮP HẾT LƯỢT</span>
+                                <span class="ticket-code-badge">BOXSET200K</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 200.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 4.000.000₫. Áp dụng cho các ấn phẩm Deluxe / Hardcover.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time warning-orange"><i class="fa-regular fa-clock"></i> HSD: Còn 6 ngày</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <div class="ticket-actions-cluster">
+                                <span class="badge-saved">ĐÃ LƯU</span>
+                                <button type="button" class="btn-ticket-action btn-primary-orange">Đổi Mã Này</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 3. HOÀN XU OTAKU COINS XTRA -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-amber"></span>
+                    <h2>Hoàn Xu Otaku Coins Xtra</h2>
+                    <span class="badge-sub">Tích Lũy Điểm Collector</span>
+                </div>
+                <a href="#otaku-coins" class="category-link">Tìm hiểu Otaku Coins &gt;</a>
+            </div>
+            <div class="voucher-cards-grid">
+                <!-- Card 1: Hoàn 10% tối đa 70k -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-amber">
+                        <i class="fa-solid fa-coins stub-icon"></i>
+                        <span class="stub-title">HOÀN XU<br>XTRA 10%</span>
+                        <span class="stub-sub">Tất Cả Thể Loại</span>
+                        <span class="stub-badge">Coins Hoàn 100%</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-amber">TÍCH XU SƯU TẦM</span>
+                                <span class="ticket-code-badge">COIN10XTRA</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Hoàn 10% Tối đa 70k Otaku Coins</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 400.000₫. Xu cộng trực tiếp vào ví để trừ tiền đơn kế tiếp hoặc đổi quà lưu niệm.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: Còn 5 ngày</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-orange">Lưu Thêm</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 2: Hoàn 15% VIP Gold -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-amber-dark">
+                        <i class="fa-solid fa-crown stub-icon"></i>
+                        <span class="stub-title">HOÀN XU<br>VIP 15%</span>
+                        <span class="stub-sub">Collector Gold</span>
+                        <span class="stub-badge">Hạng Vàng</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-vip">ĐẶC QUYỀN THÀNH VIÊN VÀNG</span>
+                                <span class="ticket-code-badge">GOLDCOIN15</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Hoàn 15% Tối đa 150k Coins</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 1.000.000₫. Dành riêng cho thành viên đạt hạng Vàng (Gold) trở lên.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 31/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-primary-orange">Dùng Ngay</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 4. VOUCHER TỪ NHÀ SÁCH & SHOP UY TÍN -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-blue"></span>
+                    <h2>Voucher Từ Nhà Sách &amp; Shop Uy Tín</h2>
+                    <span class="badge-sub">Cộng dồn cùng mã ComicHub</span>
+                </div>
+                <a href="home.html#marketplace" class="category-link">Ghé Chợ Mua Bán &gt;</a>
+            </div>
+            <div class="voucher-cards-grid grid-3-cols">
+                <!-- Card 1: Kim Đồng Collector -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-blue">
+                        <i class="fa-solid fa-store stub-icon"></i>
+                        <span class="stub-title">KIM ĐỒNG<br>COLLECTOR</span>
+                        <span class="stub-sub">Shop Mall</span>
+                        <span class="stub-badge">Chính Hãng</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <span class="shop-badge-label">VOUCHER GIAN HÀNG</span>
+                            <h3 class="voucher-discount-title">Giảm 40.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 350.000₫ khi mua truyện thuộc gian hàng Kim Đồng Collector.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 28/11/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-orange">Lưu Mã</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 2: Trẻ Publish Store -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-purple-blue">
+                        <i class="fa-solid fa-bag-shopping stub-icon"></i>
+                        <span class="stub-title">TRẺ PUBLISH<br>STORE</span>
+                        <span class="stub-sub">Shop Mall</span>
+                        <span class="stub-badge">NXB Trẻ</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <span class="shop-badge-label">VOUCHER GIAN HÀNG</span>
+                            <h3 class="voucher-discount-title">Giảm 8% Tối đa 60k</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 450.000₫ cho tất cả ấn phẩm NXB Trẻ (Conan, Fullmetal...).</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 15/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-orange">Lưu Mã</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 3: Otaku Bookstore -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-navy-blue">
+                        <i class="fa-solid fa-cube stub-icon"></i>
+                        <span class="stub-title">OTAKU<br>BOOKSTORE</span>
+                        <span class="stub-sub">Shop Yêu Thích</span>
+                        <span class="stub-badge">Đánh Giá 5 ★</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <span class="shop-badge-label">VOUCHER GIAN HÀNG</span>
+                            <h3 class="voucher-discount-title">Giảm 25.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 200.000₫ mua manga lẻ và phụ kiện bookmark bọc truyện.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: Còn 4 ngày</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-orange">Lưu Mã</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 5. ƯU ĐÃI ĐỘC QUYỀN SÀN TRAO ĐỔI BARTER & KÝ QUỸ ESCROW -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-purple"></span>
+                    <h2>Ưu Đãi Độc Quyền Sàn Trao Đổi Barter &amp; Ký Quỹ Escrow</h2>
+                    <span class="badge-sub">Đặc Thù ComicHub</span>
+                </div>
+                <a href="../../exchange/html/dealing-room.html" class="category-link">Khám phá Sàn Đổi Ngang 1–1 &gt;</a>
+            </div>
+            <div class="voucher-cards-grid">
+                <!-- Card 1: Miễn phí 100% Escrow -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-purple">
+                        <i class="fa-solid fa-shield-halved stub-icon"></i>
+                        <span class="stub-title">BARTER<br>ESCROW</span>
+                        <span class="stub-sub">Bảo Hiểm 1–1</span>
+                        <span class="stub-badge">Giữ Tiền An Toàn</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-purple">TRỢ GIÁ TRUNG GIAN</span>
+                                <span class="ticket-code-badge">BARTERSAFE</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Miễn 100% Phí Escrow Ký Quỹ</h3>
+                            <p class="voucher-condition-text">Miễn phí dịch vụ bảo chứng đổi trọng sách cho đơn giao lưu ngang tập. Tiết kiệm 40.000₫.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 05/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-dark-apply">Áp Dụng Cho Kèo Đổi</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Card 2: Thẩm định CGC 50k -->
+                <article class="voucher-ticket-card">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-indigo">
+                        <i class="fa-solid fa-certificate stub-icon"></i>
+                        <span class="stub-title">GRADING<br>CHECK</span>
+                        <span class="stub-sub">Kiểm Định Sách</span>
+                        <span class="stub-badge">Near Mint / Good</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-indigo">TRỢ GIÁ THẨM ĐỊNH</span>
+                                <span class="ticket-code-badge">CGCCHECK50</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 50.000₫ Phí Chấm Điểm CGC</h3>
+                            <p class="voucher-condition-text">Trợ giá phí kiểm định tình trạng sách hiếm qua ComicHub Hub Station trước khi bàn giao.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time"><i class="fa-regular fa-clock"></i> HSD: 31/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-outline-orange">Lưu Mã</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 6. KHUNG GIỜ VÀNG SĂN MÃ (0H - 12H - 21H) -->
+        <section class="voucher-category-group">
+            <div class="category-header-row">
+                <div class="category-title-wrap">
+                    <span class="category-indicator color-slate"></span>
+                    <h2>Săn Thêm Mã Vào Khung Giờ Vàng (0H - 12H - 21H)</h2>
+                    <span class="badge-sub">Sắp Mở Lượt</span>
+                </div>
+                <div class="countdown-badge">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>Mở đợt tiếp theo sau: <strong class="countdown-digits">02:14:35</strong></span>
+                </div>
+            </div>
+            <div class="voucher-cards-grid">
+                <!-- Slot 12:00 Trưa (Khóa đếm ngược) -->
+                <article class="voucher-ticket-card card-locked">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-slate-locked">
+                        <i class="fa-solid fa-lock stub-icon"></i>
+                        <span class="stub-title">MỞ LÚC<br>12:00 TRƯA</span>
+                        <span class="stub-sub">Flash Voucher</span>
+                        <span class="stub-badge">Giới Hạn 200 Suất</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <span class="badge-locked-status">SẮP DIỄN RA</span>
+                            <h3 class="voucher-discount-title">Giảm 50% Tối Đa 150.000₫</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 0đ. Áp dụng cho 100 khách hàng nhanh tay nhất khung giờ 12h trưa nay.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time">Khung giờ: 12:00 – 13:00</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <button type="button" class="btn-ticket-action btn-notify"><i class="fa-regular fa-bell"></i> Nhắc Tôi</button>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+
+                <!-- Slot Cần Mua Thêm (Mở khóa điều kiện) -->
+                <article class="voucher-ticket-card card-condition-locked">
+                    <div class="ticket-sawtooth left-sawtooth"></div>
+                    <div class="ticket-left-stub bg-navy-locked">
+                        <i class="fa-solid fa-gem stub-icon"></i>
+                        <span class="stub-title">VIP SLAB<br>300K</span>
+                        <span class="stub-sub">Cần 8 Triệu</span>
+                        <span class="stub-badge">Chưa Đủ ĐK</span>
+                    </div>
+                    <div class="ticket-right-body">
+                        <div class="ticket-body-top">
+                            <div class="ticket-badge-row">
+                                <span class="badge-need-more">CẦN MUA THÊM 2.950.000₫</span>
+                                <span class="progress-ratio">Tiến trình: 63%</span>
+                            </div>
+                            <h3 class="voucher-discount-title">Giảm 300.000₫ Bản Hiếm CGCGRADE</h3>
+                            <p class="voucher-condition-text">Đơn Tối Thiểu 8.000.000₫. Dành cho các bộ truyện hiếm niên đại 1980–2000 có chứng nhận niêm phong.</p>
+                        </div>
+                        <div class="ticket-body-bottom">
+                            <div class="ticket-meta-info">
+                                <span class="expiring-time">HSD: 31/12/2025</span>
+                                <button type="button" class="btn-terms">Điều Kiện</button>
+                            </div>
+                            <a href="home.html#marketplace" class="btn-ticket-action btn-outline-slate">Mua Thêm &gt;</a>
+                        </div>
+                    </div>
+                    <div class="ticket-sawtooth right-sawtooth"></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ================= FLOATING STICKY ACTION BAR ================= -->
+        <aside class="floating-voucher-bar" aria-label="Thanh xác nhận mã">
+            <div class="floating-bar-content">
+                <div class="floating-status-wrap">
+                    <div class="floating-icon-box">
+                        <i class="fa-solid fa-ticket-simple"></i>
+                    </div>
+                    <div class="floating-text-group">
+                        <div class="floating-title-row">
+                            <strong>Đã áp dụng 2 voucher vào giỏ:</strong>
+                            <span class="tag-code-active">OTAKU50K</span>
+                            <span class="tag-code-active">COMICFREE</span>
+                        </div>
+                        <div class="floating-saving-calc">
+                            <span>Tổng số tiền khấu trừ: <strong class="highlight-saving">-85.000₫</strong></span>
+                            <span class="saving-detail">(Giảm tiền sách: 50.000₫ • Giảm phí vận chuyển: 35.000₫)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-actions-group">
+                    <a href="home.html" class="btn-continue-browse">Tiếp tục mua sách</a>
+                    <a href="payment.html" class="btn-confirm-checkout">ĐỒNG Ý &amp; THANH TOÁN <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CAM KẾT SÀN BẢO ĐẢM -->
+        <section class="trust-features-row">
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="feature-content">
+                    <h3>Giao Dịch Bảo Đảm 100%</h3>
+                    <p>Giữ tiền trung gian bảo vệ cả người mua &amp; đổi truyện</p>
+                </div>
+            </div>
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-certificate"></i></div>
+                <div class="feature-content">
+                    <h3>Kiểm Định Tình Trạng</h3>
+                    <p>Chuẩn phân loại Near Mint, Fine, Good minh bạch</p>
+                </div>
+            </div>
+            <div class="trust-feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="feature-content">
+                    <h3>Cộng Đồng 100K+ Collector</h3>
+                    <p>Hệ sinh thái trao đổi đam mê Manga &amp; Comic lớn nhất</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- ================= SITE FOOTER (DÙNG CHUNG) ================= -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="../js/voucher.js"></script>
+</body>
+</html>

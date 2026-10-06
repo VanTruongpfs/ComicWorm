@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Quản trị | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body data-public-page>
+<main class="admin-gate">
+    <div class="gate-card">
+        <div class="gate-brand">
+            <div class="brand-icon" style="width:44px;height:44px;">
+                <span class="material-symbols-outlined">shield_person</span>
+            </div>
+            <div>
+                <div style="color:#fff; font-family: var(--font-heading); font-weight:700; font-size:1.05rem; line-height:1.2;">BookMooch</div>
+                <div style="color: var(--primary-container); font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;">Admin Console</div>
+            </div>
+        </div>
+
+        <h1 class="gate-title">Đăng nhập quản trị</h1>
+        <p class="gate-subtitle">Khu vực dành riêng cho Quản trị viên (Admin) và Quản lý (Manager) hệ thống BookMooch. Vui lòng đăng nhập bằng tài khoản nội bộ được cấp.</p>
+
+        <div class="gate-error" id="gateError">
+            <span class="material-symbols-outlined" style="font-size:18px;">error</span>
+            <span id="gateErrorText">Email hoặc mật khẩu không chính xác.</span>
+        </div>
+
+        <form id="adminLoginForm" novalidate>
+            <div class="gate-field">
+                <label for="adminEmail">Email quản trị</label>
+                <div class="input-wrap">
+                    <span class="material-symbols-outlined">mail</span>
+                    <input type="email" id="adminEmail" name="email" placeholder="admin@bookmooch.vn" autocomplete="username" required>
+                </div>
+            </div>
+            <div class="gate-field">
+                <label for="adminPassword">Mật khẩu</label>
+                <div class="input-wrap">
+                    <span class="material-symbols-outlined">lock</span>
+                    <input type="password" id="adminPassword" name="password" placeholder="••••••••" autocomplete="current-password" required>
+                    <button type="button" class="password-toggle-btn" id="togglePw">
+                        <span class="material-symbols-outlined" style="font-size:18px;">visibility</span>
+                    </button>
+                </div>
+            </div>
+            <div class="gate-row">
+                <label class="gate-check">
+                    <input type="checkbox" class="custom-checkbox" id="rememberMe">
+                    Ghi nhớ đăng nhập
+                </label>
+                <a href="#" class="gate-link" onclick="showToast('Vui lòng liên hệ IT nội bộ để đặt lại mật khẩu quản trị'); return false;">Quên mật khẩu?</a>
+            </div>
+            <button type="submit" class="gate-submit" id="gateSubmitBtn">Đăng nhập vào hệ thống</button>
+        </form>
+
+        <div class="gate-demo-hint">
+            <b>Demo nhanh:</b> chọn vai trò để vào thẳng Dashboard —
+            <a href="#" class="gate-link" onclick="quickLogin('ADMIN'); return false;">Admin</a> ·
+            <a href="#" class="gate-link" onclick="quickLogin('MANAGER'); return false;">Manager</a>
+        </div>
+
+        <p class="gate-footnote">© 2026 BookMooch Vietnam — Hệ thống quản trị nội bộ, không chia sẻ thông tin đăng nhập.</p>
+    </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/login.js"></script>
+</body>
+</html>

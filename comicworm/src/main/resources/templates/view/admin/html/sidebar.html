@@ -1,0 +1,95 @@
+<!-- SIDEBAR COMPONENT (BookMooch Admin Console) -->
+<aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <span class="material-symbols-outlined">shield_person</span>
+            </div>
+            <div class="brand-info">
+                <h1>BookMooch</h1>
+                <span>Admin Console</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Tổng quan</div>
+        <a href="dashboard.html" class="nav-item" data-page="dashboard">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">space_dashboard</span>
+                <span>Admin Dashboard</span>
+            </div>
+        </a>
+
+        <div class="nav-section-title">Quản trị hệ thống</div>
+        <a href="accounts.html" class="nav-item" data-page="accounts">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">manage_accounts</span>
+                <span>Quản lý tài khoản</span>
+            </div>
+            <span class="nav-badge">3</span>
+        </a>
+        <a href="staff.html" class="nav-item" data-page="staff">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">badge</span>
+                <span>Nhân sự &amp; phân quyền</span>
+            </div>
+        </a>
+        <a href="fees.html" class="nav-item" data-page="fees">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">request_quote</span>
+                <span>Biểu phí &amp; chính sách</span>
+            </div>
+        </a>
+        <a href="vouchers.html" class="nav-item" data-page="vouchers">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">local_activity</span>
+                <span>Voucher toàn hệ thống</span>
+            </div>
+        </a>
+
+        <div class="nav-section-title">Tài chính &amp; vận hành</div>
+        <a href="finance.html" class="nav-item" data-page="finance">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">monitoring</span>
+                <span>Doanh thu &amp; dòng tiền</span>
+            </div>
+            <span class="nav-badge">5</span>
+        </a>
+        <a href="orders.html" class="nav-item" data-page="orders">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">package_2</span>
+                <span>Quản lý đơn hàng</span>
+            </div>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="store-status-pill">
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>Hệ thống: Hoạt động ổn định</span>
+            </div>
+            <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">dns</span>
+        </div>
+        <div class="sidebar-actions">
+            <a href="#" class="sidebar-action-btn" onclick="showToast('Mở cài đặt tài khoản quản trị')">
+                <span class="material-symbols-outlined" style="font-size: 18px;">settings</span>
+                <span>Cài đặt</span>
+            </a>
+            <a href="login.html" class="sidebar-action-btn logout" onclick="localStorage.removeItem('bm_admin_session')">
+                <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+
+        <div class="nav-section-title">Quản trị nội dung</div>
+        <a href="postModeration.html" class="nav-item" data-page="appeal-resolution">
+            <div class="nav-item-content">
+                <span class="material-symbols-outlined">gavel</span>
+                <span>Quản trị phê duyệt</span>
+            </div>
+        </a>
+        </div>
+    </div>
+</aside>

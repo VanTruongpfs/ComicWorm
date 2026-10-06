@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yêu cầu rút tiền | ComicHub Seller Portal</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <link rel="stylesheet" href="../css/withdraw.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR (Nạp từ file sidebar.html riêng biệt) -->
+    <div id="sidebarContainer" data-active="withdraw"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Mở menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="store-badge" title="Gian hàng chính thức của bạn">
+            <span class="material-symbols-outlined store-icon">storefront</span>
+            <span class="store-name">Tiệm Truyện Vũ Trụ</span>
+            <span class="store-verified" title="Gian hàng đã xác thực">
+              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+            </span>
+            <span class="store-status-dot" title="Đang mở cửa hoạt động"></span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="nav-icon-btn" title="Thông báo mới">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notification-badge-dot"></span>
+          </button>
+          <div class="user-profile-menu">
+            <div class="user-details">
+              <div class="user-name">Trần Đăng Khoa</div>
+              <div class="user-role">Pro Seller</div>
+            </div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4W4fxRdEwEUti0BU4ZPunWEZMYRM5XRFFlgIpx5h5FcGigyLtFd7NM4wAKmn97UX_qn2USeyOTbIRFCnmQoBVyYsAZzk2Ommn4m96f0g8tJFlLLzGMdeLo7dnjurcqN9z0VjI4molZf84AY3b6Xl-s2jzDP8NviNKL_3XKBJ4WcGvVtQMCXF-FWLhW-6fAZmyE9-0dH2oGqFDNxunrsUeQMqf7VzQIHdjpzPSeoN1G2SHC3fTPCzWA" alt="Avatar" class="user-avatar">
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="breadcrumb-tag">
+            <span class="material-symbols-outlined" style="font-size: 14px;">credit_card</span>
+            Kênh thanh khoản ComicHub
+          </div>
+          <div class="page-title-row">
+            <div>
+              <h2 class="page-title">Yêu cầu rút tiền</h2>
+              <p class="page-subtitle">Chuyển tiền nhanh 24/7 về tài khoản ngân hàng liên kết hoặc ví điện tử an toàn và tự động</p>
+            </div>
+            <div class="header-action-group">
+              <span class="badge badge-success" style="font-size: 0.82rem; padding: 6px 12px;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">verified_user</span>
+                Bảo mật Escrow 100%
+              </span>
+              <span class="badge badge-info" style="font-size: 0.82rem; padding: 6px 12px;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">bolt</span>
+                Hỗ trợ Napas 24/7
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- WITHDRAWAL FORM CARD (CENTERED / FOCUSED) -->
+        <div style="max-width: 820px; margin: 0 auto 36px;">
+          <div class="withdraw-card">
+            <!-- LINKED BANK CARD SECTION (HIỂN THỊ THẺ NGÂN HÀNG LIÊN KẾT) -->
+            <div class="linked-bank-card-section">
+              <div class="linked-card-header">
+                <span class="linked-card-title">
+                  <span class="material-symbols-outlined" style="color: var(--primary-container);">credit_card</span>
+                  Thẻ ngân hàng liên kết nhận tiền
+                </span>
+                <span class="card-status-pill">
+                  <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
+                  Đã xác thực Napas 24/7
+                </span>
+              </div>
+
+              <!-- THẺ VẬT LÝ VIRTUAL BANK CARD -->
+              <div class="virtual-bank-card" id="primaryVirtualCard">
+                <div class="card-top-row">
+                  <div class="card-bank-brand">
+                    <div class="card-bank-logo">
+                      <span class="material-symbols-outlined">account_balance</span>
+                    </div>
+                    <div>
+                      <span class="card-bank-name" id="cardBankName">VIETCOMBANK</span>
+                      <span class="card-bank-type" id="cardBranch">Chi nhánh Thủ Đức • TP. Hồ Chí Minh</span>
+                    </div>
+                  </div>
+                  <div class="card-network-badge">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">bolt</span>
+                    Napas 247
+                  </div>
+                </div>
+
+                <div class="card-chip-row">
+                  <div class="emv-chip"></div>
+                  <span class="material-symbols-outlined contactless-icon">contactless</span>
+                </div>
+
+                <div class="card-number-display" id="cardNumberDisplay">
+                  •••• •••• •••• 8829
+                </div>
+
+                <div class="card-bottom-row">
+                  <div>
+                    <span class="card-holder-label">CHỦ TÀI KHOẢN THỤ HƯỞNG</span>
+                    <span class="card-holder-name">TRAN DANG KHOA</span>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="card-holder-label">TRẠNG THÁI LIÊN KẾT</span>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span>
+                      Mặc định nhận tiền
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AMOUNT INPUT & QUICK CHIPS (KHÔNG HIỂN THỊ SỐ DƯ NGƯỜI DÙNG) -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
+                  Nhập số tiền cần rút
+                </label>
+                <span style="font-size: 0.82rem; color: var(--text-muted);">
+                  Hạn mức/ngày: <strong style="color: var(--text-main);">200.000.000 ₫</strong>
+                </span>
+              </div>
+              <div class="amount-input-group">
+                <input type="text" id="withdrawAmountInput" value="5.000.000" placeholder="0">
+                <span class="currency-badge">VND</span>
+              </div>
+              <div class="withdraw-error-hint" id="withdrawErrorHint">
+                <span class="material-symbols-outlined" style="font-size: 16px;">error</span>
+                <span id="withdrawErrorText">Số tiền rút tối thiểu là 50.000 ₫ và không vượt quá hạn mức 200.000.000 ₫!</span>
+              </div>
+              <div class="quick-amount-chips">
+                <button type="button" class="quick-chip" onclick="addAmount(2000000)">+2.000.000 ₫</button>
+                <button type="button" class="quick-chip" onclick="addAmount(5000000)">+5.000.000 ₫</button>
+                <button type="button" class="quick-chip" onclick="addAmount(10000000)">+10.000.000 ₫</button>
+                <button type="button" class="quick-chip" onclick="addAmount(20000000)">+20.000.000 ₫</button>
+              </div>
+            </div>
+
+            <!-- PAYMENT DESTINATIONS -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <label style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
+                  Chọn phương thức nhận tiền
+                </label>
+                <button type="button" style="font-size: 0.82rem; color: var(--primary-container); font-weight: 700; display: flex; align-items: center; gap: 4px;" onclick="showToast('Mở cổng liên kết tài khoản ngân hàng mới')">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+                  Thêm tài khoản mới
+                </button>
+              </div>
+
+              <!-- OPTION 1: VCB DEFAULT -->
+              <div class="bank-option-card selected" onclick="selectBank(this)">
+                <div class="bank-info-left">
+                  <div class="bank-logo-box" style="color: #065f46; background: #ecfdf5;">
+                    <span class="material-symbols-outlined">account_balance</span>
+                  </div>
+                  <div class="bank-text">
+                    <h4>
+                      Vietcombank
+                      <span class="badge badge-warning" style="font-size: 0.72rem; padding: 1px 6px;">Mặc định</span>
+                    </h4>
+                    <p>STK: 1012****8829 • Chi nhánh Thủ Đức &nbsp;|&nbsp; CHỦ TK: TRAN DANG KHOA</p>
+                  </div>
+                </div>
+                <div class="radio-circle"></div>
+              </div>
+
+              <!-- OPTION 2: MB BANK -->
+              <div class="bank-option-card" onclick="selectBank(this)">
+                <div class="bank-info-left">
+                  <div class="bank-logo-box" style="color: #1e40af; background: #eff6ff;">
+                    <span class="material-symbols-outlined">account_balance</span>
+                  </div>
+                  <div class="bank-text">
+                    <h4>MB Bank</h4>
+                    <p>STK: 0988****9999 • MB Priority &nbsp;|&nbsp; CHỦ TK: TRAN DANG KHOA</p>
+                  </div>
+                </div>
+                <div class="radio-circle"></div>
+              </div>
+
+              <!-- OPTION 3: MOMO / ZALOPAY -->
+              <div class="bank-option-card" onclick="selectBank(this)">
+                <div class="bank-info-left">
+                  <div class="bank-logo-box" style="color: #9d174d; background: #fdf2f8;">
+                    <span class="material-symbols-outlined">wallet</span>
+                  </div>
+                  <div class="bank-text">
+                    <h4>Ví MoMo / ZaloPay <span class="badge badge-info" style="font-size: 0.72rem; padding: 1px 6px;">Ví điện tử</span></h4>
+                    <p>Số điện thoại: 0988***999 &nbsp;|&nbsp; ĐÃ ĐỊNH DANH EKYC</p>
+                  </div>
+                </div>
+                <div class="radio-circle"></div>
+              </div>
+            </div>
+
+            <!-- FEE NOTICE BOX -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+              <span class="material-symbols-outlined" style="color: #2563eb; font-size: 22px;">info</span>
+              <span style="font-size: 0.85rem; color: #1e3a8a;">
+                <strong>Miễn phí rút tiền (0đ)</strong> • Tiền về tài khoản tức thì trong <strong>5 - 15 phút</strong> thông qua chuyển khoản liên ngân hàng 24/7.
+              </span>
+            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.05rem; font-weight: 700; border-radius: var(--radius-lg);" id="submitWithdrawBtn" onclick="handleWithdrawSubmit()">
+              <span class="material-symbols-outlined">verified</span>
+              Xác nhận rút tiền
+            </button>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 0.78rem; color: var(--text-muted);">
+              <span class="material-symbols-outlined" style="font-size: 16px;">lock</span>
+              <span>Chứng thực giao dịch mã hóa chuẩn PCI-DSS & OTP Smart</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT WITHDRAWAL HISTORY TABLE -->
+        <div class="content-card">
+          <div class="content-card-header">
+            <div>
+              <h3 class="content-card-title">
+                <span class="material-symbols-outlined" style="color: var(--primary-container);">history</span>
+                Lịch sử rút tiền gần đây
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Dữ liệu các đợt rút tiền từ doanh số bán truyện tranh và vật phẩm sưu tầm</p>
+            </div>
+            <div class="filter-tabs-bar" style="margin-bottom: 0;">
+              <button class="tab-chip active">Tất cả</button>
+              <button class="tab-chip">Đang chờ</button>
+              <button class="tab-chip">Hoàn tất</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã yêu cầu</th>
+                  <th>Thời gian tạo</th>
+                  <th style="text-align: right;">Số tiền rút</th>
+                  <th>Tài khoản nhận</th>
+                  <th style="text-align: center;">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- ROW 1 -->
+                <tr>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#WDR-90281</span>
+                        <button class="copy-btn" onclick="copyText('WDR-90281')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Mã giao dịch nội bộ</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; font-size: 0.88rem;">14:32 – 24/10/2023</div>
+                    <span style="font-size: 0.78rem; color: var(--primary);">Hôm nay</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: #ea580c;">
+                      15.000.000 ₫
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-symbols-outlined" style="color: #065f46; font-size: 18px;">account_balance</span>
+                      <div>
+                        <div style="font-weight: 600; font-size: 0.85rem;">Vietcombank - 1012****8829</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">TRAN DANG KHOA</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-warning">
+                      <span class="badge-dot"></span>
+                      Chờ duyệt
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- ROW 2 -->
+                <tr>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#WDR-89710</span>
+                        <button class="copy-btn" onclick="copyText('WDR-89710')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Hệ thống Napas 24/7</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; font-size: 0.88rem;">09:15 – 20/10/2023</div>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">4 ngày trước</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: var(--text-main);">
+                      8.500.000 ₫
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-symbols-outlined" style="color: #1e40af; font-size: 18px;">account_balance</span>
+                      <div>
+                        <div style="font-weight: 600; font-size: 0.85rem;">MB Bank - 0988****9999</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">TRAN DANG KHOA</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-success">
+                      <span class="badge-dot"></span>
+                      Thành công
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- ROW 3 -->
+                <tr>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#WDR-88540</span>
+                        <button class="copy-btn" onclick="copyText('WDR-88540')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Qũy thanh toán định kỳ</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; font-size: 0.88rem;">18:00 – 15/10/2023</div>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Tuần trước</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: var(--text-main);">
+                      22.000.000 ₫
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-symbols-outlined" style="color: #065f46; font-size: 18px;">account_balance</span>
+                      <div>
+                        <div style="font-weight: 600; font-size: 0.85rem;">Vietcombank - 1012****8829</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">TRAN DANG KHOA</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-success">
+                      <span class="badge-dot"></span>
+                      Thành công
+                    </span>
+                  </td>
+                </tr>
+
+                <!-- ROW 4 -->
+                <tr>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#WDR-87119</span>
+                        <button class="copy-btn" onclick="copyText('WDR-87119')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Kiểm định gian hàng</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; font-size: 0.88rem;">11:20 – 08/10/2023</div>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Tháng 10</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <span style="font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: var(--danger);">
+                      4.200.000 ₫
+                    </span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-symbols-outlined" style="color: #9d174d; font-size: 18px;">wallet</span>
+                      <div>
+                        <div style="font-weight: 600; font-size: 0.85rem;">MoMo - 0988***999</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">TRAN DANG KHOA</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <div>
+                      <span class="badge badge-danger">
+                        <span class="badge-dot"></span>
+                        Từ chối
+                      </span>
+                      <div style="font-size: 0.72rem; color: var(--danger-text); margin-top: 4px;">Tên chủ ví chưa trùng khớp CCCD</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div class="pagination-info">
+              Hiển thị <strong>4</strong> trong tổng số <strong>38</strong> yêu cầu rút tiền
+            </div>
+            <div class="pagination-controls">
+              <button class="page-btn" disabled><span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span></button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn" disabled><span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span></button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  <!-- WITHDRAW STEPPER PROGRESS MODAL (4 Bước chuyển tiền trực quan) -->
+  <div class="modal-backdrop" id="withdrawStepperModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; color: var(--primary);">
+          <span class="material-symbols-outlined">payments</span>
+          Tiến trình rút tiền Napas 24/7
+        </h3>
+        <button class="modal-close" onclick="closeWithdrawModal()" style="font-size: 24px; color: #94a3b8; cursor: pointer; border: none; background: none;">&times;</button>
+      </div>
+      <div style="text-align: center; margin: 16px 0 24px;">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Số tiền yêu cầu chuyển khoản</div>
+        <div id="modalWithdrawAmount" style="font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; color: var(--primary); margin: 4px 0;">
+          5.000.000 ₫
+        </div>
+        <div id="modalWithdrawBank" style="font-size: 0.85rem; color: var(--text-secondary);">
+          Về tài khoản: Vietcombank (STK: 1012****8829)
+        </div>
+      </div>
+
+      <!-- Stepper Progress Bar -->
+      <div class="stepper-progress">
+        <div class="stepper-line">
+          <div class="stepper-line-fill" id="stepperLineFill" style="width: 0%;"></div>
+        </div>
+        <div class="stepper-step active" id="step1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Khởi tạo</div>
+        </div>
+        <div class="stepper-step" id="step2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Duyệt sàn</div>
+        </div>
+        <div class="stepper-step" id="step3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Napas 247</div>
+        </div>
+        <div class="stepper-step" id="step4">
+          <div class="step-circle">
+            <span class="material-symbols-outlined" style="font-size: 16px;">done</span>
+          </div>
+          <div class="step-label">Thành công</div>
+        </div>
+      </div>
+
+      <div id="stepperStatusText" style="text-align: center; font-size: 0.88rem; color: var(--text-secondary); margin-top: 24px; padding: 12px 16px; background: var(--surface-bg); border-radius: var(--radius-md); font-weight: 500;">
+        Đang khởi tạo lệnh rút tiền...
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <button class="btn btn-primary" id="stepperCompleteBtn" style="display: none; min-width: 140px;" onclick="closeWithdrawModal()">
+          Hoàn tất
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="../js/common.js"></script>
+  <script src="../js/withdraw.js"></script>
+</body>
+</html>

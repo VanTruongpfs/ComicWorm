@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Voucher (Seller) - ComicHub</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <style>
+    .voucher-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+    .voucher-ticket {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .voucher-ticket:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .voucher-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .voucher-code-pill {
+      background: #fff7ed;
+      border: 1px dashed #ea580c;
+      color: #ea580c;
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .voucher-copy-btn {
+      background: transparent;
+      border: none;
+      color: #ea580c;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .progress-bar-bg {
+      background: #e2e8f0;
+      border-radius: 9999px;
+      height: 6px;
+      width: 100%;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+    .progress-bar-fill {
+      background: var(--primary);
+      height: 100%;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- QUICK SWITCHER BAR -->
+  <div class="quick-switcher-bar">
+    <div class="switcher-title">
+      <span class="material-symbols-outlined" style="font-size: 18px;">menu_book</span>
+      <span>TRƯỜNG T - SELLER CENTER:</span>
+    </div>
+    <div class="switcher-pills">
+      <a href="post-product-hub.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">grid_view</span> Tổng quan Hub
+      </a>
+      <a href="dang-ban-truyen.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">add_circle</span> 1. Đăng bán truyện
+      </a>
+      <a href="quan-ly-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">format_list_bulleted</span> 2. Quản lý bài đăng
+      </a>
+      <a href="chinh-sua-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">edit_note</span> 3. Chỉnh sửa bài đăng
+      </a>
+      <a href="an-xoa-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> 4. Ẩn/Xóa bài đăng
+      </a>
+      <a href="quan-ly-san-pham.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> 5. Quản lý sản phẩm
+      </a>
+      <a href="quan-ly-voucher.html" class="switcher-btn active">
+        <span class="material-symbols-outlined" style="font-size: 14px;">confirmation_number</span> 6. Quản lý voucher
+      </a>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- SIDEBAR DÙNG CHUNG VỚI SRC/TRUONG -->
+    <div id="sidebarContainer" data-active="quan-ly-voucher"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">
+            <span class="material-symbols-outlined" style="color: var(--primary);">confirmation_number</span>
+            Quản Lý Voucher & Mã Khuyến Mãi (Seller)
+          </h1>
+          <p class="page-desc">Tạo mã giảm giá riêng của shop để thu hút người mua truyện tranh và kích cầu doanh số</p>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-primary" onclick="openCreateVoucherModal()">
+            <span class="material-symbols-outlined">add</span> Tạo Voucher Mới
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Voucher đang kích hoạt</span>
+              <span class="stat-value" id="statActiveVouchers" style="color: var(--success);">0</span>
+              <span class="stat-trend up">Sẵn sàng áp dụng</span>
+            </div>
+            <div class="stat-icon green">
+              <span class="material-symbols-outlined">local_activity</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Lượt đã sử dụng</span>
+              <span class="stat-value" id="statUsedCount">0</span>
+              <span class="stat-trend up"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đơn thành công</span>
+            </div>
+            <div class="stat-icon blue">
+              <span class="material-symbols-outlined">shopping_cart_checkout</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng voucher phát hành</span>
+              <span class="stat-value" id="statTotalVouchers">0</span>
+              <span class="stat-trend">Chương trình khuyến mãi</span>
+            </div>
+            <div class="stat-icon orange">
+              <span class="material-symbols-outlined">redeem</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tỷ lệ chuyển đổi</span>
+              <span class="stat-value" id="statConversionRate" style="color: #9333ea;">62%</span>
+              <span class="stat-trend up">Hiệu quả cao</span>
+            </div>
+            <div class="stat-icon purple">
+              <span class="material-symbols-outlined">percent</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER TABS & SEARCH -->
+        <div class="card">
+          <div class="filter-tabs" id="voucherTabs">
+            <button class="filter-tab active" onclick="filterVouchers('all', this)">
+              Tất cả voucher (<span id="countVoucherAll">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('active', this)">
+              Đang diễn ra (<span id="countVoucherActive">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('upcoming', this)">
+              Sắp diễn ra (<span id="countVoucherUpcoming">0</span>)
+            </button>
+            <button class="filter-tab" onclick="filterVouchers('expired', this)">
+              Đã kết thúc (<span id="countVoucherExpired">0</span>)
+            </button>
+          </div>
+
+          <!-- VOUCHERS GRID -->
+          <div class="voucher-grid" id="voucherGridContainer">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CREATE / EDIT VOUCHER -->
+  <div class="modal-backdrop" id="voucherModal">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="voucherModalTitle">
+          <span class="material-symbols-outlined" style="color: var(--primary);">confirmation_number</span>
+          Tạo Mã Giảm Giá Cho Gian Hàng
+        </h3>
+        <button class="modal-close" onclick="closeModal('voucherModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="voucherForm" onsubmit="event.preventDefault(); saveVoucherData();">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="vCode">Mã Voucher (Code) <span class="required">*</span></label>
+              <div style="display: flex; gap: 6px;">
+                <input type="text" id="vCode" class="form-input" style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;" placeholder="SALE20K" required>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="generateRandomCode()">Random</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vType">Loại hình giảm giá <span class="required">*</span></label>
+              <select id="vType" class="form-select" onchange="toggleVoucherTypeFields()">
+                <option value="fixed">Giảm số tiền cố định (VNĐ)</option>
+                <option value="percent">Giảm theo phần trăm (%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="vTitle">Tên chương trình ưu đãi <span class="required">*</span></label>
+            <input type="text" id="vTitle" class="form-input" placeholder="Ví dụ: Tri ân fan manga giảm 15k đơn từ 120k" required>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="vValue">Mức giảm <span class="required">*</span></label>
+              <input type="number" id="vValue" class="form-input" placeholder="15000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vMaxDiscount">Giảm tối đa (VNĐ)</label>
+              <input type="number" id="vMaxDiscount" class="form-input" placeholder="30000">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vMinOrder">Đơn tối thiểu <span class="required">*</span></label>
+              <input type="number" id="vMinOrder" class="form-input" placeholder="100000" required>
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="vTotalQty">Số lượng phát hành <span class="required">*</span></label>
+              <input type="number" id="vTotalQty" class="form-input" value="50" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vStartDate">Ngày bắt đầu</label>
+              <input type="date" id="vStartDate" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vEndDate">Ngày kết thúc</label>
+              <input type="date" id="vEndDate" class="form-input" required>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('voucherModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveVoucherData()">Lưu Voucher</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/post-management.js"></script>
+  <script>
+    let currentVoucherFilter = 'all';
+
+    function filterVouchers(tab, btn) {
+      currentVoucherFilter = tab;
+      document.querySelectorAll('#voucherTabs .filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderVouchers();
+    }
+
+    function renderVouchers() {
+      const vouchers = DataStore.getVouchers();
+      
+      // Update stats
+      const activeCount = vouchers.filter(v => v.status === 'active').length;
+      document.getElementById('statActiveVouchers').innerText = activeCount;
+      const usedTotal = vouchers.reduce((sum, v) => sum + (v.usedQuantity || 0), 0);
+      document.getElementById('statUsedCount').innerText = usedTotal;
+      document.getElementById('statTotalVouchers').innerText = vouchers.length;
+      document.getElementById('sidebarVoucherCount').innerText = vouchers.length;
+
+      // Tab counts
+      document.getElementById('countVoucherAll').innerText = vouchers.length;
+      document.getElementById('countVoucherActive').innerText = activeCount;
+      document.getElementById('countVoucherUpcoming').innerText = vouchers.filter(v => v.status === 'upcoming').length;
+      document.getElementById('countVoucherExpired').innerText = vouchers.filter(v => v.status === 'expired' || v.status === 'paused').length;
+
+      let filtered = vouchers.filter(v => {
+        if (currentVoucherFilter === 'all') return true;
+        if (currentVoucherFilter === 'expired') return v.status === 'expired' || v.status === 'paused';
+        return v.status === currentVoucherFilter;
+      });
+
+      const container = document.getElementById('voucherGridContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); background: #f8fafc; border-radius: 12px;">
+            <span class="material-symbols-outlined" style="font-size: 36px; display: block; margin-bottom: 6px;">confirmation_number</span>
+            Không có voucher nào trong danh mục này.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(v => {
+        const percentUsed = Math.min(100, Math.round(((v.usedQuantity || 0) / (v.totalQuantity || 1)) * 100));
+        
+        let statusBadge = '<span class="badge badge-success">Đang diễn ra</span>';
+        if (v.status === 'upcoming') statusBadge = '<span class="badge badge-info">Sắp diễn ra</span>';
+        else if (v.status === 'paused') statusBadge = '<span class="badge badge-neutral">Tạm dừng</span>';
+        else if (v.status === 'expired') statusBadge = '<span class="badge badge-danger">Đã kết thúc</span>';
+
+        const discountText = v.type === 'percent' 
+          ? `Giảm ${v.value}% (Tối đa ${formatVND(v.maxDiscount)})` 
+          : `Giảm ${formatVND(v.value)}`;
+
+        return `
+          <div class="voucher-ticket">
+            <div>
+              <div class="voucher-head">
+                <div class="voucher-code-pill">
+                  <span>${v.code}</span>
+                  <button class="voucher-copy-btn" onclick="copyCode('${v.code}')" title="Sao chép mã">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                  </button>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div style="font-weight: 700; font-size: 1.05rem; color: var(--primary); margin-bottom: 4px;">
+                ${discountText}
+              </div>
+
+              <div style="font-size: 0.84rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                ${v.title}
+              </div>
+
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">
+                • Đơn tối thiểu: <strong>${formatVND(v.minOrderValue)}</strong><br>
+                • Hạn dùng: ${v.startDate} đến ${v.endDate}
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+                <span>Đã dùng: ${v.usedQuantity} / ${v.totalQuantity}</span>
+                <span>${percentUsed}%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${percentUsed}%;"></div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);">
+                <button class="btn btn-secondary btn-sm" onclick="toggleVoucherStatus('${v.id}')">
+                  <span class="material-symbols-outlined" style="font-size: 15px;">${v.status === 'active' ? 'pause' : 'play_arrow'}</span>
+                  ${v.status === 'active' ? 'Tạm dừng' : 'Kích hoạt'}
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteVoucher('${v.id}', '${v.code}')">
+                  <span class="material-symbols-outlined" style="font-size: 15px;">delete</span> Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copyCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`Đã sao chép mã voucher "${code}" vào clipboard!`, 'success');
+      }).catch(() => {
+        showToast(`Mã voucher: ${code}`, 'info');
+      });
+    }
+
+    function toggleVoucherStatus(id) {
+      const vouchers = DataStore.getVouchers();
+      const v = vouchers.find(item => item.id === id);
+      if (v) {
+        v.status = v.status === 'active' ? 'paused' : 'active';
+        DataStore.saveVouchers(vouchers);
+        showToast(`Đã ${v.status === 'active' ? 'kích hoạt' : 'tạm dừng'} voucher ${v.code}`, 'info');
+        renderVouchers();
+      }
+    }
+
+    function deleteVoucher(id, code) {
+      if (confirm(`Bạn có chắc chắn muốn xóa voucher ${code}?`)) {
+        let vouchers = DataStore.getVouchers();
+        vouchers = vouchers.filter(item => item.id !== id);
+        DataStore.saveVouchers(vouchers);
+        showToast(`Đã xóa voucher ${code}`, 'info');
+        renderVouchers();
+      }
+    }
+
+    function openCreateVoucherModal() {
+      document.getElementById('voucherForm').reset();
+      generateRandomCode();
+      const today = new Date().toISOString().split('T')[0];
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+      document.getElementById('vStartDate').value = today;
+      document.getElementById('vEndDate').value = nextMonth;
+      document.getElementById('voucherModal').classList.add('show');
+    }
+
+    function generateRandomCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = 'BOOK';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('vCode').value = code;
+    }
+
+    function toggleVoucherTypeFields() {
+      const type = document.getElementById('vType').value;
+      const maxDiscountInput = document.getElementById('vMaxDiscount');
+      if (type === 'percent') {
+        document.getElementById('vValue').placeholder = "15 (%)";
+        maxDiscountInput.disabled = false;
+      } else {
+        document.getElementById('vValue').placeholder = "20000 (VNĐ)";
+        maxDiscountInput.disabled = true;
+      }
+    }
+
+    function saveVoucherData() {
+      const code = document.getElementById('vCode').value.trim().toUpperCase();
+      const title = document.getElementById('vTitle').value.trim();
+      const value = parseFloat(document.getElementById('vValue').value);
+      const minOrder = parseFloat(document.getElementById('vMinOrder').value);
+      const totalQty = parseInt(document.getElementById('vTotalQty').value, 10);
+      const type = document.getElementById('vType').value;
+
+      if (!code || !title || isNaN(value) || isNaN(minOrder) || isNaN(totalQty)) {
+        showToast('Vui lòng điền đầy đủ các thông tin bắt buộc (*)', 'error');
+        return;
+      }
+
+      let vouchers = DataStore.getVouchers();
+      if (vouchers.some(v => v.code === code)) {
+        showToast('Mã voucher này đã tồn tại, vui lòng chọn mã khác!', 'error');
+        return;
+      }
+
+      const newVoucher = {
+        id: `VOUCHER-${String(vouchers.length + 1).padStart(2, '0')}`,
+        code: code,
+        title: title,
+        type: type,
+        value: value,
+        maxDiscount: parseFloat(document.getElementById('vMaxDiscount').value) || value,
+        minOrderValue: minOrder,
+        totalQuantity: totalQty,
+        usedQuantity: 0,
+        startDate: document.getElementById('vStartDate').value,
+        endDate: document.getElementById('vEndDate').value,
+        status: "active"
+      };
+
+      vouchers.unshift(newVoucher);
+      DataStore.saveVouchers(vouchers);
+      showToast(`Đã phát hành voucher ${code} thành công!`, 'success');
+      closeModal('voucherModal');
+      renderVouchers();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderVouchers();
+    });
+  </script>
+</body>
+</html>
+

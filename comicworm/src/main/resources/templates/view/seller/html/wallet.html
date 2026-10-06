@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý ví & Số dư giam | ComicHub Seller Portal</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <link rel="stylesheet" href="../css/wallet.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR (Nạp từ file sidebar.html riêng biệt) -->
+    <div id="sidebarContainer" data-active="wallet"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Mở menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="store-badge" title="Gian hàng chính thức của bạn">
+            <span class="material-symbols-outlined store-icon">storefront</span>
+            <span class="store-name">Tiệm Truyện Vũ Trụ</span>
+            <span class="store-verified" title="Gian hàng đã xác thực">
+              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+            </span>
+            <span class="store-status-dot" title="Đang mở cửa hoạt động"></span>
+          </div>
+          <div class="global-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" placeholder="Tìm theo mã đơn, biến động số dư..." id="walletSearch">
+            <span class="search-shortcut">⌘K</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="nav-icon-btn" title="Thông báo mới">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notification-badge-dot"></span>
+          </button>
+          <div class="user-profile-menu">
+            <div class="user-details">
+              <div class="user-name">Trần Đăng Khoa</div>
+              <div class="user-role">Pro Seller</div>
+            </div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4W4fxRdEwEUti0BU4ZPunWEZMYRM5XRFFlgIpx5h5FcGigyLtFd7NM4wAKmn97UX_qn2USeyOTbIRFCnmQoBVyYsAZzk2Ommn4m96f0g8tJFlLLzGMdeLo7dnjurcqN9z0VjI4molZf84AY3b6Xl-s2jzDP8NviNKL_3XKBJ4WcGvVtQMCXF-FWLhW-6fAZmyE9-0dH2oGqFDNxunrsUeQMqf7VzQIHdjpzPSeoN1G2SHC3fTPCzWA" alt="Avatar" class="user-avatar">
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="breadcrumb-tag">
+            <span class="material-symbols-outlined" style="font-size: 14px;">account_balance</span>
+            Tài chính người bán • Chính sách Escrow v2.4
+          </div>
+          <div class="page-title-row">
+            <div>
+              <h2 class="page-title">Quản lý ví & Số dư giam</h2>
+              <p class="page-subtitle">Kiểm soát dòng tiền thực nhận, tiến trình ký quỹ bảo đảm và cơ chế rút tiền thủ công từ Escrow theo hạn mức ngày</p>
+            </div>
+            <div class="header-action-group">
+              <a href="transactions.html" class="btn btn-outline">
+                <span class="material-symbols-outlined">history</span>
+                Lịch sử ví
+              </a>
+              <a href="withdraw.html" class="btn btn-primary">
+                <span class="material-symbols-outlined">payments</span>
+                Yêu cầu rút tiền
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- DUAL ESCROW BALANCE CARDS -->
+        <div class="wallet-hero-grid grid-2">
+
+          <!-- CARD 2: SỐ DƯ GIAM GIỮ KHẢ DỤNG (RÚT THỦ CÔNG) -->
+          <div class="wallet-card escrow-available">
+            <div>
+              <div class="wallet-card-header">
+                <span class="wallet-chip">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                  Escrow khả dụng
+                </span>
+                <span style="font-size: 0.82rem; font-weight: 700; color: #15803d;" id="escrowAvailOrderCount">
+                  2 đơn đã qua 72h
+                </span>
+              </div>
+              <div class="wallet-amount-label">Số dư giam giữ khả dụng</div>
+              <div class="wallet-big-amount"><span id="escrowAvailAmount">8.650.000</span> <span style="font-size: 1.1rem; font-weight: 600; color: #16a34a;">VNĐ</span></div>
+              
+              <!-- Daily Withdrawal Limit Box -->
+              <div class="withdrawal-limit-box">
+                <span class="limit-info-text">
+                  <span class="material-symbols-outlined" style="font-size: 16px; color: #15803d;">history_toggle_off</span>
+                  Lượt rút hôm nay:
+                </span>
+                <span class="limit-badge-count" id="dailyLimitBadge">
+                  <span class="material-symbols-outlined" style="font-size: 13px;">check</span>
+                  Còn <strong id="remainingWithdrawCount">2</strong>/3 lượt
+                </span>
+              </div>
+
+              <div class="wallet-desc">
+                <span class="material-symbols-outlined" style="font-size: 15px; vertical-align: -2px; color: #15803d;">info</span>
+                Đã qua hạn 72h đồng kiểm an toàn. <strong>Không tự động chuyển</strong>, người bán thực hiện rút thủ công về tài khoản ngân hàng liên kết.
+              </div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 10px;">
+              <button class="btn-manual-withdraw" id="btnOpenWithdrawModal" onclick="openEscrowWithdrawModal()">
+                <span class="material-symbols-outlined" style="font-size: 18px;">payments</span>
+                Rút về tài khoản ngân hàng
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 3: SỐ DƯ TỪ ĐƠN HÀNG CHƯA THÀNH CÔNG -->
+          <div class="wallet-card escrow-pending">
+            <div>
+              <div class="wallet-card-header">
+                <span class="wallet-chip">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">lock_clock</span>
+                  Ký quỹ đang giam
+                </span>
+                <span style="font-size: 0.82rem; font-weight: 700; color: #c2410c;">
+                  3 đơn chưa hoàn tất
+                </span>
+              </div>
+              <div class="wallet-amount-label">Số dư đơn chưa thành công</div>
+              <div class="wallet-big-amount"><span id="escrowPendingAmount">6.170.000</span> <span style="font-size: 1.1rem; font-weight: 600; color: #c2410c;">VNĐ</span></div>
+              <div class="wallet-desc">
+                <span class="material-symbols-outlined" style="font-size: 15px; vertical-align: -2px; color: #ea580c;">hourglass_empty</span>
+                Đơn đang vận chuyển, chờ khách nhận hoặc đang trong 72h thẩm định/khiếu nại. Chưa đủ điều kiện mở khóa.
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(234, 88, 12, 0.2);">
+              <span style="font-size: 0.82rem; color: #7c2d12; font-weight: 600;">
+                Mở đợt tới: <strong>24/10 (18:00)</strong>
+              </span>
+              <a href="#escrowTableSection" class="btn btn-outline btn-sm" style="color: #c2410c; border-color: #fed7aa; background: #fff;">
+                Xem 3 đơn giam
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- CASHFLOW TIMELINE & ESCROW PROTECTION GUIDE -->
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; margin-bottom: 28px;">
+          <!-- FLOW STATS -->
+          <div class="content-card" style="margin-bottom: 0;">
+            <div class="content-card-header">
+              <div>
+                <h3 class="content-card-title">
+                  <span class="material-symbols-outlined" style="color: var(--primary-container);">trending_up</span>
+                  Dòng tiền vào & giải ngân 7 ngày qua
+                </h3>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">So sánh lượng tiền vào ký quỹ (tạm giữ) và lượng tiền đã tất toán vào Ví chính.</p>
+              </div>
+              <div class="chart-legends">
+                <div class="legend-item">
+                  <span class="legend-color" style="background-color: #ea580c;"></span>
+                  <span>Giải ngân thực tế</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color" style="background-color: #94a3b8;"></span>
+                  <span>Ký quỹ mới</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding: 24px;">
+              <!-- Mini visual chart -->
+              <svg viewBox="0 0 500 120" style="width: 100%; height: 120px;">
+                <path d="M 10,95 Q 120,40 240,65 T 480,25" fill="none" stroke="#ea580c" stroke-width="3"/>
+                <path d="M 10,110 Q 130,85 250,90 T 480,70" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4"/>
+                <circle cx="360" cy="45" r="5" fill="#ea580c"/>
+              </svg>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle); text-align: center;">
+                <div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Tỷ lệ mở khóa đúng hạn</div>
+                  <div style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--success);">99.4%</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Thời gian giam TB</div>
+                  <div style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-main);">2.8 ngày</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Khiếu nại đang xử lý</div>
+                  <div style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--primary);">0 đơn</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ESCROW 3-STEP INFOGRAPHIC -->
+          <div class="content-card" style="margin-bottom: 0;">
+            <div class="content-card-header">
+              <h3 class="content-card-title">
+                <span class="material-symbols-outlined" style="color: #2563eb;">verified_user</span>
+                Cơ chế Bảo vệ Truyện Quý ComicHub
+              </h3>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div class="escrow-step-num">1</div>
+                <div>
+                  <h4 style="font-size: 0.9rem; font-weight: 700;">Người mua thanh toán đơn</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted);">Tiền được giữ tại tài khoản ký quỹ trung gian ComicHub Escrow an toàn tuyệt đối.</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div class="escrow-step-num">2</div>
+                <div>
+                  <h4 style="font-size: 0.9rem; font-weight: 700;">Giao hàng & Đồng kiểm</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted);">Hệ thống kích hoạt 72 giờ thẩm định truyện thực tế khi nhận hàng.</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div class="escrow-step-num" style="background: #10b981;">3</div>
+                <div>
+                  <h4 style="font-size: 0.9rem; font-weight: 700;">Chuyển thành Khả dụng & Rút thủ công</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted);">Sau 72h an toàn, tiền vào <strong>Số dư giam giữ khả dụng</strong>. Không tự động chuyển - Seller chủ động gửi lệnh rút về Ví chính (tối đa 3 lần/ngày).</p>
+                </div>
+              </div>
+              <a href="#" style="font-size: 0.82rem; color: var(--primary-container); font-weight: 700; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                Quy chế bảo hiểm thất lạc & cơ chế rút Escrow
+                <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESCROW ORDERS TABLE -->
+        <div class="content-card" id="escrowTableSection">
+          <div class="content-card-header" style="flex-wrap: wrap; gap: 14px;">
+            <div>
+              <h3 class="content-card-title">
+                <span class="material-symbols-outlined" style="color: #ea580c;">account_tree</span>
+                Danh sách phân loại ký quỹ bảo đảm Escrow
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Tách bạch đơn đủ điều kiện rút thủ công và đơn chưa hoàn tất giao nhận / khiếu nại</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="badge badge-success" style="font-size: 0.85rem; padding: 6px 12px;" id="headerBadgeAvail">
+                Khả dụng rút: 8.650.000 ₫
+              </span>
+              <span class="badge badge-warning" style="font-size: 0.85rem; padding: 6px 12px;">
+                Đang giam: 6.170.000 ₫
+              </span>
+              <div class="global-search" style="width: 220px;">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" placeholder="Tìm theo mã đơn..." id="tableSearchInput" onkeyup="filterEscrowTable()">
+              </div>
+            </div>
+          </div>
+
+          <!-- TABS FILTER -->
+          <div class="escrow-tabs-row" id="escrowFilterTabs">
+            <button class="escrow-tab-btn active" data-filter="all" onclick="setEscrowTab('all')">
+              Tất cả đơn ký quỹ
+              <span class="tab-count" id="countAll">5 đơn</span>
+            </button>
+            <button class="escrow-tab-btn" data-filter="available" onclick="setEscrowTab('available')">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #10b981;">check_circle</span>
+              Khả dụng rút thủ công
+              <span class="tab-count" id="countAvailable" style="background: #dcfce7; color: #15803d; font-weight: 700;">2 đơn (8.650.000₫)</span>
+            </button>
+            <button class="escrow-tab-btn" data-filter="pending" onclick="setEscrowTab('pending')">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #ea580c;">hourglass_empty</span>
+              Đơn chưa thành công / Đang giam
+              <span class="tab-count" id="countPending" style="background: #ffedd5; color: #c2410c; font-weight: 700;">3 đơn (6.170.000₫)</span>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="escrowOrdersTable">
+              <thead>
+                <tr>
+                  <th>Mã đơn hàng</th>
+                  <th>Tên sách truyện / Bìa phẩm</th>
+                  <th style="text-align: right;">Giá trị giam</th>
+                  <th>Trạng thái đơn hàng</th>
+                  <th>Thời hạn bảo lãnh</th>
+                  <th style="text-align: center;">Trạng thái ký quỹ</th>
+                  <th style="text-align: center;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- ROW 1 (KHẢ DỤNG RÚT) -->
+                <tr class="order-row-success" data-status="available" id="row-ORD-90214">
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-90214</span>
+                        <button class="copy-btn" onclick="copyText('ORD-90214')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Hoàng Long (Hà Nội)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWqhFsWxpkeotx5tstyYdH6kJR4eb2k9J7eu7w0JWyyGUFp50rC3luahd-yMydgXJNweztWl-ixYTjai8-q7Vz99n5Lge96qIWhxZKOg15FGJqNHM6COiHbIBcyxkrKtytIoLAFP5Ko-0ymJXfrr3G4PyW5M05PRHrEYbbRNK2JQpMdTkonmjMoF0ThC1m3Bs9dGTKTWhpIBvS4QvjvpHqKb1gmhwR968uB2MLZ7y5fuIbZgGHd7kblg" alt="One Piece 1" class="comic-thumbnail">
+                      <div>
+                        <div class="product-title">One Piece Tập 1 (First Print)</div>
+                        <span class="tag-badge">Tình trạng: 9.6 NM • 1 cuốn</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: #15803d;">5.450.000 ₫</span>
+                      <span class="price-note">đã trừ phí sàn 4%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem; color: #166534; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color: #16a34a;">check_circle</span>
+                      Giao thành công
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">19/10/2023 (Viettel Post)</span>
+                  </td>
+                  <td>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #15803d;">Đã qua 72h an toàn</div>
+                    <span class="badge badge-success" style="margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
+                      Đủ điều kiện rút
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-success status-cell-badge">
+                      <span class="badge-dot"></span>
+                      Khả dụng rút thủ công
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-primary btn-sm action-withdraw-btn" onclick="openEscrowWithdrawModal(5450000, 'ORD-90214')">
+                      <span class="material-symbols-outlined" style="font-size: 15px;">move_to_inbox</span>
+                      Rút về ví
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ROW 2 (KHẢ DỤNG RÚT) -->
+                <tr class="order-row-success" data-status="available" id="row-ORD-90185">
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-90185</span>
+                        <button class="copy-btn" onclick="copyText('ORD-90185')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Đặng Minh Triết</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuSUii68h6j-stebejdSOVKUYOfq_UUUop_ziEKJsFM2J8SPqiV_69zlCXmc22FYsbE22viTo3zwJuUzHbMXl9g1BY4P2EXYnp3DT8c1BqCj038f46u8Bj63xPLrjYRs0Wb4bvK8cbdUwYE5ec8BknkqLzAcZqZMPlKN4e_kxICCGyRwe_5nmA1cbntgWO2zctrW10AW_9o3v7RzGzoYKscfyisNhHmMQBbJu0fi8y-KjjkSpwsfqD6g" alt="Boxset Doraemon" class="comic-thumbnail">
+                      <div>
+                        <div class="product-title">Boxset Doraemon Đại Tuyển Tập</div>
+                        <span class="tag-badge">Seal 100% • 1 Box</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: #15803d;">3.200.000 ₫</span>
+                      <span class="price-note">đã trừ phí sàn 4%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem; color: #166534; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color: #16a34a;">check_circle</span>
+                      Giao thành công
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">20/10/2023 (GHN Express)</span>
+                  </td>
+                  <td>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #15803d;">Đã qua 72h an toàn</div>
+                    <span class="badge badge-success" style="margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
+                      Đủ điều kiện rút
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-success status-cell-badge">
+                      <span class="badge-dot"></span>
+                      Khả dụng rút thủ công
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-primary btn-sm action-withdraw-btn" onclick="openEscrowWithdrawModal(3200000, 'ORD-90185')">
+                      <span class="material-symbols-outlined" style="font-size: 15px;">move_to_inbox</span>
+                      Rút về ví
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ROW 3 (CHƯA HOÀN TẤT: ĐANG ĐỒNG KIỂM 72H) -->
+                <tr class="order-row-pending" data-status="pending" id="row-ORD-89942">
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-89942</span>
+                        <button class="copy-btn" onclick="copyText('ORD-89942')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Vũ Hải Yến (Đà Nẵng)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80" alt="Dấu Ấn Rồng Thiêng" class="comic-thumbnail">
+                      <div>
+                        <div class="product-title">Dấu Ấn Rồng Thiêng (Trọn Bộ)</div>
+                        <span class="tag-badge">Sưu tầm 9.0 • 37 cuốn</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: #ea580c;">2.650.000 ₫</span>
+                      <span class="price-note">đã trừ phí sàn 4%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem; color: var(--text-main); font-weight: 500;">Đã nhận hàng (Đồng kiểm)</div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">21/10/2023 11:00 (SPX)</span>
+                  </td>
+                  <td>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">24/10/2023 (11:00)</div>
+                    <span class="badge badge-warning" style="margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span>
+                      Còn 22 giờ thẩm định
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-warning">
+                      <span class="badge-dot" style="background: #f59e0b;"></span>
+                      Đang đồng kiểm 72h
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Đơn #ORD-89942 đang trong thời gian 72h khiếu nại. Chưa thể rút tiền.')">
+                      Xem tiến độ
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ROW 4 (CHƯA HOÀN TẤT: ĐANG VẬN CHUYỂN) -->
+                <tr class="order-row-pending" data-status="pending" id="row-ORD-89712">
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-89712</span>
+                        <button class="copy-btn" onclick="copyText('ORD-89712')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Phạm Quốc Hưng (Cần Thơ)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=100&q=80" alt="Naruto Boxset" class="comic-thumbnail">
+                      <div>
+                        <div class="product-title">Naruto Boxset Trọn Bộ 72 Tập</div>
+                        <span class="tag-badge">Chính hãng NXB Kim Đồng</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: #ea580c;">1.920.000 ₫</span>
+                      <span class="price-note">đã trừ phí sàn 4%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem; color: #2563eb; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
+                      Đang giao hàng
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Viettel Post: VTP-9921491</span>
+                  </td>
+                  <td>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">Dự kiến 25/10</div>
+                    <span class="badge badge-info" style="margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                      Chờ giao hoàn tất
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-info">
+                      <span class="badge-dot" style="background: #3b82f6;"></span>
+                      Chưa giao thành công
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Vận đơn Viettel Post: VTP-9921491 - Đang luân chuyển qua bưu cục Cần Thơ')">
+                      Định vị bưu gửi
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- ROW 5 (CHƯA HOÀN TẤT: ĐANG XỬ LÝ KHIẾU NẠI) -->
+                <tr class="order-row-pending" data-status="pending" id="row-ORD-89650">
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-89650</span>
+                        <button class="copy-btn" onclick="copyText('ORD-89650')"><span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span></button>
+                      </div>
+                      <span class="order-date">Lê Tấn Phát (TP.HCM)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?w=100&q=80" alt="Dragon Ball 1996" class="comic-thumbnail">
+                      <div>
+                        <div class="product-title">Dragon Ball Tiền Truyện 1996 (Hiếm)</div>
+                        <span class="tag-badge" style="color: #b91c1c; background: #fee2e2;">Khiếu nại cấn gáy bìa</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: #dc2626;">1.600.000 ₫</span>
+                      <span class="price-note">tạm khóa đối soát</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="font-size: 0.85rem; color: #dc2626; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">warning</span>
+                      Phát sinh khiếu nại
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">21/10/2023 (Chờ thỏa thuận)</span>
+                  </td>
+                  <td>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #dc2626;">Tạm ngừng đếm giờ</div>
+                    <span class="badge badge-danger" style="margin-top: 2px;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">report_problem</span>
+                      CSKH đang xử lý
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-danger">
+                      <span class="badge-dot" style="background: #ef4444;"></span>
+                      Đang xử lý khiếu nại
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Mở cổng đối soát khiếu nại đơn #ORD-89650 cùng người mua và CSKH ComicHub')">
+                      Hỗ trợ đối soát
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div class="pagination-info" id="tablePaginationInfo">
+              Hiển thị <strong>5 / 5</strong> đơn hàng ký quỹ (2 khả dụng rút • 3 đang giam giữ)
+            </div>
+            <div class="pagination-controls">
+              <button class="page-btn" disabled>Trang trước</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn" disabled>Trang sau</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL RÚT TIỀN THỦ CÔNG TỪ ESCROW VỀ VÍ CHÍNH -->
+  <div class="modal-backdrop" id="escrowWithdrawModal">
+    <div class="modal-dialog" style="max-width: 520px; text-align: left;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-icon-circle success" style="margin-bottom: 0; width: 44px; height: 44px;">
+            <span class="material-symbols-outlined" style="font-size: 24px;">move_to_inbox</span>
+          </div>
+          <div>
+            <h3 class="modal-title" style="font-size: 1.15rem; margin-bottom: 2px;">Rút tiền Ký quỹ về Ví chính</h3>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Thao tác thủ công từ Seller • Giới hạn theo ngày</span>
+          </div>
+        </div>
+        <button class="nav-icon-btn" onclick="closeEscrowWithdrawModal()" title="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Thẻ thông tin số dư -->
+      <div class="modal-escrow-balance-card">
+        <div style="font-size: 0.8rem; color: #166534; margin-bottom: 4px;">Số dư giam giữ khả dụng có thể rút:</div>
+        <div style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; color: #15803d;" id="modalAvailDisplay">
+          8.650.000 <span style="font-size: 1rem; font-weight: 600;">VNĐ</span>
+        </div>
+        <div style="font-size: 0.75rem; color: #166534; margin-top: 4px;" id="modalAvailSub">
+          Mở từ <strong>2 đơn hàng</strong> đã vượt qua 72h an toàn không khiếu nại.
+        </div>
+      </div>
+
+      <!-- Hạn mức rút trên ngày -->
+      <div class="modal-limit-alert" id="modalLimitAlert">
+        <span class="material-symbols-outlined" style="font-size: 18px; color: #d97706; flex-shrink: 0;" id="modalLimitIcon">alarm</span>
+        <div>
+          <strong id="modalLimitTitle">Giới hạn rút tiền: Tối đa 3 lần/ngày</strong>
+          <div style="font-size: 0.75rem; margin-top: 2px;" id="modalLimitSub">
+            Hôm nay bạn còn <strong id="modalRemainingTimes">2</strong>/3 lượt rút. Lượt rút sẽ tự động làm mới vào lúc <strong>00:00</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Nhập số tiền cần rút -->
+      <div style="margin-bottom: 12px;" id="modalAmountGroup">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">
+            Nhập số tiền muốn chuyển vào Ví chính
+          </label>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">
+            Tối thiểu: 50.000 ₫
+          </span>
+        </div>
+        <div class="amount-input-group">
+          <input type="text" id="modalWithdrawAmountInput" value="8.650.000" placeholder="0" oninput="validateModalWithdrawInput()">
+          <span class="currency-badge">VNĐ</span>
+        </div>
+        <div id="modalInputError" style="display: none; font-size: 0.78rem; color: #dc2626; margin-top: 4px; align-items: center; gap: 4px;">
+          <span class="material-symbols-outlined" style="font-size: 14px;">error</span>
+          <span id="modalInputErrorText">Số tiền không hợp lệ!</span>
+        </div>
+      </div>
+
+      <!-- Quick Amount Chips -->
+      <div class="quick-amount-chips" id="modalQuickChips">
+        <button type="button" class="quick-amount-chip" onclick="setQuickWithdrawAmount(2000000)">2.000.000 ₫</button>
+        <button type="button" class="quick-amount-chip" onclick="setQuickWithdrawAmount(5000000)">5.000.000 ₫</button>
+        <button type="button" class="quick-amount-chip" onclick="setQuickWithdrawAmount('max')">Rút tất cả (Tối đa)</button>
+      </div>
+
+      <!-- Section Tài khoản ngân hàng nhận tiền -->
+      <div class="modal-bank-section" id="modalBankSection">
+        <div class="modal-bank-header">
+          <label class="modal-bank-label">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--primary-container);">account_balance</span>
+            Tài khoản ngân hàng nhận tiền
+          </label>
+          <button type="button" class="btn-change-bank" onclick="openBankSelectionModal()">
+            <span class="material-symbols-outlined" style="font-size: 16px;">swap_horiz</span>
+            Thay đổi tài khoản
+          </button>
+        </div>
+
+        <!-- Thẻ thông tin tài khoản đang chọn -->
+        <div class="selected-bank-card" id="selectedBankCard">
+          <div class="bank-logo-badge" id="selectedBankLogo">
+            VCB
+          </div>
+          <div class="bank-info-col">
+            <div class="bank-name-row">
+              <strong class="bank-name-text" id="selectedBankName">Vietcombank • CN Tân Bình</strong>
+              <span class="bank-badge-default" id="selectedBankBadge">Mặc định</span>
+            </div>
+            <div class="bank-account-num" id="selectedBankAccountNum">
+              1029 3847 56
+            </div>
+            <div class="bank-holder-name">
+              Chủ TK: <strong id="selectedBankHolder">TRẦN ĐĂNG KHOA</strong>
+              <span class="badge-kyc-check" title="Đã xác thực KYC"><span class="material-symbols-outlined">verified</span> Đã xác thực</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 12px 14px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 24px; border: 1px dashed var(--border-color);">
+        <strong style="color: var(--text-main);">Quy định nghiệp vụ:</strong><br>
+        • Tiền sau khi giải phóng Ký quỹ sẽ được thực hiện lệnh chuyển tự động về <strong>tài khoản ngân hàng liên kết</strong> và ghi nhận đồng thời vào sao kê ví.<br>
+        • Để ngăn chặn gian lận và kiểm soát rủi ro, hệ thống <strong>giới hạn 3 lần rút/ngày</strong> cho thao tác giải phóng Ký quỹ.
+      </div>
+
+      <div class="modal-actions" style="justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeEscrowWithdrawModal()">Hủy bỏ</button>
+        <button class="btn btn-primary" id="btnConfirmEscrowWithdraw" onclick="confirmEscrowWithdrawal()">
+          <span class="material-symbols-outlined" style="font-size: 18px;">check</span>
+          Xác nhận rút tiền
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHỌN / THAY ĐỔI TÀI KHOẢN NGÂN HÀNG -->
+  <div class="modal-backdrop" id="bankSelectionModal" style="z-index: 1050;">
+    <div class="modal-dialog" style="max-width: 480px; text-align: left;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="modal-icon-circle info" style="margin-bottom: 0; width: 40px; height: 40px;">
+            <span class="material-symbols-outlined" style="font-size: 22px;">account_balance</span>
+          </div>
+          <div>
+            <h3 class="modal-title" style="font-size: 1.1rem; margin-bottom: 2px;">Chọn tài khoản nhận tiền</h3>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Tài khoản thụ hưởng chính chủ đã xác thực KYC</span>
+          </div>
+        </div>
+        <button class="nav-icon-btn" onclick="closeBankSelectionModal()" title="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Danh sách tài khoản ngân hàng -->
+      <div class="bank-accounts-list" id="bankAccountsList">
+        <!-- Render bằng JavaScript -->
+      </div>
+
+      <div class="modal-actions" style="justify-content: space-between; margin-top: 20px;">
+        <button class="btn btn-outline btn-sm" onclick="addNewBankPrompt()" style="display: flex; align-items: center; gap: 4px;">
+          <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+          Thêm tài khoản mới
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="closeBankSelectionModal()">
+          Xong
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="../js/common.js"></script>
+  <script src="../js/wallet.js"></script>
+</body>
+</html>

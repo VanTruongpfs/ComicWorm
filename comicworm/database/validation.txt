@@ -1,0 +1,45 @@
+C:\Program Files\MySQL\MySQL Server 9.0\bin\mysqld.exe  Ver 9.0.1 for Win64 on x86_64 (MySQL Community Server - GPL)
+Isolated datadir: C:\Users\PC\AppData\Local\Temp\codex-comicworm-scope-k0e5ein6\data
+Source: Nhom8_ChucNang.docx
+
+PASS: DDL imports with all FK/CHECK constraints
+PASS: reference seed
+PASS: 32 tables / 232 columns / 49 foreign keys
+PASS: out-of-scope modules are absent
+PASS: local and Google-only login identities
+PASS: rejects account without password or Google identity
+PASS: rejects duplicate Google subject
+PASS: logout revokes the session and reset token can be consumed
+PASS: catalog fixtures with seller/filters/images
+PASS: rejects negative stock
+PASS: cart row
+PASS: rejects duplicate cart product
+PASS: checkout/order snapshots
+PASS: rejects order total mismatch
+PASS: online payment allocation and callback
+PASS: rejects duplicate payment callback
+PASS: order cancellation/history/notification/refund
+PASS: rejects refund without paid order allocation
+PASS: purchased item review and seller reply
+PASS: rejects second review for one purchased item
+PASS: loyalty posting
+PASS: rejects double earning on retried key
+PASS: exchange room members and item proposal
+PASS: rejects room target belongs to another owner
+PASS: rejects selecting offer from another room
+PASS: rejects non-member chat sender
+PASS: valid exchange message
+PASS: image search features and classification result
+PASS: rejects embedding is not an array
+PASS: rejects classification success missing result
+PASS: product consultation history
+PASS: all example screen/statistics queries run
+PASS: rejects hard deleting historical seller
+
+Completed: DDL import + 32 integration checks.
+Scope: 25 functions, 32 tables, 232 columns.
+API permissions, actual provider/AI execution and cross-row/concurrent business workflows are not implemented by these schema files.
+
+PASS: generated SQL/DBML are reproducible; seven valid TableGroup identifiers; all 25 functions mapped.
+PASS: dbdiagram parses the grouped file without a TableGroup identifier error; TableGroup display requires a paid plan.
+PASS: standard DBML displays 0 errors; diagram title/source updated to document scope.

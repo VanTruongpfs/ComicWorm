@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trường T - Seller: Bài Đăng & Sản Phẩm (ComicHub)</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <style>
+    .hub-hero {
+      background: linear-gradient(135deg, #0b1c30 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #1e3a5f;
+    }
+    .hub-hero::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      bottom: -30px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .use-case-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+    }
+    .use-case-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+    .card-badge-num {
+      width: 32px;
+      height: 32px;
+      background: #fff7ed;
+      color: var(--primary);
+      border-radius: 50%;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      border: 1px solid #fdba74;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- QUICK SWITCHER BAR -->
+  <div class="quick-switcher-bar">
+    <div class="switcher-title">
+      <span class="material-symbols-outlined" style="font-size: 18px;">menu_book</span>
+      <span>TRƯỜNG T - SELLER CENTER:</span>
+    </div>
+    <div class="switcher-pills">
+      <a href="../../buyer/html/home.html" class="switcher-btn" style="background:#2563eb; color:#fff; border-color:#1d4ed8;">
+        <span class="material-symbols-outlined" style="font-size: 14px;">storefront</span> Chợ ComicHub
+      </a>
+      <a href="index.html" class="switcher-btn" style="background:#059669; color:#fff; border-color:#047857;">
+        <span class="material-symbols-outlined" style="font-size: 14px;">account_balance_wallet</span> Kênh Ví & Đơn (Trường)
+      </a>
+      <a href="post-product-hub.html" class="switcher-btn active">
+        <span class="material-symbols-outlined" style="font-size: 14px;">grid_view</span> Tổng quan Hub
+      </a>
+      <a href="dang-ban-truyen.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">add_circle</span> 1. Đăng bán truyện
+      </a>
+      <a href="quan-ly-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">format_list_bulleted</span> 2. Quản lý bài đăng
+      </a>
+      <a href="chinh-sua-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">edit_note</span> 3. Chỉnh sửa bài đăng
+      </a>
+      <a href="an-xoa-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> 4. Ẩn/Xóa bài đăng
+      </a>
+      <a href="quan-ly-san-pham.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> 5. Quản lý sản phẩm
+      </a>
+      <a href="quan-ly-voucher.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">confirmation_number</span> 6. Quản lý voucher
+      </a>
+      <a href="../../index.html" class="switcher-btn" style="background:rgba(234,88,12,0.15); color:#ea580c; border-color:#ea580c; font-weight:700;">
+        <span class="material-symbols-outlined" style="font-size: 14px;">hub</span> Portal
+      </a>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- SIDEBAR DÙNG CHUNG VỚI SRC/TRUONG -->
+    <div id="sidebarContainer" data-active=""></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">
+            <span class="material-symbols-outlined" style="color: var(--primary);">store</span>
+            Cổng Điều Hướng Seller: Bài Đăng & Sản Phẩm
+          </h1>
+          <p class="page-desc">Phân công thành viên Trường T theo Sơ đồ Use Case Hệ thống Mua bán & Trao đổi truyện</p>
+        </div>
+        <div class="topbar-right" style="display:flex; gap:10px; align-items:center;">
+          <a href="index.html" class="btn btn-secondary">
+            <span class="material-symbols-outlined">payments</span> Kênh Tài Chính & Đơn
+          </a>
+          <button class="btn btn-secondary" onclick="resetSampleData()">
+            <span class="material-symbols-outlined">restart_alt</span> Nạp lại mẫu
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- HERO BANNER -->
+        <div class="hub-hero">
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: #fdba74; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+              BẢNG ĐIỀU KHIỂN CHỨC NĂNG BÁN HÀNG
+            </div>
+            <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; margin-bottom: 8px;">
+              Chào mừng bạn đến với Seller Center (Trường T)
+            </h2>
+            <p style="color: #cbd5e1; font-size: 0.92rem; max-width: 650px; line-height: 1.6;">
+              Tất cả 6 trang giao diện theo sơ đồ Use Case đã được cấu trúc thành các thư mục HTML riêng biệt trong <code>src/ttruongmap/</code>, tối ưu hóa CSS và đồng bộ dữ liệu qua LocalStorage.
+            </p>
+          </div>
+          <div>
+            <span class="badge badge-success" style="font-size: 0.85rem; padding: 6px 14px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span> 6 / 6 Màn hình hoàn tất
+            </span>
+          </div>
+        </div>
+
+        <!-- QUICK STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng bài đăng</span>
+              <span class="stat-value" id="hubPostsCount">0</span>
+              <span class="stat-trend up">Đang quản lý</span>
+            </div>
+            <div class="stat-icon orange">
+              <span class="material-symbols-outlined">post_add</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng đầu SKU sản phẩm</span>
+              <span class="stat-value" id="hubProductsCount">0</span>
+              <span class="stat-trend up">Trong kho vật lý</span>
+            </div>
+            <div class="stat-icon blue">
+              <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Voucher khuyến mãi</span>
+              <span class="stat-value" id="hubVouchersCount">0</span>
+              <span class="stat-trend up">Mã ưu đãi Seller</span>
+            </div>
+            <div class="stat-icon purple">
+              <span class="material-symbols-outlined">confirmation_number</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Lượt xem & Tương tác</span>
+              <span class="stat-value" id="hubViewsCount">0</span>
+              <span class="stat-trend up">Lượt tương tác truyện</span>
+            </div>
+            <div class="stat-icon green">
+              <span class="material-symbols-outlined">visibility</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 USE CASE CARDS -->
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="color: var(--primary);">grid_view</span>
+          Danh Sách 6 Màn Hình Chức Năng (Click để truy cập trực tiếp):
+        </h3>
+
+        <div class="use-case-grid">
+          <!-- 1. Đăng bán truyện -->
+          <a href="dang-ban-truyen.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">1</div>
+                <span class="badge badge-success">Màn hình Form</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Đăng Bán Truyện
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Form đăng tác phẩm truyện tranh: Tải ảnh chụp thực tế nhiều góc, thông tin xuất bản, tình trạng sách, chọn bán hoặc nhận trao đổi truyện, tích hợp tính phí GHN tự động.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>dang-ban-truyen/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- 2. Quản lý bài đăng (danh sách) -->
+          <a href="quan-ly-bai-dang.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">2</div>
+                <span class="badge badge-info">Danh sách bài</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Quản Lý Bài Đăng
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Danh sách trực quan các bài đăng bán & trao đổi: Lọc theo tab trạng thái (Đang bán, Chờ duyệt, Ẩn, Hết hàng), tìm kiếm từ khóa, xem chi tiết và thao tác nhanh.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>quan-ly-bai-dang/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- 3. Chỉnh sửa bài đăng -->
+          <a href="chinh-sua-bai-dang.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">3</div>
+                <span class="badge badge-warning">Cập nhật tin</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Chỉnh Sửa Bài Đăng
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Giao diện sửa thông tin bài đăng: Cho phép đổi bài nhanh qua danh sách, sửa giá bán, cập nhật số lượng tồn kho, đổi mô tả và quản lý trạng thái tin đăng.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>chinh-sua-bai-dang/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- 4. Ẩn/Xóa bài đăng -->
+          <a href="an-xoa-bai-dang.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">4</div>
+                <span class="badge badge-danger">Kiểm soát tin</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Ẩn / Xóa Bài Đăng
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Quản lý chuyên sâu các bài đăng tạm ẩn: Ghi nhận lý do ẩn (thương lượng, hết hàng), khôi phục hiển thị (bỏ ẩn) 1-click và xóa vĩnh viễn với modal cảnh báo an toàn.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>an-xoa-bai-dang/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- 5. Quản lý sản phẩm -->
+          <a href="quan-ly-san-pham.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">5</div>
+                <span class="badge badge-purple">Kho hàng & SKU</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Quản Lý Sản Phẩm
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Quản lý kho truyện theo mã SKU/ISBN: Xem chi tiết sản phẩm, thêm sản phẩm mới, chỉnh sửa thông số, kiểm kê tồn kho và cảnh báo số lượng sắp hết.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>quan-ly-san-pham/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- 6. Quản lý voucher (Seller) -->
+          <a href="quan-ly-voucher.html" class="use-case-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div class="card-badge-num">6</div>
+                <span class="badge badge-info">Marketing & Voucher</span>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Trang Quản Lý Voucher (Seller)
+              </h4>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+                Quản lý mã coupon giảm giá độc quyền của Shop: Tạo mã ngẫu nhiên, cấu hình giảm % hoặc tiền mặt, giới hạn đơn tối thiểu, theo dõi tiến độ sử dụng và bật/tắt kích hoạt.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--primary); font-weight: 700; padding-top: 12px; border-top: 1px solid var(--border);">
+              <span>Mở thư mục <code>quan-ly-voucher/</code></span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/post-management.js"></script>
+  <script>
+    function updateHubStats() {
+      const posts = DataStore.getPosts();
+      const products = DataStore.getProducts();
+      const vouchers = DataStore.getVouchers();
+
+      document.getElementById('hubPostsCount').innerText = posts.length;
+      document.getElementById('hubProductsCount').innerText = products.length;
+      document.getElementById('hubVouchersCount').innerText = vouchers.length;
+
+      const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+      document.getElementById('hubViewsCount').innerText = totalViews.toLocaleString('vi-VN');
+    }
+
+    function resetSampleData() {
+      if (confirm('Khôi phục lại toàn bộ dữ liệu bài đăng, sản phẩm và voucher về trạng thái mặc định?')) {
+        DataStore.resetAll();
+        localStorage.removeItem('BOOKMOOCH_SELLER_DELETED_COUNT');
+        showToast('Đã nạp lại toàn bộ dữ liệu mẫu!', 'success');
+        updateHubStats();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateHubStats();
+    });
+  </script>
+</body>
+</html>
+

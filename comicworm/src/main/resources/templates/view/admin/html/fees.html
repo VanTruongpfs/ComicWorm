@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu phí & chính sách | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/fees.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="sidebarContainer" data-active="fees"></div>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+                <div class="store-selector"><span class="material-symbols-outlined">admin_panel_settings</span><span>Trung tâm Quản trị</span></div>
+                <div class="global-search"><span class="material-symbols-outlined">search</span><input type="text" placeholder="Tìm chính sách, danh mục phí..."><span class="search-shortcut">⌘K</span></div>
+            </div>
+            <div class="header-right">
+                <button class="nav-icon-btn" onclick="showToast('Không có thông báo mới về chính sách')"><span class="material-symbols-outlined">notifications</span><span class="notification-badge-dot"></span></button>
+                <div class="user-profile-menu">
+                    <div class="user-details"><div class="user-name" data-admin-name>Nguyễn Minh Admin</div><div class="user-role" data-admin-role>Super Admin</div></div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <div class="page-header">
+                <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">request_quote</span> Quản trị hệ thống • Biểu phí</div>
+                <div class="page-title-row">
+                    <div>
+                        <h2 class="page-title">Cấu hình biểu phí &amp; chính sách</h2>
+                        <p class="page-subtitle">Thiết lập hoa hồng theo danh mục, phí rút tiền và các chính sách vận hành áp dụng toàn sàn</p>
+                    </div>
+                    <div class="header-action-group">
+                        <button class="btn btn-outline" onclick="showToast('Đã khôi phục cấu hình mặc định')">
+                            <span class="material-symbols-outlined">restart_alt</span> Khôi phục mặc định
+                        </button>
+                        <button class="btn btn-primary" id="saveFeesBtn" onclick="saveFeeSettings()">
+                            <span class="material-symbols-outlined">save</span> Lưu cấu hình
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fees-grid">
+                <div>
+                    <!-- COMMISSION BY CATEGORY -->
+                    <div class="surface-panel settings-section">
+                        <div class="settings-section-title"><span class="material-symbols-outlined">percent</span> Hoa hồng theo danh mục</div>
+                        <p class="settings-section-desc">Phần trăm hoa hồng sàn thu trên mỗi đơn hàng thành công, áp dụng riêng cho từng danh mục sách</p>
+                        <div id="commissionList"></div>
+                    </div>
+
+                    <!-- WITHDRAWAL FEES -->
+                    <div class="surface-panel settings-section">
+                        <div class="settings-section-title"><span class="material-symbols-outlined">account_balance_wallet</span> Phí rút tiền</div>
+                        <p class="settings-section-desc">Chi phí giao dịch khi người bán rút tiền từ ví BookMooch về tài khoản ngân hàng</p>
+                        <div class="form-grid two-columns">
+                            <div>
+                                <label class="field-label">Phí cố định mỗi lần rút</label>
+                                <div class="input-suffix-group"><input type="text" id="feeFixed" value="5.000"><span class="input-suffix">₫</span></div>
+                            </div>
+                            <div>
+                                <label class="field-label">Phí theo phần trăm</label>
+                                <div class="input-suffix-group"><input type="text" id="feePercent" value="0.5"><span class="input-suffix">%</span></div>
+                            </div>
+                            <div>
+                                <label class="field-label">Số tiền rút tối thiểu</label>
+                                <div class="input-suffix-group"><input type="text" id="feeMinWithdraw" value="100.000"><span class="input-suffix">₫</span></div>
+                            </div>
+                            <div>
+                                <label class="field-label">Ngưỡng tự động duyệt</label>
+                                <div class="input-suffix-group"><input type="text" id="feeAutoApprove" value="2.000.000"><span class="input-suffix">₫</span></div>
+                                <p class="field-hint">Yêu cầu dưới ngưỡng này sẽ được hệ thống tự động duyệt</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OPERATIONAL POLICIES -->
+                    <div class="surface-panel settings-section">
+                        <div class="settings-section-title"><span class="material-symbols-outlined">policy</span> Chính sách vận hành</div>
+                        <p class="settings-section-desc">Bật/tắt các quy tắc vận hành áp dụng cho toàn bộ giao dịch trên sàn</p>
+                        <div id="policyToggleList"></div>
+                    </div>
+                </div>
+
+                <!-- SUMMARY PANEL -->
+                <div>
+                    <div class="surface-panel" style="position:sticky; top:88px;">
+                        <h3 class="panel-title"><span class="material-symbols-outlined">summarize</span> Tóm tắt hiệu lực</h3>
+                        <div class="stat-mini-row" style="grid-template-columns:1fr;">
+                            <div class="stat-mini"><h5>Hoa hồng trung bình</h5><div class="val" id="summaryAvgCommission">8.1%</div></div>
+                            <div class="stat-mini"><h5>Phí rút tiền ước tính (5tr)</h5><div class="val" id="summaryWithdrawFee">30.000 ₫</div></div>
+                            <div class="stat-mini"><h5>Chính sách đang bật</h5><div class="val" id="summaryActivePolicies">4/6</div></div>
+                        </div>
+                        <div style="margin-top:18px; background:var(--info-bg); border:1px solid #bfdbfe; border-radius:var(--radius-md); padding:12px 14px; font-size:.78rem; color:var(--info-text); line-height:1.5;">
+                            💡 Thay đổi biểu phí sẽ áp dụng cho các đơn hàng phát sinh <strong>sau</strong> thời điểm lưu, không hồi tố các giao dịch trước đó.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/fees.js"></script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+/* Page-specific tweaks for accounts.html — phần lớn tái sử dụng style.css + admin-common.css */
+.data-table td .identity-cell { min-width: 220px; }

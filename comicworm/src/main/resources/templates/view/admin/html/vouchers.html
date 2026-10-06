@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher toàn hệ thống | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/vouchers.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="sidebarContainer" data-active="vouchers"></div>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+                <div class="store-selector"><span class="material-symbols-outlined">admin_panel_settings</span><span>Trung tâm Quản trị</span></div>
+                <div class="global-search"><span class="material-symbols-outlined">search</span><input type="text" id="voucherSearch" placeholder="Tìm mã voucher, chương trình..."><span class="search-shortcut">⌘K</span></div>
+            </div>
+            <div class="header-right">
+                <button class="nav-icon-btn" onclick="showToast('2 voucher sắp hết hạn trong tuần này')"><span class="material-symbols-outlined">notifications</span><span class="notification-badge-dot"></span></button>
+                <div class="user-profile-menu">
+                    <div class="user-details"><div class="user-name" data-admin-name>Nguyễn Minh Admin</div><div class="user-role" data-admin-role>Super Admin</div></div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-content"><span class="kpi-label">Voucher đang chạy</span><span class="kpi-value">6</span><span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +2 tuần này</span></div>
+                    <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">local_activity</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content"><span class="kpi-label">Lượt sử dụng tháng này</span><span class="kpi-value">18.402</span><span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">insights</span> Tỷ lệ dùng 68%</span></div>
+                    <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">confirmation_number</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content"><span class="kpi-label">Tổng giá trị đã giảm</span><span class="kpi-value">412.600.000 ₫</span><span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> Trong tháng 09</span></div>
+                    <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">savings</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content"><span class="kpi-label">Sắp hết hạn (7 ngày)</span><span class="kpi-value" style="color:#ea580c;">2</span><span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">schedule</span> Cần gia hạn</span></div>
+                    <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">event_upcoming</span></div>
+                </div>
+            </section>
+
+            <div class="page-header">
+                <div class="breadcrumb-tag"><span class="material-symbols-outlined" style="font-size:14px;">local_activity</span> Quản trị hệ thống • Voucher</div>
+                <div class="page-title-row">
+                    <div>
+                        <h2 class="page-title">Quản lý voucher toàn hệ thống</h2>
+                        <p class="page-subtitle">Tạo và quản lý các chương trình khuyến mãi áp dụng chung cho toàn bộ nền tảng BookMooch</p>
+                    </div>
+                    <div class="header-action-group">
+                        <button class="btn btn-primary" onclick="openCreateVoucher()">
+                            <span class="material-symbols-outlined">add_circle</span> Tạo voucher mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-tabs-bar" id="voucherFilterTabs">
+                <button class="tab-chip active" data-filter="all">Tất cả <span class="tab-count">6</span></button>
+                <button class="tab-chip" data-filter="running">Đang chạy <span class="tab-count">3</span></button>
+                <button class="tab-chip" data-filter="scheduled">Lên lịch <span class="tab-count">1</span></button>
+                <button class="tab-chip" data-filter="expired">Hết hạn <span class="tab-count">2</span></button>
+            </div>
+
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title"><span class="material-symbols-outlined">list_alt</span> Danh sách chương trình khuyến mãi</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                        <tr><th>Mã voucher</th><th>Chương trình</th><th>Mức giảm</th><th>Hiệu lực</th><th>Lượt dùng</th><th style="text-align:center;">Trạng thái</th><th style="text-align:center;">Thao tác</th></tr>
+                        </thead>
+                        <tbody id="voucherTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- CREATE / EDIT VOUCHER MODAL -->
+<div class="modal-backdrop" id="voucherFormModal" style="display:none;">
+    <div class="modal-dialog" style="max-width:560px; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h3 class="modal-title" style="margin:0;" id="voucherFormTitle">Tạo voucher mới</h3>
+            <button onclick="closeModal('voucherFormModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
+        </div>
+        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Voucher toàn hệ thống áp dụng cho mọi người mua đủ điều kiện, không giới hạn theo shop.</p>
+
+        <div class="voucher-preview-card" style="margin-bottom:20px;">
+            <div class="voucher-code-pill" id="previewCode">SACH9</div>
+            <div style="font-size:.82rem; color:var(--text-secondary); line-height:1.5;" id="previewDesc">Giảm 9%, tối đa 50.000 ₫ cho đơn từ 200.000 ₫</div>
+        </div>
+
+        <div class="form-grid two-columns" style="margin-bottom:14px;">
+            <div class="field"><label>Mã voucher</label><input type="text" id="vCode" placeholder="SACH9" style="text-transform:uppercase;"></div>
+            <div class="field"><label>Tên chương trình</label><input type="text" id="vName" placeholder="Khuyến mãi mùa tựu trường"></div>
+        </div>
+        <div class="form-grid two-columns" style="margin-bottom:14px;">
+            <div class="field"><label>Loại giảm giá</label>
+                <select id="vType" style="width:100%; padding:11px 12px; border:2px solid #cbd5e1; border-radius:7px;">
+                    <option value="percent">Theo phần trăm (%)</option>
+                    <option value="fixed">Số tiền cố định (₫)</option>
+                </select>
+            </div>
+            <div class="field"><label>Giá trị giảm</label><input type="text" id="vValue" placeholder="9"></div>
+        </div>
+        <div class="form-grid two-columns" style="margin-bottom:14px;">
+            <div class="field"><label>Giảm tối đa</label><input type="text" id="vMaxDiscount" placeholder="50.000"></div>
+            <div class="field"><label>Đơn hàng tối thiểu</label><input type="text" id="vMinOrder" placeholder="200.000"></div>
+        </div>
+        <div class="form-grid two-columns" style="margin-bottom:14px;">
+            <div class="field"><label>Ngày bắt đầu</label><input type="date" id="vStart"></div>
+            <div class="field"><label>Ngày kết thúc</label><input type="date" id="vEnd"></div>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+            <label>Giới hạn lượt sử dụng</label>
+            <input type="text" id="vLimit" placeholder="5000">
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="closeModal('voucherFormModal')">Huỷ</button>
+            <button class="btn btn-primary" id="voucherSubmitBtn" onclick="submitVoucherForm()">Tạo voucher</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE VOUCHER CONFIRM -->
+<div class="modal-backdrop" id="deleteVoucherModal" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-icon-circle danger"><span class="material-symbols-outlined" style="font-size:32px;">delete</span></div>
+        <h3 class="modal-title">Xoá voucher</h3>
+        <p class="modal-desc">Bạn có chắc chắn muốn xoá voucher <strong id="deleteVoucherCode">SACH9</strong>? Hành động này không thể hoàn tác.</p>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('deleteVoucherModal')">Quay lại</button>
+            <button class="btn btn-danger" onclick="confirmDeleteVoucher()"><span class="material-symbols-outlined" style="font-size:16px;">delete</span> Xoá voucher</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/common.js"></script>
+<script src="../js/vouchers.js"></script>
+</body>
+</html>

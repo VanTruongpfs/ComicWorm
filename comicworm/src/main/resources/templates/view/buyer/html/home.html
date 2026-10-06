@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComicHub - Chợ Mua Bán &amp; Trao Đổi Truyện Tranh Toàn Quốc</title>
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+
+<!-- ================= HEADER / NAVBAR ================= -->
+<header class="site-header">
+
+    <div class="container header-container">
+
+        <!-- Logo Thương hiệu -->
+
+        <a href="home.html" class="brand-logo">
+
+            <div class="brand-logo-icon">
+
+                <i class="fa-solid fa-book-open"></i>
+
+            </div>
+
+            <div class="brand-logo-text">
+
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- Thanh tìm kiếm nhanh -->
+
+        <div class="header-search-bar">
+
+            <span class="search-category-tag">Tất cả truyện</span>
+
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- Menu chính -->
+
+        <nav class="main-navigation">
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+
+                    <a href="#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+
+                </li>
+
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+
+
+        <!-- Hành động người dùng -->
+
+        <div class="header-actions">
+
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+
+                <i class="fa-regular fa-bell"></i>
+
+                <span class="notification-indicator"></span>
+
+            </button>
+
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span class="cart-count-badge">3</span>
+
+            </a>
+
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+
+                <i class="fa-solid fa-circle-plus"></i>
+
+                <span>Đăng bán/Đổi truyện</span>
+
+            </a>
+
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ================= HERO SECTION & ADVANCED SEARCH ================= -->
+<section class="hero-section">
+    <div class="container">
+        <div class="pill-badge">
+            <i class="fa-solid fa-fire"></i> Sàn giao dịch Manga &amp; Comic uy tín số 1 VN
+        </div>
+        <h1 class="hero-title">
+            Thiên Đường Mua Bán &amp; <br>
+            <span>Trao Đổi Truyện Tranh</span> Toàn Quốc
+        </h1>
+        <p class="hero-desc">
+            Kết nối hơn 150.000 độc giả mê Manga, Comic, Webtoon và Light Novel. Tìm tập truyện còn thiếu trong tủ sách hoặc trao đổi 1–1 lấy siêu phẩm bạn khao khát ngay hôm nay!
+        </p>
+
+        <!-- Advanced Search Card -->
+        <div class="search-card">
+            <!-- Input Group -->
+            <div class="search-input-group">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="Tìm theo tên truyện, tác giả, NXB (Kim Đồng, Trẻ, IPM, Wings Books, TVM Comics)...">
+                <button class="btn-camera" type="button">
+                    <i class="fa-solid fa-camera"></i> Tìm bằng bìa
+                </button>
+            </div>
+
+            <!-- Filters Grid -->
+            <div class="search-filters-grid">
+                <div class="filter-item">
+                    <label>Loại giao dịch</label>
+                    <div class="filter-select-wrap">
+                        <select>
+                            <option>Tất cả phương thức</option>
+                            <option>🔄 Chỉ đổi truyện (Barter 1-1)</option>
+                            <option>💰 Cần bán lại</option>
+                            <option>⚡ Tìm mua gấp</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label>Thể loại truyện</label>
+                    <div class="filter-select-wrap">
+                        <select>
+                            <option>Tất cả thể loại</option>
+                            <option>Shounen / Hành động</option>
+                            <option>Seinen / Trinh thám / Tâm lý</option>
+                            <option>Marvel &amp; DC US</option>
+                            <option>Light Novel &amp; Artbook</option>
+                            <option>Manhwa Full màu</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="filter-item">
+                    <label>Tình trạng sách</label>
+                    <div class="filter-select-wrap">
+                        <select>
+                            <option>Mọi tình trạng</option>
+                            <option>Mới 100% nguyên màng co (Seal)</option>
+                            <option>Like New 98-99% (Đầy đủ quà tặng)</option>
+                            <option>Sưu tầm tốt (Không ố vàng, rách)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bottom Bar -->
+            <div class="search-bottom">
+                <div class="trending-tags">
+                    <span class="trending-label"><i class="fa-solid fa-arrow-trend-up"></i> Xu hướng:</span>
+                    <span class="tag-badge">#OnePieceTap108</span>
+                    <span class="tag-badge">#ConanMoiNhat</span>
+                    <span class="tag-badge">#JujutsuKaisenCard</span>
+                    <span class="tag-badge">#FullBoxSlamDunk</span>
+                </div>
+                <button class="btn-search-submit" type="button">
+                    <i class="fa-solid fa-magnifying-glass"></i> Tìm Truyện Ngay
+                </button>
+            </div>
+        </div>
+
+        <!-- Trust Stats Bar -->
+        <div class="trust-stats-grid">
+            <div class="stat-box">
+                <div class="stat-icon orange"><i class="fa-solid fa-book-bookmark"></i></div>
+                <div>
+                    <div class="stat-val">45,000+</div>
+                    <div class="stat-lbl">Bộ truyện sẵn sàng</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon blue"><i class="fa-solid fa-rotate"></i></div>
+                <div>
+                    <div class="stat-val">18,200+</div>
+                    <div class="stat-lbl">Phiên đổi thành công</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon green"><i class="fa-solid fa-shield-halved"></i></div>
+                <div>
+                    <div class="stat-val">100%</div>
+                    <div class="stat-lbl">Kiểm định tình trạng</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon amber"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div>
+                    <div class="stat-val">Hoàn tiền 100%</div>
+                    <div class="stat-lbl">Nếu sai mô tả truyện</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CATEGORIES SECTION ================= -->
+<section class="categories-section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="sub-title">Khám phá vũ trụ truyện tranh</span>
+                <h2 class="main-title">Danh Mục Thể Loại Nổi Bật</h2>
+            </div>
+            <a href="#" class="link-more">
+                Xem tất cả 28 nhánh thể loại <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="categories-grid">
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-orange"><i class="fa-solid fa-bolt"></i></div>
+                <h3 class="cat-title">Manga Kinh Điển</h3>
+                <p class="cat-desc">Shounen, Võ thuật</p>
+            </a>
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-indigo"><i class="fa-solid fa-brain"></i></div>
+                <h3 class="cat-title">Seinen &amp; Trinh Thám</h3>
+                <p class="cat-desc">Tâm lý, Kinh dị</p>
+            </a>
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-rose"><i class="fa-solid fa-mask"></i></div>
+                <h3 class="cat-title">Comic Marvel &amp; DC</h3>
+                <p class="cat-desc">Bản dịch &amp; US</p>
+            </a>
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-blue"><i class="fa-solid fa-feather-pointed"></i></div>
+                <h3 class="cat-title">Light Novel &amp; Artbook</h3>
+                <p class="cat-desc">Bìa giới hạn</p>
+            </a>
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-amber"><i class="fa-solid fa-palette"></i></div>
+                <h3 class="cat-title">Manhwa Hàn Quốc</h3>
+                <p class="cat-desc">Full màu bìa cứng</p>
+            </a>
+            <a href="#" class="category-card">
+                <div class="cat-icon-wrap cat-slate"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <h3 class="cat-title">Combo Full Bộ</h3>
+                <p class="cat-desc">Trọn bộ giá tốt</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ================= BARTER EXCHANGE LOUNGE ================= -->
+<section class="barter-section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="sub-title"><i class="fa-solid fa-shuffle"></i> Cơ chế Barter độc quyền</span>
+                <h2 class="main-title">Sàn Trao Đổi 1-1 Sôi Động</h2>
+            </div>
+            <a href="../../exchange/html/negotiation-order.html" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-plus-circle"></i> Tạo Kèo Đổi Truyện Mới
+            </a>
+        </div>
+
+        <div class="barter-grid">
+            <!-- Card 1 -->
+            <div class="barter-card">
+                <div class="barter-card-top">
+                    <div class="barter-user-info">
+                        <div class="user-badge-avatar">HN</div>
+                        <div>
+                            <div class="barter-user-name">Hoàng Nam</div>
+                            <div class="barter-user-meta">Hà Nội • <span class="star-rating">★ 5.0</span> (42 giao dịch)</div>
+                        </div>
+                    </div>
+                    <span class="tag-status orange">Trao đổi ngang giá</span>
+                </div>
+
+                <div class="barter-compare-box">
+                    <div class="compare-col have">
+                        <span class="col-tag orange">Chủ sách có:</span>
+                        <h4 class="col-book-title">Tokyo Ghoul (Full 14 tập)</h4>
+                        <p class="col-condition">Like New 98%</p>
+                        <p class="col-note">Đầy đủ bìa rời, không ố vàng</p>
+                    </div>
+                    <div class="compare-col want">
+                        <span class="col-tag amber">Muốn đổi lấy:</span>
+                        <h4 class="col-book-title">Chainsaw Man (Tập 1-11)</h4>
+                        <p class="col-condition" style="color: #475569;">Tình trạng 90%+</p>
+                        <p class="col-note">Bản NXB Trẻ phát hành</p>
+                    </div>
+                </div>
+
+                <div class="barter-card-foot">
+                    <span>Đăng 25 phút trước • 3 người đang chat</span>
+                    <a href="../../exchange/html/dealing-chat.html" class="btn-secondary-dark" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fa-regular fa-paper-plane"></i> Gửi đề xuất đổi
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="barter-card">
+                <div class="barter-card-top">
+                    <div class="barter-user-info">
+                        <div class="user-badge-avatar">MT</div>
+                        <div>
+                            <div class="barter-user-name">Minh Tuấn</div>
+                            <div class="barter-user-meta">TP. Hồ Chí Minh • <span class="star-rating">★ 4.9</span> (88 giao dịch)</div>
+                        </div>
+                    </div>
+                    <span class="tag-status amber">Hàng Siêu Hiếm</span>
+                </div>
+
+                <div class="barter-compare-box">
+                    <div class="compare-col have">
+                        <span class="col-tag orange">Chủ sách có:</span>
+                        <h4 class="col-book-title">One Piece Tập 100 Bản Giới Hạn</h4>
+                        <p class="col-condition">Nguyên Seal 100%</p>
+                        <p class="col-note">Kèm standee mica nguyên vẹn</p>
+                    </div>
+                    <div class="compare-col want">
+                        <span class="col-tag amber">Muốn đổi lấy:</span>
+                        <h4 class="col-book-title">Dragon Ball Color Saga box</h4>
+                        <p class="col-condition" style="color: #475569;">Có bù tiền</p>
+                        <p class="col-note">Ưu tiên giao dịch nội thành SG</p>
+                    </div>
+                </div>
+
+                <div class="barter-card-foot">
+                    <span>Đăng 1 giờ trước • 8 đề xuất đang chờ</span>
+                    <a href="../../exchange/html/dealing-chat.html" class="btn-secondary-dark" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fa-regular fa-paper-plane"></i> Đề xuất đổi
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= MARKETPLACE LISTINGS ================= -->
+<section class="marketplace-section" id="marketplace">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="sub-title">Cập nhật theo thời gian thực</span>
+                <h2 class="main-title">Chợ Mua Bán Mới Đăng</h2>
+            </div>
+            <div class="market-tabs">
+                <button class="tab-btn active">Tất cả bài đăng</button>
+                <button class="tab-btn">Bộ Full Trọn Gói</button>
+                <button class="tab-btn">Bản Giới Hạn / Seal</button>
+                <button class="tab-btn">Giá &lt; 500k</button>
+            </div>
+        </div>
+
+        <div class="products-grid">
+            <!-- Product 1 -->
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=500&q=80" alt="Manga">
+                    <span class="badge-discount">-20%</span>
+                    <span class="badge-verified"><i class="fa-solid fa-check"></i> Đã Kiểm Định</span>
+                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="prod-publisher">NXB Kim Đồng • <span>99% Like New</span></div>
+                        <h4 class="prod-title"><a href="product_details.html" style="text-decoration:none; color:inherit;">Slam Dunk Deluxe Edition (Trọn bộ 24 tập)</a></h4>
+                    </div>
+                    <div class="prod-foot">
+                        <div class="prod-pricing">
+                            <span class="price-current">1.850.000₫</span>
+                            <span class="price-old">2.300.000₫</span>
+                        </div>
+                        <div class="prod-bottom-row">
+                            <span class="seller-name">AnVinh • ★ 5.0</span>
+                            <button class="btn-buy-now" onclick="window.location.href='product_details.html'">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product 2 -->
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" alt="Manga">
+                    <span class="badge-custom" style="background:#f59e0b;">Kèm Bookmark</span>
+                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="prod-publisher">NXB Kim Đồng • <span>99% Mới Đẹp</span></div>
+                        <h4 class="prod-title"><a href="product_details.html" style="text-decoration:none; color:inherit;">Spy x Family Tập 1-12 (Tặng kèm Bookmark)</a></h4>
+                    </div>
+                    <div class="prod-foot">
+                        <div class="prod-pricing">
+                            <span class="price-current">450.000₫</span>
+                        </div>
+                        <div class="prod-bottom-row">
+                            <span class="seller-name">OtakuShopHN • ★ 4.9</span>
+                            <button class="btn-buy-now" onclick="window.location.href='product_details.html'">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80" alt="Manga">
+                    <span class="badge-custom" style="background:#2563eb;">Bản Tiếng Anh</span>
+                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="prod-publisher">Kodansha US • <span style="color:#475569;">95%</span></div>
+                        <h4 class="prod-title">Attack on Titan Colossal Edition (Vol 1)</h4>
+                    </div>
+                    <div class="prod-foot">
+                        <div class="prod-pricing">
+                            <span class="price-current">920.000₫</span>
+                        </div>
+                        <div class="prod-bottom-row">
+                            <span class="seller-name">ThanhTung_US • ★ 4.8</span>
+                            <button class="btn-buy-now">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=80" alt="Manga">
+                    <span class="badge-custom" style="background:#9333ea;">Bìa Cứng</span>
+                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="prod-publisher">NXB Trẻ • <span>98% Sưu Tầm</span></div>
+                        <h4 class="prod-title">20th Century Boys Hoàn Thành (11 tập bìa cứng)</h4>
+                    </div>
+                    <div class="prod-foot">
+                        <div class="prod-pricing">
+                            <span class="price-current">1.200.000₫</span>
+                        </div>
+                        <div class="prod-bottom-row">
+                            <span class="seller-name">KhoSachHiem99 • ★ 5.0</span>
+                            <button class="btn-buy-now">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product 5 -->
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=500&q=80" alt="Manga">
+                    <span class="badge-custom" style="background:#0f172a;">Bản Kỷ Niệm</span>
+                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="prod-publisher">NXB Kim Đồng • <span>Like New 99%</span></div>
+                        <h4 class="prod-title">Cardcaptor Sakura Collector's Edition</h4>
+                    </div>
+                    <div class="prod-foot">
+                        <div class="prod-pricing">
+                            <span class="price-current">680.000₫</span>
+                        </div>
+                        <div class="prod-bottom-row">
+                            <span class="seller-name">YumeBooks • ★ 4.9</span>
+                            <button class="btn-buy-now">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="center-btn-wrap">
+            <button class="btn-load-more" type="button">
+                Xem thêm hơn 1.400 tập truyện vừa lên kệ <i class="fa-solid fa-chevron-down" style="font-size:11px; margin-left:6px;"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FEATURES SECTION ================= -->
+<section class="features-section">
+    <div class="container">
+        <div class="features-header">
+            <span class="sub-title">Công nghệ &amp; Bảo chứng giao dịch</span>
+            <h2 class="main-title">Tính Năng Độc Quyền Cho Otaku &amp; Collector</h2>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div>
+                    <div class="feature-icon-box orange"><i class="fa-solid fa-robot"></i></div>
+                    <h3 class="feature-title">Định Giá Truyện Cũ AI</h3>
+                    <p class="feature-desc">
+                        Chụp ảnh 4 góc gáy sách và trang lót, mô hình AI của ComicHub thẩm định độ ố vàng, vết gấp, phân loại chuẩn (Near Mint, Fine, Good) và gợi ý mức giá thị trường.
+                    </p>
+                </div>
+                <a href="#" class="feature-link orange">Thử thẩm định ngay <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="feature-card">
+                <div>
+                    <div class="feature-icon-box blue"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3 class="feature-title">Bảo Chứng ComicHub Pay</h3>
+                    <p class="feature-desc">
+                        Cơ chế ký quỹ bảo đảm 100%. Tiền thanh toán hoặc giao dịch trao đổi 1–1 được giữ an toàn và chỉ giải ngân khi người nhận kiểm tra đúng mô tả.
+                    </p>
+                </div>
+                <a href="#" class="feature-link blue">Tìm hiểu quy trình Escrow <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="feature-card">
+                <div>
+                    <div class="feature-icon-box amber"><i class="fa-solid fa-box-open"></i></div>
+                    <h3 class="feature-title">Ship COD &amp; Đồng Kiểm</h3>
+                    <p class="feature-desc">
+                        Hợp tác với các đơn vị vận chuyển hỗ trợ đồng kiểm từng trang trực tiếp trước khi nhận. Collector an tâm kiểm tra rồi mới thanh toán.
+                    </p>
+                </div>
+                <a href="#" class="feature-link amber">Chính sách đóng gói chuẩn Box <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CTA BANNER ================= -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-banner">
+            <div class="cta-content">
+                <div class="cta-tagline"><i class="fa-solid fa-sparkles"></i> Mở tủ truyện • Chia sẻ đam mê</div>
+                <h2 class="cta-title">Bạn có kệ truyện cũ muốn dọn nhà hay đang tìm lại bộ truyện tuổi thơ?</h2>
+                <p class="cta-desc">Đăng bán hoặc trao đổi hoàn toàn miễn phí chỉ trong 60 giây. Hệ thống tự động ghép nối bạn với hàng nghìn Collector!</p>
+            </div>
+            <div class="cta-actions">
+                <a href="../../seller/html/dang-ban-truyen.html" class="btn-primary" style="padding: 14px 24px; text-decoration:none;">Đăng tin bán / đổi truyện ngay</a>
+                <a href="page1.html" class="btn-cta-secondary" style="text-decoration:none;">Tham Gia Hội Sưu Tầm</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../js/home.js"></script>
+</body>
+</html>

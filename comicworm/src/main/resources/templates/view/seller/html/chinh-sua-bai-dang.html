@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chỉnh Sửa Bài Đăng - Seller ComicHub</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <style>
+    .selector-bar {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .thumb-edit-box {
+      width: 100px;
+      height: 130px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 2px solid var(--border);
+      position: relative;
+    }
+    .thumb-edit-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- QUICK SWITCHER BAR -->
+  <div class="quick-switcher-bar">
+    <div class="switcher-title">
+      <span class="material-symbols-outlined" style="font-size: 18px;">menu_book</span>
+      <span>TRƯỜNG T - SELLER CENTER:</span>
+    </div>
+    <div class="switcher-pills">
+      <a href="post-product-hub.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">grid_view</span> Tổng quan Hub
+      </a>
+      <a href="dang-ban-truyen.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">add_circle</span> 1. Đăng bán truyện
+      </a>
+      <a href="quan-ly-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">format_list_bulleted</span> 2. Quản lý bài đăng
+      </a>
+      <a href="chinh-sua-bai-dang.html" class="switcher-btn active">
+        <span class="material-symbols-outlined" style="font-size: 14px;">edit_note</span> 3. Chỉnh sửa bài đăng
+      </a>
+      <a href="an-xoa-bai-dang.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> 4. Ẩn/Xóa bài đăng
+      </a>
+      <a href="quan-ly-san-pham.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> 5. Quản lý sản phẩm
+      </a>
+      <a href="quan-ly-voucher.html" class="switcher-btn">
+        <span class="material-symbols-outlined" style="font-size: 14px;">confirmation_number</span> 6. Quản lý voucher
+      </a>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- SIDEBAR DÙNG CHUNG VỚI SRC/TRUONG -->
+    <div id="sidebarContainer" data-active="chinh-sua-bai-dang"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">
+            <span class="material-symbols-outlined" style="color: var(--primary);">edit_note</span>
+            Chỉnh Sửa Thông Tin Bài Đăng
+          </h1>
+          <p class="page-desc">Cập nhật giá cả, mô tả truyện, tồn kho và hình ảnh bài đăng</p>
+        </div>
+        <div class="topbar-right">
+          <a href="quan-ly-bai-dang.html" class="btn btn-secondary">
+            <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
+          </a>
+          <button type="button" class="btn btn-primary" onclick="savePostChanges()">
+            <span class="material-symbols-outlined">save</span> Lưu Thay Đổi
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- QUICK SELECTOR TO PICK POST -->
+        <div class="selector-bar">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="material-symbols-outlined" style="color: #2563eb; font-size: 28px;">find_in_page</span>
+            <div>
+              <div style="font-weight: 700; color: #1e3a8a; font-size: 0.95rem;">Chọn bài đăng muốn chỉnh sửa:</div>
+              <div style="font-size: 0.78rem; color: #3b82f6;">Bạn có thể chọn bất kỳ bài đăng nào có trong kho để chỉnh sửa</div>
+            </div>
+          </div>
+          <div style="min-width: 320px;">
+            <select id="postSelector" class="form-select" onchange="loadSelectedPost(this.value)">
+              <!-- Options loaded via JS -->
+            </select>
+          </div>
+        </div>
+
+        <form id="editPostForm" onsubmit="event.preventDefault(); savePostChanges();">
+          <input type="hidden" id="editPostId">
+
+          <!-- 1. HÌNH ẢNH & TRẠNG THÁI -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <span class="material-symbols-outlined" style="color: var(--primary);">image</span>
+                Hình ảnh bìa & Trạng thái hoạt động
+              </h2>
+              <span id="postStatusDisplayBadge" class="badge badge-success">Đang bán</span>
+            </div>
+
+            <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+              <div class="thumb-edit-box">
+                <img id="editImagePreview" src="" alt="Ảnh bài đăng" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300'">
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="editImageUrl">Đường dẫn URL ảnh bìa:</label>
+                  <input type="text" id="editImageUrl" class="form-input" oninput="document.getElementById('editImagePreview').src = this.value">
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="editStatus">Trạng thái bài đăng:</label>
+                    <select id="editStatus" class="form-select" onchange="updateStatusBadge(this.value)">
+                      <option value="active">Đang bán (Hiển thị công khai)</option>
+                      <option value="pending">Chờ BQT kiểm duyệt</option>
+                      <option value="hidden">Tạm ẩn bài đăng</option>
+                      <option value="out_of_stock">Hết hàng</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="editCreatedAt">Ngày đăng ban đầu:</label>
+                    <input type="text" id="editCreatedAt" class="form-input" readonly style="background: #f1f5f9;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. THÔNG TIN TRUYỆN -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <span class="material-symbols-outlined" style="color: var(--secondary);">menu_book</span>
+                Thông tin truyện tranh & Tác phẩm
+              </h2>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editTitle">Tên bài đăng / Tên truyện <span class="required">*</span></label>
+              <input type="text" id="editTitle" class="form-input" required>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="editAuthor">Tác giả</label>
+                <input type="text" id="editAuthor" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editCategory">Thể loại</label>
+                <select id="editCategory" class="form-select">
+                  <option value="Manga Shounen">Manga Shounen</option>
+                  <option value="Trinh thám / Mystery">Trinh thám / Mystery</option>
+                  <option value="Hành động / Siêu nhiên">Hành động / Siêu nhiên</option>
+                  <option value="Hài hước / Thiếu nhi">Hài hước / Thiếu nhi</option>
+                  <option value="Hài hước / Gia đình">Hài hước / Gia đình</option>
+                  <option value="Shoujo / Romance">Shoujo / Romance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editVolume">Tập truyện / Bộ</label>
+                <input type="text" id="editVolume" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="editPublisher">Nhà xuất bản</label>
+                <input type="text" id="editPublisher" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editYear">Năm xuất bản</label>
+                <input type="number" id="editYear" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editCondition">Tình trạng sách thực tế</label>
+                <select id="editCondition" class="form-select">
+                  <option value="Mới 100% Nguyên Seal">Mới 100% Nguyên Seal</option>
+                  <option value="Like New 99% (Đã đọc 1 lần)">Like New 99% (Đã đọc 1 lần)</option>
+                  <option value="95% Giữ gìn cẩn thận">95% Giữ gìn cẩn thận</option>
+                  <option value="90% Giấy ngả vàng nhẹ thời gian">90% Giấy ngả vàng nhẹ thời gian</option>
+                  <option value="Truyện cũ sưu tầm 80%">Truyện cũ sưu tầm 80%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. GIÁ CẢ & KHO HÀNG -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <span class="material-symbols-outlined" style="color: var(--success);">payments</span>
+                Giá bán, Kho hàng & Trao đổi
+              </h2>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="editOriginalPrice">Giá bìa gốc (VNĐ)</label>
+                <input type="number" id="editOriginalPrice" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editPrice">Giá bán thanh lý (VNĐ) <span class="required">*</span></label>
+                <input type="number" id="editPrice" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editStock">Số lượng tồn kho <span class="required">*</span></label>
+                <input type="number" id="editStock" class="form-input" min="0" required>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Tùy chọn trao đổi truyện:</label>
+                <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+                  <input type="checkbox" id="editIsTradeable">
+                  <span style="font-weight: 600; color: #9333ea;">Bật nhận trao đổi truyện (Trade Manga)</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editViews">Lượt xem hiện tại:</label>
+                <input type="number" id="editViews" class="form-input" readonly style="background: #f1f5f9;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. MÔ TẢ CHI TIẾT -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <span class="material-symbols-outlined" style="color: var(--text-secondary);">description</span>
+                Mô tả chi tiết bài đăng
+              </h2>
+            </div>
+            <div class="form-group">
+              <textarea id="editDescription" class="form-textarea" rows="4"></textarea>
+            </div>
+          </div>
+
+          <!-- BUTTONS (Căn đều 2 bên) -->
+          <div class="form-action-bar">
+            <div>
+              <a href="quan-ly-bai-dang.html" class="btn btn-secondary">
+                <span class="material-symbols-outlined">arrow_back</span> Hủy bỏ & Quay lại
+              </a>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+                <span class="material-symbols-outlined">check_circle</span> Lưu Bài Đăng
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/post-management.js"></script>
+  <script>
+    let currentPostId = '';
+
+    function initPostSelector() {
+      const posts = DataStore.getPosts();
+      const selector = document.getElementById('postSelector');
+      
+      selector.innerHTML = posts.map(p => `
+        <option value="${p.id}">[${p.id}] ${p.title} (${formatVND(p.price)})</option>
+      `).join('');
+
+      // Check query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('id');
+
+      if (targetId && posts.some(p => p.id === targetId)) {
+        selector.value = targetId;
+        loadSelectedPost(targetId);
+      } else if (posts.length > 0) {
+        selector.value = posts[0].id;
+        loadSelectedPost(posts[0].id);
+      }
+    }
+
+    function loadSelectedPost(id) {
+      const posts = DataStore.getPosts();
+      const post = posts.find(p => p.id === id);
+      if (!post) return;
+
+      currentPostId = post.id;
+      document.getElementById('editPostId').value = post.id;
+      document.getElementById('editTitle').value = post.title || '';
+      document.getElementById('editAuthor').value = post.author || '';
+      document.getElementById('editCategory').value = post.category || 'Manga Shounen';
+      document.getElementById('editVolume').value = post.volume || '';
+      document.getElementById('editPublisher').value = post.publisher || '';
+      document.getElementById('editYear').value = post.year || 2023;
+      document.getElementById('editCondition').value = post.condition || '95% Giữ gìn cẩn thận';
+      document.getElementById('editPrice').value = post.price || 0;
+      document.getElementById('editOriginalPrice').value = post.originalPrice || 0;
+      document.getElementById('editStock').value = post.stock || 0;
+      document.getElementById('editImageUrl').value = post.image || '';
+      document.getElementById('editImagePreview').src = post.image || '';
+      document.getElementById('editStatus').value = post.status || 'active';
+      document.getElementById('editCreatedAt').value = post.createdAt || '2026-09-10';
+      document.getElementById('editViews').value = post.views || 0;
+      document.getElementById('editDescription').value = post.description || '';
+      document.getElementById('editIsTradeable').checked = !!post.isTradeable;
+
+      updateStatusBadge(post.status);
+    }
+
+    function updateStatusBadge(status) {
+      const badge = document.getElementById('postStatusDisplayBadge');
+      if (status === 'active') {
+        badge.className = 'badge badge-success';
+        badge.innerText = 'Đang bán';
+      } else if (status === 'pending') {
+        badge.className = 'badge badge-warning';
+        badge.innerText = 'Chờ duyệt';
+      } else if (status === 'hidden') {
+        badge.className = 'badge badge-neutral';
+        badge.innerText = 'Đã ẩn';
+      } else {
+        badge.className = 'badge badge-danger';
+        badge.innerText = 'Hết hàng';
+      }
+    }
+
+    function savePostChanges() {
+      const posts = DataStore.getPosts();
+      const post = posts.find(p => p.id === currentPostId);
+      if (!post) {
+        showToast('Không tìm thấy bài đăng để lưu!', 'error');
+        return;
+      }
+
+      post.title = document.getElementById('editTitle').value.trim();
+      post.author = document.getElementById('editAuthor').value.trim();
+      post.category = document.getElementById('editCategory').value;
+      post.volume = document.getElementById('editVolume').value;
+      post.publisher = document.getElementById('editPublisher').value;
+      post.year = parseInt(document.getElementById('editYear').value, 10) || 2024;
+      post.condition = document.getElementById('editCondition').value;
+      post.price = parseFloat(document.getElementById('editPrice').value) || 0;
+      post.originalPrice = parseFloat(document.getElementById('editOriginalPrice').value) || post.price;
+      post.stock = parseInt(document.getElementById('editStock').value, 10) || 0;
+      post.image = document.getElementById('editImageUrl').value;
+      post.status = document.getElementById('editStatus').value;
+      post.description = document.getElementById('editDescription').value;
+      post.isTradeable = document.getElementById('editIsTradeable').checked;
+
+      DataStore.savePosts(posts);
+      showToast(`Đã lưu thành công các thay đổi cho "${post.title}"!`, 'success');
+      
+      // Update selector label
+      initPostSelector();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initPostSelector();
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,55 @@
+.finance-view { animation: viewTransitionIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.category-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border-subtle); }
+.category-row:last-child { border-bottom: none; }
+.category-row .cat-name { flex: 1; font-size: .86rem; font-weight: 600; color: var(--text-main); }
+.category-row .cat-track { flex: 2; height: 8px; border-radius: 999px; background: var(--surface-container); overflow: hidden; }
+.category-row .cat-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary-container), var(--primary)); }
+.category-row .cat-value { width: 90px; text-align: right; font-size: .82rem; font-weight: 700; color: var(--text-main); }
+
+/* Bộ lọc ngày/tháng/năm cho thống kê doanh thu theo cửa hàng */
+.store-filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-container-low);
+}
+
+.store-filter-label {
+    color: var(--text-muted);
+    font-size: .82rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.date-part-select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--text-main);
+    font-size: .84rem;
+    font-weight: 600;
+}
+
+.date-sep {
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.store-filter-hint {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: .8rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 780px) {
+    .store-filter-hint { margin-left: 0; width: 100%; }
+}

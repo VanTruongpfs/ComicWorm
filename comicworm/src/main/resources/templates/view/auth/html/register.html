@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!-- Register screen: collects profile data and requires acceptance of terms. -->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký | ComicWorm</title>
+    <link rel="stylesheet" href="../css/auth-shared.css">
+    <link rel="stylesheet" href="../css/register.css">
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card" aria-labelledby="register-title">
+            <p class="auth-brand"><a href="../../buyer/html/home.html" style="color:inherit; text-decoration:none;">&larr; ComicHub / ComicWorm</a></p>
+            <h1 class="auth-title" id="register-title">Tạo tài khoản mới</h1>
+            <p class="auth-subtitle">Tham gia cộng đồng trao đổi sách và tìm cuốn sách tiếp theo của bạn.</p>
+            <form class="auth-form" id="register-form" novalidate>
+                <div class="field"><label for="full-name">Họ và tên</label><input id="full-name" name="fullName" type="text" autocomplete="name" required><small class="field-error" data-error-for="fullName"></small></div>
+                <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required><small class="field-error" data-error-for="email"></small></div>
+                <div class="field"><label for="password">Mật khẩu</label><div class="password-wrap"><input id="password" name="password" type="password" autocomplete="new-password" required><button class="password-toggle" type="button" data-toggle-password="password">Hiện</button></div><small class="field-error" data-error-for="password"></small></div>
+                <div class="field"><label for="confirm-password">Nhập lại mật khẩu</label><div class="password-wrap"><input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required><button class="password-toggle" type="button" data-toggle-password="confirm-password">Hiện</button></div><small class="field-error" data-error-for="confirmPassword"></small></div>
+                <div class="field"><label class="check-label" for="terms"><input id="terms" name="terms" type="checkbox"> Tôi đồng ý với <a class="text-link" href="#terms">Điều khoản dịch vụ</a></label><small class="field-error" data-error-for="terms"></small></div>
+                <button class="auth-button" type="submit" data-submit>Đăng ký</button>
+            </form>
+            <p class="auth-switch">Đã có tài khoản? <a class="text-link" href="login.html">Đăng nhập</a></p>
+        </section>
+    </main>
+    <div class="toast-region" data-toast-region aria-live="polite"></div>
+    <script type="module" src="../js/register.js"></script>
+</body>
+</html>

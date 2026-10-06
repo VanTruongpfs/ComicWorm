@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MangaTrade — Theo Dõi Trạng Thái Đơn Hàng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/styles/global-design-tokens.css">
+<link rel="stylesheet" href="../css/page3.css">
+<link rel="stylesheet" href="../../shared/footer/footer.css">
+<link rel="stylesheet" href="../../shared/header/header.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../../shared/sidebar/sidebar.css">
+<link rel="stylesheet" href="../css/shared-sidebar-layout.css">
+</head>
+<body class="thuc-sidebar-layout">
+<div data-sidebar-mount></div>
+<header class="site-header">
+  <div class="container header-container">
+    <!-- Logo Thương hiệu -->
+    <a href="home.html" class="brand-logo">
+      <div class="brand-logo-icon">
+        <i class="fa-solid fa-book-open"></i>
+      </div>
+      <div class="brand-logo-text">
+        <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+        <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+      </div>
+    </a>
+
+    <!-- Thanh tìm kiếm nhanh -->
+    <div class="header-search-bar">
+      <span class="search-category-tag">Tất cả truyện</span>
+      <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+      <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </div>
+
+    <!-- Menu chính -->
+    <nav class="main-navigation">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+        </li>
+        <li class="nav-item">
+          <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+        </li>
+        <li class="nav-item">
+          <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+        </li>
+        <li class="nav-item">
+          <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Hành động người dùng -->
+    <div class="header-actions">
+      <button type="button" class="btn-notification" aria-label="Thông báo">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-indicator"></span>
+      </button>
+      <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="cart-count-badge">3</span>
+      </a>
+      <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>Đăng bán/Đổi truyện</span>
+      </a>
+      <div class="user-profile-menu">
+        <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="page-wrap">
+  <div class="breadcrumb-row">
+    <nav class="breadcrumb">
+      <a href="#trang-chu">Trang chủ</a><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span>
+      <a href="#quan-ly-don-hang">Quản lý đơn hàng</a><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span>
+      <span class="current">Đơn hàng #ORD-8831</span><span class="material-symbols-outlined" style="font-size:16px">chevron_right</span>
+      <span class="accent">Theo dõi trạng thái</span>
+    </nav>
+    <div class="controls">
+      <button class="btn btn-secondary" id="copyTracking"><span class="material-symbols-outlined" style="font-size:18px">content_copy</span>Sao chép mã đơn</button>
+      <button class="btn btn-secondary" id="printOrder"><span class="material-symbols-outlined" style="font-size:18px">print</span>In phiếu gửi</button>
+    </div>
+  </div>
+
+  <section class="hero-card">
+    <div class="hero-top">
+      <div class="product-overview">
+        <div class="product-cover">
+          <img alt="Fullmetal Alchemist Kanzenban boxset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCJZJ6k_V5R2hMAVbpWhv29djFhlWGXRjfhzZElI-tGuft3Oqr53Y9Rf5VbQjjCW1BRZyODlP4QvMBfuQ9WyinRywLTL7qh6szaWWqIgNwT2k1Xz4QKxaqXMpJJ3RgZxxV_oiI7hWOMphoxNNf-dOtpEdNZdf9Y7h1oq8reXmgcc3Cdq6EpRPup01dSxV9kO6dEXC2k8CIdrloj2C3WOoItZwbMbSkOc1WSLtPhPpehg3gJnJPXX2D8A">
+          <span class="volume-count">18 tập</span>
+        </div>
+        <div class="product-info">
+          <div class="status-row">
+            <span class="status-pill"><span class="dot"></span>ĐANG GIAO ĐẾN BẠN</span>
+            <span class="meta">| Đơn vị: <strong>GHN Express</strong></span>
+            <span class="meta">| Mã vận đơn: <span class="tracking-code">GHN-VN-98421034</span></span>
+          </div>
+          <h1 class="product-title">Fullmetal Alchemist Kanzenban trọn bộ 1-18 Boxset (Kèm obi &amp; poster)</h1>
+          <div class="product-meta">
+            <span>✓ Độ mới: <span class="strong">98% Collector Grade</span></span><span>•</span>
+            <span>Người bán: <a href="#shop" style="color:var(--primary);font-weight:700">OtakuStoreVN (Hà Nội)</a></span><span>•</span>
+            <span class="strong">1.850.000 đ</span>
+          </div>
+        </div>
+      </div>
+      <div class="delivery-box">
+        <div class="delivery-time"><span class="delivery-label">Thời gian giao dự kiến</span><strong>14:00 - 17:00</strong><span class="delivery-date">Hôm nay, 12 Tháng 10</span></div>
+        <div class="delivery-divider"></div>
+        <div class="shipper">
+          <img alt="Shipper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDR0JkgIACupclIF0mYDEdWYbrhlhjp40ndu1eXxcZ9f2iYukvvpXRBbQLYFM-I8aDI7UjgRiFqeyjkbBoJ-SWD_8NrCP7-xFMjvXaZQb-EXniwcQqIhkjQ6VMvQS-xOVZ_oJNIuQoGzOsQTh-EoWPDLc0SngG0pUXAudzDfP-czvr3vHFOrNPWPBOwk7v5kYGaKVuabfNwZi87qktn7szz698AWtlmQevEXB-9MuXw8ho2X7JVD-VuBw">
+          <div><div class="shipper-name">Nguyễn Văn Hoàng</div><div class="shipper-phone">0912.***.789</div></div>
+          <div class="shipper-actions">
+            <a class="call-btn" href="tel:0912888789" title="Gọi shipper"><span class="material-symbols-outlined" style="font-size:18px">call</span></a>
+            <button class="chat-btn" type="button" data-toast="Đang mở hội thoại với bưu tá Nguyễn Văn Hoàng..."><span class="material-symbols-outlined" style="font-size:18px">chat</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stepper">
+      <div class="stepper-track"><div class="track-bg"></div><div class="track-fill" id="trackFill"></div>
+        <div class="steps">
+          <div class="step"><div class="step-circle"><span class="material-symbols-outlined" style="font-size:20px">check</span></div><div><div class="step-title">1. Đặt hàng</div><div class="step-time">09:15 - 10/10</div><div class="step-note">Đã thanh toán Escrow</div></div></div>
+          <div class="step"><div class="step-circle"><span class="material-symbols-outlined" style="font-size:20px">check</span></div><div><div class="step-title">2. Đóng gói manga</div><div class="step-time">16:45 - 10/10</div><div class="step-note">Chống shock 3 lớp</div></div></div>
+          <div class="step"><div class="step-circle"><span class="material-symbols-outlined" style="font-size:20px">check</span></div><div><div class="step-title">3. Giao cho GHN</div><div class="step-time">14:20 - 11/10</div><div class="step-note">Kho Cầu Giấy xuất</div></div></div>
+          <div class="step active"><div class="step-circle"><span class="material-symbols-outlined" style="font-size:20px">local_shipping</span></div><div><div class="step-title">4. Đang giao hàng</div><div class="step-time">Hôm nay, 08:30</div><div class="step-note">Shipper đang gần bạn</div></div></div>
+          <div class="step upcoming"><div class="step-circle"><span class="material-symbols-outlined" style="font-size:20px">inventory_2</span></div><div><div class="step-title">5. Nhận &amp; Đồng kiểm</div><div class="step-time">Dự kiến 17:00</div><div class="step-note">Mở hộp kiểm tra</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="content-grid">
+    <div class="left-col">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-head-main"><span class="material-symbols-outlined" style="color:var(--primary)">history</span><div><h3>Nhật ký hành trình chi tiết</h3><p>Dữ liệu đồng bộ trực tiếp từ hệ thống API Giao Hàng Nhanh Express</p></div></div>
+          <span class="live"><span class="live-dot"></span>Trực tiếp</span>
+        </div>
+        <div class="timeline">
+          <article class="log active"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Bưu tá đang phát hàng</span><span class="log-time">08:30 - Hôm nay (12/10)</span></div><p class="log-text">Đơn hàng đã được bàn giao cho bưu tá <strong>Nguyễn Văn Hoàng</strong> phụ trách tuyến giao Cầu Giấy, Hà Nội. Người nhận vui lòng chú ý điện thoại.</p><div class="log-location"><span class="material-symbols-outlined" style="font-size:16px;color:var(--primary)">pin_drop</span><span>Vị trí hiện tại: Đường Trần Thái Tông, Dịch Vọng Hậu (Cách bạn ~1.2km)</span></div></div></article>
+          <article class="log"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Đến bưu cục phát Cầu Giấy 02</span><span class="log-time">05:15 - Hôm nay (12/10)</span></div><p class="log-text">Kiện hàng đã nhập kho trung chuyển phát Cầu Giấy 02. Đang phân chia tuyến giao cho bưu tá khu vực.</p></div></article>
+          <article class="log"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Rời kho tổng BN Hub Bắc Ninh</span><span class="log-time">21:40 - Hôm qua (11/10)</span></div><p class="log-text">Xe tải chuyên tuyến trung chuyển khởi hành từ Tổng kho Miền Bắc tới Hub nội thành Hà Nội.</p></div></article>
+          <article class="log"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Nhập kho tổng phân loại BN Hub</span><span class="log-time">18:05 - Hôm qua (11/10)</span></div><p class="log-text">Kiện truyện tranh đã qua băng chuyền quét mã vạch và phân loại tự động an toàn.</p></div></article>
+          <article class="log"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Lấy hàng thành công từ người bán</span><span class="log-time">14:20 - 11/10</span></div><p class="log-text">Tài xế GHN đã nhận bàn giao kiện hàng đóng gói từ chủ shop <strong>OtakuStoreVN</strong> tại Quận Ba Đình, Hà Nội.</p></div></article>
+          <article class="log"><span class="log-dot"></span><div class="log-card"><div class="log-top"><span class="log-title">Người bán xác nhận và in vận đơn</span><span class="log-time">10:05 - 10/10</span></div><p class="log-text">Người bán đã tải lên hình ảnh kiểm tra chất lượng góc sách, màng co và niêm phong chống va đập.</p></div></article>
+        </div>
+        <div class="assurance"><span class="material-symbols-outlined" style="color:var(--primary);font-size:28px">shield_lock</span><div><h4>Chính Sách Đồng Kiểm Manga Bản Quyền 100%</h4><p>Bạn có quyền mở hộp kiểm tra ngoại quan trước khi nhận: Kiểm tra đủ 18 tập, bìa áo, đai Obi và poster đính kèm. Tiền thanh toán của bạn đang được tạm giữ an toàn trong ví Escrow MangaTrade trong 48 giờ sau khi nhận để bảo vệ quyền lợi đổi trả.</p></div></div>
+      </section>
+
+      <section class="panel">
+        <div class="note-head"><span class="note-label">Ghi chú giao hàng</span><button class="link-btn" id="editNote">Chỉnh sửa</button></div>
+        <div class="note-box"><div class="note-main"><span class="material-symbols-outlined" style="color:var(--secondary)">home</span><div class="note-text"><span class="note-title">Giao tận tay tại phòng 402 - Tòa nhà Sunrise, 18 Duy Tân, Cầu Giấy</span><span class="note-sub">"Hàng truyện tranh sưu tầm dễ gãy móp, xin vui lòng nhẹ tay. Gọi trước 10 phút."</span></div></div><span class="material-symbols-outlined" style="color:var(--tertiary)">warning</span></div>
+      </section>
+    </div>
+
+    <div class="right-col">
+      <section class="panel map-panel">
+        <div class="map-head"><div class="map-title"><span class="material-symbols-outlined" style="color:var(--primary)">near_me</span><h3>Vị trí đơn hàng trực tiếp</h3></div><span class="distance">Cách bạn 1.2 km</span></div>
+        <div class="map-preview" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuDklsGNMPX8vr21ylLPfTzlrLzidsmpxna1tVrgVpT9LOBL3CJ-qydS6MUadlssD8bpUBy1mJcjNDZjIfKuwHUpGHpD6a_iyKbTGRbQr_rzm891t8mySrjCH9nuTU9Zx-h9qBENV8PKoHlpRYVVxRFxST2hL7wKrPfM0M1b6nN_ixJwdXU6g43gyd_bQW_jfkQZFdL09-oIiPBgHhlJyzrm-gzXn2W-mJGuFh4m8rhk9dFVb85mwUryCw')">
+          <div class="map-overlay"></div><div class="map-bottom"><span class="map-status"><span class="live-dot"></span>Tốc độ: 25 km/h • Đang di chuyển</span><button class="btn btn-primary" id="fullscreenMap">Xem toàn màn hình</button></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="map-head"><div class="map-title"><span class="material-symbols-outlined" style="color:var(--tertiary)">inventory</span><h3>Ảnh đóng gói đối chứng</h3></div><span class="meta">3 ảnh đính kèm</span></div>
+        <p class="meta" style="font-size:14px;line-height:1.45">Ảnh do người bán tải lên trước khi bàn giao cho bưu tá để đảm bảo tình trạng sách hoàn hảo khi đến tay bạn.</p>
+        <div class="pack-grid">
+          <button class="pack-photo" data-photo="Bọc xốp bóng khí 3 lớp"><img alt="Bọc xốp khí" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWt0cCO9UtuuBCvekOtvzTG1uoiis3po88eFzTc5e0Nf_UmdYdHDFMRp2zrZYxdQ4LL59ajd7H5vvU1GaB9nOZbPKD9Adt2MOc3oooDxQiRRizjhc_em77Y6yZphjHUBfrzan5vSocjnf5L847IE0nEnByMwp6iKMpG2G2Od-zcE41BNzmmiHqrfpWkrcsEeSDShjHGzZ6eYkqeigkuVbJYn2as0aG4ESZO8DS1y_jfCt7C-jv-k1_2g"><span class="photo-label">Bọc xốp khí</span></button>
+          <button class="pack-photo" data-photo="Kiểm tra góc gáy sách"><img alt="Góc gáy sách" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfHJ0TDqhIOrpwsMGRyQTQpw4-BHf-oPwMCMMnA5CYk7jIeuYu9Gy3CbcbVsnBQHsVSAvYPuPv0HfcCVgDwJI4nl9FMQx7OimUTCk55elW--hwZ6WP6xdulGAwfly0epIrZnTtxKeySee-_gwDXxksBPogSJ3Jg1sUNUXNOQNpYgKZ1471OyL8gBlDCzBLOKCYaAe1mqwfdqqe85qUSemgOa_zxVIRWsCzlkH5MXJQQ-MYaEv5NvVIYQ"><span class="photo-label">Góc gáy 100%</span></button>
+          <button class="pack-photo" data-photo="Thùng carton niêm phong"><img alt="Thùng carton" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOwgB9GeqkEPjgqI4FZMGcI3AjM2bQk60hhSTwfb0_C03rNqV1UNrAW3-EEfjQTTPg8baBgO2B4pC4jC-FJtTO9-iqReGwXIjH4P9DiGqc5_LT-0Usleh_jP4iZdjPmWUP58oK6nRk5TcgceUpd4aMskehMXHWxPoffenY36d445zSE0jopR9FuRB-zaPiXwpQOtA1Erfvjp7eO4tRm-rhQ5ExvHyYc_W1gziWAKLsmZ49kJDdnwnLDQ"><span class="photo-label">Niêm phong</span></button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="map-title" style="margin-bottom:8px"><span class="material-symbols-outlined" style="color:var(--secondary)">support_agent</span><h3 style="font-family:'Plus Jakarta Sans';font-size:18px;margin:0">Hỗ trợ &amp; Thay đổi lịch</h3></div>
+        <div class="support-actions">
+          <button class="support-item" id="reschedule"><span class="support-main"><span class="material-symbols-outlined" style="color:var(--primary)">schedule</span><span class="support-copy"><span class="support-title">Hẹn lại giờ hoặc ngày giao</span><span class="support-desc">Đổi sang ca tối hoặc giao vào ngày mai</span></span></span><span class="material-symbols-outlined">chevron_right</span></button>
+          <button class="support-item" id="reportDelay"><span class="support-main"><span class="material-symbols-outlined" style="color:var(--tertiary)">alarm</span><span class="support-copy"><span class="support-title">Báo đơn giao trễ hẹn</span><span class="support-desc">Hối thúc giao gấp trước giờ quy định</span></span></span><span class="material-symbols-outlined">chevron_right</span></button>
+          <button class="support-item" id="support"><span class="support-main"><span class="material-symbols-outlined">headset_mic</span><span class="support-copy"><span class="support-title">Liên hệ CSKH MangaTrade</span><span class="support-desc">Hỗ trợ khẩn cấp khiếu nại chất lượng</span></span></span><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+        <div class="confirm-wrap">
+          <button class="btn btn-primary" id="confirmReceived"><span class="material-symbols-outlined" style="font-size:20px">task_alt</span>Tôi đã nhận hàng &amp; Kiểm tra tốt</button>
+          <p class="confirm-help">Chỉ nhấn khi bạn đã cầm trên tay và hài lòng với độ mới của truyện</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col"><div class="footer-title footer-brand">MangaTrade</div><p class="footer-text">Sàn kết nối độc giả manga, truyện tranh bản quyền, sưu tầm hiếm và trao đổi tankōbon chất lượng cao đầu tiên tại Việt Nam.</p><div class="footer-text">✓ Hơn 45.000 đầu truyện được kiểm duyệt</div></div>
+      <div class="footer-col"><div class="footer-title">Dịch Vụ &amp; Hỗ Trợ</div><ul class="footer-list"><li><a href="#escrow">Quy trình mua bán an toàn (Escrow)</a></li><li><a href="#returns">Chính sách đổi trả &amp; Hoàn tiền</a></li><li><a href="#tracking">Tra cứu tiến độ đơn hàng</a></li><li><a href="#fees">Biểu phí giao dịch &amp; Ký gửi</a></li><li><a href="#grading">Quy chuẩn phân hạng độ mới (Grading)</a></li></ul></div>
+      <div class="footer-col"><div class="footer-title">Cộng Đồng Otaku</div><ul class="footer-list"><li><a href="#rare">Hội săn truyện tranh hiếm &amp; Bìa rời</a></li><li><a href="#review">Góc Review &amp; Khen chê bản dịch</a></li><li><a href="#comiccon">Sự kiện Comic-Con &amp; Giao lưu tác giả</a></li><li><a href="#collector">Bảng vinh danh Top Sưu Tầm 2024</a></li></ul></div>
+      <div class="footer-col"><div class="footer-title">Thanh Toán &amp; Bản Tin</div><p class="footer-text">Nhận thông báo khi có truyện hiếm lên sàn hoặc ưu đãi freeship.</p><form class="newsletter" id="newsletter"><input id="newsletterEmail" type="email" placeholder="Email của bạn..." required><button class="btn btn-primary" type="submit">Gửi</button></form><div><span class="footer-text" style="display:block;margin-bottom:6px;text-transform:uppercase;font-size:11px">Cổng thanh toán hỗ trợ</span><div class="payment-tags"><span>VietQR</span><span>MoMo</span><span>ZaloPay</span><span>COD</span></div></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2024 MangaTrade Việt Nam. Bản quyền nội dung thuộc về các nhà xuất bản được cấp phép.</p><div class="footer-links"><a href="#terms">Điều khoản dịch vụ</a><a href="#privacy">Bảo mật thông tin</a><span style="color:var(--primary-container)">✓ Bộ Công Thương Chứng Nhận</span></div></div>
+  </div>
+</footer>
+
+<div class="modal" id="rescheduleModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head"><h3><span class="material-symbols-outlined" style="color:var(--primary);vertical-align:middle">event_upcoming</span> Hẹn lại thời gian giao</h3><button class="close-btn" id="closeModal"><span class="material-symbols-outlined" style="font-size:18px">close</span></button></div>
+    <p class="meta" style="font-size:14px">Chọn khung giờ phù hợp nhất để bưu tá giao bộ truyện Fullmetal Alchemist đến địa chỉ của bạn:</p>
+    <div class="slot-list">
+      <label class="slot"><span>18:00 - 20:00 (Tối nay)</span><input checked name="slot" type="radio" value="tonight"></label>
+      <label class="slot"><span>08:00 - 12:00 (Sáng mai, 13/10)</span><input name="slot" type="radio" value="tomorrow_am"></label>
+      <label class="slot"><span>14:00 - 18:00 (Chiều mai, 13/10)</span><input name="slot" type="radio" value="tomorrow_pm"></label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="cancelModal">Hủy</button><button class="btn btn-primary" id="submitReschedule">Xác nhận hẹn giờ</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="../../shared/sidebar/sidebar.js"></script>
+<script src="../../shared/footer/footer.js"></script>
+<script src="../js/page3.js"></script>
+</body>
+</html>

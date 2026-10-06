@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý đơn hàng | ComicHub Seller Portal</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <link rel="stylesheet" href="../css/orders.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR (Nạp từ file sidebar.html riêng biệt) -->
+    <div id="sidebarContainer" data-active="orders"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Mở menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="store-badge" title="Gian hàng chính thức của bạn">
+            <span class="material-symbols-outlined store-icon">storefront</span>
+            <span class="store-name">Tiệm Truyện Vũ Trụ</span>
+            <span class="store-verified" title="Gian hàng đã xác thực">
+              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+            </span>
+            <span class="store-status-dot" title="Đang mở cửa hoạt động"></span>
+          </div>
+          <div class="global-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" placeholder="Tìm đơn hàng, mã truyện, buyer..." id="orderGlobalSearch">
+            <span class="search-shortcut">⌘K</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="nav-icon-btn" title="Thông báo mới">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notification-badge-dot"></span>
+          </button>
+          <div class="user-profile-menu">
+            <div class="user-details">
+              <div class="user-name">Trần Đăng Khoa</div>
+              <div class="user-role">Pro Seller</div>
+            </div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4W4fxRdEwEUti0BU4ZPunWEZMYRM5XRFFlgIpx5h5FcGigyLtFd7NM4wAKmn97UX_qn2USeyOTbIRFCnmQoBVyYsAZzk2Ommn4m96f0g8tJFlLLzGMdeLo7dnjurcqN9z0VjI4molZf84AY3b6Xl-s2jzDP8NviNKL_3XKBJ4WcGvVtQMCXF-FWLhW-6fAZmyE9-0dH2oGqFDNxunrsUeQMqf7VzQIHdjpzPSeoN1G2SHC3fTPCzWA" alt="Avatar Trần Đăng Khoa" class="user-avatar">
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+        <!-- KPI METRICS BANNER -->
+        <section class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Tổng doanh thu chờ quyết toán</span>
+              <span class="kpi-value">34.820.000 ₫</span>
+              <span class="kpi-trend positive">
+                <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
+                +18.4% tuần này
+              </span>
+            </div>
+            <div class="kpi-icon-wrapper primary">
+              <span class="material-symbols-outlined" style="font-size: 26px;">account_balance_wallet</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Cần đóng gói ngay</span>
+              <span class="kpi-value" style="color: #ea580c;">08 đơn</span>
+              <span class="kpi-trend warning">
+                <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+                Ưu tiên trước 16:00
+              </span>
+            </div>
+            <div class="kpi-icon-wrapper warning">
+              <span class="material-symbols-outlined" style="font-size: 26px;">inventory_2</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Đang luân chuyển</span>
+              <span class="kpi-value" style="color: #2563eb;">15 kiện</span>
+              <span class="kpi-trend info">
+                <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
+                Qua 3 đơn vị vận chuyển
+              </span>
+            </div>
+            <div class="kpi-icon-wrapper info">
+              <span class="material-symbols-outlined" style="font-size: 26px;">route</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-content">
+              <span class="kpi-label">Tỷ lệ hoàn thành</span>
+              <span class="kpi-value">96.8%</span>
+              <span class="kpi-trend positive">
+                <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                Đạt chuẩn Pro Merchant
+              </span>
+            </div>
+            <div class="kpi-icon-wrapper success">
+              <span class="material-symbols-outlined" style="font-size: 26px;">verified_user</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE HEADER & ACTION CONTROLS -->
+        <div class="page-header">
+          <div class="breadcrumb-tag">
+            <span class="material-symbols-outlined" style="font-size: 14px;">terminal</span>
+            Portal Quản Trị • Cập nhật 2 phút trước
+          </div>
+          <div class="page-title-row">
+            <div>
+              <h2 class="page-title">Quản lý đơn hàng</h2>
+              <p class="page-subtitle">Theo dõi trạng thái đóng gói, bàn giao vận chuyển và tiến trình thanh toán đơn hàng</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn btn-outline" id="exportOrdersBtn">
+                <span class="material-symbols-outlined">download</span>
+                Xuất danh sách
+              </button>
+              <button class="btn btn-primary" id="printBatchBtn">
+                <span class="material-symbols-outlined">print</span>
+                In vận đơn hàng loạt
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER TABS BAR -->
+        <div class="filter-tabs-bar" id="orderFilterTabs">
+          <button class="tab-chip active" data-filter="all">
+            Tất cả <span class="tab-count">48</span>
+          </button>
+          <button class="tab-chip" data-filter="processing">
+            Đang xử lý <span class="tab-count">8</span>
+          </button>
+          <button class="tab-chip" data-filter="shipping">
+            Đang giao <span class="tab-count">15</span>
+          </button>
+          <button class="tab-chip" data-filter="completed">
+            Hoàn thành <span class="tab-count">23</span>
+          </button>
+          <button class="tab-chip" data-filter="cancelled">
+            Đã hủy <span class="tab-count">2</span>
+          </button>
+        </div>
+
+        <!-- ORDERS DATA TABLE CARD -->
+        <div class="content-card">
+          <div class="content-card-header">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
+                <input type="checkbox" class="custom-checkbox" id="selectAllOrders">
+                <span>Chọn tất cả (<span id="selectedCount">0</span> đã chọn)</span>
+              </label>
+              <button class="btn btn-outline btn-sm" id="batchDispatchBtn" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
+                Bàn giao đối tác
+              </button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Sắp xếp theo:</span>
+              <select style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 0.85rem; font-weight: 500;">
+                <option value="newest">Mới nhất trước</option>
+                <option value="oldest">Cũ nhất trước</option>
+                <option value="price-desc">Giá trị cao nhất</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"></th>
+                  <th>Mã đơn & Ngày đặt</th>
+                  <th>Sản phẩm truyện tranh</th>
+                  <th>Khách hàng</th>
+                  <th style="text-align: right;">Tổng tiền</th>
+                  <th style="text-align: center;">Trạng thái</th>
+                  <th style="text-align: center;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- ROW 1 -->
+                <tr data-status="processing">
+                  <td>
+                    <input type="checkbox" class="custom-checkbox order-checkbox" data-id="ORD-90281">
+                  </td>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-90281</span>
+                        <button class="copy-btn" title="Sao chép mã đơn" onclick="copyText('ORD-90281')">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                        </button>
+                      </div>
+                      <div class="order-date">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                        Hôm nay, 14:22
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWqhFsWxpkeotx5tstyYdH6kJR4eb2k9J7eu7w0JWyyGUFp50rC3luahd-yMydgXJNweztWl-ixYTjai8-q7Vz99n5Lge96qIWhxZKOg15FGJqNHM6COiHbIBcyxkrKtytIoLAFP5Ko-0ymJXfrr3G4PyW5M05PRHrEYbbRNK2JQpMdTkonmjMoF0ThC1m3Bs9dGTKTWhpIBvS4QvjvpHqKb1gmhwR968uB2MLZ7y5fuIbZgGHd7kblg" alt="Bìa One Piece 105" class="comic-thumbnail">
+                      <div class="product-meta">
+                        <div class="product-title">One Piece Tập 105: Giấc Mơ Của Luffy</div>
+                        <div class="product-tags">
+                          <span class="tag-badge">Bản Đặc Biệt Bìa Rời</span>
+                          <span>x1 cuốn</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">NXB Kim Đồng • Đã bọc seal chống nước</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-name">Nguyễn Nhật Minh</span>
+                      <span class="customer-sub">0932.***.889</span>
+                      <span class="customer-sub" style="color: var(--primary); font-weight: 500;">Hà Nội (Hỏa tốc 2h)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="price-cell">
+                      <span class="price-amount">145.000 ₫</span>
+                      <span class="price-note">Đã gồm ship: 25k</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-warning">
+                      <span class="badge-dot"></span>
+                      Cần đóng gói
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                      <button class="btn btn-primary btn-sm" onclick="showToast('Đang tạo phiếu in cho đơn #ORD-90281')">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">print</span>
+                        In đơn
+                      </button>
+                      <button class="btn btn-outline btn-sm btn-cancel-order" style="color: var(--danger); border-color: #fca5a5;" onclick="openCancelOrderModal('ORD-90281', event)">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span>
+                        Hủy
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- DETAIL ACCORDION ROW 1 -->
+                <tr class="order-detail-row" id="detail-ORD-90281">
+                  <td colspan="7">
+                    <div class="order-detail-content">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                          <span class="material-symbols-outlined" style="color: var(--primary-container);">local_shipping</span>
+                          Tiến trình vận đơn #ORD-90281 & Chi tiết đóng gói
+                        </h4>
+                        <span class="badge badge-warning">Ưu tiên đóng gói trước 16:00</span>
+                      </div>
+                      <div class="delivery-timeline">
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>14:22 Khách đặt hàng</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--primary-container);">inventory</span>
+                          <span>14:30 Shop đã in đơn</span>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-point">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8;">local_shipping</span>
+                          <span>Chờ Shipper lấy hàng</span>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-point">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8;">home</span>
+                          <span>Giao thành công</span>
+                        </div>
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px; margin-top: 14px; background: #fff; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-size: 0.82rem;">
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Địa chỉ nhận hàng:</div>
+                          <div style="font-weight: 700; color: var(--text-main); margin-top: 2px;">Nguyễn Nhật Minh • 0932.***.889</div>
+                          <div style="color: var(--text-secondary);">Số 45 ngõ 198 Thái Hà, Đống Đa, Hà Nội (Hỏa tốc 2h)</div>
+                        </div>
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Ghi chú người mua:</div>
+                          <div style="color: var(--text-secondary); margin-top: 2px; font-style: italic;">"Shop bọc seal chống nước kỹ giúp mình nhé, truyện sưu tầm kỷ niệm!"</div>
+                        </div>
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Đơn vị vận chuyển:</div>
+                          <div style="font-weight: 700; color: var(--primary); margin-top: 2px;">Shopee Xpress Instant (Hỏa tốc)</div>
+                          <div style="color: var(--text-muted);">Mã vận đơn: SPX-892184910VN</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ROW 2 -->
+                <tr data-status="shipping">
+                  <td>
+                    <input type="checkbox" class="custom-checkbox order-checkbox" data-id="ORD-90278">
+                  </td>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-90278</span>
+                        <button class="copy-btn" title="Sao chép mã đơn" onclick="copyText('ORD-90278')">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                        </button>
+                      </div>
+                      <div class="order-date">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                        Hôm qua, 18:05
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_a82ouzPvhOjLHV-mAMxMpx0aMaNQ4SMXFI0DeL3tCyZ4wSuXGC3SOHmtgZuphnk1wwESuj3oAV8j61uTTeD_e-8FvB0nJ1kv8UvpusyiBZloE5nIkixSvJP0HaJw-n4jVCWGTzI54Y_DTJXbRN4cfcJ4OvRnfEDBNTu_VdEtwmlFBc3UZPmoPx5fuDE8lW1AovuVeZEVmCNJHqx-4BVdm2GdoyOzARQZF0VEfr1RBLJMkE9qzuEC8w" alt="Bìa Jujutsu Kaisen 20" class="comic-thumbnail">
+                      <div class="product-meta">
+                        <div class="product-title">Chú Thuật Hồi Chiến – Jujutsu Kaisen Tập 20</div>
+                        <div class="product-tags">
+                          <span class="tag-badge">Kèm Postcard Độc Quyền</span>
+                          <span>x2 cuốn</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Bản giới hạn đợt 1 • Tặng standee Gojo</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-name">Lê Thanh Thảo</span>
+                      <span class="customer-sub">0909.***.431</span>
+                      <span class="customer-sub">TP. Hồ Chí Minh (GHTK)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="price-cell">
+                      <span class="price-amount">210.000 ₫</span>
+                      <span class="price-note" style="color: var(--success-text);">Miễn phí ship voucher</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-info">
+                      <span class="badge-dot"></span>
+                      Đang giao
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                      <button class="btn btn-outline btn-sm" onclick="showToast('Mã vận đơn GHTK: 884910294')">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
+                        Theo dõi
+                      </button>
+                      <button class="btn btn-outline btn-sm btn-cancel-order" style="color: var(--danger); border-color: #fca5a5;" onclick="openCancelOrderModal('ORD-90278', event)">
+                        Hủy
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- DETAIL ACCORDION ROW 2 -->
+                <tr class="order-detail-row" id="detail-ORD-90278">
+                  <td colspan="7">
+                    <div class="order-detail-content">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                          <span class="material-symbols-outlined" style="color: #2563eb;">local_shipping</span>
+                          Lộ trình chuyển phát GHTK #884910294
+                        </h4>
+                        <span class="badge badge-info">Dự kiến giao: Chiều mai</span>
+                      </div>
+                      <div class="delivery-timeline">
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>Đã xuất kho</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>GHTK Đã lấy hàng</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: #2563eb;">local_shipping</span>
+                          <span>Đang luân chuyển TP.HCM</span>
+                        </div>
+                        <div class="timeline-connector"></div>
+                        <div class="timeline-point">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8;">home</span>
+                          <span>Giao cho độc giả</span>
+                        </div>
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px; margin-top: 14px; background: #fff; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-size: 0.82rem;">
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Địa chỉ nhận hàng:</div>
+                          <div style="font-weight: 700; color: var(--text-main); margin-top: 2px;">Lê Thanh Thảo • 0909.***.431</div>
+                          <div style="color: var(--text-secondary);">Chung cư Sunview Town, P. Hiệp Bình Phước, TP. Thủ Đức, TP.HCM</div>
+                        </div>
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Gói hàng:</div>
+                          <div style="color: var(--text-secondary); margin-top: 2px;">0.45kg • Hộp carton 3 lớp + Màng bọc xốp</div>
+                        </div>
+                        <div>
+                          <div style="color: var(--text-muted); font-weight: 600;">Thanh toán:</div>
+                          <div style="color: var(--success-text); font-weight: 700; margin-top: 2px;">Đã thanh toán Online (Thẻ Visa)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ROW 3 -->
+                <tr data-status="completed">
+                  <td>
+                    <input type="checkbox" class="custom-checkbox order-checkbox" data-id="ORD-90240">
+                  </td>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span>#ORD-90240</span>
+                        <button class="copy-btn" title="Sao chép mã đơn" onclick="copyText('ORD-90240')">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                        </button>
+                      </div>
+                      <div class="order-date">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                        24 Th03, 09:14
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuSUii68h6j-stebejdSOVKUYOfq_UUUop_ziEKJsFM2J8SPqiV_69zlCXmc22FYsbE22viTo3zwJuUzHbMXl9g1BY4P2EXYnp3DT8c1BqCj038f46u8Bj63xPLrjYRs0Wb4bvK8cbdUwYE5ec8BknkqLzAcZqZMPlKN4e_kxICCGyRwe_5nmA1cbntgWO2zctrW10AW_9o3v7RzGzoYKscfyisNhHmMQBbJu0fi8y-KjjkSpwsfqD6g" alt="Boxset Doraemon 50 Năm" class="comic-thumbnail">
+                      <div class="product-meta">
+                        <div class="product-title">Doraemon Tuyển Tập Kỷ Niệm 50 Năm (Boxset)</div>
+                        <div class="product-tags">
+                          <span class="tag-badge">Boxset 6 Tập Bìa Cứng</span>
+                          <span>x1 bộ</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Hàng sưu tầm hiếm • Mạ vàng cạnh sách</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-name">Phạm Hoàng Nam</span>
+                      <span class="customer-sub">0988.***.302</span>
+                      <span class="customer-sub">Đà Nẵng (Viettel Post)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="price-cell">
+                      <span class="price-amount">890.000 ₫</span>
+                      <span class="price-note" style="color: var(--success-text);">Đã quyết toán về ví</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-success">
+                      <span class="badge-dot"></span>
+                      Thành công
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Xem chi tiết hoá đơn #ORD-90240')">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">receipt</span>
+                      Hóa đơn
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- DETAIL ACCORDION ROW 3 -->
+                <tr class="order-detail-row" id="detail-ORD-90240">
+                  <td colspan="7">
+                    <div class="order-detail-content">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                          <span class="material-symbols-outlined" style="color: var(--success);">task_alt</span>
+                          Đơn hàng hoàn tất & Đã giải phóng tiền ký quỹ
+                        </h4>
+                        <span class="badge badge-success">Khách đánh giá 5⭐</span>
+                      </div>
+                      <div class="delivery-timeline">
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>Khách đặt</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>Viettel Post giao</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">check_circle</span>
+                          <span>Khách nhận sách</span>
+                        </div>
+                        <div class="timeline-connector active"></div>
+                        <div class="timeline-point active">
+                          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--success);">account_balance_wallet</span>
+                          <span>Đã cộng tiền Ví (890.000₫)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- ROW 4 -->
+                <tr data-status="cancelled">
+                  <td>
+                    <input type="checkbox" class="custom-checkbox order-checkbox" data-id="ORD-90211">
+                  </td>
+                  <td>
+                    <div class="order-id-cell">
+                      <div class="order-code">
+                        <span style="text-decoration: line-through; color: var(--text-muted);">#ORD-90211</span>
+                        <button class="copy-btn" title="Sao chép mã đơn" onclick="copyText('ORD-90211')">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>
+                        </button>
+                      </div>
+                      <div class="order-date">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                        23 Th03, 11:30
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG3494qLYJX2qvI0_uHjx26nkkyEpLO0jxMxwxzv9qOHadEJUhVVgiTXLwEvd7BWYUamFZVbI9xo3Egnvs95nQfpJyEndU9sBofD189adZ4ohu7GmWL7V7v2cqbzYSwprvGrcy6KuQR1kzUf6VqWmpFulx5cf1EzwPlq5d3XGPo45X_r0y-BOTyKCHOYyLd4WfAdwM9tS6BBF2pNZNUgcOm5d7hsWyL9VSENQm7OWE4c6z3xJ8ZGUsTQ" alt="Bìa Spy x Family 11" class="comic-thumbnail" style="filter: grayscale(0.8);">
+                      <div class="product-meta">
+                        <div class="product-title" style="color: var(--text-muted);">Spy x Family – Tập 11 (Bản Thường)</div>
+                        <div class="product-tags">
+                          <span class="tag-badge">Tái bản 2024</span>
+                          <span>x1 cuốn</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--danger-text);">Lý do hủy: Khách đổi ý trước giờ giao</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-name">Vũ Tuấn Kiệt</span>
+                      <span class="customer-sub">0912.***.112</span>
+                      <span class="customer-sub">Cần Thơ</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="price-cell">
+                      <span class="price-amount" style="color: var(--text-muted);">45.000 ₫</span>
+                      <span class="price-note">Hoàn tiền ví buyer</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="badge badge-danger">
+                      <span class="badge-dot"></span>
+                      Đã hủy
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm" onclick="showToast('Khách hàng tự hủy đơn lúc 11:45')">
+                      Chi tiết
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- PAGINATION -->
+          <div class="pagination-wrapper">
+            <div class="pagination-info">
+              Hiển thị <strong>1 - 4</strong> của <strong>48</strong> đơn hàng
+            </div>
+            <div class="pagination-controls">
+              <button class="page-btn" disabled>
+                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+              </button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span style="padding: 0 4px; color: var(--text-muted);">...</span>
+              <button class="page-btn">12</button>
+              <button class="page-btn">
+                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- POLICY PACKAGING BANNER -->
+        <div class="policy-banner">
+          <div class="policy-banner-content">
+            <div class="policy-icon-circle">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div class="policy-text">
+              <h4>Quy chuẩn bàn giao đơn ComicHub Express</h4>
+              <p>Các ấn bản truyện tranh hiếm, Boxset có giá trị &gt; 500k yêu cầu quay video niêm phong tem vỡ góc khi đóng gói để được bảo hiểm 100% khi xảy ra sự cố vận chuyển.</p>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showToast('Đang mở sổ tay quy chuẩn đóng gói ComicHub')">
+            Xem hướng dẫn đóng gói
+          </button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- CANCEL ORDER CONFIRM MODAL (Có animation Fade & Scale) -->
+  <div class="modal-backdrop" id="cancelOrderModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-icon-circle danger">
+        <span class="material-symbols-outlined" style="font-size: 32px;">warning</span>
+      </div>
+      <h3 class="modal-title">Xác nhận hủy đơn hàng</h3>
+      <p class="modal-desc" style="margin-bottom: 16px;">
+        Bạn có chắc chắn muốn hủy đơn hàng <strong id="cancelModalOrderId" style="color: var(--primary);">#ORD-90281</strong> không?
+      </p>
+      <div style="text-align: left; background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px; font-size: 0.8rem; color: #9a3412;">
+        ⚠️ <strong>Cảnh báo:</strong> Thao tác này không thể hoàn tác. Tiền thanh toán sẽ hoàn về ví người mua và tỷ lệ hủy đơn của shop sẽ bị ghi nhận.
+      </div>
+      <div style="text-align: left; margin-bottom: 20px;">
+        <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 6px; color: var(--text-main);">Lý do hủy đơn:</label>
+        <select id="cancelReasonSelect" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; background: #fff;">
+          <option value="out_of_stock">Hết truyện / Sách bị lỗi bìa, cấn móp</option>
+          <option value="buyer_request">Người mua nhắn tin xin hủy đơn</option>
+          <option value="wrong_price">Nhầm lẫn thông tin giá bán hoặc quà tặng kèm</option>
+          <option value="shipping_unreachable">Đơn vị vận chuyển quá tải không lấy hàng</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeCancelOrderModal()">Quay lại</button>
+        <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">
+          <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span>
+          Xác nhận hủy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/orders.js"></script>
+</body>
+</html>

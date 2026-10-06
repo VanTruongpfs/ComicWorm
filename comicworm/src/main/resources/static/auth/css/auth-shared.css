@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* Auth primitives aligned with the shared ComicHub / truong visual system. */
+:root {
+    --primary-light: #fff0e6;
+    --primary-default: #f97316;
+    --primary-dark: #9d4300;
+    --secondary-light: #1b3252;
+    --secondary-default: #0b1c30;
+    --tertiary-light: #FCD34D;
+    --tertiary-default: #F59E0B;
+    --tertiary-dark: #B45309;
+    --neutral-light: #f8fafc;
+    --neutral-default: #64748b;
+    --neutral-dark: #0f172a;
+    --surface-bg: #f5f7fd;
+    --surface-card: #ffffff;
+    --border-color: #e2e8f0;
+    --font-main: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-heading: 'Space Grotesk', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; color: #0f172a; background: var(--surface-bg); font-family: var(--font-main); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; }
+.auth-page { display: grid; min-height: 100vh; padding: 32px 16px; place-items: center; }
+.auth-card { width: min(100%, 480px); padding: clamp(24px, 5vw, 42px); border: 1px solid var(--border-color); border-radius: 16px; background: var(--surface-card); box-shadow: 0 10px 28px rgba(15, 23, 42, .08); }
+.auth-brand { margin: 0 0 8px; color: var(--primary-dark); font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+.auth-title { margin: 0; color: #0f172a; font-family: var(--font-heading); font-size: clamp(1.8rem, 5vw, 2.3rem); line-height: 1.1; }
+.auth-subtitle { margin: 10px 0 28px; color: #475569; line-height: 1.5; }
+.auth-form { display: grid; gap: 18px; }
+.field { display: grid; gap: 8px; }
+.field label { color: #0f172a; font-size: .9rem; font-weight: 700; }
+.field input { width: 100%; min-height: 46px; padding: 11px 13px; border: 1px solid var(--border-color); border-radius: 8px; color: #0f172a; background: var(--surface-card); outline: none; }
+.field input::placeholder { color: var(--neutral-default); }
+.field input:focus { border-color: var(--primary-default); box-shadow: 0 0 0 3px var(--primary-light); }
+.field input[aria-invalid="true"] { border-color: var(--tertiary-default); }
+.field-error { min-height: 1em; color: var(--tertiary-dark); font-size: .82rem; }
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 76px; }
+.password-toggle { position: absolute; top: 50%; right: 8px; min-height: 32px; padding: 4px 8px; transform: translateY(-50%); border: 0; border-radius: 6px; color: var(--neutral-dark); background: var(--tertiary-light); cursor: pointer; font-size: .78rem; font-weight: 700; }
+.password-toggle:hover { background: var(--tertiary-default); }
+.form-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.check-label { display: flex; align-items: center; gap: 8px; color: #475569; font-size: .88rem; cursor: pointer; }
+.check-label input { width: 17px; height: 17px; accent-color: var(--primary-default); }
+.text-link { color: #9d4300; font-weight: 700; text-decoration: none; }
+.text-link:hover { color: var(--primary-light); text-decoration: underline; }
+.auth-button { width: 100%; min-height: 48px; border: 0; border-radius: 8px; color: #fff; background: #9d4300; cursor: pointer; font-weight: 800; }
+.auth-button:hover { background: #b84f00; }
+.auth-button:active { background: var(--primary-dark); }
+.auth-button:focus-visible, .text-link:focus-visible, .password-toggle:focus-visible { outline: 3px solid var(--tertiary-light); outline-offset: 2px; }
+.auth-button:disabled { color: var(--neutral-default); background: #e2e8f0; cursor: not-allowed; }
+.auth-switch { margin: 24px 0 0; color: #475569; text-align: center; font-size: .9rem; }
+.toast-region { position: fixed; right: 16px; bottom: 16px; z-index: 2; width: min(360px, calc(100% - 32px)); }
+.toast { padding: 14px 16px; border-left: 4px solid var(--tertiary-default); border-radius: 8px; color: #0f172a; background: var(--tertiary-light); box-shadow: 0 8px 24px rgba(15, 23, 42, .12); }
+.toast.success { border-left-color: var(--primary-dark); background: var(--primary-light); }
+@media (max-width: 420px) { .auth-page { padding: 16px 10px; } .auth-card { padding: 24px 18px; } .form-row { align-items: flex-start; flex-direction: column; } }

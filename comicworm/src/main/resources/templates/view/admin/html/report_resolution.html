@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xử lý báo cáo & Vi phạm</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/report_resolution.css">
+</head>
+
+<body>
+  <div class="app-layout">
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="brand">
+        <a href="dashboard.html"
+          style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
+          <div class="app-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h2 class="brand-name">ModDash</h2>
+        </a>
+      </div>
+
+      <div class="nav-links">
+        <a href="postModeration.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="16" y1="3" x2="21" y2="3" />
+            <line x1="21" y1="3" x2="21" y2="8" />
+            <line x1="4" y1="20" x2="21" y2="3" />
+            <line x1="21" y1="16" x2="21" y2="21" />
+            <line x1="16" y1="21" x2="21" y2="21" />
+            <line x1="15" y1="15" x2="21" y2="21" />
+            <line x1="4" y1="4" x2="9" y2="9" />
+          </svg>
+          <span>Duyệt bài</span>
+          <span class="nav-badge">18</span>
+        </a>
+        <a href="report_resolution.html" class="nav-item nav-item-active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          <span>Xử lý báo cáo</span>
+        </a>
+        <a href="appeal-resolution.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+          </svg>
+          <span>TT Kháng nghị</span>
+        </a>
+        <a href="customer-support.html" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <span>CSKH Console</span>
+        </a>
+
+        <div
+          style="margin-top:20px; padding-top:14px; border-top:1px solid rgba(0,0,0,0.08); display:flex; flex-direction:column; gap:6px;">
+          <a href="dashboard.html" class="nav-item" style="color:#7c3aed;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span>Admin Console</span>
+          </a>
+          <a href="../../buyer/html/home.html" class="nav-item" style="color:#2563eb;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Chợ ComicHub</span>
+          </a>
+          <a href="../../index.html" class="nav-item" style="color:#ea580c; font-weight:600;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+              <path d="M2 12h20" />
+            </svg>
+            <span>Master Portal</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="main-wrapper">
+
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="header-left">
+          <button class="btn-icon-text back-btn" aria-label="Quay lại">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Quay lại
+          </button>
+          <div class="divider"></div>
+          <h1 class="page-title" id="pageTitle">Danh sách báo cáo</h1>
+          <span class="ticket-tag">#RP-8492</span>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" aria-label="Lịch sử">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 14 14" />
+            </svg>
+          </button>
+          <button class="icon-btn" aria-label="Tùy chọn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="12" cy="19" r="2" />
+            </svg>
+          </button>
+          <div class="mod-profile">
+            <img class="avatar avatar-sm"
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+              alt="Mod.04">
+            <span class="mod-name">Mod.04</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="dashboard-container">
+          <!-- =========================================================
+     DANH SÁCH BÁO CÁO
+     ========================================================= -->
+          <section id="reportListView" class="card report-list-view">
+
+            <div class="section-title-wrap">
+              <div class="title-with-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+
+                <div>
+                  <h3>Báo cáo đang chờ xử lý</h3>
+                  <p class="subtext">
+                    Danh sách các báo cáo cần Moderator xem xét và xử lý.
+                  </p>
+                </div>
+              </div>
+
+              <span class="meta-count" id="reportCount">
+                4 báo cáo
+              </span>
+            </div>
+
+
+            <div class="report-list">
+
+              <!-- Báo cáo 1 -->
+              <div class="report-item" data-report-id="RP-8492">
+
+                <div class="report-item-main">
+
+                  <div class="report-status urgent">
+                    <span class="report-status-dot"></span>
+                    Khẩn cấp
+                  </div>
+
+                  <div class="report-content">
+                    <div class="report-top-row">
+                      <strong>#RP-8492</strong>
+                      <span class="report-time">09:42 hôm nay</span>
+                    </div>
+
+                    <h4>
+                      Chiến dịch lừa đảo bot AI tài chính & Spam link độc hại
+                    </h4>
+
+                    <p>
+                      Người đăng: @hoangnam_tech · 14 báo cáo · AI Risk 87%
+                    </p>
+
+                    <div class="report-tags">
+                      <span>Lừa đảo tài chính</span>
+                      <span>Spam link</span>
+                      <span>Phishing</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <button class="btn btn-outline report-view-btn">
+                  Xem báo cáo
+                  <span>→</span>
+                </button>
+
+              </div>
+
+
+              <!-- Báo cáo 2 -->
+              <div class="report-item" data-report-id="RP-8491">
+
+                <div class="report-item-main">
+
+                  <div class="report-status warning">
+                    <span class="report-status-dot"></span>
+                    Chờ xử lý
+                  </div>
+
+                  <div class="report-content">
+                    <div class="report-top-row">
+                      <strong>#RP-8491</strong>
+                      <span class="report-time">09:31 hôm nay</span>
+                    </div>
+
+                    <h4>
+                      Spam quảng cáo truyện hàng loạt trong nhóm
+                    </h4>
+
+                    <p>
+                      Người đăng: @comic_seller · 8 báo cáo · AI Risk 72%
+                    </p>
+
+                    <div class="report-tags">
+                      <span>Spam</span>
+                      <span>Quảng cáo</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <button class="btn btn-outline report-view-btn">
+                  Xem báo cáo
+                  <span>→</span>
+                </button>
+
+              </div>
+
+
+              <!-- Báo cáo 3 -->
+              <div class="report-item" data-report-id="RP-8488">
+
+                <div class="report-item-main">
+
+                  <div class="report-status warning">
+                    <span class="report-status-dot"></span>
+                    Chờ xử lý
+                  </div>
+
+                  <div class="report-content">
+                    <div class="report-top-row">
+                      <strong>#RP-8488</strong>
+                      <span class="report-time">08:57 hôm nay</span>
+                    </div>
+
+                    <h4>
+                      Nội dung không phù hợp với quy định cộng đồng
+                    </h4>
+
+                    <p>
+                      Người đăng: @user789 · 5 báo cáo · AI Risk 61%
+                    </p>
+
+                    <div class="report-tags">
+                      <span>Nội dung không phù hợp</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <button class="btn btn-outline report-view-btn">
+                  Xem báo cáo
+                  <span>→</span>
+                </button>
+
+              </div>
+
+
+              <!-- Báo cáo 4 -->
+              <div class="report-item" data-report-id="RP-8485">
+
+                <div class="report-item-main">
+
+                  <div class="report-status warning">
+                    <span class="report-status-dot"></span>
+                    Chờ xử lý
+                  </div>
+
+                  <div class="report-content">
+                    <div class="report-top-row">
+                      <strong>#RP-8485</strong>
+                      <span class="report-time">08:41 hôm nay</span>
+                    </div>
+
+                    <h4>
+                      Link quảng cáo bên ngoài không được phép
+                    </h4>
+
+                    <p>
+                      Người đăng: @comicfan · 3 báo cáo · AI Risk 48%
+                    </p>
+
+                    <div class="report-tags">
+                      <span>Quảng cáo</span>
+                      <span>External Link</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <button class="btn btn-outline report-view-btn">
+                  Xem báo cáo
+                  <span>→</span>
+                </button>
+
+              </div>
+
+            </div>
+
+          </section>
+
+          <!-- Case Header Card -->
+          <!-- CHI TIẾT BÁO CÁO -->
+          <div id="reportDetailView" style="display: none;">
+            <section class="card case-card highlight-card">
+              <div class="case-header-row">
+                <div class="badge-row">
+                  <span class="status-pill status-urgent">
+                    <span class="pulse-dot"></span> CHỜ XỬ LÝ KHẨN CẤP
+                  </span>
+                  <span class="status-pill status-ai">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    AI Flagged: 87% Rủi ro
+                  </span>
+                </div>
+              </div>
+
+              <h2 class="case-title">Chiến dịch lừa đảo bot AI tài chính & Spam link độc hại</h2>
+              <p class="case-subtitle">Được phát hiện bởi hệ thống lọc nội dung tự động & 14 khiếu nại thành viên.</p>
+
+              <div class="stats-author-row">
+                <div class="stats-row">
+                  <div class="stat-cell">
+                    <span class="stat-label">KHIẾU NẠI</span>
+                    <span class="stat-val text-danger">14 <small>lượt</small></span>
+                  </div>
+                  <div class="stat-cell stat-cell-highlight">
+                    <span class="stat-label">AI RỦI RO</span>
+                    <span class="stat-val text-primary">87%</span>
+                  </div>
+                  <div class="stat-cell">
+                    <span class="stat-label">PHẠM VI</span>
+                    <span class="stat-val">3 <small>Nhóm</small></span>
+                  </div>
+                </div>
+
+                <div class="author-bar">
+                  <div class="author-meta">
+                    <div class="avatar-wrap">
+                      <img class="avatar avatar-md"
+                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
+                        alt="hoangnam_tech">
+                      <span class="avatar-warn-dot">!</span>
+                    </div>
+                    <div>
+                      <div class="author-row">
+                        <span class="author-handle">@hoangnam_tech</span>
+                        <span class="rank-badge">Cấp 1</span>
+                      </div>
+                      <div class="history-warn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        </svg>
+                        2 lần vi phạm trước đó
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn-profile">Xem hồ sơ</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Grid 2 Columns for Evidence and Complaints -->
+            <div class="grid-2-col">
+
+              <!-- Post Evidence Preview -->
+              <section class="card post-preview-card">
+                <div class="card-title-header">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <h3>Nội dung bài viết vi phạm</h3>
+                </div>
+
+                <div class="post-preview-header">
+                  <div class="group-info">
+                    <strong>[Giao Lưu Lập Trình Viên VN]</strong>
+                  </div>
+                  <span class="time-stamp">09:42 hôm nay</span>
+                </div>
+
+                <div class="post-content">
+                  <p>
+                    Bác nào cần kéo thu nhập thụ động 50$/ngày với bot AI trading tự động không? Em mới dev xong script
+                    độc quyền bao lãi 100%, <mark class="mark-warn">cam kết x3 tài khoản sau 24h</mark>! Bấm vào bot
+                    nhận
+                    bản quyền miễn phí: <a href="#" class="malicious-link">t.me/AITradingFreeBot_v2</a> hoặc nạp thử tại
+                    <a href="#" class="malicious-link link-danger">http://ai-vip-wallet.tech/auth</a> !
+                  </p>
+                </div>
+
+                <div class="media-restricted-box">
+                  <div class="media-icon-ring">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                      <rect x="7" y="7" width="10" height="10" rx="1" />
+                    </svg>
+                  </div>
+                  <p class="media-title">Ảnh chứa mã QR & thông tin lừa đảo nạp tiền</p>
+                  <button class="btn-reveal-media">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Tạm hiện ảnh gốc
+                  </button>
+                </div>
+
+                <div class="post-footer-stats">
+                  <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg> 1.4k lượt xem</span>
+                  <span class="text-danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                      <line x1="4" y1="22" x2="4" y2="15" />
+                    </svg> 14 báo cáo xấu</span>
+                  <a href="#" class="link-original">Xem bài gốc <svg width="14" height="14" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg></a>
+                </div>
+              </section>
+
+              <!-- Member Complaints Analysis -->
+              <section class="card complaints-card">
+                <div class="section-title-wrap">
+                  <div class="title-with-icon">
+                    <svg class="icon-primary" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M3 9h18" />
+                      <path d="M9 21V9" />
+                    </svg>
+                    <h3>Báo cáo từ thành viên</h3>
+                  </div>
+                  <span class="meta-count">Tổng: 14 phiếu</span>
+                </div>
+
+                <div class="breakdown-list">
+                  <div class="breakdown-item">
+                    <div class="breakdown-label-row">
+                      <span>Lừa đảo tài chính / Link độc hại</span>
+                      <strong>64% (9 phiếu)</strong>
+                    </div>
+                    <div class="progress-track">
+                      <div class="progress-bar bg-primary" style="width: 64%;"></div>
+                    </div>
+                  </div>
+                  <div class="breakdown-item">
+                    <div class="breakdown-label-row">
+                      <span>Spam nhóm hàng loạt</span>
+                      <strong>21% (3 phiếu)</strong>
+                    </div>
+                    <div class="progress-track">
+                      <div class="progress-bar bg-secondary" style="width: 21%;"></div>
+                    </div>
+                  </div>
+                  <div class="breakdown-item">
+                    <div class="breakdown-label-row">
+                      <span>Mạo danh / Bot giả</span>
+                      <strong>15% (2 phiếu)</strong>
+                    </div>
+                    <div class="progress-track">
+                      <div class="progress-bar bg-neutral" style="width: 15%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="witness-quote-box">
+                  <div class="quote-tag">
+                    <span>Ý KIẾN NHÂN CHỨNG TIÊU BIỂU</span>
+                    <small>@minhtuan_dev (09:51)</small>
+                  </div>
+                  <p class="quote-text">“Dẫn vào web lừa nạp tiền mua bot AI giả mạo, nạp 10 USDT là mất tài khoản ngay.
+                    Nhóm này bị spam 3 bài y hệt sáng nay.”</p>
+                </div>
+              </section>
+            </div>
+
+            <!-- Penalty Configuration Form -->
+            <section class="card form-card">
+              <div class="form-card-header">
+                <div class="title-with-icon">
+                  <svg class="icon-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="4" y1="21" x2="4" y2="14" />
+                    <line x1="4" y1="10" x2="4" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12" y2="3" />
+                    <line x1="20" y1="21" x2="20" y2="16" />
+                    <line x1="20" y1="12" x2="20" y2="3" />
+                    <line x1="1" y1="14" x2="7" y2="14" />
+                    <line x1="9" y1="8" x2="15" y2="8" />
+                    <line x1="17" y1="16" x2="23" y2="16" />
+                  </svg>
+                  <div>
+                    <h3>Cấu hình xử phạt & Kỷ luật</h3>
+                    <p class="subtext">Đưa ra chế tài đồng thời cho bài viết và chủ sở hữu.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid-layout">
+                <!-- Part 1: Hide Scope -->
+                <div class="form-group">
+                  <h4 class="group-title">1. Phạm vi ẩn bài viết</h4>
+                  <div class="radio-grid-3">
+                    <label class="radio-card radio-card-active">
+                      <input type="radio" name="post_action" checked>
+                      <span class="custom-radio"><span class="radio-dot"></span></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Ẩn khỏi nhóm & Bảng tin</strong>
+                          <span class="pill-recommend">Khuyên dùng</span>
+                        </div>
+                        <p>Xóa khỏi feed công khai, lưu vết cho vụ án.</p>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="post_action">
+                      <span class="custom-radio"></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Ẩn vĩnh viễn & Khóa tương tác</strong>
+                        </div>
+                        <p>Tước tương tác, ngăn chặn chia sẻ lại.</p>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="post_action">
+                      <span class="custom-radio"></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Ẩn tạm thời 24h</strong>
+                        </div>
+                        <p>Giữ chỗ bài đăng chờ thanh tra phản hồi.</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Part 2: Account Penalty -->
+                <div class="form-group">
+                  <h4 class="group-title">2. Quyết định kỷ luật tài khoản</h4>
+                  <div class="radio-grid-4">
+                    <label class="radio-card radio-card-active">
+                      <input type="radio" name="acc_action" checked>
+                      <span class="custom-radio"><span class="radio-dot"></span></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Cấm đăng bài 7 ngày</strong>
+                        </div>
+                        <p>Đình chỉ tạo bài & bình luận.</p>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="acc_action">
+                      <span class="custom-radio"></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong class="text-danger">Khóa vĩnh viễn</strong>
+                        </div>
+                        <p>Đưa vào blacklist IP và thiết bị.</p>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="acc_action">
+                      <span class="custom-radio"></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Cảnh cáo & Trừ điểm</strong>
+                        </div>
+                        <p>Nhắc nhở, trừ 20 điểm uy tín.</p>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="acc_action">
+                      <span class="custom-radio"></span>
+                      <div class="radio-info">
+                        <div class="radio-title-row">
+                          <strong>Bác bỏ tố cáo</strong>
+                        </div>
+                        <p>Giữ nguyên trạng thái bài viết.</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Part 3: Violations Checkboxes -->
+                <div class="form-group">
+                  <h4 class="group-title">3. Lý do vi phạm quy chuẩn (Chọn nhiều)</h4>
+                  <div class="checkbox-grid-3">
+                    <label class="check-box-card check-box-card-active">
+                      <input type="checkbox" checked>
+                      <span class="custom-checkbox checked">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </span>
+                      <span class="check-label">Spam link độc hại / Lừa đảo (Phishing)</span>
+                    </label>
+                    <label class="check-box-card check-box-card-active">
+                      <input type="checkbox" checked>
+                      <span class="custom-checkbox checked">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </span>
+                      <span class="check-label">Quảng cáo cấm / Mã QR trái phép</span>
+                    </label>
+                    <label class="check-box-card check-box-card-active">
+                      <input type="checkbox" checked>
+                      <span class="custom-checkbox checked">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </span>
+                      <span class="check-label">Lôi kéo đầu tư & tài chính phi pháp</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Automated Notice & Audit Note (Grid Layout) -->
+            <div class="grid-2-col">
+              <section class="card memo-card">
+                <div class="form-group">
+                  <h4 class="group-title">Thông báo tự động gửi tác giả</h4>
+                  <div class="auto-notice-box">
+                    <strong class="notice-title">Áp dụng: Khoản 4.2 – Tiêu chuẩn cộng đồng về gian lận tài
+                      chính</strong>
+                    <p>“Bài viết của bạn tại nhóm [Giao Lưu Lập Trình Viên VN] đã bị ẩn do chứa liên kết đáng ngờ và cam
+                      kết lợi nhuận sai quy định. Tài khoản bị đình chỉ đăng bài 7 ngày.”</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card memo-card">
+                <div class="form-group">
+                  <div class="label-row">
+                    <h4 class="group-title">Ghi chú nội bộ cho Mod Team (Audit Log)</h4>
+                    <span class="tag-required">Bắt buộc</span>
+                  </div>
+                  <textarea class="textarea-audit"
+                    placeholder="VD: Khóa theo đợt quét bot Telegram Scam chiến dịch Q3, phát hiện URL trùng cơ sở dữ liệu cấm..."></textarea>
+                </div>
+              </section>
+            </div>
+
+            <!-- Action Buttons Cluster -->
+            <div class="bottom-action-bar">
+              <button class="btn btn-outline">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
+                </svg>
+                Chuyển duyệt (Escalate)
+              </button>
+              <button class="btn btn-primary" id="applyActionBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Áp dụng xử lý ngay
+              </button>
+            </div>
+
+          </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/report_resolution.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MangaTrade - Quản Lý Đơn Hàng</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../shared/styles/global-design-tokens.css">
+  <link rel="stylesheet" href="../css/page2.css">
+  <link rel="stylesheet" href="../../shared/footer/footer.css">
+  <link rel="stylesheet" href="../../shared/header/header.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../../shared/sidebar/sidebar.css">
+  <link rel="stylesheet" href="../css/shared-sidebar-layout.css">
+</head>
+
+<body class="thuc-sidebar-layout">
+<div data-sidebar-mount></div>
+<header class="site-header">
+    <div class="container header-container">
+        <!-- Logo Thương hiệu -->
+        <a href="home.html" class="brand-logo">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="brand-logo-text">
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+            </div>
+        </a>
+
+        <!-- Thanh tìm kiếm nhanh -->
+        <div class="header-search-bar">
+            <span class="search-category-tag">Tất cả truyện</span>
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Menu chính -->
+        <nav class="main-navigation">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../exchange/html/dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+                <li class="nav-item">
+                    <a href="voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a href="page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hành động người dùng -->
+        <div class="header-actions">
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <a href="shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="cart-count-badge">3</span>
+            </a>
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Đăng bán/Đổi truyện</span>
+            </a>
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="page-main">
+  <section class="container page-heading">
+    <div>
+      <div class="eyebrow">
+        <span>Trung tâm cá nhân</span>
+        <b>/</b>
+        <span>Lịch sử giao dịch manga</span>
+      </div>
+      <div class="heading-line">
+        <h1>Quản Lý Đơn Hàng</h1>
+        <span class="stored-badge">8 đơn đang lưu trữ</span>
+      </div>
+    </div>
+
+    <div class="escrow-banner">
+      <span class="material-symbols-outlined">verified_user</span>
+      <div>
+        <strong>Bảo hộ Escrow MangaTrade</strong>
+        <span>Tiền giữ an toàn tới khi bạn kiểm duyệt truyện</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="container command-strip">
+    <div class="status-tabs" id="order-status-tabs">
+      <button class="order-tab-btn active" data-filter="all">
+        <span>Tất cả</span><b>8</b>
+      </button>
+      <button class="order-tab-btn" data-filter="pending">
+        <span>Chờ thanh toán</span><b>1</b>
+      </button>
+      <button class="order-tab-btn" data-filter="processing">
+        <span>Đang xử lý</span><b>2</b>
+      </button>
+      <button class="order-tab-btn" data-filter="shipping">
+        <span>Đang giao</span><b>2</b>
+      </button>
+      <button class="order-tab-btn" data-filter="completed">
+        <span>Đã hoàn thành</span><b>3</b>
+      </button>
+      <button class="order-tab-btn" data-filter="cancelled">
+        <span>Đã hủy / Trả hàng</span><b>1</b>
+      </button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-search">
+        <span class="material-symbols-outlined">search</span>
+        <input id="search-input" placeholder="Tìm theo mã đơn (#ORD-8831), tên sách hoặc tên người bán...">
+        <kbd>Esc để xoá</kbd>
+      </div>
+
+      <label class="filter-select">
+        <span class="material-symbols-outlined">calendar_today</span>
+        <select id="time-filter">
+          <option>Khoảng thời gian: 30 ngày qua</option>
+          <option>Khoảng thời gian: 3 tháng qua</option>
+          <option>Khoảng thời gian: Toàn bộ năm 2024</option>
+        </select>
+      </label>
+
+      <label class="filter-select">
+        <span class="material-symbols-outlined">local_shipping</span>
+        <select id="shipping-filter">
+          <option>Tất cả vận chuyển</option>
+          <option>Hỏa tốc (2h - 4h Hà Nội/HCM)</option>
+          <option>Giao hàng tiêu chuẩn</option>
+          <option>COD kiểm hàng khi nhận</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="container orders-layout">
+    <div class="orders-column" id="orders-list">
+
+      <article class="order-card active-card" data-order-id="ORD-8831" data-status="shipping"
+        data-search="ORD-8831 OtakuStoreVN One Piece Tập 100">
+        <div class="active-line"></div>
+
+        <div class="order-header">
+          <div class="seller">
+            <div class="seller-avatar">OS</div>
+            <div>
+              <div class="seller-name">
+                OtakuStoreVN
+                <span class="material-symbols-outlined verified">verified</span>
+              </div>
+              <span>Đăng bán từ Hà Nội • 99.4% đánh giá tốt</span>
+            </div>
+          </div>
+          <span class="status shipping">
+            <span class="material-symbols-outlined">local_shipping</span>
+            Đang giao
+          </span>
+        </div>
+
+        <div class="order-product">
+          <img alt="One Piece Tập 100"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuABZaRHQaM9EVWAoT7F-Efqe8O_0VN_mQN_X99ymqi3jSFvQ1-htPT4MTOx3imbTGzryTI87PA7voTcFwr1pWPyxzlW__ykVoRqNIymyx4uIRJ0wwuMoZoGNpYT-D6xeKAae8wVweg-7rjBxLuHOPLFQgyoYqyyk2YlBgbQOOhlCxMIgcmuAcnBEOZ5zXR1rj5O0VYZljjU7u-2iVWAKUtvNxVu68lbJF3tYHPIY5FQlCHOQViNHXd9Rw">
+          <div class="product-info">
+            <h3>One Piece Tập 100 - Bản kỷ niệm bìa gập vàng</h3>
+            <p>NXB Kim Đồng • Like New 95-99% • Có Obi + postcard metallic</p>
+            <div class="price-row">
+              <strong>220.000₫</strong>
+              <span>SL: 1</span>
+            </div>
+          </div>
+          <div class="order-total">
+            <span>Tổng thanh toán</span>
+            <strong>220.000₫</strong>
+          </div>
+        </div>
+
+        <div class="delivery-progress">
+          <div class="progress-title">
+            <strong>Đơn hàng đang trên đường tới bạn</strong>
+            <span>ETA: 16/10/2024</span>
+          </div>
+          <div class="progress-track">
+            <span class="progress-fill" style="width: 72%"></span>
+            <span class="progress-point done" style="left:0%"></span>
+            <span class="progress-point done" style="left:36%"></span>
+            <span class="progress-point current" style="left:72%"></span>
+            <span class="progress-point" style="left:100%"></span>
+          </div>
+          <div class="progress-labels">
+            <span>Đã xác nhận</span>
+            <span>Đã lấy hàng</span>
+            <span>Đang giao</span>
+            <span>Đã nhận</span>
+          </div>
+        </div>
+
+        <div class="order-footer">
+          <span>Thanh toán: Ví điện tử MoMo</span>
+          <div class="card-actions">
+            <button class="secondary-action remind-button">
+              <span class="material-symbols-outlined">chat</span>
+              Nhắc đóng gói
+            </button>
+            <button class="danger-action cancel-button">Hủy yêu cầu</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="order-card" data-order-id="ORD-8842" data-status="processing"
+        data-search="ORD-8842 NekoManga Jujutsu Kaisen">
+        <div class="order-header">
+          <div class="seller">
+            <div class="seller-avatar purple">NM</div>
+            <div>
+              <div class="seller-name">
+                NekoManga
+                <span class="material-symbols-outlined verified">verified</span>
+              </div>
+              <span>Đăng bán từ TP. Hồ Chí Minh • 98.8% đánh giá tốt</span>
+            </div>
+          </div>
+          <span class="status processing">
+            <span class="material-symbols-outlined">inventory_2</span>
+            Đang xử lý
+          </span>
+        </div>
+
+        <div class="order-product">
+          <img alt="Jujutsu Kaisen"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6j83RK42mu1x_MtlFjMfboZNpHWRVGqOVZKl7muT3qYKqH8jybZnUeHwBRc4UP9NiN47-YmyERL_worCscd7vZFuy7X7LR1wfAjcde2QwuGAWMYy0il6JgeOUSWo_sXl0zlSi6VvajEaavjA2ttdBvgfklx50I8OvlhLA0UhB4-TsiRzW99h6_-F3AMFmntZfc-yDNEArUhGcRyXcw7fltnMyjISee3vNoKIXDOsBYh8GFSSDgd9FJA">
+          <div class="product-info">
+            <h3>Jujutsu Kaisen Tập 23 + 24 - First Print</h3>
+            <p>NXB Kim Đồng • Mới 100% • Seal nguyên vẹn</p>
+            <div class="price-row">
+              <strong>190.000₫</strong>
+              <span>SL: 2</span>
+            </div>
+          </div>
+          <div class="order-total">
+            <span>Tổng thanh toán</span>
+            <strong>390.000₫</strong>
+          </div>
+        </div>
+
+        <div class="mini-status">
+          <span class="material-symbols-outlined">schedule</span>
+          Người bán đang chuẩn bị hàng • Còn 18h để xác nhận
+        </div>
+
+        <div class="order-footer">
+          <span>Thanh toán: COD kiểm hàng</span>
+          <div class="card-actions">
+            <button class="secondary-action remind-button">
+              <span class="material-symbols-outlined">chat</span> Nhắc đóng gói
+            </button>
+            <button class="danger-action cancel-button">Hủy yêu cầu</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="order-card" data-order-id="ORD-8790" data-status="completed"
+        data-search="ORD-8790 BookCorner Monster Kanzenban">
+        <div class="order-header">
+          <div class="seller">
+            <div class="seller-avatar green">BC</div>
+            <div>
+              <div class="seller-name">BookCorner <span class="material-symbols-outlined verified">verified</span></div>
+              <span>Đăng bán từ Hà Nội • 100% đánh giá tốt</span>
+            </div>
+          </div>
+          <span class="status completed">
+            <span class="material-symbols-outlined">check_circle</span>
+            Đã hoàn thành
+          </span>
+        </div>
+
+        <div class="order-product">
+          <img alt="Monster Kanzenban"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6j83RK42mu1x_MtlFjMfboZNpHWRVGqOVZKl7muT3qYKqH8jybZnUeHwBRc4UP9NiN47-YmyERL_worCscd7vZFuy7X7LR1wfAjcde2QwuGAWMYy0il6JgeOUSWo_sXl0zlSi6VvajEaavjA2ttdBvgfklx50I8OvlhLA0UhB4-TsiRzW99h6_-F3AMFmntZfc-yDNEArUhGcRyXcw7fltnMyjISee3vNoKIXDOsBYh8GFSSDgd9FJA">
+          <div class="product-info">
+            <h3>Monster Kanzenban - Full Set 9 tập</h3>
+            <p>IPM Việt Nam • Like New • Bọc OPP toàn bộ</p>
+            <div class="price-row">
+              <strong>1.050.000₫</strong>
+              <span>SL: 1</span>
+            </div>
+          </div>
+          <div class="order-total">
+            <span>Tổng thanh toán</span>
+            <strong>1.090.000₫</strong>
+          </div>
+        </div>
+
+        <div class="completed-note">
+          <span class="material-symbols-outlined">verified</span>
+          Đã giao thành công • 13/10/2024
+        </div>
+
+        <div class="order-footer">
+          <span>Thanh toán: MoMo • Escrow đã giải ngân</span>
+          <div class="card-actions">
+            <a href="page4.html" class="secondary-action review-button" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined">star</span> Đánh giá
+            </a>
+            <button class="secondary-action">Mua lại</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="empty-message" id="empty-message">
+        <span class="material-symbols-outlined">search_off</span>
+        <strong>Không tìm thấy đơn hàng</strong>
+        <span>Hãy thử từ khóa khác hoặc thay đổi bộ lọc.</span>
+      </div>
+
+      <div class="pagination">
+        <span>Hiển thị 3 trên tổng 8 đơn hàng</span>
+        <div>
+          <button disabled><span class="material-symbols-outlined">chevron_left</span></button>
+          <button class="page-active">1</button>
+          <button>2</button>
+          <button><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="detail-column">
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+          <div>
+            <div class="detail-title">
+              <h2>Chi Tiết Đơn Hàng</h2>
+              <span>#ORD-8831</span>
+            </div>
+            <p>Đặt ngày: 14/10/2024 lúc 09:42 SA</p>
+          </div>
+          <button class="close-detail" type="button" aria-label="Đóng">
+            <span class="material-symbols-outlined">more_horiz</span>
+          </button>
+        </div>
+
+        <div class="detail-status">
+          <span class="material-symbols-outlined">local_shipping</span>
+          <div>
+            <strong>Đang giao</strong>
+            <span>Dự kiến nhận hàng: 16/10/2024</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">
+            <span class="material-symbols-outlined">storefront</span>
+            Người bán
+          </div>
+          <div class="seller-detail">
+            <div class="seller-avatar">OS</div>
+            <div>
+              <strong>OtakuStoreVN <span class="material-symbols-outlined verified">verified</span></strong>
+              <span>99.4% đánh giá tốt • 1.8K giao dịch</span>
+            </div>
+            <a href="../../exchange/html/dealing-chat.html" class="chat-button" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" title="Chat với người bán"><span class="material-symbols-outlined">chat</span></a>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">
+            <span class="material-symbols-outlined">menu_book</span>
+            Sản phẩm
+          </div>
+          <div class="detail-product">
+            <img alt="One Piece"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuABZaRHQaM9EVWAoT7F-Efqe8O_0VN_mQN_X99ymqi3jSFvQ1-htPT4MTOx3imbTGzryTI87PA7voTcFwr1pWPyxzlW__ykVoRqNIymyx4uIRJ0wwuMoZoGNpYT-D6xeKAae8wVweg-7rjBxLuHOPLFQgyoYqyyk2YlBgbQOOhlCxMIgcmuAcnBEOZ5zXR1rj5O0VYZljjU7u-2iVWAKUtvNxVu68lbJF3tYHPIY5FQlCHOQViNHXd9Rw">
+            <div>
+              <strong>One Piece Tập 100</strong>
+              <span>Bản kỷ niệm bìa gập vàng</span>
+              <span>SL: 1</span>
+            </div>
+            <strong>220.000₫</strong>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">
+            <a href="page3.html" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-outlined">route</span>
+              Tiến độ giao hàng <small style="color:#f97316; font-weight:600;">(Xem chi tiết GHN &rarr;)</small>
+            </a>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item done">
+              <span class="timeline-dot"></span>
+              <div><strong>Đơn hàng đã xác nhận</strong><small>14/10 • 09:43</small></div>
+            </div>
+            <div class="timeline-item done">
+              <span class="timeline-dot"></span>
+              <div><strong>Đơn vị vận chuyển đã lấy hàng</strong><small>14/10 • 15:20</small></div>
+            </div>
+            <div class="timeline-item current">
+              <span class="timeline-dot"></span>
+              <div><strong>Đang vận chuyển</strong><small>Kho Hà Nội → Quận Cầu Giấy</small></div>
+            </div>
+            <div class="timeline-item">
+              <span class="timeline-dot"></span>
+              <div><strong>Giao hàng</strong><small>Đang chờ cập nhật</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section price-summary">
+          <div><span>Giá sản phẩm</span><strong>220.000₫</strong></div>
+          <div><span>Phí vận chuyển</span><strong>0₫</strong></div>
+          <div><span>Freeship Extra</span><strong>−30.000₫</strong></div>
+          <div class="summary-total"><span>Tổng thanh toán</span><strong>220.000₫</strong></div>
+        </div>
+
+        <div class="escrow-note">
+          <span class="material-symbols-outlined">shield_lock</span>
+          <div>
+            <strong>Tiền đang được giữ bởi Escrow</strong>
+            <span>Người bán chỉ nhận tiền sau khi bạn xác nhận truyện đúng mô tả.</span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <button class="primary-button remind-button">
+            <span class="material-symbols-outlined">chat</span>
+            Nhắc đóng gói
+          </button>
+          <a href="page5.html" class="return-button cancel-button" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+            <span class="material-symbols-outlined">assignment_return</span>
+            Yêu cầu Đổi trả / Hủy
+          </a>
+        </div>
+
+        <div class="report-link">
+          <a href="../../user/html/complain.html">
+            <span class="material-symbols-outlined">flag</span>
+            Báo cáo hành vi người bán nghi ngờ truyện fake
+          </a>
+        </div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-column">
+      <strong class="footer-brand">MangaTrade</strong>
+      <p>Sàn kết nối độc giả manga, truyện tranh bản quyền, sưu tầm hiếm và trao đổi tankōbon chất lượng cao đầu tiên tại Việt Nam.</p>
+      <span class="verified-footer">
+        <span class="material-symbols-outlined">verified</span>
+        Hơn 45.000 đầu truyện được kiểm duyệt
+      </span>
+    </div>
+
+    <div class="footer-column">
+      <h3>Dịch Vụ &amp; Hỗ Trợ</h3>
+      <a href="#">Quy trình mua bán an toàn (Escrow)</a>
+      <a href="#">Chính sách đổi trả &amp; Hoàn tiền</a>
+      <a href="#">Tra cứu tiến độ đơn hàng</a>
+      <a href="#">Biểu phí giao dịch &amp; Ký gửi</a>
+      <a href="#">Quy chuẩn phân hạng độ mới (Grading)</a>
+    </div>
+
+    <div class="footer-column">
+      <h3>Cộng Đồng Otaku</h3>
+      <a href="#">Hội săn truyện tranh hiếm &amp; Bìa rời</a>
+      <a href="#">Góc Review &amp; Khen chê bản dịch</a>
+      <a href="#">Sự kiện Comic-Con &amp; Giao lưu tác giả</a>
+      <a href="#">Bảng vinh danh Top Sưu Tầm 2024</a>
+    </div>
+
+    <div class="footer-column">
+      <h3>Thanh Toán &amp; Bản Tin</h3>
+      <p>Nhận thông báo khi có truyện hiếm lên sàn hoặc ưu đãi freeship.</p>
+      <div class="newsletter">
+        <input id="newsletter-email" type="email" placeholder="Email của bạn...">
+        <button id="newsletter-button" type="button">Gửi</button>
+      </div>
+      <small>Cổng thanh toán hỗ trợ</small>
+      <div class="payments">
+        <span>VietQR</span><span>MoMo</span><span>ZaloPay</span><span>COD</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>© 2024 MangaTrade Việt Nam. Bản quyền nội dung thuộc về các nhà xuất bản được cấp phép.</p>
+    <div>
+      <a href="#">Điều khoản dịch vụ</a>
+      <a href="#">Bảo mật thông tin</a>
+      <span><span class="material-symbols-outlined">verified_user</span> Bộ Công Thương Chứng Nhận</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="../../shared/sidebar/sidebar.js"></script>
+<script src="../../shared/footer/footer.js"></script>
+<script src="../js/page2.js"></script>
+</body>
+</html>

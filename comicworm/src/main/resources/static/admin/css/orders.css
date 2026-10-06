@@ -1,0 +1,131 @@
+/* Page-specific tweaks for orders.html — phần lớn style dùng chung từ style.css + admin-common.css */
+#ordersTable td:nth-child(4) { max-width: 220px; }
+.order-id-cell .copy-btn { background: none; border: 0; display: inline-flex; cursor: pointer; }
+
+/* Ảnh đại diện sản phẩm trong modal chi tiết đơn hàng - vẽ bằng CSS + icon,
+   không tải ảnh từ ngoài nên luôn hiển thị được và không dùng ảnh bìa có bản quyền */
+.product-cover {
+    width: 64px;
+    height: 84px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.product-cover::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.product-cover .material-symbols-outlined {
+    color: #fff;
+    font-size: 28px;
+}
+
+.product-cover.tone-orange { background: linear-gradient(160deg, #fdba74, #ea580c); }
+.product-cover.tone-blue { background: linear-gradient(160deg, #60a5fa, #1d4ed8); }
+.product-cover.tone-green { background: linear-gradient(160deg, #6ee7b7, #047857); }
+.product-cover.tone-purple { background: linear-gradient(160deg, #c4b5fd, #6d28d9); }
+
+/* Quy trình hoà giải tranh chấp - 3 bước rõ ràng: xem lý do -> chọn hướng xử lý -> ghi chú & xác nhận */
+.dispute-step-label {
+    margin: 0 0 8px;
+    color: var(--text-muted);
+    font-size: .74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.dispute-reason-box {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    font-size: .82rem;
+    line-height: 1.55;
+}
+
+.dispute-choice-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.dispute-choice-card input[type="radio"] {
+    margin-top: 3px;
+    accent-color: var(--primary-container);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.dispute-choice-card:has(input:checked) {
+    border-color: var(--primary-container);
+    background: rgba(249, 115, 22, 0.06);
+}
+
+.dispute-choice-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: .88rem;
+    margin-bottom: 3px;
+}
+
+.dispute-choice-title .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary-container);
+}
+
+.dispute-choice-desc {
+    color: var(--text-muted);
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+.dispute-choice-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: -4px 0 18px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-bg);
+    color: var(--text-muted);
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+.dispute-choice-hint .material-symbols-outlined { font-size: 16px; color: var(--primary-container); flex-shrink: 0; }
+
+.dispute-resolution-box {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-md);
+    background: var(--success-bg);
+    color: var(--success-text);
+    font-size: .82rem;
+    line-height: 1.6;
+}
+
+/* Modal "Quy trình hoà giải tranh chấp đầy đủ" - CSS chung xem admin-common.css (.policy-step-list) */

@@ -1,0 +1,788 @@
+/* ==========================================================================
+   BOOKMOOCH ADMIN CONSOLE - COMMON COMPONENTS
+   Dùng chung cho các trang trong thư mục /tu (Admin/Manager).
+   Nạp SAU style.css (design tokens + shared app layout) và TRƯỚC css
+   riêng của từng trang. Không định nghĩa lại token hay layout đã có
+   trong style.css - chỉ bổ sung các mảnh UI đặc thù cho khu vực quản trị.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. ADMIN GATE (Trang đăng nhập quản trị - login.html)
+   ========================================================================== */
+.admin-gate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    background:
+            radial-gradient(circle at 15% 15%, rgba(249, 115, 22, 0.16), transparent 45%),
+            radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.14), transparent 45%),
+            var(--sidebar-bg);
+}
+
+.gate-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 36px 34px 30px;
+    border: 1px solid var(--sidebar-border);
+    border-radius: var(--radius-xl);
+    background: var(--sidebar-surface);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.45);
+}
+
+.gate-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 26px;
+}
+
+.gate-brand .brand-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary-container), var(--primary));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 4px 10px rgba(249, 115, 22, 0.35);
+}
+
+.gate-title {
+    margin: 0 0 8px;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.gate-subtitle {
+    margin: 0 0 22px;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: var(--sidebar-text);
+}
+
+.gate-error {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: var(--radius-md);
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.gate-error.show {
+    display: flex;
+}
+
+.gate-field {
+    margin-bottom: 16px;
+}
+
+.gate-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--sidebar-text-bright);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrap > .material-symbols-outlined {
+    position: absolute;
+    left: 13px;
+    color: var(--sidebar-text);
+    font-size: 19px;
+    pointer-events: none;
+}
+
+.input-wrap input {
+    width: 100%;
+    padding: 11px 14px 11px 42px;
+    border: 1px solid var(--sidebar-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    font-size: 0.92rem;
+    transition: var(--transition);
+}
+
+.input-wrap input::placeholder {
+    color: var(--sidebar-text);
+    opacity: 0.6;
+}
+
+.input-wrap input:focus {
+    outline: none;
+    border-color: var(--primary-container);
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    color: var(--sidebar-text);
+    transition: var(--transition);
+}
+
+.password-toggle-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.gate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0 22px;
+    font-size: 0.8rem;
+}
+
+.gate-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sidebar-text);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.gate-link {
+    color: var(--primary-container);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.gate-link:hover {
+    text-decoration: underline;
+}
+
+.gate-submit {
+    width: 100%;
+    min-height: 46px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary-container), var(--primary));
+    color: #fff;
+    font-size: 0.94rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: var(--transition);
+}
+
+.gate-submit:hover {
+    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.4);
+    transform: translateY(-1px);
+}
+
+.gate-demo-hint {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px dashed var(--sidebar-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--sidebar-text);
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.gate-demo-hint b {
+    color: var(--sidebar-text-bright);
+}
+
+.gate-footnote {
+    margin: 20px 0 0;
+    color: var(--sidebar-text);
+    font-size: 0.72rem;
+    text-align: center;
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   1b. BUTTON VARIANT - btn-danger (style.css chỉ có primary/secondary/outline)
+   ========================================================================== */
+.btn-danger {
+    background: linear-gradient(135deg, #f87171, var(--danger));
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #fca5a5, #dc2626);
+    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.35);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   2. FORM FIELDS DÙNG CHUNG (modal tạo/sửa, trang cấu hình)
+   ========================================================================== */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.form-grid.two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.field label,
+.field-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    background: #fff;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: var(--primary-container);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.field-hint {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.input-suffix-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-suffix-group input {
+    width: 100%;
+    padding: 10px 34px 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    background: #fff;
+    font-size: 0.9rem;
+    text-align: right;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.input-suffix-group input:focus {
+    outline: none;
+    border-color: var(--primary-container);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.input-suffix {
+    position: absolute;
+    right: 12px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .form-grid.two-columns { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   3. SEGMENTED CONTROL (chuyển view trong 1 trang: staff.html, finance.html)
+   ========================================================================== */
+.seg-control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 20px;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    background: var(--surface-container-low);
+}
+
+.seg-btn {
+    position: relative;
+    z-index: 2;
+    padding: 9px 18px;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.25s ease;
+}
+
+.seg-btn.active {
+    color: #fff !important;
+}
+
+.seg-control:not(:has(.tab-indicator-pill)) .seg-btn.active {
+    background: linear-gradient(135deg, var(--primary-container), var(--primary));
+}
+
+.seg-control .tab-indicator-pill {
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+/* ==========================================================================
+   4. IDENTITY CELL & AVATAR CHIP (bảng tài khoản / nhân sự)
+   ========================================================================== */
+.identity-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.identity-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.identity-name {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.9rem;
+}
+
+.identity-sub {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.avatar-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.avatar-chip.role-buyer { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+.avatar-chip.role-seller { background: linear-gradient(135deg, var(--primary-container), var(--primary)); }
+.avatar-chip.role-admin { background: linear-gradient(135deg, #f87171, #dc2626); }
+.avatar-chip.role-manager { background: linear-gradient(135deg, #34d399, #059669); }
+.avatar-chip.role-staff { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+/* ==========================================================================
+   5. STAT MINI (tóm tắt trong modal chi tiết / panel biểu phí)
+   ========================================================================== */
+.stat-mini-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.stat-mini {
+    padding: 12px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--surface-bg);
+}
+
+.stat-mini h5 {
+    margin: 0 0 6px;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.stat-mini .val {
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 1rem;
+    word-break: break-word;
+}
+
+/* ==========================================================================
+   6. PERMISSION MATRIX (staff.html)
+   ========================================================================== */
+.perm-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+
+.perm-matrix th {
+    padding: 12px 16px;
+    background: var(--surface-bg);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.perm-matrix th:first-child {
+    text-align: left;
+}
+
+.perm-matrix th {
+    position: relative;
+}
+
+.perm-group-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    border-radius: 50%;
+    color: var(--text-light);
+    vertical-align: middle;
+    transition: var(--transition);
+}
+
+.perm-group-remove .material-symbols-outlined {
+    font-size: 14px !important;
+}
+
+.perm-group-remove:hover {
+    color: #fff;
+    background: var(--danger);
+}
+
+.perm-matrix td {
+    padding: 13px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.perm-group-label {
+    text-align: left !important;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.perm-check {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-container);
+    cursor: pointer;
+}
+
+.perm-check:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   7. CHART LEGEND & MINI BAR CHART (finance.html)
+   ========================================================================== */
+.legend-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.mini-bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    height: 180px;
+    padding-top: 8px;
+}
+
+.mini-bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    height: 100%;
+    gap: 8px;
+}
+
+.mini-bar-stack {
+    width: 28px;
+    min-height: 4px;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mini-bar-in {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #6ee7b7, var(--success));
+}
+
+.mini-bar-out {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #fca5a5, var(--danger));
+}
+
+.mini-bar-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   8. TOGGLE SWITCH (fees.html - bật/tắt chính sách vận hành)
+   ========================================================================== */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.toggle-row:last-child {
+    border-bottom: none;
+}
+
+.toggle-row-text h4 {
+    margin: 0 0 3px;
+    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.toggle-row-text p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 42px;
+    height: 24px;
+}
+
+.switch input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-full);
+    background: #cbd5e1;
+    transition: var(--transition);
+}
+
+.switch-track::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: var(--transition);
+}
+
+.switch input:checked ~ .switch-track {
+    background: var(--primary-container);
+}
+
+.switch input:checked ~ .switch-track::before {
+    transform: translateX(18px);
+}
+
+/* ==========================================================================
+   9. VOUCHER CODE PILL (vouchers.html)
+   ========================================================================== */
+.voucher-code-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--primary-container), var(--primary));
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.voucher-preview-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-bg);
+}
+
+/* ==========================================================================
+   10. SETTINGS SECTION (khối cấu hình trong .surface-panel - fees.html)
+   ========================================================================== */
+.settings-section {
+    margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 4px;
+    font-family: var(--font-heading);
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.settings-section-title .material-symbols-outlined {
+    color: var(--primary-container);
+    font-size: 20px;
+}
+
+.settings-section-desc {
+    margin: 0 0 16px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+/* ==========================================================================
+   11. QUY TRÌNH DẠNG BƯỚC (modal "Xem quy trình đầy đủ" - dùng ở nhiều trang)
+   ========================================================================== */
+.policy-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 58vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.policy-step {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.policy-step:last-child { border-bottom: none; }
+
+.policy-step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-container), var(--primary));
+    color: #fff;
+    font-weight: 700;
+    font-size: .82rem;
+    flex-shrink: 0;
+}
+
+.policy-step-text h5 {
+    margin: 0 0 4px;
+    color: var(--text-main);
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.policy-step-text p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: .8rem;
+    line-height: 1.55;
+}
+
+/* ==========================================================================
+   12. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 560px) {
+    .gate-card { padding: 28px 22px 24px; }
+    .stat-mini-row { grid-template-columns: 1fr; }
+    .mini-bar-chart { height: 140px; }
+}

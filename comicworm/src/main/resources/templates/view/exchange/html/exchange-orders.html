@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Quản lý đơn hàng trao đổi</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../../shared/header/header.css">
+    <link rel="stylesheet" href="../../shared/footer/footer.css">
+    <link rel="stylesheet" href="../css/exchange-orders.css">
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container header-container">
+        <!-- Logo Thương hiệu -->
+        <a href="../../buyer/html/home.html" class="brand-logo">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="brand-logo-text">
+                <span class="brand-name">COMIC<span class="highlight">HUB</span></span>
+                <span class="brand-slogan">Chợ Truyện &amp; Trao Đổi</span>
+            </div>
+        </a>
+
+        <!-- Thanh tìm kiếm nhanh -->
+        <div class="header-search-bar">
+            <span class="search-category-tag">Tất cả truyện</span>
+            <input type="text" class="search-input" placeholder="Tìm kiếm theo tên truyện, tác giả...">
+            <button type="submit" class="search-btn" aria-label="Tìm kiếm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Menu chính -->
+        <nav class="main-navigation">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../../buyer/html/home.html#marketplace" class="nav-link"><i class="fa-solid fa-store"></i> Chợ Mua Bán</a>
+                </li>
+                <li class="nav-item">
+                    <a href="dealing-room.html" class="nav-link"><i class="fa-solid fa-arrow-right-arrow-left"></i> Sàn Trao Đổi</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/voucher.html" class="nav-link highlight-gold"><i class="fa-solid fa-ticket"></i> Kho Voucher</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../../buyer/html/page1.html" class="nav-link"><i class="fa-solid fa-bullhorn"></i> Đăng Tìm Mua</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hành động người dùng -->
+        <div class="header-actions">
+            <button type="button" class="btn-notification" aria-label="Thông báo">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <a href="../../buyer/html/shopping_cart.html" class="btn-cart-active" aria-label="Giỏ hàng">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span class="cart-count-badge">3</span>
+            </a>
+            <a href="../../seller/html/dang-ban-truyen.html" class="btn btn-post-listing">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Đăng bán/Đổi truyện</span>
+            </a>
+            <div class="user-profile-menu">
+                <a href="../../user/html/profile.html" title="Hồ sơ cá nhân &amp; Cổng Portal">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Ảnh đại diện người dùng" class="user-avatar-img">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="page-container">
+    <div class="breadcrumb">
+        <a href="../../buyer/html/home.html" style="color:inherit; text-decoration:none;">Trang chủ</a>
+        <span>/</span>
+        <a href="dealing-room.html" style="color:inherit; text-decoration:none;">Trao đổi &amp; đàm phán</a>
+        <span>/</span>
+        <strong>Đơn hàng trao đổi</strong>
+    </div>
+    <div class="page-header">
+
+        <div>
+            <h1>Đơn hàng trao đổi</h1>
+            <p>
+                Quản lý các deal và đơn hàng được tạo từ quá trình đàm phán giá.
+            </p>
+        </div>
+
+        <button class="btn-primary" onclick="goToRooms()">
+            + Phòng trao đổi
+        </button>
+
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon orange">💬</div>
+
+            <div>
+                <p class="stat-label">Đang đàm phán</p>
+                <h3>01</h3>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon yellow">🤝</div>
+
+            <div>
+                <p class="stat-label">Chờ tạo đơn</p>
+                <h3>02</h3>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon blue">📦</div>
+
+            <div>
+                <p class="stat-label">Đã tạo đơn</p>
+                <h3>01</h3>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon green">✓</div>
+
+            <div>
+                <p class="stat-label">Hoàn tất</p>
+                <h3>01</h3>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filter -->
+    <div class="filter-card">
+
+        <div class="filter-top">
+
+            <div class="search-box">
+                <span>⌕</span>
+                <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Tìm theo tên truyện, mã deal..."
+                        oninput="filterDeals()"
+                >
+            </div>
+
+            <select id="statusFilter" onchange="filterDeals()">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="negotiating">Đang đàm phán</option>
+                <option value="accepted">Đã chốt deal</option>
+                <option value="creating">Chờ tạo đơn</option>
+                <option value="shipping">Đang giao</option>
+                <option value="completed">Hoàn tất</option>
+                <option value="cancelled">Đã hủy</option>
+            </select>
+
+            <select id="sortFilter" onchange="sortDeals()">
+                <option value="newest">Mới nhất</option>
+                <option value="oldest">Cũ nhất</option>
+                <option value="price-high">Giá cao → thấp</option>
+                <option value="price-low">Giá thấp → cao</option>
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- Deal list -->
+    <div class="deal-section">
+
+        <div class="section-header">
+            <div>
+                <h2>Danh sách trao đổi</h2>
+                <p id="resultCount">Hiển thị 6 giao dịch</p>
+            </div>
+        </div>
+
+
+        <div class="deal-list" id="dealList">
+
+
+            <!-- Deal 1 -->
+            <div
+                    class="deal-card"
+                    data-status="creating"
+                    data-price="275000"
+                    data-date="2026-09-17"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1613376023733-0a73315d9b06?auto=format&fit=crop&w=300&q=80"
+                                alt="One Piece"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2298</span>
+
+                                <h3>One Piece — Trọn bộ tập 1–10</h3>
+                            </div>
+
+                            <span class="status creating">
+                                Chờ tạo đơn
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Bủ Nguyên</strong>
+                            </span>
+
+                            <span>
+                                💬 Phòng #PT2049
+                            </span>
+
+                            <span>
+                                📅 17/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">320.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đã chốt</span>
+                                <strong class="deal-price">275.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Tiết kiệm</span>
+                                <strong class="saving">45.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-secondary"
+                            onclick="viewRoom('PT2049')"
+                    >
+                        Xem phòng
+                    </button>
+
+                    <button
+                            class="btn-primary"
+                            onclick="createOrder('NG-2298')"
+                    >
+                        Tạo đơn hàng
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Deal 2 -->
+            <div
+                    class="deal-card"
+                    data-status="negotiating"
+                    data-price="180000"
+                    data-date="2026-09-16"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=300&q=80"
+                                alt="Manga"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2294</span>
+
+                                <h3>Jujutsu Kaisen tập 1–8</h3>
+                            </div>
+
+                            <span class="status negotiating">
+                                Đang đàm phán
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Otaku Store</strong>
+                            </span>
+
+                            <span>
+                                💬 Phòng #PT2042
+                            </span>
+
+                            <span>
+                                📅 16/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">220.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đề xuất</span>
+                                <strong class="deal-price">180.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-primary"
+                            onclick="viewRoom('PT2042')"
+                    >
+                        Tiếp tục đàm phán
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Deal 3 -->
+            <div
+                    class="deal-card"
+                    data-status="creating"
+                    data-price="150000"
+                    data-date="2026-09-15"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=300&q=80"
+                                alt="Manga"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2287</span>
+
+                                <h3>Spy x Family tập 1–5</h3>
+                            </div>
+
+                            <span class="status creating">
+                                Chờ tạo đơn
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Comic House</strong>
+                            </span>
+
+                            <span>
+                                💬 Phòng #PT2038
+                            </span>
+
+                            <span>
+                                📅 15/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">175.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đã chốt</span>
+                                <strong class="deal-price">150.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Tiết kiệm</span>
+                                <strong class="saving">25.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-secondary"
+                            onclick="viewRoom('PT2038')"
+                    >
+                        Xem phòng
+                    </button>
+
+                    <button
+                            class="btn-primary"
+                            onclick="createOrder('NG-2287')"
+                    >
+                        Tạo đơn hàng
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Deal 4 -->
+            <div
+                    class="deal-card"
+                    data-status="shipping"
+                    data-price="290000"
+                    data-date="2026-09-12"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=300&q=80"
+                                alt="Manga"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2271</span>
+
+                                <h3>Demon Slayer boxset</h3>
+                            </div>
+
+                            <span class="status shipping">
+                                Đang giao
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Manga World</strong>
+                            </span>
+
+                            <span>
+                                📦 Đơn #DH-10482
+                            </span>
+
+                            <span>
+                                📅 12/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">350.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đã chốt</span>
+                                <strong class="deal-price">290.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Tiết kiệm</span>
+                                <strong class="saving">60.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-secondary"
+                            onclick="viewRoom('PT2019')"
+                    >
+                        Xem phòng
+                    </button>
+
+                    <button
+                            class="btn-outline"
+                            onclick="viewOrder('DH-10482')"
+                    >
+                        Xem đơn hàng
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Deal 5 -->
+            <div
+                    class="deal-card"
+                    data-status="completed"
+                    data-price="210000"
+                    data-date="2026-09-05"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?auto=format&fit=crop&w=300&q=80"
+                                alt="Manga"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2240</span>
+
+                                <h3>Haikyuu!! tập 1–10</h3>
+                            </div>
+
+                            <span class="status completed">
+                                Hoàn tất
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Book Corner</strong>
+                            </span>
+
+                            <span>
+                                📦 Đơn #DH-10391
+                            </span>
+
+                            <span>
+                                📅 05/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">250.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đã chốt</span>
+                                <strong class="deal-price">210.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Tiết kiệm</span>
+                                <strong class="saving">40.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-secondary"
+                            onclick="viewRoom('PT1982')"
+                    >
+                        Xem phòng
+                    </button>
+
+                    <button
+                            class="btn-outline"
+                            onclick="viewOrder('DH-10391')"
+                    >
+                        Xem đơn hàng
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Deal 6 -->
+            <div
+                    class="deal-card"
+                    data-status="cancelled"
+                    data-price="120000"
+                    data-date="2026-09-01"
+            >
+
+                <div class="deal-main">
+
+                    <div class="product-image">
+                        <img
+                                src="https://images.unsplash.com/photo-1592496001020-d31bd830651f?auto=format&fit=crop&w=300&q=80"
+                                alt="Manga"
+                        >
+                    </div>
+
+
+                    <div class="deal-info">
+
+                        <div class="deal-top">
+
+                            <div>
+                                <span class="deal-code">DEAL #NG-2208</span>
+
+                                <h3>Blue Lock tập 1–5</h3>
+                            </div>
+
+                            <span class="status cancelled">
+                                Đã hủy
+                            </span>
+
+                        </div>
+
+
+                        <div class="deal-meta">
+
+                            <span>
+                                👤 Người bán: <strong>Comic Zone</strong>
+                            </span>
+
+                            <span>
+                                💬 Phòng #PT1950
+                            </span>
+
+                            <span>
+                                📅 01/09/2026
+                            </span>
+
+                        </div>
+
+
+                        <div class="price-row">
+
+                            <div>
+                                <span>Giá niêm yết</span>
+                                <strong class="old-price">150.000đ</strong>
+                            </div>
+
+                            <div>
+                                <span>Giá đề xuất cuối</span>
+                                <strong class="deal-price">120.000đ</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deal-actions">
+
+                    <button
+                            class="btn-secondary"
+                            onclick="viewRoom('PT1950')"
+                    >
+                        Xem phòng
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Empty result -->
+        <div class="empty-state" id="emptyState">
+
+            <div class="empty-icon">🔎</div>
+
+            <h3>Không tìm thấy giao dịch</h3>
+
+            <p>
+                Thử thay đổi từ khóa hoặc bộ lọc trạng thái.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="../js/exchange-orders.js"></script>
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div>
+                <div class="brand-logo" style="margin-bottom: 12px;">
+                    <div class="brand-logo-icon" style="width:36px; height:36px; font-size:16px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <span class="brand-text-main" style="font-size: 20px;">COMIC<span>HUB</span></span>
+                </div>
+                <p class="footer-desc">Nền tảng thương mại điện tử chuyên biệt và sàn trao đổi truyện tranh bản quyền, hiếm, và bản sưu tầm giới hạn tại Việt Nam.</p>
+                <div class="footer-hotline">
+                    Hotline: <span class="hotline-number">1900 8828</span> (8:00 - 22:00)<br>
+                    Email: support@comichub.vn
+                </div>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Danh Mục Truyện</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Manga Shonen &amp; Seinen</a></li>
+                    <li><a href="#">Shojo Romance</a></li>
+                    <li><a href="#">Marvel &amp; DC Comics</a></li>
+                    <li><a href="#">Manhwa &amp; Webtoon In</a></li>
+                    <li><a href="#">Light Novel Giới Hạn</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Tính Năng Sàn</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Đề Xuất Đổi Ngang 1–1</a></li>
+                    <li><a href="#">Định Giá Bán Nhanh</a></li>
+                    <li><a href="#">Kho Truyện Hiếm CGC</a></li>
+                    <li><a href="#">Review Sách</a></li>
+                    <li><a href="#">Tìm Kiếm Want-List</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Quy Định Đóng Gói</a></li>
+                    <li><a href="#">Tiêu Chuẩn Đánh Giá</a></li>
+                    <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                    <li><a href="#">Bảo Mật Otaku</a></li>
+                    <li><a href="#">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2025 ComicHub Việt Nam. Nền tảng mua bán &amp; trao đổi truyện tranh toàn diện.</div>
+            <div class="footer-sublinks">
+                <a href="#">Điều khoản sử dụng</a>
+                <span>•</span>
+                <a href="#">Chính sách bảo mật</a>
+                <span>•</span>
+                <a href="#">Chứng chỉ sàn TMĐT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../../shared/footer/footer.js"></script>
+
+</body>
+</html>

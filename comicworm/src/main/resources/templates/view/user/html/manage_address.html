@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- Address management for saved delivery addresses. -->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý địa chỉ | BookMooch</title>
+    <link rel="stylesheet" href="../../shared/styles/global-design-tokens.css">
+    <link rel="stylesheet" href="../../shared/sidebar/sidebar.css">
+    <link rel="stylesheet" href="../css/manage_address.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div data-sidebar-mount></div>
+        <main class="app-main">
+            <header class="page-header">
+                <div><p class="eyebrow">Tài khoản & Hồ sơ</p><h1 class="page-title">Quản lý địa chỉ</h1><p class="page-subtitle">Lưu các địa chỉ nhận hàng để đặt hàng nhanh chóng và chính xác hơn.</p></div>
+                <button class="button" type="button" data-open-address-form>+ Thêm địa chỉ</button>
+            </header>
+            <section class="surface-card address-form-card" data-address-form-card hidden>
+                <div class="form-heading"><h2 data-form-title>Thêm địa chỉ mới</h2><button class="icon-button" type="button" data-close-address-form aria-label="Đóng">×</button></div>
+                <form id="address-form" class="form-grid" novalidate>
+                    <input type="hidden" name="id">
+                    <div class="form-grid two-columns"><div class="field"><label for="recipient-name">Tên người nhận</label><input id="recipient-name" name="recipientName" required><small class="field-error" data-error-for="recipientName"></small></div><div class="field"><label for="recipient-phone">Số điện thoại</label><input id="recipient-phone" name="phone" type="tel" required><small class="field-error" data-error-for="phone"></small></div></div>
+                    <div class="form-grid two-columns"><div class="field"><label for="province">Tỉnh/Thành phố</label><input id="province" name="province" required></div><div class="field"><label for="district">Quận/Huyện</label><input id="district" name="district" required></div></div>
+                    <div class="field"><label for="ward">Phường/Xã</label><input id="ward" name="ward" required></div>
+                    <div class="field"><label for="address-detail">Địa chỉ chi tiết</label><textarea id="address-detail" name="addressDetail" placeholder="Số nhà, tên đường, tòa nhà..." required></textarea></div>
+                    <label class="check-label"><input name="isDefault" type="checkbox"> Đặt làm địa chỉ mặc định</label>
+                    <div class="form-actions"><button class="button secondary" type="button" data-close-address-form>Hủy</button><button class="button" type="submit">Lưu địa chỉ</button></div>
+                </form>
+            </section>
+            <section class="address-list" data-address-list></section>
+        </main>
+    </div>
+    <div class="toast-region" data-toast-region aria-live="polite"></div>
+    <script src="../../shared/sidebar/sidebar.js"></script>
+    <script src="../js/manage_address.js"></script>
+</body>
+</html>

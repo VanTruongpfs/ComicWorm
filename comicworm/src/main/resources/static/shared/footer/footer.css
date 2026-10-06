@@ -1,0 +1,163 @@
+/* ==========================================================================
+   GLOBAL VARIABLES & BASE FOR FOOTER
+   ========================================================================== */
+:root {
+    --primary: #F97316;
+    --secondary: #0F172A;
+    --neutral-slate: #64748B;
+    --neutral-light: #94a3b8;
+    --neutral-border: #e2e8f0;
+
+    --font-headline: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --radius-md: 12px;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ==========================================================================
+   FOOTER STYLES
+   ========================================================================== */
+.footer {
+    background-color: #ffffff;
+    border-top: 1px solid var(--neutral-border);
+    padding: 56px 0 32px;
+    font-size: 13px;
+    color: var(--neutral-slate);
+    font-family: var(--font-body);
+}
+
+/* Brand Logo trong Footer */
+.footer .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.footer .brand-logo-icon {
+    border-radius: var(--radius-md);
+    background-color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0F172A;
+}
+
+.footer .brand-text-main {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--secondary);
+    line-height: 1;
+}
+
+.footer .brand-text-main span {
+    color: var(--primary);
+}
+
+.footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 32px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--neutral-border);
+}
+
+.footer-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 320px;
+    margin-top: 12px;
+    color: var(--neutral-slate);
+}
+
+.footer-hotline {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--neutral-slate);
+}
+
+.hotline-number {
+    font-family: var(--font-headline);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 2px 0;
+}
+
+.footer-col-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 14px;
+    font-family: var(--font-headline);
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 8px;
+}
+
+.footer-links a {
+    color: var(--neutral-slate);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+}
+
+.footer-bottom {
+    padding-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--neutral-light);
+}
+
+.footer-sublinks {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-sublinks a {
+    color: var(--neutral-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-sublinks a:hover {
+    color: var(--secondary);
+}
+
+/* Responsive Footer */
+@media (max-width: 1024px) {
+    .footer-top {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-top {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+}

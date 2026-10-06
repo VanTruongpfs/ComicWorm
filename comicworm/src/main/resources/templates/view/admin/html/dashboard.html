@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | BookMooch Admin Console</title>
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-common.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+<!-- Demo warning banner -->
+<div id="sessionWarnBanner" style="display:none; background:#fef3c7; color:#92400e; padding:8px 24px; font-size:.82rem; font-weight:600; text-align:center;">
+  ⚠️ Bạn đang xem giao diện demo chưa đăng nhập. <a href="login.html" style="color:#92400e; text-decoration:underline;">Đăng nhập</a> để dùng phiên quản trị thật.
+</div>
+
+<div class="app-container">
+  <!-- Dynamic Sidebar Component Container -->
+  <div id="sidebarContainer" data-active="dashboard"></div>
+
+  <div class="main-wrapper">
+    <!-- Top Global Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Thu gọn / Mở rộng menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="store-selector">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          <span>Trung tâm Quản trị</span>
+        </div>
+        <!-- Global Search / Command Palette Trigger -->
+        <div class="global-search" id="headerSearchTrigger" title="Tìm kiếm nhanh (Ctrl+K hoặc ⌘K)">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" readonly placeholder="Tìm người dùng, đơn hàng, biểu phí...">
+          <span class="search-shortcut">⌘K</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Notification Button & Dropdown Trigger -->
+        <div class="header-dropdown-wrap">
+          <button class="nav-icon-btn" id="notifBtn" title="Thông báo hệ thống mới">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notification-badge-dot"></span>
+          </button>
+          
+          <!-- Notification Popover Dropdown -->
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <div class="notif-title-box">
+                <h4>Thông báo quản trị</h4>
+                <span class="notif-badge-count">5 mới</span>
+              </div>
+              <button class="notif-action-link" id="markAllReadBtn">Đã đọc tất cả</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <a href="finance.html#withdraw" class="notif-item unread">
+                <div class="notif-icon warning"><span class="material-symbols-outlined">account_balance_wallet</span></div>
+                <div class="notif-info">
+                  <p class="notif-text"><strong>Shop MangaXưa</strong> yêu cầu rút <strong>15.000.000 ₫</strong></p>
+                  <span class="notif-time">5 phút trước • Chờ duyệt</span>
+                </div>
+              </a>
+              <a href="accounts.html#reports" class="notif-item unread">
+                <div class="notif-icon danger"><span class="material-symbols-outlined">flag</span></div>
+                <div class="notif-info">
+                  <p class="notif-text"><strong>2 khiếu nại mới</strong> tố cáo tài khoản <em>'comic_seller_99'</em> gian lận</p>
+                  <span class="notif-time">18 phút trước • Khẩn cấp</span>
+                </div>
+              </a>
+              <a href="orders.html#disputes" class="notif-item unread">
+                <div class="notif-icon info"><span class="material-symbols-outlined">gavel</span></div>
+                <div class="notif-info">
+                  <p class="notif-text">Tranh chấp đơn <strong>#ORD-99120</strong>: Buyer yêu cầu trả hàng sách rách</p>
+                  <span class="notif-time">45 phút trước</span>
+                </div>
+              </a>
+              <a href="vouchers.html" class="notif-item">
+                <div class="notif-icon purple"><span class="material-symbols-outlined">local_activity</span></div>
+                <div class="notif-info">
+                  <p class="notif-text">Voucher toàn sàn <strong>BOOKWEEK20</strong> đạt 95% ngân sách</p>
+                  <span class="notif-time">2 giờ trước</span>
+                </div>
+              </a>
+              <div class="notif-item">
+                <div class="notif-icon success"><span class="material-symbols-outlined">dns</span></div>
+                <div class="notif-info">
+                  <p class="notif-text">Bảo trì cổng thanh toán hoàn tất, API hoạt động 100%</p>
+                  <span class="notif-time">Sáng nay</span>
+                </div>
+              </div>
+            </div>
+            <div class="notif-dropdown-footer">
+              <a href="staff.html#audit" class="view-all-link">Xem tất cả nhật ký &amp; cảnh báo →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Menu -->
+        <div class="user-profile-menu" id="userMenuBtn">
+          <div class="user-details">
+            <div class="user-name" data-admin-name>Nguyễn Minh Admin</div>
+            <div class="user-role" data-admin-role>Super Admin</div>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="content-body">
+      <!-- Executive Page Header Bar -->
+      <section class="page-header-executive">
+        <div class="header-left-col">
+          <div class="system-pulse-tag">
+            <span class="pulse-dot"></span>
+            <span>Hệ thống: Vận hành ổn định • Uptime 99.98%</span>
+          </div>
+          <h2 class="page-title">Chào buổi sáng, <span id="greetName">Admin</span> 👋</h2>
+          <p class="page-subtitle">Bức tranh vận hành toàn sàn BookMooch theo thời gian thực: dòng tiền, đơn hàng và các tác vụ chờ phê duyệt.</p>
+        </div>
+
+        <div class="header-right-col">
+          <!-- Time Horizon Filter -->
+          <div class="time-filter-segmented" id="timeFilterGroup" role="group" aria-label="Bộ lọc thời gian">
+            <button class="filter-seg-btn active" data-range="today">Hôm nay (24h)</button>
+            <button class="filter-seg-btn" data-range="7d">7 ngày qua</button>
+            <button class="filter-seg-btn" data-range="30d">30 ngày qua</button>
+            <button class="filter-seg-btn" data-range="month">Tháng này</button>
+          </div>
+
+          <div class="action-buttons-group">
+            <button class="btn btn-outline" id="exportReportBtn" title="Xuất báo cáo tổng quan">
+              <span class="material-symbols-outlined">download</span> Xuất báo cáo
+            </button>
+            <a href="accounts.html" class="btn btn-primary">
+              <span class="material-symbols-outlined">person_add</span> Thêm tài khoản
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1: MACRO BUSINESS PERFORMANCE (4 Đồng nhất KPIs với Sparklines) -->
+      <section class="kpi-executive-grid">
+        <!-- KPI 1: Doanh thu sàn (GMV) -->
+        <div class="kpi-card-exec">
+          <div class="kpi-card-top">
+            <span class="kpi-exec-label">Tổng Doanh thu nền tảng (GMV)</span>
+            <div class="kpi-icon-pill revenue">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+          </div>
+          <div class="kpi-exec-main">
+            <span class="kpi-exec-val" id="kpiRevenue">86.400.000 ₫</span>
+            <div class="kpi-trend-pill positive" id="kpiRevenueTrend">
+              <span class="material-symbols-outlined">trending_up</span> +12.6% vs hôm qua
+            </div>
+          </div>
+          <!-- Sparkline SVG -->
+          <div class="kpi-sparkline" title="Biến động 7 ngày">
+            <svg viewBox="0 0 120 30" class="sparkline-svg">
+              <defs>
+                <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,25 Q15,22 30,18 T60,14 T90,8 T120,4 L120,30 L0,30 Z" fill="url(#gradRev)"/>
+              <path d="M0,25 Q15,22 30,18 T60,14 T90,8 T120,4" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 2: Lượng Đơn hàng mới -->
+        <div class="kpi-card-exec">
+          <div class="kpi-card-top">
+            <span class="kpi-exec-label">Đơn hàng phát sinh hôm nay</span>
+            <div class="kpi-icon-pill orders">
+              <span class="material-symbols-outlined">shopping_bag</span>
+            </div>
+          </div>
+          <div class="kpi-exec-main">
+            <span class="kpi-exec-val" id="kpiOrders">2.318 đơn</span>
+            <div class="kpi-trend-pill positive" id="kpiOrdersTrend">
+              <span class="material-symbols-outlined">trending_up</span> +8.4% • 96.2% hoàn thành
+            </div>
+          </div>
+          <!-- Sparkline SVG -->
+          <div class="kpi-sparkline" title="Biến động đơn hàng">
+            <svg viewBox="0 0 120 30" class="sparkline-svg">
+              <defs>
+                <linearGradient id="gradOrd" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,22 Q20,26 40,15 T80,12 T120,6 L120,30 L0,30 Z" fill="url(#gradOrd)"/>
+              <path d="M0,22 Q20,26 40,15 T80,12 T120,6" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 3: Người dùng hoạt động -->
+        <div class="kpi-card-exec">
+          <div class="kpi-card-top">
+            <span class="kpi-exec-label">Tổng người dùng hệ thống</span>
+            <div class="kpi-icon-pill users">
+              <span class="material-symbols-outlined">groups</span>
+            </div>
+          </div>
+          <div class="kpi-exec-main">
+            <span class="kpi-exec-val" id="kpiUsers">128.940</span>
+            <div class="kpi-trend-pill info" id="kpiUsersTrend">
+              <span class="material-symbols-outlined">person_add</span> +412 hôm nay
+            </div>
+          </div>
+          <!-- Sparkline SVG -->
+          <div class="kpi-sparkline" title="Tăng trưởng người dùng">
+            <svg viewBox="0 0 120 30" class="sparkline-svg">
+              <defs>
+                <linearGradient id="gradUser" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f97316" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,28 Q30,24 60,19 T90,10 T120,5 L120,30 L0,30 Z" fill="url(#gradUser)"/>
+              <path d="M0,28 Q30,24 60,19 T90,10 T120,5" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI 4: Phí dịch vụ sàn thực thu (Net Commission Revenue) -->
+        <div class="kpi-card-exec">
+          <div class="kpi-card-top">
+            <span class="kpi-exec-label">Phí sàn thực thu (Net Commission)</span>
+            <div class="kpi-icon-pill commission">
+              <span class="material-symbols-outlined">account_balance</span>
+            </div>
+          </div>
+          <div class="kpi-exec-main">
+            <span class="kpi-exec-val" id="kpiCommission">6.912.000 ₫</span>
+            <div class="kpi-trend-pill neutral" id="kpiCommTrend">
+              <span class="material-symbols-outlined">percent</span> Hoa hồng bình quân 8.0%
+            </div>
+          </div>
+          <!-- Sparkline SVG -->
+          <div class="kpi-sparkline" title="Hoa hồng thu về">
+            <svg viewBox="0 0 120 30" class="sparkline-svg">
+              <defs>
+                <linearGradient id="gradComm" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,24 Q25,20 50,16 T85,11 T120,7 L120,30 L0,30 Z" fill="url(#gradComm)"/>
+              <path d="M0,24 Q25,20 50,16 T85,11 T120,7" fill="none" stroke="#8b5cf6" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: URGENT ACTION COMMAND CENTER (Hàng đợi phê duyệt khẩn cấp) -->
+      <section class="action-command-section">
+        <div class="action-section-header">
+          <div class="action-header-title">
+            <div class="pulse-indicator-red">
+              <span class="pulse-ring"></span>
+              <span class="pulse-core"></span>
+            </div>
+            <h3>Hàng đợi Phê duyệt &amp; Tác vụ Khẩn cấp</h3>
+            <span class="action-counter-badge">4 nhóm chờ xử lý</span>
+          </div>
+          <span class="action-subtext">Cần giải quyết trước 17:00 hôm nay để đảm bảo SLA vận hành sàn</span>
+        </div>
+
+        <div class="action-cards-grid">
+          <!-- Urgent 1: Rút tiền -->
+          <div class="action-card warning-theme">
+            <div class="action-card-header">
+              <div class="action-icon warning">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+              </div>
+              <span class="action-urgency-tag">Chờ &gt; 24h</span>
+            </div>
+            <div class="action-card-body">
+              <h4>14 yêu cầu rút tiền</h4>
+              <p class="action-amount"><strong>320.500.000 ₫</strong> của Seller đang chờ xác thực ngân hàng</p>
+            </div>
+            <div class="action-card-footer">
+              <a href="finance.html#withdraw" class="btn-action btn-action-warning">
+                Duyệt ngay <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Urgent 2: Báo cáo gian lận -->
+          <div class="action-card danger-theme">
+            <div class="action-card-header">
+              <div class="action-icon danger">
+                <span class="material-symbols-outlined">flag</span>
+              </div>
+              <span class="action-urgency-tag danger">Ưu tiên cao</span>
+            </div>
+            <div class="action-card-body">
+              <h4>3 tài khoản bị tố cáo</h4>
+              <p class="action-amount">Nghi vấn gian lận giao dịch và spam đơn ảo cần khoá tài khoản</p>
+            </div>
+            <div class="action-card-footer">
+              <a href="accounts.html#reports" class="btn-action btn-action-danger">
+                Xác minh <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Urgent 3: Đơn hàng tranh chấp -->
+          <div class="action-card info-theme">
+            <div class="action-card-header">
+              <div class="action-icon info">
+                <span class="material-symbols-outlined">gavel</span>
+              </div>
+              <span class="action-urgency-tag info">Khiếu nại</span>
+            </div>
+            <div class="action-card-body">
+              <h4>7 đơn tranh chấp</h4>
+              <p class="action-amount">Buyer &amp; Seller không thống nhất hoàn trả sách truyện cũ</p>
+            </div>
+            <div class="action-card-footer">
+              <a href="orders.html#disputes" class="btn-action btn-action-info">
+                Hoà giải <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Urgent 4: Voucher sắp hết hạn -->
+          <div class="action-card purple-theme">
+            <div class="action-card-header">
+              <div class="action-icon purple">
+                <span class="material-symbols-outlined">event_upcoming</span>
+              </div>
+              <span class="action-urgency-tag purple">Còn 18h</span>
+            </div>
+            <div class="action-card-body">
+              <h4>2 voucher sắp hết hạn</h4>
+              <p class="action-amount">Mã toàn sàn 'SACH9' và 'FREESHIP20' sắp hết hiệu lực</p>
+            </div>
+            <div class="action-card-footer">
+              <a href="vouchers.html" class="btn-action btn-action-purple">
+                Gia hạn <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: ANALYTICS & OPERATIONAL HEALTH (Lưới 2 Cột 65% - 35%) -->
+      <section class="analytics-health-layout">
+        <!-- CỘT TRÁI (65%): BIỂU ĐỒ XU HƯỚNG TƯƠNG TÁC SVG -->
+        <div class="chart-card-wrapper">
+          <div class="chart-card-header">
+            <div>
+              <h3 class="chart-card-title">Xu hướng Vận hành Nền tảng</h3>
+              <p class="chart-card-subtitle">Biểu đồ đối soát doanh thu GMV và số lượng đơn hàng theo thời gian</p>
+            </div>
+            <div class="chart-controls">
+              <div class="chart-metric-toggle" id="chartMetricToggle">
+                <button class="chart-toggle-btn active" data-metric="revenue">
+                  <span class="metric-color-dot rev"></span> Doanh thu (₫)
+                </button>
+                <button class="chart-toggle-btn" data-metric="orders">
+                  <span class="metric-color-dot ord"></span> Số đơn hàng
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Chart Box -->
+          <div class="chart-display-container" id="chartContainer">
+            <!-- Dynamic SVG Chart rendered by JS -->
+            <div class="svg-chart-viewport" id="svgChartViewport"></div>
+            <!-- Floating interactive tooltip -->
+            <div class="chart-tooltip" id="chartTooltip">
+              <div class="tooltip-date" id="tooltipDate">18/09/2026</div>
+              <div class="tooltip-metric" id="tooltipMetric">86.400.000 ₫</div>
+              <div class="tooltip-note" id="tooltipNote">+12.6% so với ngày trước</div>
+            </div>
+          </div>
+
+          <!-- Chart Summary Footer Insights -->
+          <div class="chart-insights-bar">
+            <div class="insight-item">
+              <span class="insight-label">Doanh thu TB / ngày</span>
+              <strong class="insight-val" id="insightAvg">78.520.000 ₫</strong>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Đỉnh điểm tuần (T7)</span>
+              <strong class="insight-val" id="insightPeak">94.800.000 ₫</strong>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Tỷ lệ hoàn thành đơn</span>
+              <strong class="insight-val" style="color:var(--success);">96.8%</strong>
+            </div>
+            <div class="insight-item">
+              <span class="insight-label">Giá trị trung bình đơn (AOV)</span>
+              <strong class="insight-val">37.200 ₫</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI (35%): SỨC KHỎE VẬN HÀNH & HẠ TẦNG -->
+        <div class="operations-health-column">
+          <!-- Widget 1: Phân bổ trạng thái đơn hàng -->
+          <div class="health-card">
+            <div class="health-card-header">
+              <div class="health-title-box">
+                <span class="material-symbols-outlined icon-accent">donut_large</span>
+                <h4>Cơ cấu Đơn hàng Hôm nay</h4>
+              </div>
+              <span class="total-orders-pill">2.318 đơn</span>
+            </div>
+
+            <!-- Segmented Progress Bar -->
+            <div class="multi-progress-bar" title="Phân bổ trạng thái">
+              <div class="progress-segment seg-delivered" style="width: 78%;" title="Hoàn tất: 78%"></div>
+              <div class="progress-segment seg-shipping" style="width: 18.2%;" title="Đang giao: 18.2%"></div>
+              <div class="progress-segment seg-packing" style="width: 3%;" title="Chờ đóng gói: 3%"></div>
+              <div class="progress-segment seg-dispute" style="width: 0.8%;" title="Khiếu nại: 0.8%"></div>
+            </div>
+
+            <!-- Segment Legend & Details -->
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span class="dot-legend dot-delivered"></span>
+                <span class="row-label">Giao thành công</span>
+                <span class="row-stat">1.808 đơn (78.0%)</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="dot-legend dot-shipping"></span>
+                <span class="row-label">Đang vận chuyển</span>
+                <span class="row-stat">422 đơn (18.2%)</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="dot-legend dot-packing"></span>
+                <span class="row-label">Chờ Seller đóng gói</span>
+                <span class="row-stat">68 đơn (3.0%)</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="dot-legend dot-dispute"></span>
+                <span class="row-label">Khiếu nại &amp; Huỷ đơn</span>
+                <span class="row-stat" style="color:var(--danger);">20 đơn (0.8%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget 2: Giám sát Hệ thống & Hạ tầng dịch vụ -->
+          <div class="health-card">
+            <div class="health-card-header">
+              <div class="health-title-box">
+                <span class="material-symbols-outlined icon-accent">dns</span>
+                <h4>Trạng thái Hạ tầng Dịch vụ</h4>
+              </div>
+              <span class="badge badge-success"><span class="badge-dot"></span>Hoạt động 99.98%</span>
+            </div>
+
+            <div class="infra-service-list">
+              <div class="infra-service-row">
+                <div class="service-left">
+                  <span class="status-indicator-dot ok"></span>
+                  <div class="service-info">
+                    <span class="service-name">API Gateway &amp; Core Auth</span>
+                    <span class="service-ping">Độ trễ 24ms • 100% OK</span>
+                  </div>
+                </div>
+                <span class="service-tag normal">Bình thường</span>
+              </div>
+
+              <div class="infra-service-row">
+                <div class="service-left">
+                  <span class="status-indicator-dot ok"></span>
+                  <div class="service-info">
+                    <span class="service-name">Cổng Thanh toán Napas/VNPay</span>
+                    <span class="service-ping">Giao dịch tức thời • 0 lỗi</span>
+                  </div>
+                </div>
+                <span class="service-tag normal">Bình thường</span>
+              </div>
+
+              <div class="infra-service-row">
+                <div class="service-left">
+                  <span class="status-indicator-dot warn"></span>
+                  <div class="service-info">
+                    <span class="service-name">Đối tác GHN / ViettelPost</span>
+                    <span class="service-ping">Phản hồi chậm nhẹ (~480ms)</span>
+                  </div>
+                </div>
+                <span class="service-tag warn">Tải cao</span>
+              </div>
+
+              <div class="infra-service-row">
+                <div class="service-left">
+                  <span class="status-indicator-dot ok"></span>
+                  <div class="service-info">
+                    <span class="service-name">Tìm kiếm ElasticSearch</span>
+                    <span class="service-ping">Truy vấn 18ms • Sẵn sàng</span>
+                  </div>
+                </div>
+                <span class="service-tag normal">Bình thường</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: COMPACT QUICK LAUNCHPAD (Lối tắt 6 phân hệ cốt lõi) -->
+      <section class="quick-launchpad-section">
+        <div class="launchpad-header">
+          <div>
+            <h3 class="launchpad-title">Lối tắt Phân hệ Điều hành</h3>
+            <p class="launchpad-sub">Truy cập tức thì 6 module quản trị sàn với số liệu đếm trực tiếp</p>
+          </div>
+          <span class="shortcut-tip">Mẹo: Nhấn <code>⌘K</code> để tìm kiếm bất kỳ trang nào</span>
+        </div>
+
+        <div class="launchpad-grid">
+          <!-- 1. Tài khoản -->
+          <a href="accounts.html" class="launch-card">
+            <div class="launch-icon" style="background:var(--primary-light); color:var(--primary);">
+              <span class="material-symbols-outlined">manage_accounts</span>
+            </div>
+            <div class="launch-text">
+              <h4>Quản lý Tài khoản</h4>
+              <p>Người mua, Người bán, Khoá vi phạm</p>
+            </div>
+            <span class="launch-badge warning">3 báo cáo</span>
+          </a>
+
+          <!-- 2. Nhân sự -->
+          <a href="staff.html" class="launch-card">
+            <div class="launch-icon" style="background:#ede9fe; color:#6d28d9;">
+              <span class="material-symbols-outlined">badge</span>
+            </div>
+            <div class="launch-text">
+              <h4>Nhân sự &amp; Phân quyền</h4>
+              <p>Tài khoản nhân viên, Nhóm quyền hệ thống</p>
+            </div>
+            <span class="launch-badge neutral">18 nhân sự</span>
+          </a>
+
+          <!-- 3. Biểu phí -->
+          <a href="fees.html" class="launch-card">
+            <div class="launch-icon" style="background:#dbeafe; color:#1d4ed8;">
+              <span class="material-symbols-outlined">request_quote</span>
+            </div>
+            <div class="launch-text">
+              <h4>Biểu phí &amp; Chính sách</h4>
+              <p>Hoa hồng 8%, Phí rút tiền, Quy chuẩn sàn</p>
+            </div>
+            <span class="launch-badge neutral">5 mức phí</span>
+          </a>
+
+          <!-- 4. Voucher -->
+          <a href="vouchers.html" class="launch-card">
+            <div class="launch-icon" style="background:#fce7f3; color:#be185d;">
+              <span class="material-symbols-outlined">local_activity</span>
+            </div>
+            <div class="launch-text">
+              <h4>Voucher Toàn hệ thống</h4>
+              <p>Mã khuyến mãi &amp; trợ giá vận chuyển</p>
+            </div>
+            <span class="launch-badge primary">6 đang chạy</span>
+          </a>
+
+          <!-- 5. Tài chính -->
+          <a href="finance.html" class="launch-card">
+            <div class="launch-icon" style="background:var(--success-bg); color:var(--success-text);">
+              <span class="material-symbols-outlined">monitoring</span>
+            </div>
+            <div class="launch-text">
+              <h4>Doanh thu &amp; Dòng tiền</h4>
+              <p>Duyệt rút tiền, Đối soát, Dòng tiền ký quỹ</p>
+            </div>
+            <span class="launch-badge warning">14 chờ duyệt</span>
+          </a>
+
+          <!-- 6. Đơn hàng -->
+          <a href="orders.html" class="launch-card">
+            <div class="launch-icon" style="background:var(--info-bg); color:var(--info-text);">
+              <span class="material-symbols-outlined">package_2</span>
+            </div>
+            <div class="launch-text">
+              <h4>Quản lý Đơn hàng</h4>
+              <p>Giám sát toàn sàn &amp; Xử lý tranh chấp</p>
+            </div>
+            <span class="launch-badge danger">7 tranh chấp</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- SECTION 5: REAL-TIME AUDIT TRAIL (Nhật ký kiểm toán quản trị) -->
+      <section class="audit-trail-section">
+        <div class="audit-card-header">
+          <div class="audit-header-left">
+            <div class="audit-title-box">
+              <span class="material-symbols-outlined">history</span>
+              <h3 class="audit-title">Nhật ký Hoạt động Quản trị (Audit Trail)</h3>
+            </div>
+            <span class="audit-meta-tag">Cập nhật trực tiếp</span>
+          </div>
+
+          <div class="audit-header-controls">
+            <!-- Filter Tabs -->
+            <div class="audit-tabs-group" id="auditTabsGroup">
+              <button class="audit-tab-btn active" data-filter="all">Tất cả</button>
+              <button class="audit-tab-btn" data-filter="finance">Rút tiền &amp; Dòng tiền</button>
+              <button class="audit-tab-btn" data-filter="account">Tài khoản &amp; Vi phạm</button>
+              <button class="audit-tab-btn" data-filter="system">Cấu hình &amp; Biểu phí</button>
+            </div>
+
+            <!-- Audit Search Input -->
+            <div class="audit-search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" id="auditSearchInput" placeholder="Lọc nhanh nhật ký...">
+            </div>
+
+            <button class="btn btn-outline btn-sm" id="exportAuditBtn" title="Xuất file nhật ký">
+              <span class="material-symbols-outlined">download</span> Xuất CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 140px;">Thời gian</th>
+                <th style="width: 190px;">Quản trị viên</th>
+                <th style="width: 130px;">Phân loại</th>
+                <th>Hành động cụ thể</th>
+                <th>Đối tượng tác động</th>
+                <th style="text-align:center; width: 120px;">Trạng thái</th>
+                <th style="text-align:right; width: 90px;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="audit-table-footer">
+          <span class="record-counter" id="recordCounter">Hiển thị 6 / 142 hoạt động gần nhất</span>
+          <button class="btn-more-records" onclick="showToast('Đang tải thêm 15 bản ghi lịch sử kiểm toán...')">
+            Xem thêm lịch sử <span class="material-symbols-outlined" style="font-size:18px;">expand_more</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     COMMAND PALETTE MODAL (Ctrl + K)
+     ========================================================================== -->
+<div class="command-palette-backdrop" id="commandPaletteModal">
+  <div class="command-palette-dialog">
+    <div class="palette-input-wrap">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" id="paletteSearchInput" placeholder="Tìm kiếm trang, thao tác nhanh, người dùng, mã đơn..." autocomplete="off">
+      <kbd class="palette-esc-kbd">ESC</kbd>
+    </div>
+    
+    <div class="palette-results" id="paletteResults">
+      <div class="palette-group-title">Truy cập nhanh trang quản trị</div>
+      <a href="finance.html#withdraw" class="palette-item">
+        <span class="material-symbols-outlined item-icon warning">account_balance_wallet</span>
+        <div class="item-text">
+          <span class="item-name">Duyệt yêu cầu rút tiền</span>
+          <span class="item-sub">Tài chính • 14 yêu cầu đang chờ</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+      <a href="accounts.html#reports" class="palette-item">
+        <span class="material-symbols-outlined item-icon danger">flag</span>
+        <div class="item-text">
+          <span class="item-name">Xử lý tài khoản bị tố cáo</span>
+          <span class="item-sub">Quản lý tài khoản • 3 tài khoản vi phạm</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+      <a href="orders.html#disputes" class="palette-item">
+        <span class="material-symbols-outlined item-icon info">gavel</span>
+        <div class="item-text">
+          <span class="item-name">Hoà giải đơn hàng khiếu nại</span>
+          <span class="item-sub">Đơn hàng • 7 tranh chấp chờ xử lý</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+      <a href="vouchers.html" class="palette-item">
+        <span class="material-symbols-outlined item-icon purple">local_activity</span>
+        <div class="item-text">
+          <span class="item-name">Tạo voucher toàn hệ thống</span>
+          <span class="item-sub">Khuyến mãi • Quản lý mã giảm giá sàn</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+      <a href="fees.html" class="palette-item">
+        <span class="material-symbols-outlined item-icon blue">request_quote</span>
+        <div class="item-text">
+          <span class="item-name">Điều chỉnh biểu phí hoa hồng</span>
+          <span class="item-sub">Chính sách • Cấu hình phí dịch vụ</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+      <a href="staff.html" class="palette-item">
+        <span class="material-symbols-outlined item-icon green">badge</span>
+        <div class="item-text">
+          <span class="item-name">Phân quyền nhân sự quản trị</span>
+          <span class="item-sub">Hệ thống • Danh sách kiểm duyệt viên</span>
+        </div>
+        <kbd class="item-enter">↵</kbd>
+      </a>
+    </div>
+
+    <div class="palette-footer">
+      <span>Nhấn <kbd>↑</kbd> <kbd>↓</kbd> để di chuyển</span>
+      <span>Nhấn <kbd>Enter</kbd> để chọn</span>
+      <span>Nhấn <kbd>ESC</kbd> để đóng</span>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Scripts -->
+<script src="../js/common.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

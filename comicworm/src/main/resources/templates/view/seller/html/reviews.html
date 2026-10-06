@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý đánh giá | ComicHub Seller Portal</title>
+  <link rel="stylesheet" href="../css/post-management.css">
+  <link rel="stylesheet" href="../css/reviews.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- SIDEBAR (Nạp từ file sidebar.html riêng biệt) -->
+    <div id="sidebarContainer" data-active="reviews"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Mở menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="store-badge" title="Gian hàng chính thức của bạn">
+            <span class="material-symbols-outlined store-icon">storefront</span>
+            <span class="store-name">Tiệm Truyện Vũ Trụ</span>
+            <span class="store-verified" title="Gian hàng đã xác thực">
+              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+            </span>
+            <span class="store-status-dot" title="Đang mở cửa hoạt động"></span>
+          </div>
+          <div class="global-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" placeholder="Tìm theo tên sách, độc giả..." id="masterSearch">
+            <span class="search-shortcut">⌘K</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="nav-icon-btn" title="Thông báo mới">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notification-badge-dot"></span>
+          </button>
+          <div class="user-profile-menu">
+            <div class="user-details">
+              <div class="user-name">Trần Đăng Khoa</div>
+              <div class="user-role">Pro Seller</div>
+            </div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4W4fxRdEwEUti0BU4ZPunWEZMYRM5XRFFlgIpx5h5FcGigyLtFd7NM4wAKmn97UX_qn2USeyOTbIRFCnmQoBVyYsAZzk2Ommn4m96f0g8tJFlLLzGMdeLo7dnjurcqN9z0VjI4molZf84AY3b6Xl-s2jzDP8NviNKL_3XKBJ4WcGvVtQMCXF-FWLhW-6fAZmyE9-0dH2oGqFDNxunrsUeQMqf7VzQIHdjpzPSeoN1G2SHC3fTPCzWA" alt="Avatar" class="user-avatar">
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="breadcrumb-tag">
+            <span class="material-symbols-outlined" style="font-size: 14px;">storefront</span>
+            Kênh người bán • Tiệm Truyện Vũ Trụ
+          </div>
+          <div class="page-title-row">
+            <div>
+              <h2 class="page-title">Quản lý đánh giá nhận được</h2>
+              <p class="page-subtitle">Theo dõi mức độ hài lòng của độc giả, phản hồi nhận xét và nâng cao uy tín tiệm sách</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn btn-outline" onclick="showToast('Đang cập nhật đánh giá mới nhất theo thời gian thực')">
+                <span class="material-symbols-outlined">sync</span>
+                Cập nhật thời gian thực
+              </button>
+              <button class="btn btn-secondary" onclick="showToast('Đang xuất báo cáo đánh giá PDF...')">
+                <span class="material-symbols-outlined">download</span>
+                Xuất báo cáo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RATINGS SUMMARY CARD (OVERALL SCORE + PROGRESS BARS + RESPONSE TIME) -->
+        <div class="ratings-summary-card">
+          <!-- COL 1: SCORE -->
+          <div class="overall-score">
+            <div class="score-num">4.9<span style="font-size: 1.8rem; color: #94a3b8; font-weight: 500;">/5.0</span></div>
+            <div class="score-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+            </div>
+            <div class="score-count">Dựa trên <strong>1.248</strong> lượt đánh giá từ khách mua truyện</div>
+            <div class="kpi-trend positive" style="margin-top: 10px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
+              +0.2 điểm so với tháng trước
+            </div>
+          </div>
+
+          <!-- COL 2: STAR DISTRIBUTION BARS -->
+          <div class="rating-bars">
+            <div class="rating-bar-row">
+              <div class="star-label">5 <span class="material-symbols-outlined fill" style="font-size: 14px; color: #f59e0b;">star</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 92%;"></div>
+              </div>
+              <div class="percent-label">92%</div>
+            </div>
+            <div class="rating-bar-row">
+              <div class="star-label">4 <span class="material-symbols-outlined fill" style="font-size: 14px; color: #f59e0b;">star</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 6%;"></div>
+              </div>
+              <div class="percent-label">6%</div>
+            </div>
+            <div class="rating-bar-row">
+              <div class="star-label">3 <span class="material-symbols-outlined fill" style="font-size: 14px; color: #f59e0b;">star</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 1%;"></div>
+              </div>
+              <div class="percent-label">1%</div>
+            </div>
+            <div class="rating-bar-row">
+              <div class="star-label">2 <span class="material-symbols-outlined fill" style="font-size: 14px; color: #f59e0b;">star</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 0.5%;"></div>
+              </div>
+              <div class="percent-label">&lt;1%</div>
+            </div>
+            <div class="rating-bar-row">
+              <div class="star-label">1 <span class="material-symbols-outlined fill" style="font-size: 14px; color: #f59e0b;">star</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 0.5%;"></div>
+              </div>
+              <div class="percent-label">&lt;1%</div>
+            </div>
+          </div>
+
+          <!-- COL 3: RESPONSE STATS -->
+          <div class="seller-reputation-stats">
+            <div class="rep-stat-item">
+              <h4>Tỷ lệ phản hồi</h4>
+              <div class="val" style="color: var(--success);">99.4%</div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Rất tích cực (Mục tiêu &gt; 95%)</span>
+            </div>
+            <div class="rep-stat-item">
+              <h4>Thời gian phản hồi</h4>
+              <div class="val" style="color: var(--primary);">~ 15 phút</div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Thường phản hồi cực nhanh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BỘ LỌC ĐÁNH GIÁ NÂNG CAO: THEO SỐ SAO, THEO SÁCH & THEO THỜI GIAN/NGÀY -->
+        <div class="reviews-filter-section" style="background: var(--surface-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 22px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+          
+          <!-- HÀNG 1: LỌC THEO SỐ SAO (TABS / CHIPS) -->
+          <div style="margin-bottom: 18px;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <span style="display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #f59e0b;">star</span>
+                Lọc theo số sao đánh giá:
+              </span>
+              <span id="reviewMatchCountBadge" style="font-size: 0.78rem; font-weight: 700; color: var(--primary); background: rgba(234, 88, 12, 0.1); padding: 4px 12px; border-radius: 9999px;">
+                Hiển thị: 8 / 8 đánh giá
+              </span>
+            </div>
+            <div class="filter-tabs-bar" id="starFilterTabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="tab-chip active" data-filter-star="all" onclick="setReviewStarFilter('all', this)">Tất cả (1.248)</button>
+              <button class="tab-chip" data-filter-star="5" onclick="setReviewStarFilter('5', this)">5 Sao ⭐ (1.150)</button>
+              <button class="tab-chip" data-filter-star="4" onclick="setReviewStarFilter('4', this)">4 Sao ⭐ (75)</button>
+              <button class="tab-chip" data-filter-star="3" onclick="setReviewStarFilter('3', this)">3 Sao ⭐ (12)</button>
+              <button class="tab-chip" data-filter-star="2" onclick="setReviewStarFilter('2', this)">2 Sao ⭐ (6)</button>
+              <button class="tab-chip" data-filter-star="1" onclick="setReviewStarFilter('1', this)">1 Sao ⭐ (5)</button>
+              <button class="tab-chip" data-filter-star="with_photo" onclick="setReviewStarFilter('with_photo', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">photo_camera</span> Có ảnh (420)
+              </button>
+              <button class="tab-chip" data-filter-star="unreplied" onclick="setReviewStarFilter('unreplied', this)" style="border-color: #fca5a5; color: #dc2626;">
+                <span class="badge-dot" style="background: #dc2626;"></span> Chưa phản hồi (5)
+              </button>
+            </div>
+          </div>
+
+          <!-- HÀNG 2: LỌC THEO SÁCH, THEO NGÀY & TÌM KIẾM TỪ KHÓA -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) auto; gap: 14px; align-items: flex-end;">
+            
+            <!-- 1. LỌC THEO TỰA SÁCH / TRUYỆN -->
+            <div>
+              <label for="reviewBookSelect" style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px;">
+                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; color: var(--primary);">menu_book</span>
+                Lọc theo tựa sách / truyện:
+              </label>
+              <select id="reviewBookSelect" class="form-select" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem; background: #fff;" onchange="filterReviewsCombined()">
+                <option value="all">📚 Tất cả các tựa sách truyện</option>
+                <option value="One Piece">One Piece – Boxset Wano Quốc</option>
+                <option value="Dragon Ball Super">Dragon Ball Super – Bản Full Color</option>
+                <option value="Jujutsu Kaisen">Jujutsu Kaisen – Chú Thuật Hồi Chiến</option>
+                <option value="Spy x Family">Spy x Family – Bản Giới Hạn</option>
+                <option value="Conan">Thám Tử Lừng Danh Conan Màu</option>
+                <option value="Doraemon">Doraemon Truyện Dài 24 Tập</option>
+                <option value="Kimetsu no Yaiba">Thanh Gươm Diệt Quỷ (Kimetsu no Yaiba)</option>
+                <option value="Chainsaw Man">Chainsaw Man – Thợ Săn Quỷ Tập 11</option>
+              </select>
+            </div>
+
+            <!-- 2. LỌC THEO THỜI GIAN / NGÀY -->
+            <div>
+              <label for="reviewDateSelect" style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px;">
+                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; color: #2563eb;">calendar_month</span>
+                Lọc theo thời gian / ngày:
+              </label>
+              <select id="reviewDateSelect" class="form-select" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem; background: #fff;" onchange="filterReviewsCombined()">
+                <option value="all">🗓️ Toàn bộ thời gian</option>
+                <option value="today">Hôm nay (24/09/2026)</option>
+                <option value="7days">7 ngày qua (Gần đây nhất)</option>
+                <option value="30days">30 ngày qua</option>
+                <option value="this_month">Tháng này (Tháng 9/2026)</option>
+                <option value="last_month">Tháng trước (Tháng 8/2026)</option>
+              </select>
+            </div>
+
+            <!-- 3. TÌM KIẾM THEO TỪ KHÓA -->
+            <div>
+              <label for="reviewSearchInput" style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px;">
+                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; color: var(--text-muted);">search</span>
+                Tìm theo người mua, mã đơn, nội dung:
+              </label>
+              <input type="text" id="reviewSearchInput" class="form-input" placeholder="Tên độc giả, #CH-..., từ khóa..." style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;" oninput="filterReviewsCombined()">
+            </div>
+
+            <!-- NÚT ĐẶT LẠI BỘ LỌC -->
+            <div>
+              <button class="btn btn-outline" style="padding: 9px 16px; font-size: 0.82rem; height: 38px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;" onclick="resetReviewFilters()" title="Xóa toàn bộ bộ lọc về mặc định">
+                <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span>
+                Đặt lại
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- REVIEW LIST CONTAINER -->
+        <div id="reviewsListContainer" style="display: flex; flex-direction: column; gap: 16px;">
+          
+          <!-- REVIEW 1: 5 SAO - DRAGON BALL - HÔM NAY -->
+          <div class="review-card" data-stars="5" data-book="Dragon Ball Super – Full Color Tập 12" data-date="2026-09-24" data-has-photo="true" data-replied="true">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="Avatar Tuấn" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Nguyễn Minh Tuấn <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;"><span class="material-symbols-outlined" style="font-size: 13px;">verified</span> Đã mua hàng</span></h4>
+                  <div class="meta-time">Đánh giá 2 giờ trước • 24/09/2026 • Đơn hàng #CH-99214</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Dragon Ball Super – Full Color Tập 12 (Bản giới hạn) &nbsp;|&nbsp; Phân loại: Bìa cứng kèm Poster
+            </div>
+            <p class="review-content-text">
+              Shop đóng gói cực kỳ có tâm, bọc bóng khí chống sốc tận 3 lớp, chèn góc carton cứng cáp nên bìa truyện mới cứng bóng loáng không một vết cấn góc nào! Bản in màu sắc nét rực rỡ, kèm postcard quà tặng độc quyền của ComicHub đẹp xuất sắc. Sẽ ủng hộ shop dài lâu!
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&q=80" alt="Ảnh review truyện 1" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+              <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&q=80" alt="Ảnh review truyện 2" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+              <img src="https://images.unsplash.com/photo-1532012164546-f432f2e3777f?w=200&q=80" alt="Ảnh review truyện 3" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+            </div>
+            <div class="shop-reply-box">
+              <div class="shop-reply-header">
+                <div class="shop-reply-author"><span class="material-symbols-outlined" style="font-size: 16px;">storefront</span> Phản hồi từ Shop: Tiệm Truyện Vũ Trụ</div>
+                <span class="shop-reply-time">1 giờ trước</span>
+              </div>
+              <p class="shop-reply-text">Dạ Tiệm Truyện Vũ Trụ xin chân thành cảm ơn bạn Tuấn đã tin tưởng và dành thời gian đánh giá 5 sao cho tiệm ạ! Với truyện sưu tầm bản màu thì bên mình luôn ưu tiên bảo vệ tối đa các góc cạnh. Chúc bạn có những phút giây đọc truyện thật sảng khoái và hẹn gặp lại bạn ở tập 13 nhé!</p>
+            </div>
+          </div>
+
+          <!-- REVIEW 2: 5 SAO - ONE PIECE - HÔM QUA (CHƯA PHẢN HỒI) -->
+          <div class="review-card" data-stars="5" data-book="One Piece – Boxset Wano Quốc" data-date="2026-09-23" data-has-photo="true" data-replied="false">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Avatar Oanh" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Hoàng Oanh <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span> <span class="badge badge-warning" style="font-size: 0.72rem; padding: 2px 7px;">Top Fan Manga</span></h4>
+                  <div class="meta-time">Hôm qua 18:45 • 23/09/2026 • Đơn hàng #CH-99180</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              One Piece – Boxset Wano Quốc (Tập 91 – 105) &nbsp;|&nbsp; Phân loại: Boxset Nguyên Seal
+            </div>
+            <p class="review-content-text">
+              Giao hàng hỏa tốc trong nội thành chỉ 1 tiếng là nhận được rồi. Boxset nguyên seal nilong chưa bóc tem, hộp ngoài cứng cáp sang chảnh decor bàn đọc sách bao đẹp luôn. Shop tư vấn tận tình chu đáo qua tin nhắn chat nữa! 10/10 điểm phục vụ.
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1618365908648-e71bd5716cba?w=200&q=80" alt="Review ảnh 1" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+              <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=200&q=80" alt="Review ảnh 2" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px;">
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline btn-sm" onclick="toggleReplyForm(this)">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">reply</span> Phản hồi đánh giá
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Đã ghi nhận phản hồi hữu ích', 'success')">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">thumb_up</span> Hữu ích (14)
+                </button>
+              </div>
+              <span class="badge badge-danger" style="font-size: 0.75rem;"><span class="badge-dot"></span> Chưa phản hồi</span>
+            </div>
+          </div>
+
+          <!-- REVIEW 3: 4 SAO - JUJUTSU KAISEN - 3 NGÀY TRƯỚC -->
+          <div class="review-card" data-stars="4" data-book="Jujutsu Kaisen – Chú Thuật Hồi Chiến" data-date="2026-09-21" data-has-photo="true" data-replied="true">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&q=80" alt="Avatar Bảo" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Lê Bảo <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">3 ngày trước • 21/09/2026 • Đơn hàng #CH-99042</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Jujutsu Kaisen – Chú Thuật Hồi Chiến Tập 0 (Bìa Ánh Kim) &nbsp;|&nbsp; Phân loại: Tập lẻ kèm Bookmark
+            </div>
+            <p class="review-content-text">
+              Truyện đẹp xuất sắc không tì vết, hiệu ứng ánh kim lấp lánh cầm trên tay thích mê. Điểm trừ xíu là bên vận chuyển giao chậm hơn dự kiến 1 ngày so với app thông báo, nhưng shop hỗ trợ check mã vận đơn cực nhiệt tình nên vẫn đánh giá cao tiệm!
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&q=80" alt="Review 3 ảnh" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to của độc giả')">
+            </div>
+            <div class="shop-reply-box">
+              <div class="shop-reply-header">
+                <div class="shop-reply-author"><span class="material-symbols-outlined" style="font-size: 16px;">storefront</span> Phản hồi từ Shop: Tiệm Truyện Vũ Trụ</div>
+                <span class="shop-reply-time">2 ngày trước</span>
+              </div>
+              <p class="shop-reply-text">Tiệm cảm ơn bạn Bảo nhiều ạ. Tiệm thành thật xin lỗi vì sự bất tiện do bên đơn vị vận chuyển giao trễ tiến độ. Tiệm đã làm việc lại với bên đối tác giao vận để tối ưu tuyến đường nhanh hơn. Cảm ơn bạn đã luôn đồng hành và thấu hiểu cho tiệm!</p>
+            </div>
+          </div>
+
+          <!-- REVIEW 4: 5 SAO - SPY X FAMILY - 5 NGÀY TRƯỚC -->
+          <div class="review-card" data-stars="5" data-book="Spy x Family – Bản Giới Hạn" data-date="2026-09-19" data-has-photo="true" data-replied="true">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80" alt="Avatar Linh" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Trần Mai Linh <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">5 ngày trước • 19/09/2026 • Đơn hàng #CH-98871</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Spy x Family – Tập 1 đến 11 Kèm Postcard Limited &nbsp;|&nbsp; Phân loại: Bản Giới Hạn Full Quà
+            </div>
+            <p class="review-content-text">
+              Bộ Spy x Family này mình săn lùng mãi mới thấy shop có đủ bộ tập 1-11 kèm cả postcard Anya siêu cưng. Giấy truyện thơm mùi mới, bookmark đầy đủ không thiếu cái nào. Giá còn được áp voucher giảm 15% của shop siêu hời. Mọi người nên mua ủng hộ shop nha!
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=200&q=80" alt="Review Spy" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+              <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&q=80" alt="Review Spy 2" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+            </div>
+            <div class="shop-reply-box">
+              <div class="shop-reply-header">
+                <div class="shop-reply-author"><span class="material-symbols-outlined" style="font-size: 16px;">storefront</span> Phản hồi từ Shop: Tiệm Truyện Vũ Trụ</div>
+                <span class="shop-reply-time">4 ngày trước</span>
+              </div>
+              <p class="shop-reply-text">Tiệm cảm ơn bạn Linh thật nhiều! Rất vui vì món quà postcard Anya đã làm bạn hài lòng. Chúc bạn có thật nhiều niềm vui khi đọc truyện cùng gia đình Forger nhé!</p>
+            </div>
+          </div>
+
+          <!-- REVIEW 5: 3 SAO - CONAN - 12 NGÀY TRƯỚC -->
+          <div class="review-card" data-stars="3" data-book="Thám Tử Lừng Danh Conan Màu" data-date="2026-09-12" data-has-photo="false" data-replied="true">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Avatar Khoa" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Phạm Đăng Khoa <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">12 ngày trước • 12/09/2026 • Đơn hàng #CH-98210</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Thám Tử Lừng Danh Conan – Trọn bộ 10 tập Bản Màu &nbsp;|&nbsp; Phân loại: Bìa mềm màu
+            </div>
+            <p class="review-content-text">
+              Nội dung truyện Conan kinh điển thì không có gì bàn cãi rồi. Tuy nhiên có tập 4 góc gáy bị nhăn nhẹ một xíu xiu do va quẹt lúc vận chuyển bên ngoài. Mong shop lần sau chèn thêm xốp bóng ở 4 góc hộp cho an tâm hơn nhé.
+            </p>
+            <div class="shop-reply-box">
+              <div class="shop-reply-header">
+                <div class="shop-reply-author"><span class="material-symbols-outlined" style="font-size: 16px;">storefront</span> Phản hồi từ Shop: Tiệm Truyện Vũ Trụ</div>
+                <span class="shop-reply-time">11 ngày trước</span>
+              </div>
+              <p class="shop-reply-text">Dạ tiệm xin ghi nhận đóng góp rất chân thành từ bạn Khoa ạ. Tiệm đã gửi tặng bạn một mã giảm giá 20.000đ vào ví voucher cho đơn kế tiếp để bù đắp phần nào trải nghiệm chưa trọn vẹn này. Tiệm sẽ gia cố bọc 4 góc thật kỹ cho các đơn sau ạ!</p>
+            </div>
+          </div>
+
+          <!-- REVIEW 6: 2 SAO - DORAEMON - 16 NGÀY TRƯỚC (CHƯA PHẢN HỒI) -->
+          <div class="review-card" data-stars="2" data-book="Doraemon Truyện Dài 24 Tập" data-date="2026-09-08" data-has-photo="true" data-replied="false">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Avatar An" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Vũ Hoài An <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">16 ngày trước • 08/09/2026 • Đơn hàng #CH-97992</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Doraemon Truyện Dài – Trọn Bộ 24 Tập Màu &nbsp;|&nbsp; Phân loại: Sách 90%
+            </div>
+            <p class="review-content-text">
+              Bộ Doraemon giấy ngả vàng hơi nhiều so với kỳ vọng của mình lúc đọc mô tả 90%. Bìa truyện sạch sẽ nhưng vài trang bị ố vàng mép giấy thời gian. Shop nên chụp ảnh thật góc ố vàng để người mua cũ dễ hình dung hơn nha.
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?w=200&q=80" alt="Review Doraemon" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px;">
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline btn-sm" onclick="toggleReplyForm(this)">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">reply</span> Phản hồi đánh giá
+                </button>
+              </div>
+              <span class="badge badge-danger" style="font-size: 0.75rem;"><span class="badge-dot"></span> Chưa phản hồi</span>
+            </div>
+          </div>
+
+          <!-- REVIEW 7: 5 SAO - KIMETSU NO YAIBA - 22 NGÀY TRƯỚC -->
+          <div class="review-card" data-stars="5" data-book="Thanh Gươm Diệt Quỷ (Kimetsu no Yaiba)" data-date="2026-09-02" data-has-photo="true" data-replied="true">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80" alt="Avatar Khang" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Đỗ Minh Khang <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">22 ngày trước • 02/09/2026 • Đơn hàng #CH-97501</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined fill">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Thanh Gươm Diệt Quỷ (Kimetsu no Yaiba) – Boxset 23 Tập &nbsp;|&nbsp; Phân loại: Boxset Hardcover
+            </div>
+            <p class="review-content-text">
+              Đỉnh nóc kịch trần bay phấp phới! Boxset Kimetsu no Yaiba xịn đét nguyên seal NXB Kim Đồng, hộp cứng cáp góc cạnh 90 độ thẳng băng. Mua làm quà tặng sinh nhật em trai mà nó mê tít mắt. Shop gói hàng rất cẩn thận, cho shop 10 sao!
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=200&q=80" alt="Review KMY 1" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+              <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&q=80" alt="Review KMY 2" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+            </div>
+            <div class="shop-reply-box">
+              <div class="shop-reply-header">
+                <div class="shop-reply-author"><span class="material-symbols-outlined" style="font-size: 16px;">storefront</span> Phản hồi từ Shop: Tiệm Truyện Vũ Trụ</div>
+                <span class="shop-reply-time">20 ngày trước</span>
+              </div>
+              <p class="shop-reply-text">Tiệm cảm ơn bạn Khang rất nhiều vì lời khen siêu dễ thương này ạ! Chúc em trai bạn có một ngày sinh nhật thật ý nghĩa và đọc truyện vui vẻ nha!</p>
+            </div>
+          </div>
+
+          <!-- REVIEW 8: 1 SAO - CHAINSAW MAN - THÁNG TRƯỚC (CHƯA PHẢN HỒI) -->
+          <div class="review-card" data-stars="1" data-book="Chainsaw Man – Thợ Săn Quỷ Tập 11" data-date="2026-08-25" data-has-photo="true" data-replied="false">
+            <div class="review-card-header">
+              <div class="reviewer-profile">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="Avatar Long" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <h4>Nguyễn Hoàng Long <span class="badge badge-success" style="font-size: 0.72rem; padding: 2px 7px;">Đã mua hàng</span></h4>
+                  <div class="meta-time">Tháng trước • 25/08/2026 • Đơn hàng #CH-96944</div>
+                </div>
+              </div>
+              <button class="nav-icon-btn" style="width: 32px; height: 32px;" title="Tùy chọn"><span class="material-symbols-outlined">more_horiz</span></button>
+            </div>
+            <div class="review-stars">
+              <span class="material-symbols-outlined fill">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+              <span class="material-symbols-outlined" style="color: #cbd5e1;">star</span>
+            </div>
+            <div class="review-product-attached">
+              <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+              Chainsaw Man – Thợ Săn Quỷ Tập 11 &nbsp;|&nbsp; Phân loại: Bản Đặc Biệt Bìa Rời
+            </div>
+            <p class="review-content-text">
+              Đặt giao hỏa tốc mà bên GHN làm móp méo cả góc gáy sách của mình, xé rách luôn cả màng co bên ngoài. Rất buồn vì đây là cuốn bản đặc biệt mình săn lùng để sưu tầm. Đã nhắn tin shop và chờ hỗ trợ đổi cuốn khác nguyên vẹn.
+            </p>
+            <div class="review-photo-gallery">
+              <img src="https://images.unsplash.com/photo-1618365908648-e71bd5716cba?w=200&q=80" alt="Review CSM" class="review-photo-thumb" onclick="showToast('Xem ảnh phóng to')">
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px;">
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline btn-sm" onclick="toggleReplyForm(this)">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">reply</span> Phản hồi xử lý sự cố
+                </button>
+              </div>
+              <span class="badge badge-danger" style="font-size: 0.75rem;"><span class="badge-dot"></span> Cần phản hồi khẩn cấp</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- EMPTY STATE KHI KHÔNG TÌM THẤY ĐÁNH GIÁ -->
+        <div id="noReviewsFound" style="display: none; text-align: center; padding: 48px 20px; background: var(--surface-card); border-radius: var(--radius-xl); border: 1px dashed var(--border-color); margin-top: 20px;">
+          <span class="material-symbols-outlined" style="font-size: 48px; color: var(--text-muted); display: block; margin-bottom: 12px;">rate_review</span>
+          <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 6px;">Không tìm thấy đánh giá nào phù hợp</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Thử thay đổi số sao, tựa sách hoặc khoảng thời gian tìm kiếm.</p>
+          <button class="btn btn-primary btn-sm" onclick="resetReviewFilters()">
+            <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span> Đặt lại bộ lọc
+          </button>
+        </div>
+
+        <!-- LOAD MORE BUTTON -->
+        <div style="text-align: center; margin: 24px 0;">
+          <button class="btn btn-outline" id="loadMoreReviewsBtn" onclick="loadMoreReviews(this)" style="padding: 10px 24px;">
+            <span class="material-symbols-outlined">expand_more</span>
+            Xem thêm đánh giá độc giả (Load More)
+          </button>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper" style="background: var(--surface-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+          <div class="pagination-info">
+            Hiển thị <strong>1 - 3</strong> trên tổng số <strong>1.248</strong> đánh giá
+          </div>
+          <div class="pagination-controls">
+            <button class="page-btn" disabled><span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="padding: 0 4px; color: var(--text-muted);">...</span>
+            <button class="page-btn">416</button>
+            <button class="page-btn"><span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span></button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="../js/common.js"></script>
+  <script src="../js/reviews.js"></script>
+</body>
+</html>

@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMooch / ComicHub - Cổng Điều Hướng Hệ Thống (Master Navigation Portal)</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome & Google Material Symbols -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-surface: #111827;
+      --bg-card: rgba(26, 35, 53, 0.75);
+      --bg-card-hover: rgba(36, 48, 74, 0.95);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --border-highlight: rgba(249, 115, 22, 0.4);
+      --primary: #f97316;
+      --primary-hover: #ea580c;
+      --primary-glow: rgba(249, 115, 22, 0.25);
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.08) 0px, transparent 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* HEADER */
+    .master-header {
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(16px);
+      background: rgba(9, 13, 22, 0.8);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 74px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .brand-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .brand-title span {
+      color: var(--primary);
+    }
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .header-quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-quick {
+      padding: 9px 18px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(249, 115, 22, 0.4);
+    }
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border: 1px solid var(--border-color);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+    }
+
+    /* HERO */
+    .hero-section {
+      padding: 56px 0 36px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(249, 115, 22, 0.12);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      border-radius: 9999px;
+      color: #fb923c;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, #fb923c 0%, #f97316 40%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 32px;
+    }
+
+    /* STATS STRIP */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      backdrop-filter: blur(10px);
+      text-align: left;
+    }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: white;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* SEARCH & FILTER BAR */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      padding: 7px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover, .pill-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* MODULE SECTIONS */
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .module-card:hover {
+      border-color: var(--border-highlight);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    }
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .module-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .module-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .icon-orange { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .icon-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .icon-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .icon-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    .module-meta h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: white;
+    }
+    .module-meta p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .tag-member {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+    }
+
+    /* PAGE LINKS GRID */
+    .pages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .page-link-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .page-link-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .page-link-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .page-link-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .page-link-card:hover .page-link-title {
+      color: #fb923c;
+    }
+    .page-link-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .page-link-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .page-link-footer span.path {
+      font-family: monospace;
+      color: #64748b;
+    }
+    .page-link-footer i {
+      color: var(--primary);
+      transition: transform 0.2s;
+    }
+    .page-link-card:hover .page-link-footer i {
+      transform: translateX(4px);
+    }
+
+    /* FOOTER */
+    .master-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 40px 0 50px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      background: rgba(9, 13, 22, 0.9);
+      margin-top: 60px;
+    }
+    .master-footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .master-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="master-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div>
+          <div class="brand-title">COMIC<span>HUB</span> &amp; BOOKMOOCH</div>
+          <div class="brand-sub">Master Navigation Portal</div>
+        </div>
+      </a>
+
+      <div class="header-quick-actions">
+        <a href="buyer/html/home.html" class="btn-quick btn-primary">
+          <i class="fa-solid fa-store"></i> Chợ ComicHub
+        </a>
+        <a href="seller/html/index.html" class="btn-quick btn-outline">
+          <i class="fa-solid fa-shop"></i> Kênh Người Bán
+        </a>
+        <a href="admin/html/dashboard.html" class="btn-quick btn-outline">
+          <i class="fa-solid fa-shield-halved"></i> Admin Console
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main class="container">
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span class="material-symbols-outlined" style="font-size: 16px;">hub</span>
+        Hệ Thống Liên Kết 9 Phân Hệ Sàn TMĐT Mua Bán &amp; Trao Đổi Truyện Tranh
+      </div>
+      <h1 class="hero-title">
+        Cổng Điều Hướng <span class="gradient-text">Toàn Diện Hệ Thống</span>
+      </h1>
+      <p class="hero-desc">
+        Tất cả các trang HTML thuộc 9 phân hệ của dự án đã được kết nối thông suốt: Từ luồng duyệt sách, đặt hàng, phòng đàm phán 1-1, kênh người bán, cho đến hệ thống kiểm duyệt và quản trị sàn.
+      </p>
+
+      <!-- STATS STRIP -->
+      <div class="stats-strip">
+        <div class="stat-box">
+          <div class="stat-num">9</div>
+          <div class="stat-label">Phân hệ chức năng chuyên biệt</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">35+</div>
+          <div class="stat-label">Màn hình HTML hoàn chỉnh</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Liên kết điều hướng thông suốt</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">Escrow</div>
+          <div class="stat-label">Bảo chứng giao dịch &amp; Đổi truyện</div>
+        </div>
+      </div>
+
+      <!-- CONTROLS & SEARCH BAR -->
+      <div class="controls-bar">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="filterSearch" class="search-input" placeholder="Tìm kiếm nhanh màn hình theo tên (ví dụ: giỏ hàng, rút tiền, đàm phán, kiểm duyệt)...">
+        </div>
+        <div class="filter-pills">
+          <button class="pill-btn active" data-filter="all">Tất cả (35)</button>
+          <button class="pill-btn" data-filter="buyer">Người mua / Front Store</button>
+          <button class="pill-btn" data-filter="seller">Kênh Người bán</button>
+          <button class="pill-btn" data-filter="exchange">Đàm phán &amp; Trao đổi</button>
+          <button class="pill-btn" data-filter="admin">Kiểm duyệt &amp; Admin</button>
+          <button class="pill-btn" data-filter="auth">Tài khoản &amp; Auth</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 1. FRONT STORE (TIN) ================= -->
+    <section class="module-card" data-category="buyer">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-orange">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+          <div class="module-meta">
+            <h2>1. Chợ Mua Bán &amp; Trao Đổi (ComicHub Front Store)</h2>
+            <p>Trải nghiệm mua sắm, tìm kiếm truyện hiếm, xem chi tiết và quy trình thanh toán Escrow</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Tín</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="buyer/html/home.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-house"></i> Trang Chủ ComicHub</span>
+              <span class="material-symbols-outlined" style="color: #fb923c; font-size: 18px;">star</span>
+            </div>
+            <p class="page-link-desc">Trang chủ sàn giao dịch: Tìm kiếm nâng cao, danh mục NXB, kèo trao đổi 1-1 và chợ mua bán mới đăng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/home.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/product_details.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-book-open"></i> Chi Tiết Truyện Tranh</span>
+            </div>
+            <p class="page-link-desc">Xem tình trạng sách thực tế (Slam Dunk Deluxe), thông tin NXB, đề xuất đổi truyện hoặc mua ngay.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/product_details.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/shopping_cart.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng &amp; Kèo Chờ</span>
+            </div>
+            <p class="page-link-desc">Quản lý các bộ truyện đã chọn, tính tổng tiền, giảm giá vận chuyển và tiến hành đặt hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/shopping_cart.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/payment.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-credit-card"></i> Thanh Toán &amp; Bảo Chứng</span>
+            </div>
+            <p class="page-link-desc">Địa chỉ nhận hàng, phương thức VietQR / MoMo / Thẻ, áp dụng voucher và thanh toán tiền giữ bảo đảm.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/payment.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/voucher.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-ticket"></i> Kho Voucher Sàn</span>
+            </div>
+            <p class="page-link-desc">Trung tâm ưu đãi độc quyền: Mã miễn phí vận chuyển, giảm giá Otaku và sự kiện đặc biệt.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/voucher.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 2. BUYER ORDERS & POSTS (THUC) ================= -->
+    <section class="module-card" data-category="buyer">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-blue">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          <div class="module-meta">
+            <h2>2. Quản Lý Đơn Hàng &amp; Đăng Tin Tìm Mua (MangaTrade)</h2>
+            <p>Theo dõi tiến độ đơn hàng, tra cứu mã vận đơn GHN, đánh giá và khiếu nại đổi trả</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Thức</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="buyer/html/page1.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-pen-to-square"></i> Đăng Tin Tìm Mua</span>
+            </div>
+            <p class="page-link-desc">Đăng tin want-list tìm mua các tập truyện hiếm còn thiếu trong bộ sưu tập.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page1.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/page2.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-box-archive"></i> Đơn Hàng Của Tôi</span>
+            </div>
+            <p class="page-link-desc">Danh sách đơn hàng người mua với bộ lọc trạng thái (Đang giao, Chờ thanh toán, Hoàn thành).</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page2.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/page3.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-location-dot"></i> Theo Dõi Đơn Hàng</span>
+            </div>
+            <p class="page-link-desc">Tra cứu trực quan tiến trình vận chuyển bưu kiện GHN theo thời gian thực và mã vận đơn.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page3.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/page4.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-star-half-stroke"></i> Đánh Giá Truyện Đã Mua</span>
+            </div>
+            <p class="page-link-desc">Gửi đánh giá sao, bình luận tình trạng đóng gói và nhận xét chất lượng người bán.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page4.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/page5.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-arrow-rotate-left"></i> Khiếu Nại &amp; Đổi Trả</span>
+            </div>
+            <p class="page-link-desc">Yêu cầu hoàn tiền hoặc hoàn trả truyện khi sách nhận được bị rách, ố hoặc sai mô tả.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page5.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="buyer/html/page6.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-heart"></i> Truyện Yêu Thích (Wishlist)</span>
+            </div>
+            <p class="page-link-desc">Danh sách bookmark các bộ truyện tranh đang theo dõi để nhận thông báo khi có hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">buyer/html/page6.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 3. EXCHANGE & NEGOTIATION (DUY) ================= -->
+    <section class="module-card" data-category="exchange">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-purple">
+            <i class="fa-solid fa-comments-dollar"></i>
+          </div>
+          <div class="module-meta">
+            <h2>3. Phòng Đàm Phán &amp; Trao Đổi Trực Tiếp (Dealing Lounge)</h2>
+            <p>Phòng chat thương lượng giá, đàm phán 1-1, tạo đơn thỏa thuận và ước tính phí ship</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Duy</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="exchange/html/dealing-room.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-door-open"></i> Quản Lý Phòng Trao Đổi</span>
+            </div>
+            <p class="page-link-desc">Tổng hợp các phiên đàm phán đang diễn ra giữa người mua và người bán theo trạng thái.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">exchange/html/dealing-room.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="exchange/html/dealing-chat.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-comment-dots"></i> Phòng Chat Đàm Phán Giá</span>
+            </div>
+            <p class="page-link-desc">Khung chat trực tuyến để 2 bên thỏa thuận giá bán, gửi đề xuất bù tiền và chốt đơn.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">exchange/html/dealing-chat.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="exchange/html/negotiation-order.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-file-signature"></i> Tạo Đơn Hàng Đàm Phán</span>
+            </div>
+            <p class="page-link-desc">Khởi tạo đơn hàng đặc biệt sau khi hai bên đã đồng thuận mức giá thương lượng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">exchange/html/negotiation-order.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="exchange/html/exchange-orders.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-right-left"></i> Quản Lý Đơn Trao Đổi</span>
+            </div>
+            <p class="page-link-desc">Kiểm soát quy trình gửi sách hai chiều, đối soát truyện và trạng thái nhận hàng trao đổi.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">exchange/html/exchange-orders.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="exchange/html/shipping-fee.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-calculator"></i> Tính Phí Vận Chuyển</span>
+            </div>
+            <p class="page-link-desc">Công cụ tính toán phí vận chuyển 2 chiều và phân chia chi phí giữa các bên tham gia giao dịch.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">exchange/html/shipping-fee.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 4. SELLER CENTER - FINANCE (TRUONG) ================= -->
+    <section class="module-card" data-category="seller">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-emerald">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <div class="module-meta">
+            <h2>4. Kênh Người Bán: Đơn Hàng &amp; Tài Chính (Seller Center)</h2>
+            <p>Xử lý đơn bán hàng, số dư tạm giữ (Escrow), lịch sử giao dịch và thống kê doanh thu</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Trường</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="seller/html/index.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-gauge-high"></i> Seller Center Dashboard</span>
+            </div>
+            <p class="page-link-desc">Bảng tổng quan người bán: KPI doanh thu, trạng thái gian hàng và chuyển đổi giao diện.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/index.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/orders.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-boxes-packing"></i> Quản Lý Đơn Bán</span>
+            </div>
+            <p class="page-link-desc">Xác nhận đóng gói truyện, in vận đơn, giao cho đơn vị vận chuyển và xử lý hủy đơn an toàn.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/orders.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/wallet.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-sack-dollar"></i> Quản Lý Ví &amp; Tiền Giam</span>
+            </div>
+            <p class="page-link-desc">Theo dõi số dư khả dụng, tiền giam Escrow đang đợi người mua nhận sách và đếm ngược giải ngân.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/wallet.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/withdraw.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-money-bill-transfer"></i> Yêu Cầu Rút Tiền</span>
+            </div>
+            <p class="page-link-desc">Form tạo lệnh rút tiền về tài khoản ngân hàng, xác thực realtime và stepper quy trình 4 bước.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/withdraw.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/transactions.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-receipt"></i> Lịch Sử Giao Dịch</span>
+            </div>
+            <p class="page-link-desc">Bảng tra cứu chi tiết dòng tiền biến động, tiền bán sách, phí sàn và giao dịch rút tiền.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/transactions.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/revenue.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-chart-line"></i> Thống Kê Doanh Thu</span>
+            </div>
+            <p class="page-link-desc">Báo cáo biểu đồ doanh số theo 7 ngày, 30 ngày, top sách bán chạy và phân tích lợi nhuận.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/revenue.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/reviews.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-comments"></i> Quản Lý Đánh Giá Shop</span>
+            </div>
+            <p class="page-link-desc">Xem phản hồi của người mua về chất lượng truyện đóng gói, lọc theo sao và trả lời review.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/reviews.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 5. SELLER CENTER - POSTS & INVENTORY (TRUONG T) ================= -->
+    <section class="module-card" data-category="seller">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-orange">
+            <i class="fa-solid fa-book"></i>
+          </div>
+          <div class="module-meta">
+            <h2>5. Kênh Người Bán: Bài Đăng &amp; Kho Sản Phẩm (Trường T)</h2>
+            <p>Đăng bán truyện mới, quản lý danh sách tin bài, chỉnh sửa, ẩn/xóa và kho truyện SKU</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Trường T</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="seller/html/post-product-hub.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-table-cells"></i> Cổng Điều Hướng Seller T</span>
+            </div>
+            <p class="page-link-desc">Hub quản lý bài đăng và sản phẩm theo sơ đồ Use Case với số liệu thống kê kho hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/post-product-hub.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/dang-ban-truyen.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-plus-circle"></i> Đăng Bán Truyện Mới</span>
+            </div>
+            <p class="page-link-desc">Màn hình biểu mẫu đăng tải thông tin truyện tranh: Giá, hình chụp thật nhiều góc, tùy chọn trao đổi.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/dang-ban-truyen.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/quan-ly-bai-dang.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-list-check"></i> Quản Lý Bài Đăng</span>
+            </div>
+            <p class="page-link-desc">Danh sách bài đăng: Lọc theo trạng thái đang bán, chờ duyệt, ẩn và hết hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/quan-ly-bai-dang.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/chinh-sua-bai-dang.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Bài Đăng</span>
+            </div>
+            <p class="page-link-desc">Giao diện cập nhật nhanh thông tin giá bán, hình ảnh và tình trạng sách.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/chinh-sua-bai-dang.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/an-xoa-bai-dang.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-eye-slash"></i> Ẩn / Xóa Bài Đăng</span>
+            </div>
+            <p class="page-link-desc">Quản lý bài đăng tạm ẩn khi đang có kèo đàm phán, khôi phục hoặc xóa bài đăng vĩnh viễn.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/an-xoa-bai-dang.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/quan-ly-san-pham.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-warehouse"></i> Quản Lý Kho Sản Phẩm</span>
+            </div>
+            <p class="page-link-desc">Kiểm kê kho truyện theo mã SKU, tình trạng tồn kho và cảnh báo hết hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/quan-ly-san-pham.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="seller/html/quan-ly-voucher.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-tags"></i> Quản Lý Voucher Shop</span>
+            </div>
+            <p class="page-link-desc">Tạo mã giảm giá riêng của gian hàng để kích cầu độc giả mua theo combo trọn bộ.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">seller/html/quan-ly-voucher.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 6. MODERATION & SUPPORT (TOAN) ================= -->
+    <section class="module-card" data-category="admin">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-rose">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div class="module-meta">
+            <h2>6. Kiểm Duyệt Nội Dung &amp; Chăm Sóc Khách Hàng (Mod &amp; Support)</h2>
+            <p>Kiểm duyệt bài đăng sách, xử lý báo cáo hàng giả/lậu, giải quyết khiếu nại và CSKH</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Toàn</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="admin/html/postModeration.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-clipboard-check"></i> Kiểm Duyệt Bài Đăng</span>
+            </div>
+            <p class="page-link-desc">Duyệt bài đăng truyện mới, kiểm tra hình ảnh thật và thông tin NXB trước khi cho lên sàn.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/postModeration.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/hide_post.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-ban"></i> Ẩn Bài Đăng Vi Phạm</span>
+            </div>
+            <p class="page-link-desc">Thao tác cưỡng chế ẩn hoặc gỡ bài đăng vi phạm bản quyền hoặc nghi ngờ sách in lậu.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/hide_post.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/report_resolution.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-triangle-exclamation"></i> Xử Lý Báo Cáo Vi Phạm</span>
+            </div>
+            <p class="page-link-desc">Tiếp nhận và thẩm định các báo cáo từ cộng đồng về bài đăng lừa đảo hoặc tài khoản xấu.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/report_resolution.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/appeal-resolution.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-scale-balanced"></i> Xử Lý Kháng Cáo</span>
+            </div>
+            <p class="page-link-desc">Xem xét đơn kháng nghị từ người bán khi bài đăng bị ẩn nhầm và mở lại quyền đăng bán.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/appeal-resolution.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/customer-support.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-headset"></i> Bàn CSKH (Agent Console)</span>
+            </div>
+            <p class="page-link-desc">Không gian làm việc trực tuyến của nhân viên hỗ trợ: Chat trực tiếp và xử lý ticket yêu cầu.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/customer-support.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 7. ADMIN CONSOLE (TU) ================= -->
+    <section class="module-card" data-category="admin">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-blue">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div class="module-meta">
+            <h2>7. Quản Trị Hệ Thống (Admin Console)</h2>
+            <p>Bảng điều khiển trung tâm, quản lý tài khoản, đơn hàng toàn hệ thống, biểu phí &amp; phân quyền</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Tú</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="admin/html/dashboard.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-chart-pie"></i> Admin Dashboard</span>
+            </div>
+            <p class="page-link-desc">Tổng quan các chỉ số vận hành sàn, tổng giao dịch, người dùng hoạt động và biểu đồ tăng trưởng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/dashboard.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/accounts.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-users-gear"></i> Quản Lý Tài Khoản</span>
+            </div>
+            <p class="page-link-desc">Quản lý danh sách thành viên, khóa/mở tài khoản vi phạm và xác thực Pro Seller.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/accounts.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/orders.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-list-ol"></i> Quản Lý Đơn Hàng Sàn</span>
+            </div>
+            <p class="page-link-desc">Theo dõi toàn bộ đơn hàng giao dịch mua bán và trao đổi phát sinh trên hệ thống.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/orders.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/finance.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-coins"></i> Doanh Thu &amp; Dòng Tiền</span>
+            </div>
+            <p class="page-link-desc">Đối soát doanh thu phí nền tảng, dòng tiền Escrow và lệnh rút tiền của người bán.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/finance.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/fees.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-receipt"></i> Biểu Phí &amp; Chính Sách</span>
+            </div>
+            <p class="page-link-desc">Cấu hình tỷ lệ % phí sàn, phí bảo chứng Escrow và chính sách miễn phí vận chuyển.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/fees.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/vouchers.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-ticket-simple"></i> Voucher Toàn Sàn</span>
+            </div>
+            <p class="page-link-desc">Phát hành và quản lý các chiến dịch mã giảm giá tài trợ bởi nền tảng BookMooch.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/vouchers.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/staff.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-id-badge"></i> Nhân Sự &amp; Phân Quyền</span>
+            </div>
+            <p class="page-link-desc">Phân quyền vai trò quản trị viên, kiểm duyệt viên và nhân viên chăm sóc khách hàng.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/staff.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="admin/html/login.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-lock"></i> Đăng Nhập Quản Trị</span>
+            </div>
+            <p class="page-link-desc">Cổng đăng nhập an toàn dành riêng cho ban quản trị và kiểm duyệt viên.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">admin/html/login.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= 8. AUTH & USER PROFILE (VU) ================= -->
+    <section class="module-card" data-category="auth">
+      <div class="module-header">
+        <div class="module-badge-group">
+          <div class="module-icon icon-emerald">
+            <i class="fa-solid fa-user-lock"></i>
+          </div>
+          <div class="module-meta">
+            <h2>8. Tài Khoản, Xác Thực &amp; Hỗ Trợ (User &amp; Auth)</h2>
+            <p>Quy trình xác thực người dùng, hồ sơ cá nhân, gửi khiếu nại và yêu cầu trợ giúp</p>
+          </div>
+        </div>
+        <span class="tag-member">Phụ trách: Vũ</span>
+      </div>
+
+      <div class="pages-grid">
+        <a href="auth/html/login.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-arrow-right-to-bracket"></i> Đăng Nhập</span>
+            </div>
+            <p class="page-link-desc">Xác thực tài khoản thành viên để bắt đầu mua bán và giao lưu truyện tranh.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">auth/html/login.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="auth/html/register.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản</span>
+            </div>
+            <p class="page-link-desc">Tạo tài khoản mới trong cộng đồng sưu tầm truyện tranh BookMooch.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">auth/html/register.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="auth/html/forgot-password.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-key"></i> Quên Mật Khẩu</span>
+            </div>
+            <p class="page-link-desc">Yêu cầu mã xác minh OTP để khôi phục quyền truy cập tài khoản.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">auth/html/forgot-password.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="auth/html/reset-password.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-shield-halved"></i> Đặt Lại Mật Khẩu</span>
+            </div>
+            <p class="page-link-desc">Cập nhật mật khẩu mới bảo mật cho tài khoản sau khi xác thực OTP thành công.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">auth/html/reset-password.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="user/html/profile.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-address-card"></i> Hồ Sơ Cá Nhân</span>
+            </div>
+            <p class="page-link-desc">Quản lý thông tin cá nhân, địa chỉ giao hàng, vai trò và chuyển sang kênh Người bán.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">user/html/profile.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="user/html/complain.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-circle-exclamation"></i> Gửi Khiếu Nại</span>
+            </div>
+            <p class="page-link-desc">Biểu mẫu gửi phản ánh vi phạm, tranh chấp đơn hàng hoặc chất lượng người bán.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">user/html/complain.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="user/html/request_support.html" class="page-link-card">
+          <div>
+            <div class="page-link-top">
+              <span class="page-link-title"><i class="fa-solid fa-circle-question"></i> Gửi Yêu Cầu Hỗ Trợ</span>
+            </div>
+            <p class="page-link-desc">Gửi yêu cầu hỗ trợ kỹ thuật hoặc giải đáp thắc mắc liên quan tới tài khoản và giao dịch.</p>
+          </div>
+          <div class="page-link-footer">
+            <span class="path">user/html/request_support.html</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="master-footer">
+    <div class="container">
+      <p>Dự án Thương mại Điện tử: <strong>BookMooch / ComicHub - Sàn Mua Bán &amp; Trao Đổi Truyện Tranh</strong></p>
+      <p style="margin-top: 8px; color: #64748b;">
+        Thực hiện bởi: Tín • Thức • Duy • Trường • Trường T • Toàn • Tú • Vũ
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Live Filter & Search Logic
+    const searchInput = document.getElementById('filterSearch');
+    const filterPills = document.querySelectorAll('.pill-btn');
+    const moduleCards = document.querySelectorAll('.module-card');
+    const pageCards = document.querySelectorAll('.page-link-card');
+
+    let activeFilter = 'all';
+
+    function filterPages() {
+      const keyword = (searchInput.value || '').trim().toLowerCase();
+
+      moduleCards.forEach(module => {
+        const category = module.dataset.category || '';
+        const matchCategory = (activeFilter === 'all' || activeFilter === category);
+        
+        let visibleInModule = 0;
+        const pages = module.querySelectorAll('.page-link-card');
+
+        pages.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          const matchSearch = !keyword || text.includes(keyword);
+
+          if (matchCategory && matchSearch) {
+            card.style.display = '';
+            visibleInModule++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        if (visibleInModule > 0) {
+          module.style.display = '';
+        } else {
+          module.style.display = 'none';
+        }
+      });
+    }
+
+    searchInput.addEventListener('input', filterPages);
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeFilter = pill.dataset.filter;
+        filterPages();
+      });
+    });
+  </script>
+</body>
+</html>

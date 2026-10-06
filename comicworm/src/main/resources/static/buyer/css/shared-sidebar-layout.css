@@ -1,0 +1,21 @@
+body.thuc-sidebar-layout {
+  padding-left: var(--sidebar-width);
+}
+
+body.thuc-sidebar-layout > .site-header {
+  display: block;
+}
+
+body.thuc-sidebar-layout .hero-banner {
+  overflow: clip;
+}
+
+body.thuc-sidebar-layout.page4-layout > main {
+  padding-top: 24px;
+}
+
+@media (max-width: 820px) {
+  body.thuc-sidebar-layout {
+    padding-left: 0;
+  }
+}
