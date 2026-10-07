@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Tìm user theo Google Sub (phục vụ đăng nhập Google ID Token)
     Optional<User> findByGoogleSub(String googleSub);
+
+    Optional<User> findByVerificationToken(String verificationToken);
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Duration;
 
@@ -73,7 +74,7 @@ public class AuthController {
     @PostMapping("/register")
     public String processRegister(@Valid @ModelAttribute("registerDTO") UserRegisterDTO registerDTO,
                                   BindingResult bindingResult,
-                                  HttpServletResponse response,
+                                  RedirectAttributes redirectAttributes,
                                   Model model) {
         if (bindingResult.hasErrors()) {
             return "view/auth/html/register";
@@ -86,16 +87,30 @@ public class AuthController {
                 return "view/auth/html/register";
             }
 
-            AuthResponseDTO authResponse = authService.register(registerDTO);
+            authService.register(registerDTO);
 
-            // Lưu Access Token vào Cookie sau khi đăng ký thành công
-            addJwtCookie(response, "accessToken", authResponse.getAccessToken(), 86400);
+            // Đánh dấu cờ hiển thị Modal thông báo check email
+            redirectAttributes.addFlashAttribute("showVerifyPopup", true);
+            redirectAttributes.addFlashAttribute("registeredEmail", registerDTO.getEmail());
 
-            return "redirect:/";
+            return "redirect:/auth/register";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "view/auth/html/register";
         }
+    }
+
+    @GetMapping("/verify")
+    public String verifyAccount(@RequestParam("token") String token, Model model) {
+        try {
+            authService.verifyAccount(token);
+            model.addAttribute("success", true);
+            model.addAttribute("message", "Xác thực tài khoản thành công! Tài khoản của bạn đã được kích hoạt.");
+        } catch (Exception e) {
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Xác thực thất bại: " + e.getMessage());
+        }
+        return "view/auth/html/verify";
     }
 
     @GetMapping("/logout")

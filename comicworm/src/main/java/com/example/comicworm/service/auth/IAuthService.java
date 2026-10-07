@@ -15,4 +15,6 @@ public interface IAuthService {
     AuthResponseDTO loginWithGoogle(GoogleLoginDTO googleDTO);
 
     AuthResponseDTO refreshToken(String refreshToken);
+
+    boolean verifyAccount(String token);
 }
