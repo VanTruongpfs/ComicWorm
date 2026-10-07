@@ -63,6 +63,8 @@ public class AuthController {
 
             // Lưu Access Token vào HttpOnly Cookie
             addJwtCookie(response, "accessToken", authResponse.getAccessToken(), 86400); // 1 ngày
+            // Set Refresh Token (7 ngày)
+            addJwtCookie(response, "refreshToken", authResponse.getRefreshToken(), 7 * 24 * 60 * 60);
 
             return "redirect:/"; // Chuyển hướng về trang chủ
         } catch (Exception e) {
