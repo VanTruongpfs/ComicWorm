@@ -1,43 +1,76 @@
 <!DOCTYPE html>
-<!-- Login screen: shared Auth styles plus page-specific form behavior. -->
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập | ComicWorm</title>
-    <link rel="stylesheet" href="../css/auth-shared.css">
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" th:href="@{/auth/css/auth-shared.css}">
+    <link rel="stylesheet" th:href="@{/auth/css/login.css}">
 </head>
 <body>
-    <main class="auth-page">
-        <section class="auth-card" aria-labelledby="login-title">
-            <p class="auth-brand"><a href="../../buyer/html/home.html" style="color:inherit; text-decoration:none;">&larr; ComicHub / ComicWorm</a></p>
-            <h1 class="auth-title" id="login-title">Chào mừng trở lại</h1>
-            <p class="auth-subtitle">Đăng nhập để tiếp tục trao đổi những cuốn sách bạn yêu thích.</p>
-            <form class="auth-form" id="login-form" novalidate>
-                <div class="field">
-                    <label for="email">Email</label>
-                    <input id="email" name="email" type="email" autocomplete="username" required>
-                    <small class="field-error" data-error-for="email"></small>
+<main class="auth-page">
+    <section class="auth-card" aria-labelledby="login-title">
+        <p class="auth-brand">
+            <a th:href="@{/}" style="color:inherit; text-decoration:none;">&larr; ComicHub / ComicWorm</a>
+        </p>
+        <h1 class="auth-title" id="login-title">Chào mừng trở lại</h1>
+        <p class="auth-subtitle">Đăng nhập để tiếp tục trao đổi những cuốn sách bạn yêu thích.</p>
+
+        <!-- Thông báo lỗi chung từ Controller -->
+        <div th:if="${errorMessage}" class="field-error" style="color: #dc3545; margin-bottom: 1rem; text-align: center; font-weight: bold;" th:text="${errorMessage}">
+        </div>
+
+        <form class="auth-form"
+              id="login-form"
+              th:action="@{/auth/login}"
+              th:object="${loginDTO}"
+              method="post"
+              novalidate>
+
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email"
+                       type="email"
+                       autocomplete="username"
+                       th:field="*{email}"
+                       required>
+                <small class="field-error" data-error-for="email" style="color: #dc3545;">
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </small>
+            </div>
+
+            <div class="field">
+                <label for="password">Mật khẩu</label>
+                <div class="password-wrap">
+                    <input id="password"
+                           type="password"
+                           autocomplete="current-password"
+                           th:field="*{password}"
+                           required>
+                    <button class="password-toggle" type="button" data-toggle-password="password">Hiện</button>
                 </div>
-                <div class="field">
-                    <label for="password">Mật khẩu</label>
-                    <div class="password-wrap">
-                        <input id="password" name="password" type="password" autocomplete="current-password" required>
-                        <button class="password-toggle" type="button" data-toggle-password="password">Hiện</button>
-                    </div>
-                    <small class="field-error" data-error-for="password"></small>
-                </div>
-                <div class="form-row">
-                    <label class="check-label" for="remember"><input id="remember" name="remember" type="checkbox"> Ghi nhớ đăng nhập</label>
-                    <a class="text-link" href="forgot-password.html">Quên mật khẩu?</a>
-                </div>
-                <button class="auth-button" type="submit" data-submit>Đăng nhập</button>
-            </form>
-            <p class="auth-switch">Chưa có tài khoản? <a class="text-link" href="register.html">Đăng ký ngay</a></p>
-        </section>
-    </main>
-    <div class="toast-region" data-toast-region aria-live="polite"></div>
-    <script type="module" src="../js/login.js"></script>
+                <small class="field-error" data-error-for="password" style="color: #dc3545;">
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                </small>
+            </div>
+
+            <div class="form-row">
+                <label class="check-label" for="remember">
+                    <input id="remember" name="remember" type="checkbox"> Ghi nhớ đăng nhập
+                </label>
+                <a class="text-link" th:href="@{/auth/forgot-password}">Quên mật khẩu?</a>
+            </div>
+
+            <button class="auth-button" type="submit" data-submit>Đăng nhập</button>
+        </form>
+
+        <p class="auth-switch">Chưa có tài khoản?
+            <a class="text-link" th:href="@{/auth/register}">Đăng ký ngay</a>
+        </p>
+    </section>
+</main>
+
+<div class="toast-region" data-toast-region aria-live="polite"></div>
+<script type="module" th:src="@{/auth/js/login.js}"></script>
 </body>
 </html>
