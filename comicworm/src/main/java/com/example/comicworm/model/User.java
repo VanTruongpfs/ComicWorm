@@ -78,4 +78,10 @@ public class User {
 
     @Column(name = "deleted_at", nullable = true, columnDefinition = "datetime")
     private LocalDateTime deletedAt;
+
+    //Sử dụng field này để chứa token như xác thực tài khoản,
+    //khôi phục mật khẩu, cần check nếu status đang là xác thực
+    //tài khoản thì không cho đổi mật khẩu. Hạn chế tạo nhiều bảng
+    @Column(name = "verification_token")
+    private String verificationToken;
 }
