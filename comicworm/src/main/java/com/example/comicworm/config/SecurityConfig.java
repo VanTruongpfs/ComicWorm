@@ -38,6 +38,8 @@ public class SecurityConfig {
 
                         //public API
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        // API xem sản phẩm: công khai, chỉ đọc
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/", "/index.html", "/index.js", "/favicon.ico",
                                 "/admin/**", "/auth/**", "/buyer/**", "/exchange/**",
                                 "/seller/**", "/shared/**", "/user/**",
