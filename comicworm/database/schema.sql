@@ -66,6 +66,7 @@ CREATE TABLE `products` (
   `title` VARCHAR(255) NOT NULL,
   `slug` VARCHAR(255) NOT NULL UNIQUE,
   `description` TEXT NOT NULL,
+  `cover_image_url` TEXT NULL,
   `category_id` INT NOT NULL,
   `author_id` INT NULL,
   `publisher_id` INT NULL,
@@ -100,8 +101,10 @@ CREATE TABLE `product_images` (
   `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `product_id` BIGINT NOT NULL,
   `image_url` TEXT NOT NULL,
+  `image_type` VARCHAR(10) NOT NULL DEFAULT 'DETAIL',
   `display_order` INT NOT NULL DEFAULT 0,
   UNIQUE KEY `uq_product_image_order` (`product_id`, `display_order`),
+  CONSTRAINT `ck_product_images_image_type` CHECK (image_type IN ('COVER', 'DETAIL')),
   CONSTRAINT `ck_product_images_display_order` CHECK (display_order >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

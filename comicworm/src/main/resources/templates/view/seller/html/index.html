@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+  <script src="../../shared/js/seller-access.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ComicHub / BookMooch - Seller Center Dashboard</title>
@@ -84,6 +85,7 @@
       color: #fff;
     }
   </style>
+  <link rel="stylesheet" href="../css/revenue-database.css">
 </head>
 <body>
   <div class="app-container">
@@ -423,6 +425,469 @@
             <div class="chart-tooltip" id="chartTooltip"></div>
           </div>
         </div>
+
+        <div class="charts-suite-header" id="pieChartsSection">
+          <div class="suite-title-group">
+            <div class="suite-badge">
+              <span class="material-symbols-outlined" style="font-size: 15px;">pie_chart</span>
+              BÁO CÁO CƠ CẤU & TỶ TRỌNG KINH DOANH
+            </div>
+            <h3 class="suite-title">Hệ thống Biểu đồ tròn Phân tích Chuyên sâu (Pie & Doughnut Charts)</h3>
+            <p class="suite-subtitle">Trực quan hóa đa chiều danh mục ấn phẩm, hiệu quả các sự kiện bán hàng và phân khúc giá sinh lời</p>
+          </div>
+          <div class="suite-controls">
+            <!-- Nút chuyển đổi kiểu biểu đồ Doughnut / Pie -->
+            <div class="pill-segmented-group" id="donutTypeControl">
+              <button type="button" class="pill-seg-btn active" id="btnTypeDoughnut" onclick="switchGlobalDonutType('doughnut', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">donut_large</span>
+                Doughnut (Vành tròn)
+              </button>
+              <button type="button" class="pill-seg-btn" id="btnTypePie" onclick="switchGlobalDonutType('pie', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">pie_chart</span>
+                Pie (Hình quạt)
+              </button>
+            </div>
+            <!-- Nút chuyển đổi chỉ số Doanh thu / Sản lượng -->
+            <div class="pill-segmented-group" id="donutMetricControl">
+              <button type="button" class="pill-seg-btn active" id="btnMetricRev" onclick="switchDonutMetric('revenue', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">payments</span>
+                Doanh thu (₫)
+              </button>
+              <button type="button" class="pill-seg-btn" id="btnMetricQty" onclick="switchDonutMetric('qty', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">inventory_2</span>
+                Sản lượng (Cuốn)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pro-charts-grid">
+          <!-- CARD 1: CƠ CẤU DOANH THU THEO THỂ LOẠI TRUYỆN -->
+          <div class="pro-chart-card">
+            <div class="chart-header" style="margin-bottom: 0;">
+              <div>
+                <h4 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">
+                  Tỷ trọng Thể loại truyện tranh
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Phân bổ sức mua theo từng dòng manga & comic</p>
+              </div>
+              <span class="card-badge-header success">
+                <span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+                Shonen 42.0%
+              </span>
+            </div>
+
+            <!-- Banner Quán quân -->
+            <div class="genre-highlight-box">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <div class="rank-badge rank-1" style="width: 34px; height: 34px; font-size: 1rem; flex-shrink: 0;">👑</div>
+                <div class="genre-leader-info">
+                  <h4 style="font-size: 0.88rem;">Quán quân: Shonen Manga</h4>
+                  <p style="font-size: 0.75rem;">395 đơn • <strong>42.0%</strong> tổng GMV</p>
+                </div>
+              </div>
+              <div class="genre-leader-metric" style="text-align: right; flex-shrink: 0;">
+                <div class="amount" id="topGenreAmount" style="font-size: 1.05rem; white-space: nowrap;">66.500.000 ₫</div>
+                <span class="badge badge-success" style="font-size: 0.7rem; padding: 2px 5px;">+22.4% MoM</span>
+              </div>
+            </div>
+
+            <!-- Chart.js Canvas Donut -->
+            <div class="pro-donut-chart-box">
+              <canvas id="genreChartCanvas"></canvas>
+              <div class="donut-center-info" id="genreCenterInfo">
+                <div class="donut-center-value" id="genreCenterVal">158.4M</div>
+                <div class="donut-center-label" id="genreCenterLbl">TỔNG GMV</div>
+              </div>
+            </div>
+
+            <!-- Interactive Legend List -->
+            <div class="pro-legend-list" id="genreLegendList">
+              <div class="pro-legend-item" onclick="toggleChartSlice('genre', 0)" onmouseenter="hoverChartSlice('genre', 0, true)" onmouseleave="hoverChartSlice('genre', 0, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #f97316;"></span>
+                  <span class="pro-legend-name">Shonen Manga</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="genreVal-0">66.500.000 ₫</span>
+                  <span class="pro-legend-pct">42.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('genre', 1)" onmouseenter="hoverChartSlice('genre', 1, true)" onmouseleave="hoverChartSlice('genre', 1, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #0f172a;"></span>
+                  <span class="pro-legend-name">Seinen & Trinh thám</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="genreVal-1">41.200.000 ₫</span>
+                  <span class="pro-legend-pct">26.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('genre', 2)" onmouseenter="hoverChartSlice('genre', 2, true)" onmouseleave="hoverChartSlice('genre', 2, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #8b5cf6;"></span>
+                  <span class="pro-legend-name">Isekai & Kỳ ảo</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="genreVal-2">25.350.000 ₫</span>
+                  <span class="pro-legend-pct">16.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('genre', 3)" onmouseenter="hoverChartSlice('genre', 3, true)" onmouseleave="hoverChartSlice('genre', 3, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #ec4899;"></span>
+                  <span class="pro-legend-name">Shojo & Romance</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="genreVal-3">15.840.000 ₫</span>
+                  <span class="pro-legend-pct">10.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('genre', 4)" onmouseenter="hoverChartSlice('genre', 4, true)" onmouseleave="hoverChartSlice('genre', 4, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #0ea5e9;"></span>
+                  <span class="pro-legend-name">Artbook & Khác</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="genreVal-4">9.530.000 ₫</span>
+                  <span class="pro-legend-pct">6.0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pro-chart-footer-note">
+              <span>💡 Nhóm Shonen & Seinen chiếm <strong>68%</strong> doanh thu</span>
+              <span style="color: var(--primary); font-weight: 600;">Xem chi tiết</span>
+            </div>
+          </div>
+
+          <!-- CARD 2: HIỆU QUẢ DOANH THU THEO SỰ KIỆN & CHIẾN DỊCH -->
+          <div class="pro-chart-card">
+            <div class="chart-header" style="margin-bottom: 0;">
+              <div>
+                <h4 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">
+                  Hiệu quả theo Sự kiện &amp; Chiến dịch
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Đóng góp doanh số từ các ngày hội Manga &amp; Siêu Sale</p>
+              </div>
+              <span class="card-badge-header warning" style="background: rgba(236, 72, 153, 0.1); color: #db2777; border-color: rgba(236, 72, 153, 0.2);">
+                <span class="material-symbols-outlined" style="font-size: 14px;">celebration</span>
+                Manga Weekend 38%
+              </span>
+            </div>
+
+            <!-- Banner Chiến dịch Quán quân -->
+            <div class="genre-highlight-box" style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-color: #fbcfe8;">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <div class="rank-badge rank-1" style="width: 34px; height: 34px; background: #fbcfe8; color: #be185d; font-size: 1rem; flex-shrink: 0;">🎪</div>
+                <div class="genre-leader-info">
+                  <h4 style="color: #9d174d; font-size: 0.88rem;">Sự kiện đỉnh cao: Manga Weekend</h4>
+                  <p style="color: #be185d; font-size: 0.75rem;">Ngày 25 hàng tháng • <strong>38.0%</strong> tổng GMV</p>
+                </div>
+              </div>
+              <div class="genre-leader-metric" style="text-align: right; flex-shrink: 0;">
+                <div class="amount" id="topCampaignAmount" style="color: #be185d; font-size: 1.05rem; white-space: nowrap;">60.200.000 ₫</div>
+                <span class="badge" style="background: #fbcfe8; color: #9d174d; font-size: 0.7rem; padding: 2px 5px;">ROI x8.4 lần</span>
+              </div>
+            </div>
+
+            <!-- Chart.js Canvas Donut -->
+            <div class="pro-donut-chart-box">
+              <canvas id="campaignChartCanvas"></canvas>
+              <div class="donut-center-info" id="campaignCenterInfo">
+                <div class="donut-center-value" id="campaignCenterVal" style="color: #db2777;">38.0%</div>
+                <div class="donut-center-label" id="campaignCenterLbl">MANGA WEEKEND</div>
+              </div>
+            </div>
+
+            <!-- Interactive Legend List -->
+            <div class="pro-legend-list" id="campaignLegendList">
+              <div class="pro-legend-item" onclick="toggleChartSlice('campaign', 0)" onmouseenter="hoverChartSlice('campaign', 0, true)" onmouseleave="hoverChartSlice('campaign', 0, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #ec4899;"></span>
+                  <span class="pro-legend-name">Manga Weekend</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="campaignVal-0">60.200.000 ₫</span>
+                  <span class="pro-legend-pct">38.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('campaign', 1)" onmouseenter="hoverChartSlice('campaign', 1, true)" onmouseleave="hoverChartSlice('campaign', 1, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #f97316;"></span>
+                  <span class="pro-legend-name">Siêu Sale 10.10</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="campaignVal-1">44.350.000 ₫</span>
+                  <span class="pro-legend-pct">28.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('campaign', 2)" onmouseenter="hoverChartSlice('campaign', 2, true)" onmouseleave="hoverChartSlice('campaign', 2, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #8b5cf6;"></span>
+                  <span class="pro-legend-name">Ra mắt Tập mới</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="campaignVal-2">28.510.000 ₫</span>
+                  <span class="pro-legend-pct">18.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('campaign', 3)" onmouseenter="hoverChartSlice('campaign', 3, true)" onmouseleave="hoverChartSlice('campaign', 3, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #0ea5e9;"></span>
+                  <span class="pro-legend-name">Flash Sale xả kho</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="campaignVal-3">15.840.000 ₫</span>
+                  <span class="pro-legend-pct">10.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('campaign', 4)" onmouseenter="hoverChartSlice('campaign', 4, true)" onmouseleave="hoverChartSlice('campaign', 4, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #64748b;"></span>
+                  <span class="pro-legend-name">Ngày thường</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="campaignVal-4">9.520.000 ₫</span>
+                  <span class="pro-legend-pct">6.0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pro-chart-footer-note">
+              <span>Sự kiện đóng góp: <strong style="color: #db2777;">94.0%</strong> tổng GMV</span>
+              <a href="javascript:void(0)" onclick="showToast('Xem danh sách chiến dịch đang diễn ra', 'info')" style="color: var(--primary-container); font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                Tạo sự kiện mới
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- CARD 3: TỶ TRỌNG THEO PHÂN KHÚC GIÁ BÌA -->
+          <div class="pro-chart-card">
+            <div class="chart-header" style="margin-bottom: 0;">
+              <div>
+                <h4 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">
+                  Phân khúc Giá bìa & Sức mua
+                </h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Đo lường mức độ tiếp cận và giá trị đơn hàng</p>
+              </div>
+              <span class="card-badge-header warning">
+                <span class="material-symbols-outlined" style="font-size: 14px;">price_check</span>
+                50k-100k Cốt lõi
+              </span>
+            </div>
+
+            <!-- Banner Phân khúc -->
+            <div class="genre-highlight-box" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-color: #bfdbfe;">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <div class="rank-badge rank-1" style="width: 34px; height: 34px; background: #bfdbfe; color: #1d4ed8; font-size: 1rem; flex-shrink: 0;">🎯</div>
+                <div class="genre-leader-info">
+                  <h4 style="color: #1e40af; font-size: 0.88rem;">Phân khúc 50.000 ₫ - 100.000 ₫</h4>
+                  <p style="color: #1e3a8a; font-size: 0.75rem;">Dòng Tankobon bán chạy nhất (425 đơn)</p>
+                </div>
+              </div>
+              <div class="genre-leader-metric" style="text-align: right; flex-shrink: 0;">
+                <div class="amount" id="topPriceAmount" style="color: #1d4ed8; font-size: 1.05rem; white-space: nowrap;">76.040.000 ₫</div>
+                <span class="badge" style="background:#bfdbfe; color:#1e40af; font-size: 0.7rem; padding: 2px 5px;">Chiếm 48.0%</span>
+              </div>
+            </div>
+
+            <!-- Chart.js Canvas Donut -->
+            <div class="pro-donut-chart-box">
+              <canvas id="priceTierChartCanvas"></canvas>
+              <div class="donut-center-info" id="priceTierCenterInfo">
+                <div class="donut-center-value" id="priceTierCenterVal" style="color: #2563eb;">48.0%</div>
+                <div class="donut-center-label" id="priceTierCenterLbl">50K - 100K</div>
+              </div>
+            </div>
+
+            <!-- Interactive Legend List -->
+            <div class="pro-legend-list" id="priceTierLegendList">
+              <div class="pro-legend-item" onclick="toggleChartSlice('priceTier', 0)" onmouseenter="hoverChartSlice('priceTier', 0, true)" onmouseleave="hoverChartSlice('priceTier', 0, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #38bdf8;"></span>
+                  <span class="pro-legend-name">Phổ thông (&lt; 50k)</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="priceTierVal-0">28.510.000 ₫</span>
+                  <span class="pro-legend-pct">18.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('priceTier', 1)" onmouseenter="hoverChartSlice('priceTier', 1, true)" onmouseleave="hoverChartSlice('priceTier', 1, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #f97316;"></span>
+                  <span class="pro-legend-name">Tiêu chuẩn (50k-100k)</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="priceTierVal-1">76.040.000 ₫</span>
+                  <span class="pro-legend-pct">48.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('priceTier', 2)" onmouseenter="hoverChartSlice('priceTier', 2, true)" onmouseleave="hoverChartSlice('priceTier', 2, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #6366f1;"></span>
+                  <span class="pro-legend-name">Cao cấp (100k-200k)</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="priceTierVal-2">38.020.000 ₫</span>
+                  <span class="pro-legend-pct">24.0%</span>
+                </div>
+              </div>
+              <div class="pro-legend-item" onclick="toggleChartSlice('priceTier', 3)" onmouseenter="hoverChartSlice('priceTier', 3, true)" onmouseleave="hoverChartSlice('priceTier', 3, false)">
+                <div class="pro-legend-left">
+                  <span class="pro-legend-dot" style="background-color: #14b8a6;"></span>
+                  <span class="pro-legend-name">Boxset (&gt; 200k)</span>
+                </div>
+                <div class="pro-legend-right">
+                  <span class="pro-legend-val" id="priceTierVal-3">15.850.000 ₫</span>
+                  <span class="pro-legend-pct">10.0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pro-chart-footer-note">
+              <span>Độc giả ưa chuộng Tankobon bìa rời</span>
+              <span style="color: var(--primary); font-weight: 600;">Xem giỏ hàng</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================================
+             GEOGRAPHIC & REGIONAL SALES ANALYTICS: THỐNG KÊ DOANH THU THEO KHU VỰC
+             ========================================================================== -->
+        <div class="charts-suite-header" id="regionChartsSection" style="margin-top: 36px;">
+          <div class="suite-title-group">
+            <div class="suite-badge" style="background: rgba(14, 165, 233, 0.1); color: #0284c7; border-color: rgba(14, 165, 233, 0.25);">
+              <span class="material-symbols-outlined" style="font-size: 15px;">map</span>
+              PHÂN BỔ THỊ TRƯỜNG & KHU VỰC MUA HÀNG
+            </div>
+            <h3 class="suite-title">Thống kê Doanh thu & Sức mua theo Khu vực (Geographical Analytics)</h3>
+            <p class="suite-subtitle">Phân tích mật độ đơn hàng, doanh số theo vùng miền & tỉnh thành nhằm tối ưu hóa chuỗi cung ứng và kho hàng</p>
+          </div>
+          <div class="suite-controls">
+            <!-- Nút chuyển đổi góc nhìn: Theo Vùng miền / Top Tỉnh thành -->
+            <div class="pill-segmented-group" id="regionViewControl">
+              <button type="button" class="pill-seg-btn active" id="btnRegionViewArea" onclick="switchRegionView('region', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">public</span>
+                Theo Vùng miền
+              </button>
+              <button type="button" class="pill-seg-btn" id="btnRegionViewCity" onclick="switchRegionView('city', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">location_city</span>
+                Top Tỉnh / Thành
+              </button>
+            </div>
+            <!-- Nút chuyển đổi chỉ số: Doanh thu (₫) / Số lượng đơn -->
+            <div class="pill-segmented-group" id="regionMetricControl">
+              <button type="button" class="pill-seg-btn active" id="btnRegionMetricRev" onclick="switchRegionMetric('revenue', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">payments</span>
+                Doanh thu (₫)
+              </button>
+              <button type="button" class="pill-seg-btn" id="btnRegionMetricOrd" onclick="switchRegionMetric('orders', this)">
+                <span class="material-symbols-outlined" style="font-size: 15px;">local_shipping</span>
+                Số đơn hàng
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="region-grid">
+          <!-- CỘT TRÁI: BIỂU ĐỒ CỘT NẰM NGANG & MINI LOGISTICS KPIS -->
+          <div class="pro-chart-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="chart-header" style="margin-bottom: 12px;">
+                <div>
+                  <h4 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;" id="regionChartTitle">
+                    Mật độ Doanh thu theo Vùng miền
+                  </h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;" id="regionChartSubtitle">
+                    So sánh tỷ trọng đóng góp doanh thu giữa các khu vực địa lý
+                  </p>
+                </div>
+                <span class="card-badge-header success" id="regionChartBadge" style="background: rgba(14, 165, 233, 0.1); color: #0284c7; border-color: rgba(14, 165, 233, 0.25);">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
+                  Miền Nam dẫn đầu 52.0%
+                </span>
+              </div>
+
+              <!-- Canvas Biểu đồ Cột Ngang (Horizontal Bar Chart) -->
+              <div style="height: 285px; position: relative; width: 100%;">
+                <canvas id="regionChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Mini Logistics KPIs Strip -->
+            <div class="region-logistics-strip">
+              <div class="logistics-strip-item">
+                <div class="logistics-strip-icon success">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">task_alt</span>
+                </div>
+                <div class="logistics-strip-text">
+                  <span class="strip-label">Giao thành công</span>
+                  <span class="strip-val" style="color: #059669;">97.2% <small>(Hoàn 2.8%)</small></span>
+                </div>
+              </div>
+
+              <div class="logistics-strip-divider"></div>
+
+              <div class="logistics-strip-item">
+                <div class="logistics-strip-icon info">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+                </div>
+                <div class="logistics-strip-text">
+                  <span class="strip-label">Thời gian phát TB</span>
+                  <span class="strip-val" style="color: #2563eb;">1.6 ngày <small>(Hỏa tốc 4h)</small></span>
+                </div>
+              </div>
+
+              <div class="logistics-strip-divider"></div>
+
+              <div class="logistics-strip-item">
+                <div class="logistics-strip-icon warning">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">local_shipping</span>
+                </div>
+                <div class="logistics-strip-text">
+                  <span class="strip-label">Đối tác chủ lực</span>
+                  <span class="strip-val" style="color: #ea580c;">GHTK &amp; Viettel <small>(78%)</small></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CỘT PHẢI: BẢNG XẾP HẠNG KHU VỰC & KHUYẾN NGHỊ VẬN HÀNH -->
+          <div class="pro-chart-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="chart-header" style="margin-bottom: 14px;">
+                <div>
+                  <h4 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">
+                    Chi tiết Thị phần &amp; Vận hành
+                  </h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Phân bổ chi tiết số liệu và tiến độ thị trường</p>
+                </div>
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">Tổng GMV: 158.4M ₫</span>
+              </div>
+
+              <!-- Danh sách động các khu vực -->
+              <div class="region-ranking-list" id="regionRankingList">
+                <!-- Sẽ được render động qua JS updateRegionRankings() -->
+              </div>
+            </div>
+
+            <!-- Insight Box Khuyến nghị chuỗi cung ứng -->
+            <div class="region-insight-box">
+              <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px; flex-shrink: 0; margin-top: 1px;">tips_and_updates</span>
+                <div>
+                  <h5 style="margin: 0 0 3px 0; font-size: 0.82rem; font-weight: 700; color: #0369a1;">Khuyến nghị Vận hành &amp; Kho bãi</h5>
+                  <p style="margin: 0; font-size: 0.75rem; color: #0c4a6e; line-height: 1.45;" id="regionInsightText">
+                    Sức mua tại <strong>Hà Nội &amp; Miền Bắc</strong> tăng trưởng mạnh <strong>+14.2%</strong>. Đề xuất luân chuyển thêm 500 cuốn sách hot (One Piece, Jujutsu Kaisen) sang điểm kho liên kết Long Biên để giảm thời gian phát hàng xuống còn 24h và tiết kiệm 18% phí ship liên miền.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
         <!-- TOP SELLING COMICS TABLE -->
         <div class="content-card" style="margin-top: 24px;">
@@ -1292,6 +1757,9 @@
   <script src="../js/wallet.js"></script>
   <script src="../js/transactions.js"></script>
   <script src="../js/withdraw.js"></script>
+    <script src="../js/chart.min.js"></script>
+  <script src="../../shared/js/analytics-data.js"></script>
+  <script src="../../shared/js/analytics-api.js"></script>
   <script src="../js/revenue.js"></script>
   <script src="../js/dashboard.js"></script>
 </body>

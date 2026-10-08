@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nâng cấp tài khoản Người bán | ComicHub</title>
+    <link rel="stylesheet" th:href="@{/auth/css/auth-shared.css}">
+</head>
+<body>
+<main class="auth-page">
+    <section class="auth-card" aria-labelledby="upgrade-title">
+        <p class="auth-brand"><a th:href="@{/user/html/profile.html}">← Hồ sơ cá nhân</a></p>
+        <h1 class="auth-title" id="upgrade-title">Trở thành Người bán</h1>
+        <p class="auth-subtitle">Xin chào <span th:text="${fullName}">bạn</span>. Bạn cần nâng cấp tài khoản thành Người bán để vào kênh seller và xem thống kê doanh thu.</p>
+        <p class="auth-subtitle">Sau khi nâng cấp, bạn có thể đăng bán truyện, quản lý gian hàng và xem báo cáo của mình. Bạn vẫn có thể mua và trao đổi truyện như trước.</p>
+        <p class="field-error" role="alert" th:if="${csrfExpired}">Phiên xác nhận đã hết hạn. Vui lòng bấm “Nâng cấp lên Người bán” lần nữa để xác nhận.</p>
+        <form class="auth-form" th:action="@{/user/seller-upgrade}" method="post">
+            <button class="auth-button" type="submit">Nâng cấp lên Người bán</button>
+        </form>
+        <p class="auth-switch"><a class="text-link" th:href="@{/buyer/html/home.html}">Về Chợ ComicHub</a></p>
+    </section>
+</main>
+</body>
+</html>

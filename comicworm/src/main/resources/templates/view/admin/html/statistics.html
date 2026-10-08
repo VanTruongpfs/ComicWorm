@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thống kê biểu đồ | BookMooch Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-common.css">
+  <link rel="stylesheet" href="../../shared/styles/analytics.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebarContainer" data-active="statistics"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Mở menu"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+          <div class="store-selector"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Trung tâm Quản trị</span></div>
+        </div>
+        <a href="dashboard.html" class="btn btn-outline btn-sm">Tổng quan</a>
+      </header>
+      <main class="content-body">
+        <section id="analyticsRoot" class="analytics-root" data-role="admin" aria-label="Thống kê toàn sàn"></section>
+        <noscript>Vui lòng bật JavaScript để xem thống kê.</noscript>
+      </main>
+    </div>
+  </div>
+  <script src="../js/common.js"></script>
+  <script src="../../seller/js/chart.min.js"></script>
+  <script src="../../shared/js/analytics-data.js"></script>
+  <script src="../../shared/js/analytics-api.js"></script>
+  <script src="../../shared/js/analytics-page.js"></script>
+  <script src="../js/statistics.js"></script>
+</body>
+</html>
