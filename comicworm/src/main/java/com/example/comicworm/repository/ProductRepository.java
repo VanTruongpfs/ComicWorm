@@ -12,6 +12,10 @@ import jakarta.persistence.LockModeType;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     Optional<Product> findByIdAndSellerIdAndDeletedAtIsNull(Long id, Long sellerId);
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Product p where p.id = :id and p.sellerId = :sellerId and p.deletedAt is null")
@@ -34,4 +38,26 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         from Product p where p.sellerId = :sellerId and p.deletedAt is null
         """)
     InventorySummary summarizeInventory(@Param("sellerId") Long sellerId);
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+
+    /** Số tin đang hiển thị theo thể loại (dùng cho thanh lọc). */
+    @Query("""
+            SELECT p.categoryId, COUNT(p) FROM Product p
+            WHERE p.moderationStatus = com.example.comicworm.model.enums.ModerationStatus.APPROVED
+              AND p.isActive = true
+              AND p.deletedAt IS NULL
+            GROUP BY p.categoryId
+            """)
+    List<Object[]> countVisibleByCategory();
+
+    /** Số tin đang hiển thị theo nhà xuất bản (bỏ qua tin không có NXB). */
+    @Query("""
+            SELECT p.publisherId, COUNT(p) FROM Product p
+            WHERE p.publisherId IS NOT NULL
+              AND p.moderationStatus = com.example.comicworm.model.enums.ModerationStatus.APPROVED
+              AND p.isActive = true
+              AND p.deletedAt IS NULL
+            GROUP BY p.publisherId
+            """)
+    List<Object[]> countVisibleByPublisher();
 }
