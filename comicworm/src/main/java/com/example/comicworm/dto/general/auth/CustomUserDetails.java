@@ -29,6 +29,10 @@ public class CustomUserDetails implements UserDetails {
         return Boolean.TRUE.equals(user.getIsSeller());
     }
 
+    public String getRole() {
+        return user.getRole().name();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();

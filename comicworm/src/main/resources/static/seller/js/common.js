@@ -24,9 +24,9 @@ async function loadSidebarComponent() {
   try {
     let response;
     const candidates = [
+      'sidebar.html',
+      '/seller/html/sidebar.html',
       '/truong/html/sidebar.html',
-      'sidebar.html',
-      'sidebar.html',
       '../truong/html/sidebar.html'
     ];
     for (const url of candidates) {
@@ -94,7 +94,7 @@ async function loadSidebarComponent() {
         <a href="revenue.html" class="nav-item" data-page="revenue" data-view="view-revenue">
           <div class="nav-item-content">
             <span class="material-symbols-outlined">monitoring</span>
-            <span>Thống kê doanh thu</span>
+            <span>Doanh thu &amp; bán chạy</span>
           </div>
         </a>
 
@@ -175,10 +175,11 @@ async function loadSidebarComponent() {
   container.outerHTML = htmlContent;
 
   // Đánh dấu active item tương ứng với trang
+  const currentView = isSpaMode ? document.querySelector('.dashboard-view.active-view') : null;
   const navItems = document.querySelectorAll('.app-sidebar .nav-item');
   navItems.forEach(item => {
     const pageKey = item.getAttribute('data-page');
-    if (pageKey === activePage) {
+    if (currentView ? item.getAttribute('data-view') === currentView.id : pageKey === activePage) {
       item.classList.add('active');
     } else {
       item.classList.remove('active');

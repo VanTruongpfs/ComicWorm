@@ -1,0 +1,34 @@
+# Seller product table dependencies
+
+jQuery 3.7.1 and jQuery UI 1.14.2 are from code.jquery.com (MIT).
+jTable 2.6.0 is from volosoft/jtable at commit c61fffcf77d486320a54386445ef7ff0dc72fbad (MIT/GPL dual license).
+Upstream license notices are preserved in the distributed scripts.
+
+- `jquery-ui/images/ui-icons_444444_256x240.png`: SHA-256 `6cc3b993997771d68d08b0daaf7713101afe80c613b903d92df5c7ab56f75412`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_444444_256x240.png
+- `jquery-ui/images/ui-icons_555555_256x240.png`: SHA-256 `1236707e2452dae4dfc909e62c30f719348d863734594441787b4b25bda8e71f`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_555555_256x240.png
+- `jquery-ui/images/ui-icons_777620_256x240.png`: SHA-256 `4c9505f919ef8025219ea75b7c610a859c0cd470a879033d256eb24274c162f3`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_777620_256x240.png
+- `jquery-ui/images/ui-icons_777777_256x240.png`: SHA-256 `26410c2b41a85e74cb6383558ccc823080dcf3eff73cb8582ac35eeab97f3133`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_777777_256x240.png
+- `jquery-ui/images/ui-icons_cc0000_256x240.png`: SHA-256 `849ecb82887c11e620354e80b55fdaa32984b40f8e266061daa8ce8c0412fc42`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_cc0000_256x240.png
+- `jquery-ui/images/ui-icons_ffffff_256x240.png`: SHA-256 `d95f988ed1c82b625ba6154e0097326a22c0d3eca95c2c57266159bdfdf268c5`, source https://code.jquery.com/ui/1.14.2/themes/base/images/ui-icons_ffffff_256x240.png
+- `jquery-ui/jquery-ui-1.14.2.min.js`: SHA-256 `99b95259f6d8cdaabf7fee1a93232113a5c42c2a2ee236e480fbfe2503c44763`, source https://code.jquery.com/ui/1.14.2/jquery-ui.min.js
+- `jquery-ui/jquery-ui.min.css`: SHA-256 `0bb07b014dcc118f5e98bab94cda92e630b0b9c464b1fc35a2acca752a7daf57`, source https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.min.css
+- `jquery/jquery-3.7.1.min.js`: SHA-256 `fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a`, source https://code.jquery.com/jquery-3.7.1.min.js
+- `jtable/jquery.jtable.js`: SHA-256 `8cbf53f6ec6453c039d6cdbe8286618bb7d5d4381d27c8b77436b22e6a4f9b84`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/jquery.jtable.js
+- `jtable/jquery.jtable.vi.js`: SHA-256 `4cc0ba52e2eb2ff50e1686ff6ca3f0b7344bff3a6f8f99ec8472548d5ec83073`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/localization/jquery.jtable.vi.js
+- `jtable/themes/basic/close.png`: SHA-256 `534092d33b650ffb3cb6e0797ff3cf472531a51d8e47dda151ea7a6c1f38e8ec`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/close.png
+- `jtable/themes/basic/column-asc.png`: SHA-256 `97a31604675d57f4446c1529803bf342f836854add1c709795ad0ea97db5c260`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/column-asc.png
+- `jtable/themes/basic/column-desc.png`: SHA-256 `a703d1e72ac9a6fdd8462e1fe508779fd5f35d174722b694c01e41bd7ed39f42`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/column-desc.png
+- `jtable/themes/basic/column-sortable.png`: SHA-256 `1c8c0dd7c686e518d7e5449dd19ed7a8b40718ca5ae3d005e03e3c85d2789aaf`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/column-sortable.png
+- `jtable/themes/basic/delete.png`: SHA-256 `bb4d506aad9e449349a863e4be7fcc117b6a28e9f542731bf32ce11281f54c04`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/delete.png
+- `jtable/themes/basic/edit.png`: SHA-256 `fa53cd6eb72491eb3a3252369f58a7f516ceed7f54a56e1c9c7d24e93efa235d`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/edit.png
+- `jtable/themes/basic/jtable_basic.min.css`: SHA-256 `471972baeed22b3b7cbe6788dbbd93973d25f468b55f703bff2375ff6986d971`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/basic/jtable_basic.min.css
+- `jtable/themes/lightcolor/add.png`: SHA-256 `0851d48ac1f2155b82f305e0eb44ebd0082d7cb1994216e937596e710a3116b4`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/add.png
+- `jtable/themes/lightcolor/bg-thead.png`: SHA-256 `8ef9573d1b4cd6d94934fef27283329489e10d4bfb599bc7a9767100819a13ad`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/bg-thead.png
+- `jtable/themes/lightcolor/close.png`: SHA-256 `3ccf18ca07dfd3c0e57982abfae4faa1769ab9526c84f5871f5ada6e0634cf9e`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/close.png
+- `jtable/themes/lightcolor/column-asc.png`: SHA-256 `97a31604675d57f4446c1529803bf342f836854add1c709795ad0ea97db5c260`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/column-asc.png
+- `jtable/themes/lightcolor/column-desc.png`: SHA-256 `a703d1e72ac9a6fdd8462e1fe508779fd5f35d174722b694c01e41bd7ed39f42`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/column-desc.png
+- `jtable/themes/lightcolor/column-sortable.png`: SHA-256 `1c8c0dd7c686e518d7e5449dd19ed7a8b40718ca5ae3d005e03e3c85d2789aaf`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/column-sortable.png
+- `jtable/themes/lightcolor/delete.png`: SHA-256 `bb4d506aad9e449349a863e4be7fcc117b6a28e9f542731bf32ce11281f54c04`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/delete.png
+- `jtable/themes/lightcolor/edit.png`: SHA-256 `fa53cd6eb72491eb3a3252369f58a7f516ceed7f54a56e1c9c7d24e93efa235d`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/edit.png
+- `jtable/themes/lightcolor/orange/jtable.min.css`: SHA-256 `b583fa9599b769f2c4e97b106b8e9f62e06d55831edf7ad8025eb2aa8515cd14`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/orange/jtable.min.css
+- `jtable/themes/lightcolor/orange/loading.gif`: SHA-256 `d1cc0322003f9b3dae7b2d617933708d797b165ef2728e414564dfd200830ab3`, source https://raw.githubusercontent.com/volosoft/jtable/c61fffcf77d486320a54386445ef7ff0dc72fbad/lib/themes/lightcolor/orange/loading.gif

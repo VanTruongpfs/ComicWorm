@@ -1,5 +1,10 @@
 # ComicWorm
 
+Ảnh sản phẩm của seller được upload lên Cloudinary và lưu URL vào MySQL.
+Form thêm/sửa sản phẩm có **Ảnh bìa** và **Ảnh chi tiết**. Bấm **Lưu** để
+tải ảnh lên Cloudinary và lưu sản phẩm cùng ảnh trong một transaction.
+Xem [hướng dẫn Cloudinary](docs/cloudinary.md) để biết cấu hình và API.
+
 Project Spring Boot 4.1.1, Gradle và Java 25. Giao diện được chuyển từ `D:\hoc tap\TMDT CuoiKy\src` vào `src/main/resources/templates/view` (HTML) và `src/main/resources/static` (CSS/JS); giữ nguyên 167 file (61 HTML, 54 CSS, 52 JS) và các đường dẫn tương đối. Bản gốc vẫn được giữ tại project cũ.
 
 ## Chạy giao diện ngay, chưa cần MySQL
@@ -19,7 +24,7 @@ Truy cập:
 - Quản trị: http://localhost:8080/admin/html/dashboard.html
 - Đăng nhập: http://localhost:8080/auth/html/login.html
 
-Profile `preview` tắt kết nối database/JPA. Các trang hiện dùng dữ liệu mẫu/localStorage như giao diện cũ; đăng nhập, thanh toán, AI và các chức năng nghiệp vụ chưa được nối với API. SecurityConfig cho phép đọc các tài nguyên giao diện; các đường dẫn API cần xác thực và CSRF vẫn được giữ.
+Profile `preview` tắt kết nối database/JPA và chỉ phục vụ xem giao diện. Đăng nhập, nâng cấp seller, thống kê và CRUD sản phẩm cần chạy profile mặc định cùng MySQL theo hướng dẫn bên dưới. Các trang khác vẫn có thể dùng dữ liệu mẫu/localStorage của giao diện cũ.
 
 ## Cấu trúc
 
@@ -76,6 +81,13 @@ $env:DB_PASSWORD = 'mat_khau_mysql_cua_ban'
 
 `ddl-auto=validate` kiểm tra entity khớp SQL, không tự tạo/thay đổi bảng. SQL/script được đặt ở thư mục `database` của project, bên ngoài thư mục giao diện công khai. Không commit mật khẩu vào application.properties.
 
+Luồng đăng nhập, nâng cấp seller và thống kê chạy với profile mặc định.
+Cấu hình `app.base.url` và Spring Mail nằm trong `application.properties`
+để các bean xác thực khởi tạo đầy đủ. Khi cần gửi email xác minh đăng ký,
+đặt `MAIL_USERNAME` và `MAIL_PASSWORD` bằng tài khoản SMTP và mật khẩu ứng
+dụng của bạn. Có thể đổi `MAIL_HOST`, `MAIL_PORT`, `MAIL_SMTP_AUTH`,
+`MAIL_STARTTLS` và `APP_BASE_URL`; mặc định dùng Gmail SMTP cổng 587.
+
 ## Quy ước entity
 
 - Dữ liệu và enum khớp schema 32 bảng phục vụ 25 chức năng trong `Nhom8_ChucNang.docx`; không thêm bảng của các chức năng đã bỏ khỏi database.
@@ -103,3 +115,27 @@ Kết quả nằm trong `build/reports/tests/test/index.html` và `build/reports
 ```powershell
 & "$env:JAVA_HOME\bin\java.exe" -jar build/libs/comicworm-0.0.1-SNAPSHOT.war --spring.profiles.active=preview
 ```
+
+
+## Báo cáo doanh thu từ MySQL
+
+Biểu đồ cột theo khoảng ngày, ba biểu đồ tròn người bán, thống kê admin và
+bảng bán chạy dùng Chart.js với API xác thực `/api/analytics/seller` và
+`/api/analytics/admin`. Người bán chỉ xem dữ liệu của tài khoản đăng nhập.
+Giữ giao diện người bán hiện có; không dùng dữ liệu mẫu khi lỗi kết nối.
+
+Đăng nhập tại `/auth/login`, rồi mở `/seller/html/revenue.html` hoặc
+`/admin/html/statistics.html`. Cần database có schema của project; profile
+`preview` không cung cấp API MySQL. Xem [hướng dẫn thống kê](docs/analytics.md)
+để biết cấu hình, quy tắc ngày/doanh thu và các trường chưa có trong schema.
+
+## CRUD sản phẩm cho seller
+
+Đăng nhập tại `/auth/login`, nâng cấp tài khoản tại `/user/seller-upgrade`,
+rồi mở `/seller/html/quan-ly-san-pham.html`. Trang dùng jTable để thêm, xem,
+sửa và xóa sản phẩm trong MySQL; có tìm kiếm, lọc thể loại/tồn kho, sắp xếp
+và phân trang. Seller chỉ quản lý sản phẩm của chính mình. Sản phẩm mới hoặc
+chỉnh sửa chuyển sang chờ duyệt; xóa mềm giữ nguyên lịch sử đơn hàng.
+
+Xem [hướng dẫn CRUD sản phẩm](docs/seller-products.md) để biết API, dữ liệu
+và cách chạy kiểm thử trên MySQL riêng biệt.

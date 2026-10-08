@@ -2,7 +2,9 @@
 
 Phạm vi hiện tại chỉ dựa trên 25 chức năng trong tài liệu Word người dùng gửi:
 12 chức năng bắt buộc/đặc trưng, 10 tự chọn, 3 bổ sung. Cả ba nhóm được giữ.
-Schema có **32 bảng, 232 thuộc tính, 49 khóa ngoại, 44 CHECK**.
+Schema có **32 bảng, 234 thuộc tính, 49 khóa ngoại, 45 CHECK**.
+Ảnh bìa nằm ở `products.cover_image_url`; bảng `product_images` lưu URL
+và loại ảnh `COVER`/`DETAIL`, liên kết về sản phẩm.
 
 ## File cần dùng
 
@@ -28,6 +30,10 @@ Bản 76 bảng và schema gốc được giữ trong archive/v2 chỉ để đ�
 Trong MySQL Workbench, chạy schema.sql rồi seed.sql trên database v3 trống.
 File không DROP hoặc sửa database cũ; không chạy lại DDL lên database đã có
 các bảng v3. Đây là bản khởi tạo, không tự chuyển dữ liệu cũ sang bảng mới.
+
+Database đã có bảng cũ cần chạy `python tools/migrate_product_images.py`
+ở thư mục gốc dự án để bổ sung ảnh bìa và phân loại ảnh chi tiết.
+Migration giữ dữ liệu cũ, lấy ảnh đầu tiên làm ảnh bìa và có thể chạy lại.
 
 Mở [dbdiagram.io](https://dbdiagram.io/d) và dán bookmooch.dbml. Bản grouped dùng
 cú pháp `TableGroup tg_auth { ... }`, không đặt tên trong nháy đơn và không dùng
