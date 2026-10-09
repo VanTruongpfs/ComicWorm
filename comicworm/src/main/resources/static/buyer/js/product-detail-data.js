@@ -155,13 +155,13 @@
                 (!p.publiclyVisible ? 'Tin chưa được công khai' : (p.inStock ? 'Tin này chỉ nhận trao đổi' : 'Đã hết hàng'));
             return;
         }
-        btn.addEventListener('click', e => {
+        btn.addEventListener('click', async e => {
             e.preventDefault();
-            // Chức năng giỏ hàng/đặt hàng (B05/B06) sẽ thay phần này; hiện giữ luồng cũ qua localStorage.
-            A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
-            A.toast('Đang chuyển đến trang Thanh Toán...', 'primary', 'fa-spinner fa-spin');
+            const ok = await A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
+            if (!ok) return; // Nếu 401, addToLocalCart đã tự hiển thị thông báo và điều hướng sang /auth/register
+            A.toast('Đang chuyển đến giỏ hàng...', 'primary', 'fa-spinner fa-spin');
             setTimeout(() => {
-                location.href = 'payment.html';
+                location.href = 'shopping_cart.html';
             }, 600);
         });
     }

@@ -112,17 +112,51 @@
         }, 3200);
     }
 
-    // ---- Giỏ hàng / yêu thích: giữ định dạng localStorage của giao diện cũ cho tới khi làm chức năng giỏ hàng (B05).
-    function addToLocalCart(product) {
-        const items = JSON.parse(localStorage.getItem('comichub_cart') || '[]');
-        items.push({
-            productId: product.id,
-            title: product.title,
-            price: formatPrice(product.price),
-            seller: product.sellerName || '',
-            time: Date.now()
-        });
-        localStorage.setItem('comichub_cart', JSON.stringify(items));
+    // ---- Giỏ hàng: gọi API Database /api/cart/add (B05) và đồng bộ badge/localStorage
+    async function addToLocalCart(product) {
+        if (!product || !product.id) return false;
+        try {
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product.id, quantity: 1 })
+            });
+
+            if (res.status === 401) {
+                toast('Vui lòng đăng ký tài khoản để mua hàng!', 'warning', 'fa-right-to-bracket');
+                setTimeout(() => window.location.href = '/auth/register', 1200);
+                return false;
+            }
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                toast(err.message || 'Lỗi thêm vào giỏ hàng', 'danger');
+                return false;
+            }
+
+            toast('Đã thêm "' + product.title + '" vào giỏ hàng!', 'success', 'fa-cart-plus');
+
+            // Cập nhật badge giỏ hàng nếu có
+            const badge = document.querySelector('.cart-count-badge');
+            if (badge) {
+                const c = parseInt(badge.textContent.trim(), 10) || 0;
+                badge.textContent = c + 1;
+            }
+
+            const items = JSON.parse(localStorage.getItem('comichub_cart') || '[]');
+            items.push({
+                productId: product.id,
+                title: product.title,
+                price: formatPrice(product.price),
+                seller: product.sellerName || '',
+                time: Date.now()
+            });
+            localStorage.setItem('comichub_cart', JSON.stringify(items));
+            return true;
+        } catch (e) {
+            console.warn('Lỗi kết nối khi thêm vào giỏ hàng:', e);
+            return false;
+        }
     }
 
     function isWishlisted(title) {
