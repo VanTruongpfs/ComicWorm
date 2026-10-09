@@ -389,6 +389,19 @@
 </section>
 
 <!-- ================= MARKETPLACE LISTINGS ================= -->
+<!-- ================= SẢN PHẨM BÁN CHẠY (T09) ================= -->
+<section class="marketplace-section" id="bestsellerSection" style="display:none;">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="sub-title">Được mua nhiều nhất</span>
+                <h2 class="main-title">Truyện Bán Chạy</h2>
+            </div>
+        </div>
+        <div class="products-grid" id="bestsellerGrid"></div>
+    </div>
+</section>
+
 <section class="marketplace-section" id="marketplace">
     <div class="container">
         <div class="section-head">
@@ -397,135 +410,15 @@
                 <h2 class="main-title">Chợ Mua Bán Mới Đăng</h2>
             </div>
             <div class="market-tabs">
-                <button class="tab-btn active">Tất cả bài đăng</button>
-                <button class="tab-btn">Bộ Full Trọn Gói</button>
-                <button class="tab-btn">Bản Giới Hạn / Seal</button>
-                <button class="tab-btn">Giá &lt; 500k</button>
+                <button class="tab-btn active" data-filter="all">Tất cả bài đăng</button>
+                <button class="tab-btn" data-filter="under500">Giá &lt; 500k</button>
+                <button class="tab-btn" data-filter="mint">Mới / Like New</button>
+                <button class="tab-btn" data-filter="trade">Nhận trao đổi</button>
             </div>
         </div>
 
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=500&q=80" alt="Manga">
-                    <span class="badge-discount">-20%</span>
-                    <span class="badge-verified"><i class="fa-solid fa-check"></i> Đã Kiểm Định</span>
-                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div>
-                        <div class="prod-publisher">NXB Kim Đồng • <span>99% Like New</span></div>
-                        <h4 class="prod-title"><a href="product_details.html" style="text-decoration:none; color:inherit;">Slam Dunk Deluxe Edition (Trọn bộ 24 tập)</a></h4>
-                    </div>
-                    <div class="prod-foot">
-                        <div class="prod-pricing">
-                            <span class="price-current">1.850.000₫</span>
-                            <span class="price-old">2.300.000₫</span>
-                        </div>
-                        <div class="prod-bottom-row">
-                            <span class="seller-name">AnVinh • ★ 5.0</span>
-                            <button class="btn-buy-now" onclick="window.location.href='product_details.html'">Mua Ngay</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" alt="Manga">
-                    <span class="badge-custom" style="background:#f59e0b;">Kèm Bookmark</span>
-                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div>
-                        <div class="prod-publisher">NXB Kim Đồng • <span>99% Mới Đẹp</span></div>
-                        <h4 class="prod-title"><a href="product_details.html" style="text-decoration:none; color:inherit;">Spy x Family Tập 1-12 (Tặng kèm Bookmark)</a></h4>
-                    </div>
-                    <div class="prod-foot">
-                        <div class="prod-pricing">
-                            <span class="price-current">450.000₫</span>
-                        </div>
-                        <div class="prod-bottom-row">
-                            <span class="seller-name">OtakuShopHN • ★ 4.9</span>
-                            <button class="btn-buy-now" onclick="window.location.href='product_details.html'">Mua Ngay</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=500&q=80" alt="Manga">
-                    <span class="badge-custom" style="background:#2563eb;">Bản Tiếng Anh</span>
-                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div>
-                        <div class="prod-publisher">Kodansha US • <span style="color:#475569;">95%</span></div>
-                        <h4 class="prod-title">Attack on Titan Colossal Edition (Vol 1)</h4>
-                    </div>
-                    <div class="prod-foot">
-                        <div class="prod-pricing">
-                            <span class="price-current">920.000₫</span>
-                        </div>
-                        <div class="prod-bottom-row">
-                            <span class="seller-name">ThanhTung_US • ★ 4.8</span>
-                            <button class="btn-buy-now">Mua Ngay</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 4 -->
-            <div class="product-card">
-                <div class="product-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=80" alt="Manga">
-                    <span class="badge-custom" style="background:#9333ea;">Bìa Cứng</span>
-                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div>
-                        <div class="prod-publisher">NXB Trẻ • <span>98% Sưu Tầm</span></div>
-                        <h4 class="prod-title">20th Century Boys Hoàn Thành (11 tập bìa cứng)</h4>
-                    </div>
-                    <div class="prod-foot">
-                        <div class="prod-pricing">
-                            <span class="price-current">1.200.000₫</span>
-                        </div>
-                        <div class="prod-bottom-row">
-                            <span class="seller-name">KhoSachHiem99 • ★ 5.0</span>
-                            <button class="btn-buy-now">Mua Ngay</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product 5 -->
-            <div class="product-card">
-                <div class="product-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=500&q=80" alt="Manga">
-                    <span class="badge-custom" style="background:#0f172a;">Bản Kỷ Niệm</span>
-                    <button class="btn-wishlist" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
-                </div>
-                <div class="product-info">
-                    <div>
-                        <div class="prod-publisher">NXB Kim Đồng • <span>Like New 99%</span></div>
-                        <h4 class="prod-title">Cardcaptor Sakura Collector's Edition</h4>
-                    </div>
-                    <div class="prod-foot">
-                        <div class="prod-pricing">
-                            <span class="price-current">680.000₫</span>
-                        </div>
-                        <div class="prod-bottom-row">
-                            <span class="seller-name">YumeBooks • ★ 4.9</span>
-                            <button class="btn-buy-now">Mua Ngay</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="products-grid" id="latestGrid">
+            <!-- home-products.js đổ dữ liệu từ GET /api/products -->
         </div>
 
         <div class="center-btn-wrap">
@@ -664,5 +557,7 @@
 </footer>
 
 <script src="../js/home.js"></script>
+<script src="../js/product-api.js"></script>
+<script src="../js/home-products.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Renders shared navigation from the current role stored by the host application.
+// Renders navigation from the account authenticated by the backend.
 const commonGroups = [
     { title: "Tài khoản & Khám phá", items: [
         ["◈", "Trang Chủ ComicHub", "../../buyer/html/home.html"],
@@ -29,9 +29,10 @@ const roleGroups = {
     SELLER: { title: "Giao diện Người bán", items: [
         ["◈", "Kênh Người Bán", "../../seller/html/index.html"],
         ["+", "Đăng bán truyện", "../../seller/html/dang-ban-truyen.html"],
-        ["▤", "Quản lý bài đăng", "../../seller/html/quan-ly-bai-dang/index.html"],
+        ["▤", "Quản lý bài đăng", "../../seller/html/quan-ly-bai-dang.html"],
+        ["▦", "Quản lý sản phẩm", "../../seller/html/quan-ly-san-pham.html"],
         ["▣", "Đơn hàng bán", "../../seller/html/orders.html"],
-        ["◇", "Voucher shop", "../../seller/html/quan-ly-voucher/index.html"],
+        ["◇", "Voucher shop", "../../seller/html/quan-ly-voucher.html"],
         ["▥", "Thống kê doanh thu", "../../seller/html/revenue.html"]
     ] },
     ADMIN: { title: "Quản trị / Kiểm duyệt", items: [
@@ -51,8 +52,6 @@ const roleGroups = {
         ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
     ] }
 };
-
-function getRole() { return localStorage.getItem("userRole") || "BUYER"; }
 
 function renderGroup(group, currentPath) {
     const section = document.createElement("section");
@@ -90,10 +89,10 @@ function logout() {
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
     });
-    window.location.href = "../../auth/html/login.html";
+    window.location.href = window.BookMoochAccountApi.baseUrl() + "/auth/logout";
 }
 
-function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
+async function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
     if (!mount) return;
     const template = `
         <aside class="app-sidebar" data-sidebar aria-label="Điều hướng chính">
@@ -103,8 +102,9 @@ function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
             <button class="sidebar-logout" type="button" data-sidebar-logout>Đăng xuất</button>
         </aside>`;
     mount.innerHTML = template;
-    const role = getRole();
-    const userName = localStorage.getItem("userName") || "Thành viên";
+    const account = await window.BookMoochAccountApi.currentUser().catch(() => null);
+    const role = account?.role === "ADMIN" ? "ADMIN" : account?.isSeller ? "SELLER" : "BUYER";
+    const userName = account?.fullName || "Khách";
     const nameEl = mount.querySelector("[data-sidebar-name]");
     const roleEl = mount.querySelector("[data-sidebar-role]");
     const avatarEl = mount.querySelector("[data-sidebar-avatar]");
@@ -116,8 +116,14 @@ function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
     const currentPath = window.location.pathname;
     const navigation = mount.querySelector("[data-sidebar-nav]");
     if (navigation) {
-        commonGroups.forEach((group) => navigation.append(renderGroup(group, currentPath)));
-        if (roleGroups[role]) navigation.append(renderGroup(roleGroups[role], currentPath));
+        commonGroups.forEach((group) => navigation.append(renderGroup({ ...group,
+            items: group.items.filter((item) => account?.isSeller || !item[2].includes("/seller/"))
+        }, currentPath)));
+        if (account?.isSeller) navigation.append(renderGroup(roleGroups.SELLER, currentPath));
+        if (role === "ADMIN") navigation.append(renderGroup(roleGroups.ADMIN, currentPath));
+        if (account && !account.isSeller) navigation.append(renderGroup({ title: "Kênh Người bán", items: [
+            ["+", "Nâng cấp lên Người bán", window.BookMoochAccountApi.upgradeUrl()]
+        ] }, currentPath));
     }
 }
 

@@ -59,6 +59,7 @@ seller_id bigint [not null]
 title varchar(255) [not null]
 slug varchar(255) [not null, unique]
 description text [not null]
+cover_image_url text
 category_id int [not null]
 author_id int
 publisher_id int
@@ -89,11 +90,12 @@ table('product_images', '''
 id bigint [pk, not null, increment]
 product_id bigint [not null]
 image_url text [not null]
+image_type varchar(10) [not null, default: 'DETAIL', check: `image_type IN ('COVER', 'DETAIL')`]
 display_order int [not null, default: 0, check: `display_order >= 0`]
 ''', 'tg_catalog')
 fk('product_images', 'product_id', 'products')
 index('product_images', 'product_id,display_order', unique=True, key='uq_product_image_order')
-note('product_images', 'Ảnh display_order=0 là ảnh chính. Một ảnh/một vị trí trong sản phẩm.')
+note('product_images', 'image_type=COVER là ảnh bìa, DETAIL là ảnh chi tiết. URL ảnh bìa đồng bộ với products.cover_image_url. Một ảnh/một vị trí trong sản phẩm.')
 
 table('carts', '''
 id bigint [pk, not null, increment]

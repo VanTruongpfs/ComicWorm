@@ -7,6 +7,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.example.comicworm.model.enums.ProductImageType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "product_images",
@@ -30,6 +33,12 @@ public class ProductImage {
     @NotNull
     @Column(name = "image_url", nullable = false, columnDefinition = "text")
     private String imageUrl;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "image_type", nullable = false, length = 10)
+    private ProductImageType imageType = ProductImageType.DETAIL;
 
     @NotNull
     @Min(0)
