@@ -29,7 +29,7 @@ class JpaMappingIntegrationTests {
         assertEquals(32, em.getMetamodel().getEntities().size());
         for (var entity : em.getMetamodel().getEntities()) {
             em.createQuery("select e from " + entity.getName() + " e").setMaxResults(1).getResultList();
-        }
+        }dddd
     }
 
     @Test

@@ -634,22 +634,195 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('comichub_cart');
     };
 
+    // --------------------------------------------------------------------------
+    // 8. TẢI DỮ LIỆU ĐỢT CHECKOUT TỪ DATABASE
+    // --------------------------------------------------------------------------
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentCheckoutCode = urlParams.get('checkoutCode');
+
+    const loadCheckoutFromDB = async () => {
+        if (!currentCheckoutCode) return;
+        try {
+            const res = await fetch(`/api/checkout/${currentCheckoutCode}`);
+            if (res.status === 401) {
+                showToast('Vui lòng đăng nhập hoặc đăng ký để tiếp tục!', 'warning', 'fa-right-to-bracket');
+                setTimeout(() => window.location.href = '/auth/register', 1200);
+                return;
+            }
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.checkoutCode) return;
+
+            orderState.orderCode = data.checkoutCode;
+
+            // Cập nhật mã chuyển khoản QR
+            const transferCodeEl = document.querySelector('.transfer-code');
+            if (transferCodeEl) transferCodeEl.textContent = data.checkoutCode;
+
+            // Cập nhật người nhận & địa chỉ
+            const nameEl = document.querySelector('.recipient-name');
+            if (nameEl && data.recipientName) nameEl.textContent = data.recipientName;
+
+            const phoneEl = document.querySelector('.recipient-phone');
+            if (phoneEl && data.recipientPhone) phoneEl.textContent = data.recipientPhone;
+
+            const addrEl = document.querySelector('.recipient-address');
+            if (addrEl && data.shippingAddress) addrEl.textContent = data.shippingAddress;
+
+            const noteEl = document.querySelector('.collector-delivery-note span');
+            if (noteEl && data.buyerNote) {
+                noteEl.innerHTML = `<strong>Ghi chú lưu kho:</strong> "${data.buyerNote}"`;
+            }
+
+            // Cập nhật số tiền
+            if (data.orders && data.orders.length > 0) {
+                let totalSubtotal = 0;
+                let totalShip = 0;
+                let totalItems = 0;
+
+                data.orders.forEach(o => {
+                    totalSubtotal += (o.subtotalAmount || 0);
+                    totalShip += (o.shippingFee || 0);
+                    if (o.items) {
+                        o.items.forEach(it => totalItems += (it.quantity || 1));
+                    }
+                });
+
+                orderState.booksSubtotal = totalSubtotal;
+                orderState.standardShippingOriginal = totalShip;
+                orderState.barterCompensation = 0;
+
+                // Cập nhật tiêu đề kiện hàng
+                const pkgTitle = document.getElementById('package-summary-title');
+                if (pkgTitle) pkgTitle.textContent = `Kiện Hàng Thanh Toán (${data.orders.length} Gói / Shop)`;
+
+                const pkgTag = document.getElementById('package-count-tag');
+                if (pkgTag) pkgTag.textContent = `Tổng ${totalItems} sản phẩm`;
+
+                // Render động danh sách kiện hàng từ DB
+                const packagesContainer = document.getElementById('payment-packages-container');
+                if (packagesContainer) {
+                    const fallbackImg = 'https://images.unsplash.com/photo-1618365908648-e71bd5716cba?w=500&q=80';
+                    let pkgHtml = '';
+
+                    data.orders.forEach((order, idx) => {
+                        let itemsHtml = '';
+                        if (order.items && order.items.length > 0) {
+                            order.items.forEach(item => {
+                                const unitPriceFormatted = (item.unitPrice || 0).toLocaleString('vi-VN') + '₫';
+                                const condText = item.conditionPercent ? `${item.conditionPercent}% Like New` : 'Tốt';
+
+                                itemsHtml += `
+                                    <li class="package-item-row">
+                                        <div class="package-thumb">
+                                            <img src="${item.imageUrl || fallbackImg}" alt="${item.productTitle}" onerror="this.src='${fallbackImg}'">
+                                        </div>
+                                        <div class="package-item-details">
+                                            <h3 class="package-item-name">${item.productTitle}</h3>
+                                            <p class="package-item-meta">Tình trạng: ${condText}</p>
+                                            <div class="package-item-tags">
+                                                <span class="tag-limited" style="background:#e0f2fe; color:#0369a1;">Chính hãng</span>
+                                                <span class="tag-qty">SL: ${item.quantity} cuốn</span>
+                                            </div>
+                                        </div>
+                                        <div class="package-item-price">
+                                            <span class="price-value">${unitPriceFormatted}</span>
+                                        </div>
+                                    </li>
+                                `;
+                            });
+                        }
+
+                        pkgHtml += `
+                            <div class="package-group-card">
+                                <div class="package-shop-header">
+                                    <div class="shop-title-wrap">
+                                        <i class="fa-solid fa-store"></i>
+                                        <span>Gói ${idx + 1}: Shop <strong>${order.sellerName || 'Người bán'}</strong></span>
+                                        <span class="location-badge">Mã đơn: #${order.orderCode}</span>
+                                    </div>
+                                    <span class="trade-type-pill" style="background:#dcfce7; color:#16a34a;">Mua thẳng</span>
+                                </div>
+                                <ul class="package-items-list">
+                                    ${itemsHtml}
+                                </ul>
+                            </div>
+                        `;
+                    });
+
+                    packagesContainer.innerHTML = pkgHtml;
+                }
+            } else if (data.totalAmount) {
+                orderState.booksSubtotal = data.totalAmount;
+                orderState.standardShippingOriginal = 0;
+            }
+
+            recalculateOrder();
+        } catch (err) {
+            console.warn('Không tải được đợt checkout từ DB:', err);
+        }
+    };
+
     if (btnSubmitCheckout) {
-        btnSubmitCheckout.addEventListener('click', (e) => {
+        btnSubmitCheckout.addEventListener('click', async (e) => {
             e.preventDefault();
             const originalText = btnSubmitCheckout.innerHTML;
 
-            btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang mã hoá & xác thực ký quỹ...';
+            btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý thanh toán & ký quỹ...';
             btnSubmitCheckout.disabled = true;
             btnSubmitCheckout.style.opacity = '0.8';
 
-            setTimeout(() => {
-                btnSubmitCheckout.innerHTML = originalText;
-                btnSubmitCheckout.disabled = false;
-                btnSubmitCheckout.style.opacity = '1';
+            if (currentCheckoutCode) {
+                try {
+                    let selectedMethod = 'VIETQR';
+                    const activeRadio = document.querySelector('input[name="payment_method"]:checked, input[name="payment_gateway"]:checked');
+                    if (activeRadio) {
+                        const val = activeRadio.value.toUpperCase();
+                        if (val.includes('MOMO')) selectedMethod = 'MOMO';
+                        else if (val.includes('VNPAY')) selectedMethod = 'VNPAY';
+                        else if (val.includes('CARD') || val.includes('VISA')) selectedMethod = 'CREDIT_CARD';
+                    }
 
-                showOrderSuccessModal();
-            }, 1200);
+                    const res = await fetch(`/api/checkout/${currentCheckoutCode}/pay`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ method: selectedMethod })
+                    });
+
+                    if (res.status === 401) {
+                        btnSubmitCheckout.innerHTML = originalText;
+                        btnSubmitCheckout.disabled = false;
+                        btnSubmitCheckout.style.opacity = '1';
+                        showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập hoặc đăng ký lại!', 'warning', 'fa-right-to-bracket');
+                        setTimeout(() => window.location.href = '/auth/register', 1200);
+                        return;
+                    }
+
+                    const data = await res.json();
+                    btnSubmitCheckout.innerHTML = originalText;
+                    btnSubmitCheckout.disabled = false;
+                    btnSubmitCheckout.style.opacity = '1';
+
+                    if (res.ok) {
+                        orderState.orderCode = data.checkoutCode || currentCheckoutCode;
+                        showOrderSuccessModal();
+                    } else {
+                        showToast(data.message || 'Thanh toán thất bại', 'danger', 'fa-triangle-exclamation');
+                    }
+                } catch (err) {
+                    btnSubmitCheckout.innerHTML = originalText;
+                    btnSubmitCheckout.disabled = false;
+                    btnSubmitCheckout.style.opacity = '1';
+                    showToast('Không thể kết nối đến máy chủ', 'danger');
+                }
+            } else {
+                setTimeout(() => {
+                    btnSubmitCheckout.innerHTML = originalText;
+                    btnSubmitCheckout.disabled = false;
+                    btnSubmitCheckout.style.opacity = '1';
+                    showOrderSuccessModal();
+                }, 1000);
+            }
         });
     }
 
@@ -657,5 +830,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. KHỞI ĐỘNG TOÀN BỘ LOGIC CHECKOUT
     // --------------------------------------------------------------------------
     recalculateOrder();
-    console.log('ComicHub Checkout script (checkout.js) loaded successfully.');
+    loadCheckoutFromDB();
+    console.log('ComicWorm Checkout script loaded and connected to DB API.');
 });

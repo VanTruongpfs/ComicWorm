@@ -95,7 +95,7 @@
                     <div class="role-symbol" data-role-symbol>U</div>
                     <h3 data-role-label>Khách hàng</h3>
                     <p class="page-subtitle">Quyền truy cập và menu được hiển thị tự động theo vai trò tài khoản.</p>
-                    <a class="button" data-role-action href="../../seller/html/index.html">Mở kênh Người bán</a>
+                    <a class="button" data-role-action>Nâng cấp lên Người bán</a>
                     <a class="button" href="../../index.html" style="margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #0f172a; color: #ffffff; text-decoration: none;">
                         <span class="material-symbols-outlined" style="font-size: 18px;">hub</span>
                         Mở Master Portal (Tất cả trang)
@@ -103,7 +103,7 @@
                     <a class="button secondary" href="../../buyer/html/home.html" style="margin-top: 10px; display: inline-block; text-align: center; width: 100%;">
                         Về Chợ ComicHub
                     </a>
-                    <p class="role-hint">Vai trò demo có thể đổi bằng `localStorage.userRole`.</p>
+                    <p class="role-hint" data-role-hint>Bạn cần nâng cấp lên Người bán để vào kênh seller và xem thống kê doanh thu.</p>
                 </aside>
             </div>
 
@@ -120,6 +120,7 @@
         </main>
     </div>
     <div class="toast-region" data-toast-region aria-live="polite"></div>
+    <script src="../../shared/js/account-api.js"></script>
     <script src="../../shared/sidebar/sidebar.js"></script>
     <script src="../js/profile.js"></script>
 </body>

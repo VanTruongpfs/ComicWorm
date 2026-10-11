@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.cloudinary:cloudinary-http5:2.5.0'
     // JJWT (Java JWT) - Phiên bản khuyến nghị cho Java 21 / Spring Boot 3+
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'

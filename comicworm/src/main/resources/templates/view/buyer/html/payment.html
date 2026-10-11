@@ -391,21 +391,22 @@
                     <div class="card-header-bar">
                         <div class="card-header-title">
                             <i class="fa-solid fa-boxes-packing"></i>
-                            <h2>Kiện Hàng Thanh Toán (2 Gói)</h2>
+                            <h2 id="package-summary-title">Kiện Hàng Thanh Toán (2 Gói)</h2>
                         </div>
-                        <span class="package-count-tag">Tổng 4 truyện / set</span>
+                        <span class="package-count-tag" id="package-count-tag">Tổng 4 truyện / set</span>
                     </div>
 
-                    <!-- Gói 1: Giao dịch cùng Collector @minhtri_manga -->
-                    <div class="package-group-card">
-                        <div class="package-shop-header">
-                            <div class="shop-title-wrap">
-                                <i class="fa-solid fa-user-ninja"></i>
-                                <span>Gói 1: Giao dịch cùng Collector <strong>@minhtri_manga</strong></span>
-                                <span class="location-badge">Hà Nội</span>
+                    <div id="payment-packages-container">
+                        <!-- Gói 1: Giao dịch cùng Collector @minhtri_manga -->
+                        <div class="package-group-card">
+                            <div class="package-shop-header">
+                                <div class="shop-title-wrap">
+                                    <i class="fa-solid fa-user-ninja"></i>
+                                    <span>Gói 1: Giao dịch cùng Collector <strong>@minhtri_manga</strong></span>
+                                    <span class="location-badge">Hà Nội</span>
+                                </div>
+                                <span class="trade-type-pill">Kèo Barter &amp; Trực tiếp</span>
                             </div>
-                            <span class="trade-type-pill">Kèo Barter &amp; Trực tiếp</span>
-                        </div>
                         <ul class="package-items-list">
                             <!-- Sản phẩm 1.1: Mua thẳng -->
                             <li class="package-item-row">
@@ -492,6 +493,7 @@
                                 </div>
                             </li>
                         </ul>
+                    </div>
                     </div>
 
                     <!-- Cam kết hoàn tiền & đồng kiểm -->
@@ -587,7 +589,7 @@
 
                     <!-- NÚT XÁC NHẬN THANH TOÁN BẢO ĐẢM -->
                     <div class="checkout-submit-group">
-                        <button type="button" class="btn-submit-checkout" onclick="alert('Đặt hàng & Thanh toán thành công! Đang chuyển tới trang theo dõi đơn hàng GHN...'); window.location.href='page3.html';">
+                        <button type="button" class="btn-submit-checkout" id="btn-submit-checkout">
                             <i class="fa-solid fa-lock"></i>
                             <span>Xác Nhận Thanh Toán</span>
                         </button>

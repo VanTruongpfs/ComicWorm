@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +55,15 @@ public class Product {
     @NotNull
     @Column(name = "description", nullable = false, columnDefinition = "text")
     private String description;
+
+    @Column(name = "cover_image_url", columnDefinition = "text")
+    private String coverImageUrl;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OrderBy("displayOrder ASC, id ASC")
+    @Setter(AccessLevel.NONE)
+    @JsonIgnore
+    private List<ProductImage> images = new ArrayList<>();
 
     @NotNull
     @Column(name = "category_id", nullable = false)

@@ -1,0 +1,74 @@
+.product-content { max-width: 1600px; margin-inline: auto; }
+.inventory-value { font-size: 1.3rem; overflow-wrap: anywhere; }
+.product-table-card { overflow: hidden; }
+.product-filter-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 20px 24px 8px; }
+.product-filter-form .search-box { flex: 1; min-width: 220px; }
+.product-filter-form select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; background: white; }
+.product-data-status, .product-error, .product-table-note { margin: 12px 24px; font-size: .85rem; line-height: 1.6; }
+.product-data-status, .product-table-note { color: var(--text-muted); }
+.product-error { color: #b91c1c; background: #fef2f2; padding: 12px; border-radius: 8px; }
+.product-table-scroll { overflow-x: auto; margin: 12px 24px 20px; }
+#sellerProductsTable { min-width: 1050px; }
+#sellerProductsTable .jtable-title { background: #fff7ed; border-color: #fed7aa; padding: 12px 16px; }
+#sellerProductsTable .jtable-title-text { color: #9a3412; text-shadow: none; font: 700 1rem 'Plus Jakarta Sans', sans-serif; padding: 0; }
+#sellerProductsTable .jtable-toolbar-item { color: #9a3412; border-radius: 6px; }
+#sellerProductsTable .jtable-toolbar-item:hover { background: #ffedd5; }
+#sellerProductsTable table.jtable { font: inherit; border: 1px solid #e2e8f0; border-collapse: collapse; }
+#sellerProductsTable table.jtable th { background: #f8fafc; padding: 14px 10px; color: #475569; font-size: .78rem; border-color: #e2e8f0; }
+#sellerProductsTable table.jtable td { padding: 16px 10px; font-size: .82rem; line-height: 1.5; border-color: #e2e8f0; }
+#sellerProductsTable table.jtable tr:nth-child(even) { background: #fafbfc; }
+#sellerProductsTable .jtable-bottom-panel { background: #f8fafc; padding: 12px; font: inherit; font-size: .8rem; border-color: #e2e8f0; }
+.product-status { display: inline-block; padding: 4px 9px; border-radius: 100px; white-space: nowrap; font-size: .76rem; font-weight: 600; }
+.product-status.available { background: #f0fdf4; color: #166534; }
+.product-status.low { background: #fffbeb; color: #92400e; }
+.product-status.empty { background: #fef2f2; color: #b91c1c; }
+.product-status.muted { background: #f1f5f9; color: #64748b; }
+.product-detail-button { border: 1px solid #fdba74; background: white; color: #c2410c; padding: 6px 10px; border-radius: 6px; cursor: pointer; font: inherit; }
+.ui-widget-overlay { z-index: 4000; }
+.ui-dialog { z-index: 4001; font-family: 'Plus Jakarta Sans', sans-serif; border: 1px solid #e2e8f0; border-radius: 14px; padding: 8px; box-shadow: 0 20px 60px #0f172a33; }
+.ui-dialog .ui-dialog-titlebar { border: 0; background: #fff7ed; color: #9a3412; padding: 14px; border-radius: 8px; }
+.ui-dialog .ui-dialog-buttonpane { border-color: #e2e8f0; }
+.ui-dialog form.jtable-dialog-form { font: inherit; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.ui-dialog form.jtable-dialog-form .jtable-input-field-container { padding: 0; min-width: 0; }
+.ui-dialog .jtable-input-label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; color: #334155; }
+.ui-dialog .jtable-input input, .ui-dialog .jtable-input select, .ui-dialog .jtable-input textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font: inherit; font-size: .86rem; border: 1px solid #cbd5e1; border-radius: 7px; background: white; }
+.ui-dialog .jtable-input textarea { resize: vertical; }
+.ui-dialog .jtable-input-field-container:has(textarea), .ui-dialog .product-form-note { grid-column: 1 / -1; }
+.product-form-note { font-size: .78rem; color: #9a3412; background: #fff7ed; padding: 10px 12px; border-radius: 7px; margin: 0; }
+.product-detail dl { display: grid; grid-template-columns: 160px 1fr; gap: 10px 16px; padding: 16px 0; }
+.product-detail dt { font-weight: 600; font-size: .85rem; }
+.product-detail dd { margin: 0; font-size: .85rem; overflow-wrap: anywhere; }
+.product-description { white-space: pre-wrap; line-height: 1.7; margin-top: 16px; }
+.product-image-cell { display: grid; justify-items: start; gap: 8px; }
+.product-image-cell img { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; }
+.product-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-block: 16px; }
+.product-image-item { margin: 0; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; display: grid; gap: 8px; min-width: 0; }
+.product-image-item img { width: 100%; height: 150px; object-fit: contain; background: #f8fafc; border-radius: 4px; }
+.product-image-item figcaption, .product-image-link { font-size: .78rem; overflow-wrap: anywhere; }
+.product-image-link { color: #c2410c; }
+.product-image-form { display: grid; gap: 12px; padding-block: 16px; border-top: 1px solid #e2e8f0; }
+.product-image-form label { font-size: .85rem; font-weight: 600; }
+.product-image-form input { max-width: 100%; font: inherit; font-size: .85rem; }
+.product-image-form button { justify-self: start; padding: 10px 14px; }
+.product-image-error { background: #fef2f2; color: #b91c1c; padding: 12px; font-size: .85rem; border-radius: 8px; }
+.product-image-empty { color: #64748b; font-size: .85rem; }
+.product-image-manager h3 { overflow-wrap: anywhere; }
+.product-image-manager { max-height: calc(100dvh - 190px); overflow-y: auto; }
+.product-image-manager [role="status"] { font-size: .85rem; color: #475569; }
+.product-detail-button:disabled { opacity: .55; cursor: not-allowed; }
+.product-image-manager[aria-busy="true"] button:disabled { cursor: wait; }
+.ui-dialog .jtable-input-field-container:has(.product-form-images), .product-form-upload-status { grid-column: 1 / -1; }
+.ui-dialog .product-form-images input[type="file"] { padding: 10px; }
+.ui-dialog .product-remove-image { display: flex; align-items: center; gap: 6px; font-size: .76rem; cursor: pointer; }
+.ui-dialog .product-remove-image input { width: auto; }
+.product-image-help, .product-form-upload-status { font-size: .8rem; color: #64748b; }
+.product-image-removed { opacity: .5; border-color: #ef4444; }
+.ui-dialog .ui-dialog-content:has(.jtable-dialog-form) { max-height: calc(100dvh - 180px); overflow-y: auto; }
+@media (max-width: 680px) {
+  .product-filter-form { padding-inline: 14px; }
+  .product-filter-form .search-box { flex-basis: 100%; }
+  .product-table-scroll { margin-inline: 14px; }
+  .ui-dialog form.jtable-dialog-form { grid-template-columns: 1fr; }
+  .product-detail dl { grid-template-columns: 1fr; gap: 5px; }
+  .product-detail dd { margin-bottom: 10px; }
+}

@@ -1,968 +1,177 @@
-/**
- * ComicHub / BookMooch - Thống kê doanh thu (Revenue Logic)
- * Phục vụ riêng cho: revenue.html
- * 
- * Tính năng chính:
- * 1. Chart.js Combo Chart: Biến động doanh thu (Bar Gradient) & Đơn hàng (Spline Curve)
- * 2. Toggle biểu đồ (Theo ngày / Theo tuần) mượt mà 60fps
- * 3. HỆ THỐNG BIỂU ĐỒ TRÒN PRO (Pie & Doughnut Charts Suite):
- *    - Biểu đồ 1: Tỷ trọng Thể loại truyện tranh (Manga / Comic Genres)
- *    - Biểu đồ 2: Cơ cấu Thanh toán & Ký quỹ Escrow ComicHub (Bảo đảm dòng tiền)
- *    - Biểu đồ 3: Tỷ trọng theo Phân khúc Giá bìa truyện (Price Tiers)
- * 4. Chuyển đổi toàn cục: Doughnut (Vành tròn) ⇄ Pie (Hình quạt)
- * 5. Chuyển đổi chỉ số: Theo Doanh thu (₫) ⇄ Theo Sản lượng (Cuốn)
- * 6. Tương tác đa chiều: Click Legend ẩn/hiện lát cắt, Hover cập nhật Center Badge động
- * 7. Modal Lọc theo ngày tùy chọn (Custom Date Range Picker) kèm presets nhanh
- * 8. Top 5 truyện bán chạy & Top 5 truyện bán ế / tồn kho lâu kèm hành động xả kho
- */
-
-document.addEventListener('DOMContentLoaded', () => {
-  initRevenueModule();
-});
-
-let mainChartInstance = null;
-let genreChartInstance = null;
-let campaignChartInstance = null;
-let priceTierChartInstance = null;
-let regionChartInstance = null;
-
-let currentDonutType = 'doughnut'; // 'doughnut' | 'pie'
-let currentDonutMetric = 'revenue'; // 'revenue' | 'qty'
-
-let currentRegionView = 'region'; // 'region' | 'city'
-let currentRegionMetric = 'revenue'; // 'revenue' | 'orders'
-
-// Dữ liệu đa chiều cho hệ thống biểu đồ tròn
-const proDonutData = {
-  genre: {
-    labels: ['Shonen Manga', 'Seinen & Trinh thám', 'Isekai & Kỳ ảo', 'Shojo & Romance', 'Artbook & Khác'],
-    colors: ['#f97316', '#0f172a', '#8b5cf6', '#ec4899', '#0ea5e9'],
-    revenue: [66.5, 41.2, 25.35, 15.84, 9.53],
-    revenueFmt: ['66.500.000 ₫', '41.200.000 ₫', '25.350.000 ₫', '15.840.000 ₫', '9.530.000 ₫'],
-    pcts: ['42.0%', '26.0%', '16.0%', '10.0%', '6.0%'],
-    qty: [395, 215, 128, 74, 30],
-    qtyFmt: ['395 cuốn', '215 cuốn', '128 cuốn', '74 cuốn', '30 cuốn'],
-    centerValRev: '158.4M',
-    centerLblRev: 'TỔNG GMV',
-    centerValQty: '842',
-    centerLblQty: 'TỔNG CUỐN'
-  },
-  campaign: {
-    labels: ['Manga Weekend', 'Siêu Sale 10.10', 'Ra mắt Tập mới', 'Flash Sale xả kho', 'Ngày thường'],
-    colors: ['#ec4899', '#f97316', '#8b5cf6', '#0ea5e9', '#64748b'],
-    revenue: [60.2, 44.35, 28.51, 15.84, 9.52],
-    revenueFmt: ['60.200.000 ₫', '44.350.000 ₫', '28.510.000 ₫', '15.840.000 ₫', '9.520.000 ₫'],
-    pcts: ['38.0%', '28.0%', '18.0%', '10.0%', '6.0%'],
-    qty: [295, 240, 135, 112, 60],
-    qtyFmt: ['295 đơn', '240 đơn', '135 đơn', '112 đơn', '60 đơn'],
-    centerValRev: '38.0%',
-    centerLblRev: 'MANGA WEEKEND',
-    centerValQty: '295',
-    centerLblQty: 'ĐƠN SỰ KIỆN'
-  },
-  priceTier: {
-    labels: ['Phổ thông (< 50k)', 'Tiêu chuẩn (50k-100k)', 'Cao cấp (100k-200k)', 'Boxset (> 200k)'],
-    colors: ['#38bdf8', '#f97316', '#6366f1', '#14b8a6'],
-    revenue: [28.51, 76.04, 38.02, 15.85],
-    revenueFmt: ['28.510.000 ₫', '76.040.000 ₫', '38.020.000 ₫', '15.850.000 ₫'],
-    pcts: ['18.0%', '48.0%', '24.0%', '10.0%'],
-    qty: [310, 425, 142, 35],
-    qtyFmt: ['310 cuốn', '425 cuốn', '142 cuốn', '35 cuốn'],
-    centerValRev: '48.0%',
-    centerLblRev: '50K - 100K',
-    centerValQty: '425',
-    centerLblQty: 'CUỐN TOP'
+/* Database reporting for the existing seller layout. HTML sections and controls are retained. */
+(function () {
+  'use strict';
+  const A = window.BookMoochAnalytics, API = window.BookMoochAnalyticsApi;
+  const colors = ['#f97316', '#0f172a', '#8b5cf6', '#ec4899', '#0ea5e9', '#10b981'];
+  const money = value => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
+  const count = value => new Intl.NumberFormat('vi-VN').format(value);
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
+  let root, status, report, requestId = 0, range = A.presetRange(30), grouping = 'day', type = 'doughnut', metric = 'revenue', regionView = 'regions', regionMetric = 'revenue', sort = 'units';
+  const charts = new Map(), pieRows = new Map();
+  const el = id => root?.querySelector('#' + id) || document.getElementById(id);
+  const set = (node, text) => { if (node) node.textContent = text; };
+  function badge(node, text) {
+    if (!node) return;
+    const icon = node.querySelector('.material-symbols-outlined');
+    node.replaceChildren(...(icon ? [icon] : []), document.createTextNode(' ' + text));
   }
-};
-
-// Dữ liệu Phân bổ Thị trường theo Khu vực & Tỉnh thành
-const regionAnalyticsData = {
-  region: {
-    labels: ['Miền Nam', 'Miền Bắc', 'Miền Trung', 'Tây Nguyên & ĐBSCL'],
-    colors: ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'],
-    revenue: [82.37, 49.10, 17.42, 9.51],
-    revenueFmt: ['82.370.000 ₫', '49.100.000 ₫', '17.420.000 ₫', '9.510.000 ₫'],
-    orders: [438, 261, 93, 50],
-    ordersFmt: ['438 đơn', '261 đơn', '93 đơn', '50 đơn'],
-    pcts: ['52.0%', '31.0%', '11.0%', '6.0%'],
-    tags: ['Kho Tân Bình', 'Tăng trưởng +14.2%', 'Đà Nẵng & Huế', 'GHTK & Viettel'],
-    deliverySpeed: ['1.2 ngày', '2.4 ngày', '2.6 ngày', '2.8 ngày'],
-    successRate: ['98.4%', '96.2%', '95.8%', '94.5%'],
-    topBadge: 'Miền Nam dẫn đầu 52.0%',
-    insightText: 'Sức mua tại <strong>Hà Nội & Miền Bắc</strong> tăng trưởng mạnh <strong>+14.2%</strong>. Đề xuất luân chuyển thêm 500 cuốn sách hot (One Piece, Jujutsu Kaisen) sang điểm kho liên kết Long Biên để giảm thời gian phát hàng xuống còn 24h và tiết kiệm 18% phí ship liên miền.'
-  },
-  city: {
-    labels: ['TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Bình Dương & Đ.Nai', 'Hải Phòng & Q.Ninh', 'Cần Thơ', 'Tỉnh thành khác'],
-    colors: ['#2563eb', '#7c3aed', '#d97706', '#059669', '#0891b2', '#ea580c', '#64748b'],
-    revenue: [70.48, 42.77, 12.67, 11.89, 6.33, 5.54, 8.72],
-    revenueFmt: ['70.480.000 ₫', '42.770.000 ₫', '12.670.000 ₫', '11.890.000 ₫', '6.330.000 ₫', '5.540.000 ₫', '8.720.000 ₫'],
-    orders: [375, 227, 68, 63, 34, 30, 45],
-    ordersFmt: ['375 đơn', '227 đơn', '68 đơn', '63 đơn', '34 đơn', '30 đơn', '45 đơn'],
-    pcts: ['44.5%', '27.0%', '8.0%', '7.5%', '4.0%', '3.5%', '5.5%'],
-    tags: ['Kho Tân Bình (Hỏa tốc 4h)', 'Tăng +14.2% • Nhu cầu cao', 'Seinen & Boxset cao', 'Mật độ KCN & ĐH cao', 'Vùng Duyên hải Bắc Bộ', 'Trung tâm ĐBSCL', 'Toàn quốc (57 tỉnh)'],
-    deliverySpeed: ['0.8 ngày', '2.2 ngày', '2.5 ngày', '1.4 ngày', '2.6 ngày', '1.8 ngày', '3.2 ngày'],
-    successRate: ['98.8%', '96.5%', '96.0%', '97.2%', '95.5%', '95.0%', '93.8%'],
-    topBadge: 'TP.HCM dẫn đầu 44.5%',
-    insightText: '<strong>TP. Hồ Chí Minh</strong> và <strong>Hà Nội</strong> chiếm tới <strong>71.5%</strong> tổng doanh số toàn sàn. Tiếp tục duy trì ưu đãi freeship đơn từ 200k và đẩy mạnh dịch vụ giao hỏa tốc 4h tại 2 siêu đô thị này.'
+  function note(node, text) {
+    if (!node) return;
+    let label = node.querySelector(':scope > span');
+    if (!label) { label = document.createElement('span'); node.prepend(label); }
+    set(label, text);
   }
-};
-
-function initRevenueModule() {
-  initMainRevenueChart();
-  initProDonutCharts();
-  initRegionChart();
-  updateRegionRankings();
-  initTopProductsSorting();
-  setupDateModalListeners();
-  updateDateRangePreview();
-}
-
-/**
- * 1. BIỂU ĐỒ COMBO CHÍNH: DOANH THU & SỐ LƯỢNG ĐƠN HÀNG (CHART.JS)
- */
-const mainChartData = {
-  daily: {
-    labels: ['Ngày 01', 'Ngày 05', 'Ngày 10', 'Ngày 15 (Sale)', 'Ngày 20', 'Ngày 25 (Hội sách)', 'Ngày 28', 'Ngày 30'],
-    revenue: [3.2, 4.5, 5.8, 2.6, 5.2, 7.3, 6.1, 6.8],
-    orders: [18, 26, 34, 14, 30, 48, 38, 42]
-  },
-  weekly: {
-    labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6 (Đỉnh)', 'Tuần 7', 'Tuần 8'],
-    revenue: [28.4, 34.8, 42.1, 38.6, 46.0, 52.3, 48.9, 54.2],
-    orders: [152, 190, 235, 204, 260, 310, 280, 325]
+  const regionTotal = () => el('regionRankingList')?.previousElementSibling?.querySelector(':scope > span');
+  const percent = (value, total) => count(Number((total ? value / total * 100 : 0).toFixed(1))) + '%';
+  function segment(button) { button?.parentElement.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button)); }
+  function chart(id, config) {
+    const canvas = el(id); if (!canvas || typeof Chart === 'undefined') return;
+    charts.get(id)?.destroy(); charts.set(id, new Chart(canvas, config));
   }
-};
-
-function initMainRevenueChart() {
-  const canvas = document.getElementById('mainRevenueChartCanvas');
-  if (!canvas || typeof Chart === 'undefined') return;
-
-  const ctx = canvas.getContext('2d');
-
-  // Gradient màu cam rực rỡ cho cột doanh thu
-  const barGradient = ctx.createLinearGradient(0, 0, 0, 280);
-  barGradient.addColorStop(0, '#f97316');
-  barGradient.addColorStop(1, '#ea580c');
-
-  mainChartInstance = new Chart(ctx, {
-    data: {
-      labels: mainChartData.daily.labels,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'Doanh thu (triệu VNĐ)',
-          data: mainChartData.daily.revenue,
-          backgroundColor: barGradient,
-          borderRadius: 6,
-          borderSkipped: false,
-          maxBarThickness: 24,
-          yAxisID: 'y'
-        },
-        {
-          type: 'line',
-          label: 'Số lượng đơn hàng',
-          data: mainChartData.daily.orders,
-          borderColor: '#0b1c30',
-          borderWidth: 3,
-          backgroundColor: 'rgba(11, 28, 48, 0.04)',
-          fill: true,
-          tension: 0.38,
-          pointBackgroundColor: '#f97316',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 8,
-          pointHoverBackgroundColor: '#ea580c',
-          pointHoverBorderColor: '#ffffff',
-          yAxisID: 'y1'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false
-      },
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.94)',
-          titleColor: '#fb923c',
-          bodyColor: '#ffffff',
-          titleFont: { family: "'Plus Jakarta Sans', sans-serif", size: 13, weight: 'bold' },
-          bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          borderWidth: 1,
-          boxPadding: 4,
-          callbacks: {
-            label: function(context) {
-              if (context.dataset.type === 'bar') {
-                return `💰 Doanh thu: ${context.parsed.y} Triệu VNĐ`;
-              }
-              return `📦 Đơn hàng: ${context.parsed.y} đơn đã duyệt`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            color: '#64748b',
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }
-          }
-        },
-        y: {
-          type: 'linear',
-          display: true,
-          position: 'left',
-          grid: { color: '#f1f5f9' },
-          ticks: {
-            color: '#94a3b8',
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
-            callback: value => value + 'tr'
-          }
-        },
-        y1: {
-          type: 'linear',
-          display: true,
-          position: 'right',
-          grid: { drawOnChartArea: false },
-          ticks: {
-            color: '#94a3b8',
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
-            callback: value => value + ' đơn'
-          }
-        }
-      }
+  function clear() {
+    charts.forEach(item => item.destroy()); charts.clear();
+    root.querySelectorAll('#chartWrapper svg').forEach(node => node.setAttribute('hidden', ''));
+    set(document.querySelector('.store-name'), 'Gian hàng'); set(document.querySelector('.user-name'), 'Chờ xác thực');
+    root.querySelectorAll('.kpi-value, .strip-val, .genre-leader-metric .amount').forEach(node => set(node, '—'));
+    root.querySelectorAll('.kpi-trend, .genre-leader-info p, .genre-leader-metric .badge, .card-badge-header, .genre-leader-info h4').forEach(node => badge(node, 'Chờ dữ liệu'));
+    root.querySelectorAll('.pro-chart-footer-note').forEach(node => note(node, 'Chờ dữ liệu'));
+    root.querySelectorAll('#cardBestSellers .content-card-header p, #cardSlowMoving .content-card-header p').forEach(node => set(node, 'Chờ báo cáo từ database.'));
+    set(regionTotal(), 'Tổng doanh thu: —');
+    root.querySelectorAll('.pro-legend-list, .region-ranking-list').forEach(node => set(node, 'Chưa có dữ liệu.'));
+    root.querySelectorAll('.donut-center-info').forEach(node => node.hidden = true);
+    root.querySelectorAll('.chart-footer-stat span:not(.material-symbols-outlined)').forEach(node => set(node, 'Chờ dữ liệu từ database.'));
+    root.querySelectorAll('.data-table tbody').forEach(body => { body.innerHTML = `<tr><td colspan="${body.closest('table').querySelectorAll('thead th').length}" style="text-align:center;padding:24px">Chưa có dữ liệu báo cáo.</td></tr>`; });
+    set(el('regionInsightText'), 'Chưa có dữ liệu vùng giao hàng để phân bổ chi tiết.'); badge(el('regionChartBadge'), 'Chờ dữ liệu');
+  }
+  async function load() {
+    const ticket = ++requestId;
+    root.setAttribute('aria-busy', 'true'); set(status, 'Đang tải báo cáo từ database…');
+    root.querySelectorAll('.page-header button').forEach(button => { if (button.textContent.includes('CSV')) button.disabled = true; });
+    try {
+      const result = await API.report('seller', range, grouping);
+      if (ticket !== requestId) return;
+      report = result;
+      status.innerHTML = `Dữ liệu từ database • ${escape(range.from)} – ${escape(range.to)} • Đơn hoàn tất, tiền hàng không gồm phí vận chuyển.`;
+      render();
+    } catch (error) {
+      if (ticket !== requestId) return;
+      report = null; clear(); set(status, error.message);
+      if (error.loginRequired) { const link = document.createElement('a'); link.href = API.loginUrl(); link.textContent = ' Đăng nhập'; status.appendChild(link); }
+      if (error.sellerRequired) { const link = document.createElement('a'); link.href = API.upgradeUrl(); link.textContent = ' Nâng cấp lên Người bán'; status.appendChild(link); }
+    } finally { if (ticket === requestId) { root.setAttribute('aria-busy', 'false'); root.querySelectorAll('.page-header button').forEach(button => { if (button.textContent.includes('CSV')) button.disabled = !report; }); } }
+  }
+  function render() {
+    const cards = root.querySelectorAll('.kpi-grid .kpi-card');
+    const totalStates = report.states.reduce((sum, row) => sum + row.value, 0);
+    const cancelled = report.states.find(row => row.status === 'CANCELLED')?.value || 0;
+    const rating = report.rating;
+    [money(report.revenue), `${count(report.orders)} đơn`, percent(cancelled, totalStates), rating?.averageRating == null ? 'Chưa có' : `${count(Number(Number(rating.averageRating).toFixed(1)))} / 5.0`].forEach((value, index) => set(cards[index]?.querySelector('.kpi-value'), value));
+    ['Doanh thu trong kỳ', 'Đơn hàng hoàn tất', 'Tỷ lệ đơn hủy', 'Đánh giá cửa hàng'].forEach((value, index) => set(cards[index]?.querySelector('.kpi-label'), value));
+    ['Không gồm phí vận chuyển', `Đã bán: ${count(report.units)} cuốn`, 'Theo ngày tạo đơn trong kỳ', `${count(rating?.reviews || 0)} lượt đánh giá trong kỳ`].forEach((value, index) => badge(cards[index]?.querySelector('.kpi-trend'), value));
+    set(document.querySelector('.store-name'), report.sellerName); set(document.querySelector('.user-name'), report.sellerName);
+    const caption = root.querySelector('.chart-title-group p');
+    set(caption, `Đơn hoàn tất từ ${range.from} đến ${range.to} • Không gồm phí vận chuyển`);
+    const footer = root.querySelector('.chart-footer-stat');
+    if (footer) {
+      set(footer.querySelector(':scope > div:first-child > span:not(.material-symbols-outlined)'), `Đã bán: ${count(report.units)} cuốn • ${count(report.orders)} đơn hoàn tất`);
+      set(footer.querySelector(':scope > div:last-child > span'), `Giá trị đơn trung bình: ${money(report.average)}`);
     }
-  });
-}
-
-function toggleChartMode(btn, mode) {
-  const container = btn.closest('.filter-tabs-bar');
-  if (container) {
-    container.querySelectorAll('.tab-chip').forEach(b => b.classList.remove('active'));
+    renderMain(); renderPies(); renderRegions(); renderProducts();
   }
-  btn.classList.add('active');
-
-  if (!mainChartInstance) return;
-
-  const targetData = mainChartData[mode] || mainChartData.daily;
-  mainChartInstance.data.labels = targetData.labels;
-  mainChartInstance.data.datasets[0].data = targetData.revenue;
-  mainChartInstance.data.datasets[1].data = targetData.orders;
-  mainChartInstance.update();
-
-  if (typeof showToast === 'function') {
-    showToast(`Đã chuyển biểu đồ: ${mode === 'daily' ? 'Theo ngày (30 ngày vừa qua)' : 'Theo tuần (8 tuần gần nhất)'}`, 'info');
-  }
-}
-
-/**
- * 2. HỆ THỐNG BIỂU ĐỒ TRÒN PRO (PIE & DOUGHNUT CHARTS SUITE)
- */
-function initProDonutCharts() {
-  if (typeof Chart === 'undefined') return;
-
-  const defaultDonutOptions = (chartKey) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: currentDonutType === 'doughnut' ? '68%' : '0%',
-    hoverOffset: 10,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.94)',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-        padding: 10,
-        cornerRadius: 8,
-        titleFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: 'bold' },
-        bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12 },
-        callbacks: {
-          label: function(context) {
-            const idx = context.dataIndex;
-            const dataObj = proDonutData[chartKey];
-            const pct = dataObj.pcts[idx];
-            const val = currentDonutMetric === 'revenue' ? dataObj.revenueFmt[idx] : dataObj.qtyFmt[idx];
-            return ` ${context.label}: ${val} (${pct})`;
-          }
-        }
-      }
-    },
-    animation: {
-      animateRotate: true,
-      animateScale: true,
-      duration: 800
+  function renderMain() {
+    if (!report) return;
+    let canvas = el('mainRevenueChartCanvas');
+    if (!canvas) {
+      const wrapper = el('chartWrapper'); if (!wrapper) return;
+      wrapper.querySelector('svg')?.setAttribute('hidden', '');
+      canvas = document.createElement('canvas'); canvas.id = 'mainRevenueChartCanvas'; wrapper.appendChild(canvas);
     }
-  });
-
-  // Chart 1: Thể loại truyện
-  const ctxGenre = document.getElementById('genreChartCanvas');
-  if (ctxGenre) {
-    genreChartInstance = new Chart(ctxGenre.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: proDonutData.genre.labels,
-        datasets: [{
-          data: proDonutData.genre.revenue,
-          backgroundColor: proDonutData.genre.colors,
-          borderWidth: 2,
-          borderColor: '#ffffff'
-        }]
-      },
-      options: defaultDonutOptions('genre')
+    chart('mainRevenueChartCanvas', {
+      type: 'bar', data: { labels: report.series.map(row => row.from === row.to ? row.from : `${row.from} – ${row.to}`), datasets: [
+        { label: 'Doanh thu (triệu VNĐ)', data: report.series.map(row => row.revenue / 1000000), backgroundColor: '#f97316', borderRadius: 6, maxBarThickness: 30, yAxisID: 'y' },
+        { type: 'line', label: 'Số đơn hoàn tất', data: report.series.map(row => row.orders), borderColor: '#0b1c30', backgroundColor: 'rgba(11,28,48,.05)', tension: .35, pointRadius: 2, yAxisID: 'orders' }
+      ]}, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: item => item.datasetIndex === 0 ? money(item.parsed.y * 1000000) : `${count(item.parsed.y)} đơn` } } },
+        scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 14, maxRotation: 45 } }, y: { beginAtZero: true, ticks: { callback: value => `${count(value)}M` } }, orders: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { precision: 0 } } } }
     });
   }
-
-  // Chart 2: Sự kiện & Chiến dịch
-  const ctxCampaign = document.getElementById('campaignChartCanvas');
-  if (ctxCampaign) {
-    campaignChartInstance = new Chart(ctxCampaign.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: proDonutData.campaign.labels,
-        datasets: [{
-          data: proDonutData.campaign.revenue,
-          backgroundColor: proDonutData.campaign.colors,
-          borderWidth: 2,
-          borderColor: '#ffffff'
-        }]
-      },
-      options: defaultDonutOptions('campaign')
+  function renderPies() {
+    if (!report) return;
+    [['genre','categories','topGenreAmount'],['campaign','campaigns','topCampaignAmount'],['priceTier','priceTiers','topPriceAmount']].forEach(([id, key, leader]) => {
+      const canvas = el(id + 'ChartCanvas'); if (!canvas) return;
+      const rows = report[key].map(row => ({...row, amount: metric === 'revenue' ? row.value : row.units})).filter(row => row.amount > 0).sort((a,b) => b.amount - a.amount || a.label.localeCompare(b.label));
+      pieRows.set(id, rows); const total = rows.reduce((sum,row) => sum + row.amount, 0);
+      const format = value => metric === 'revenue' ? money(value) : `${count(value)} cuốn`;
+      const card = canvas.closest('.pro-chart-card');
+      card?.querySelectorAll('.badge').forEach(node => badge(node, rows.length ? 'Trong kỳ đã chọn' : 'Chưa có dữ liệu'));
+      badge(card?.querySelector('.card-badge-header'), rows.length ? `${rows[0].label} • ${percent(rows[0].amount,total)}` : 'Chưa có dữ liệu');
+      if (key === 'priceTiers') set(card?.querySelector('.chart-header h4'), 'Phân khúc giá thực bán & sức mua');
+      set(card?.querySelector('.genre-leader-info h4'), rows.length ? rows[0].label : 'Chưa có đơn hoàn tất');
+      set(card?.querySelector('.genre-leader-info p'), rows.length ? `${count(rows[0].units)} cuốn • ${percent(rows[0].amount, total)}` : '0 cuốn');
+      set(el(leader), format(rows[0]?.amount || 0));
+      note(card?.querySelector('.pro-chart-footer-note'), key === 'campaigns' ? 'Chưa có dữ liệu chiến dịch; đơn chưa gắn chiến dịch được hiển thị riêng.' : key === 'priceTiers' ? 'Phân nhóm theo giá thực bán đã lưu trong đơn hàng.' : `Tổng trong kỳ: ${format(total)}`);
+      set(el(id+'CenterVal'), metric === 'revenue' ? new Intl.NumberFormat('vi-VN',{notation:'compact',maximumFractionDigits:1}).format(total) + ' ₫' : count(total));
+      set(el(id+'CenterLbl'), metric === 'revenue' ? 'TỔNG DOANH THU' : 'CUỐN ĐÃ BÁN');
+      if (el(id+'CenterInfo')) el(id+'CenterInfo').hidden = type === 'pie' || !rows.length;
+      el(id+'LegendList').innerHTML = rows.length ? rows.map((row,index) => `<button type="button" class="pro-legend-item" aria-pressed="true" onclick="toggleChartSlice('${id}',${index})" onmouseenter="hoverChartSlice('${id}',${index},true)" onmouseleave="hoverChartSlice('${id}',${index},false)"><span class="pro-legend-left"><span class="pro-legend-dot" style="background:${colors[index%colors.length]}"></span><span class="pro-legend-name">${escape(row.label)}</span></span><span class="pro-legend-right"><span class="pro-legend-val">${format(row.amount)}</span><span class="pro-legend-pct">${percent(row.amount,total)}</span></span></button>`).join('') : 'Không có đơn hoàn tất trong khoảng ngày này.';
+      chart(id+'ChartCanvas', { type, data: {labels: rows.map(row=>row.label),datasets:[{data:rows.map(row=>row.amount),backgroundColor:rows.map((_,index)=>colors[index%colors.length]),borderColor:'#fff',borderWidth:3,hoverOffset:8}]}, options:{responsive:true,maintainAspectRatio:false,animation:false,cutout:type==='doughnut'?'68%':0,layout:{padding:8},plugins:{legend:{display:false},tooltip:{callbacks:{label:item=>`${item.label}: ${format(item.parsed)} (${percent(item.parsed,total)})`}}}} });
     });
   }
-
-  // Chart 3: Phân khúc giá
-  const ctxPrice = document.getElementById('priceTierChartCanvas');
-  if (ctxPrice) {
-    priceTierChartInstance = new Chart(ctxPrice.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: proDonutData.priceTier.labels,
-        datasets: [{
-          data: proDonutData.priceTier.revenue,
-          backgroundColor: proDonutData.priceTier.colors,
-          borderWidth: 2,
-          borderColor: '#ffffff'
-        }]
-      },
-      options: defaultDonutOptions('priceTier')
-    });
+  function renderRegions() {
+    if (!report || !el('regionChartCanvas')) return;
+    const rows = [...report[regionView]].sort((a,b)=>(regionMetric==='revenue'?b.value-a.value:b.orders-a.orders));
+    badge(el('regionChartBadge'), rows.length ? 'Chưa có phân bổ địa chỉ chi tiết' : 'Chưa có đơn hoàn tất');
+    set(regionTotal(), `Tổng doanh thu: ${money(report.revenue)}`);
+    set(el('regionInsightText'), 'Địa chỉ giao hàng chưa được lưu tách riêng vùng/tỉnh thành. Các đơn này nằm trong nhóm Chưa xác định.');
+    root.querySelectorAll('.strip-val').forEach(node=>set(node,'Chưa có dữ liệu'));
+    el('regionRankingList').innerHTML = rows.length ? rows.map((row,index)=>`<div class="region-rank-item"><div class="region-rank-header"><div class="region-rank-title-box"><span class="region-rank-badge" style="background:${colors[index%colors.length]}">${index+1}</span><span class="region-rank-title">${escape(row.label)}</span></div><span class="region-rank-metric">${regionMetric==='revenue'?money(row.value):`${count(row.orders)} đơn`}</span></div><div class="region-rank-progress-bg"><div class="region-rank-progress-fill" style="width:100%;background:${colors[index%colors.length]}"></div></div></div>`).join('') : 'Không có đơn hoàn tất.';
+    chart('regionChartCanvas',{type:'bar',data:{labels:rows.map(row=>row.label),datasets:[{data:rows.map(row=>regionMetric==='revenue'?row.value/1000000:row.orders),backgroundColor:colors,borderRadius:6,maxBarThickness:28}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:regionMetric==='orders'?0:undefined,callback:value=>regionMetric==='revenue'?`${count(value)}M`:count(value)}},y:{grid:{display:false}}}}});
   }
-}
-
-/**
- * Chuyển đổi toàn cục giữa Doughnut (Vành tròn) & Pie (Hình quạt)
- */
-function switchGlobalDonutType(type, btn) {
-  currentDonutType = type;
-
-  const control = document.getElementById('donutTypeControl');
-  if (control) {
-    control.querySelectorAll('.pill-seg-btn').forEach(b => b.classList.remove('active'));
+  function renderProducts() {
+    if (!report) return;
+    const table = root.querySelector('#cardBestSellers table') || root.querySelector('.data-table'); if (!table) return;
+    const products = A.rankProducts(report.products,sort).slice(0,5), columns = table.querySelectorAll('thead th').length;
+    const productCell = row => `<div class="product-cell"><div class="comic-thumbnail database-cover-placeholder" aria-label="Chưa có ảnh"><span class="material-symbols-outlined">menu_book</span></div><div class="product-meta"><div class="product-title">${escape(row.title)}</div><div class="product-tags"><span class="tag-badge">${count(row.orders)} đơn hoàn tất</span></div></div></div>`;
+    table.tBodies[0].innerHTML = products.length ? products.map((row,index) => columns===7 ? `<tr><td style="text-align:center"><span class="rank-badge rank-${Math.min(index+1,3)}">${index+1}</span></td><td>${productCell(row)}</td><td><span class="tag-badge">${escape(row.category)}</span></td><td style="text-align:center"><strong>${count(row.units)}</strong><span class="price-note"> cuốn</span></td><td style="text-align:right"><div class="price-amount">${money(row.revenue)}</div><span class="price-note">Bình quân ${money(row.units ? row.revenue / row.units : 0)}/cuốn</span></td><td style="text-align:center" title="Chưa có dữ liệu so sánh kỳ trước">—</td><td><span class="badge badge-success">${row.stockQuantity==null?'Chưa có dữ liệu':`Còn ${count(row.stockQuantity)} cuốn`}</span></td></tr>` : `<tr><td>${productCell(row)}</td><td>${escape(row.category)}</td><td>${count(row.units)} cuốn</td><td class="price-amount">${money(row.revenue)}</td><td>${row.stockQuantity==null?'—':count(row.stockQuantity)+' cuốn'}</td></tr>`).join('') : `<tr><td colspan="${columns}" style="text-align:center;padding:24px">Không có sản phẩm bán được trong khoảng ngày này.</td></tr>`;
+    const card = table.closest('.content-card'); set(card?.querySelector('.content-card-header p'), `Top 5 theo ${sort==='units'?'số lượng':'doanh thu'} từ ${range.from} đến ${range.to}.`);
+    badge(card?.querySelector('.card-badge-header'), `${products.length} sản phẩm • ${money(products.reduce((sum,row)=>sum+row.revenue,0))}`);
+    const slow = root.querySelector('#cardSlowMoving');
+    set(slow?.querySelector('.content-card-header p'), 'Báo cáo tồn kho chưa được kết nối.'); badge(slow?.querySelector('.card-badge-header'),'Chưa có báo cáo');
   }
-  if (btn) btn.classList.add('active');
-
-  const cutoutValue = type === 'doughnut' ? '68%' : '0%';
-  const showCenter = type === 'doughnut';
-
-  [genreChartInstance, campaignChartInstance, priceTierChartInstance].forEach(chart => {
-    if (chart) {
-      chart.options.cutout = cutoutValue;
-      chart.update();
-    }
-  });
-
-  // Ẩn/Hiện center badge
-  ['genreCenterInfo', 'campaignCenterInfo', 'priceTierCenterInfo'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = showCenter ? 'block' : 'none';
-  });
-
-  if (typeof showToast === 'function') {
-    showToast(`Đã chuyển chế độ: Biểu đồ ${type === 'doughnut' ? 'Doughnut (Vành tròn)' : 'Pie (Hình quạt)'}`, 'info');
+  function apply(next) { try { A.validateRange(next.from,next.to); } catch(error) { window.showToast?.(error.message,'error'); set(el('previewDaysCount'),error.message); return false; } range={...next}; load(); return true; }
+  function preset(name) {
+    const today=A.dateKey(new Date());
+    if(name==='today') return {from:today,to:today};
+    if(name==='thisYear') return {from:today.slice(0,4)+'-01-01',to:today};
+    if(name==='thisQuarter') { const month=Math.floor((Number(today.slice(5,7))-1)/3)*3+1; return {from:today.slice(0,4)+'-'+String(month).padStart(2,'0')+'-01',to:today}; }
+    return A.presetRange(name==='thisMonth'?'month':name==='7days'?7:30,today);
   }
-}
-
-/**
- * Chuyển đổi toàn cục giữa Doanh thu (₫) & Sản lượng (Cuốn/Đơn)
- */
-function switchDonutMetric(metric, btn) {
-  currentDonutMetric = metric;
-
-  const control = document.getElementById('donutMetricControl');
-  if (control) {
-    control.querySelectorAll('.pill-seg-btn').forEach(b => b.classList.remove('active'));
-  }
-  if (btn) btn.classList.add('active');
-
-  const isRev = metric === 'revenue';
-
-  // Cập nhật dữ liệu biểu đồ
-  if (genreChartInstance) {
-    genreChartInstance.data.datasets[0].data = isRev ? proDonutData.genre.revenue : proDonutData.genre.qty;
-    genreChartInstance.update();
-  }
-  if (campaignChartInstance) {
-    campaignChartInstance.data.datasets[0].data = isRev ? proDonutData.campaign.revenue : proDonutData.campaign.qty;
-    campaignChartInstance.update();
-  }
-  if (priceTierChartInstance) {
-    priceTierChartInstance.data.datasets[0].data = isRev ? proDonutData.priceTier.revenue : proDonutData.priceTier.qty;
-    priceTierChartInstance.update();
-  }
-
-  // Cập nhật giá trị hiển thị trên Legend & Center badge
-  updateDonutLegendAndCenter(isRev);
-
-  if (typeof showToast === 'function') {
-    showToast(`Đã đổi chỉ số biểu đồ: ${isRev ? 'Theo Doanh thu (VNĐ)' : 'Theo Sản lượng (Cuốn/Đơn hàng)'}`, 'info');
-  }
-}
-
-function updateDonutLegendAndCenter(isRev) {
-  // Chart 1
-  proDonutData.genre.labels.forEach((_, idx) => {
-    const el = document.getElementById(`genreVal-${idx}`);
-    if (el) el.textContent = isRev ? proDonutData.genre.revenueFmt[idx] : proDonutData.genre.qtyFmt[idx];
-  });
-  const gVal = document.getElementById('genreCenterVal');
-  const gLbl = document.getElementById('genreCenterLbl');
-  if (gVal) gVal.textContent = isRev ? proDonutData.genre.centerValRev : proDonutData.genre.centerValQty;
-  if (gLbl) gLbl.textContent = isRev ? proDonutData.genre.centerLblRev : proDonutData.genre.centerLblQty;
-
-  // Chart 2: Campaign
-  proDonutData.campaign.labels.forEach((_, idx) => {
-    const el = document.getElementById(`campaignVal-${idx}`);
-    if (el) el.textContent = isRev ? proDonutData.campaign.revenueFmt[idx] : proDonutData.campaign.qtyFmt[idx];
-  });
-  const cVal = document.getElementById('campaignCenterVal');
-  const cLbl = document.getElementById('campaignCenterLbl');
-  if (cVal) cVal.textContent = isRev ? proDonutData.campaign.centerValRev : proDonutData.campaign.centerValQty;
-  if (cLbl) cLbl.textContent = isRev ? proDonutData.campaign.centerLblRev : proDonutData.campaign.centerLblQty;
-
-  // Chart 3
-  proDonutData.priceTier.labels.forEach((_, idx) => {
-    const el = document.getElementById(`priceTierVal-${idx}`);
-    if (el) el.textContent = isRev ? proDonutData.priceTier.revenueFmt[idx] : proDonutData.priceTier.qtyFmt[idx];
-  });
-  const pVal = document.getElementById('priceTierCenterVal');
-  const pLbl = document.getElementById('priceTierCenterLbl');
-  if (pVal) pVal.textContent = isRev ? proDonutData.priceTier.centerValRev : proDonutData.priceTier.centerValQty;
-  if (pLbl) pLbl.textContent = isRev ? proDonutData.priceTier.centerLblRev : proDonutData.priceTier.centerLblQty;
-}
-
-/**
- * Click Legend để Ẩn/Hiện lát cắt trên biểu đồ tròn
- */
-function toggleChartSlice(chartName, sliceIdx) {
-  let chart = null;
-  let legendContainerId = '';
-
-  if (chartName === 'genre') {
-    chart = genreChartInstance;
-    legendContainerId = 'genreLegendList';
-  } else if (chartName === 'campaign') {
-    chart = campaignChartInstance;
-    legendContainerId = 'campaignLegendList';
-  } else if (chartName === 'priceTier') {
-    chart = priceTierChartInstance;
-    legendContainerId = 'priceTierLegendList';
-  }
-
-  if (!chart) return;
-
-  chart.toggleDataVisibility(sliceIdx);
-  chart.update();
-
-  const container = document.getElementById(legendContainerId);
-  if (container) {
-    const items = container.querySelectorAll('.pro-legend-item');
-    if (items[sliceIdx]) {
-      items[sliceIdx].classList.toggle('hidden-slice');
-    }
-  }
-}
-
-/**
- * Hover Legend để highlight lát cắt & cập nhật Center text động
- */
-function hoverChartSlice(chartName, sliceIdx, isHover) {
-  if (currentDonutType !== 'doughnut') return;
-
-  const dataObj = proDonutData[chartName];
-  if (!dataObj) return;
-
-  const centerVal = document.getElementById(`${chartName}CenterVal`);
-  const centerLbl = document.getElementById(`${chartName}CenterLbl`);
-  if (!centerVal || !centerLbl) return;
-
-  if (isHover) {
-    centerVal.textContent = dataObj.pcts[sliceIdx];
-    centerVal.style.color = dataObj.colors[sliceIdx];
-    centerLbl.textContent = dataObj.labels[sliceIdx];
-  } else {
-    const isRev = currentDonutMetric === 'revenue';
-    centerVal.textContent = isRev ? dataObj.centerValRev : dataObj.centerValQty;
-    centerVal.style.color = 'var(--text-main)';
-    centerLbl.textContent = isRev ? dataObj.centerLblRev : dataObj.centerLblQty;
-  }
-}
-
-/**
- * 3. CHỌN BỘ LỌC THỜI GIAN TRÊN PAGE HEADER
- */
-function selectTimeFilter(btn) {
-  const bar = btn.closest('.filter-tabs-bar');
-  if (bar) {
-    bar.querySelectorAll('.tab-chip').forEach(b => b.classList.remove('active'));
-  }
-  btn.classList.add('active');
-
-  const text = btn.textContent.trim();
-  if (typeof showToast === 'function') {
-    showToast(`Đã áp dụng bộ lọc dữ liệu: ${text}`, 'info');
-  }
-}
-
-/**
- * 4. MODAL LỌC THEO NGÀY TÙY CHỌN (CUSTOM DATE RANGE PICKER)
- */
-function openDateRangeModal() {
-  const modal = document.getElementById('dateRangeModal');
-  if (modal) {
-    updateDateRangePreview();
-    modal.classList.add('active');
-  }
-}
-
-function closeDateRangeModal() {
-  const modal = document.getElementById('dateRangeModal');
-  if (modal) {
-    modal.classList.remove('active');
-  }
-}
-
-function applyDatePreset(preset, btn) {
-  const chips = document.querySelectorAll('.modal-preset-chip');
-  chips.forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-
-  const startInput = document.getElementById('filterStartDate');
-  const endInput = document.getElementById('filterEndDate');
-  if (!startInput || !endInput) return;
-
-  const today = new Date();
-  const formatDate = (d) => d.toISOString().split('T')[0];
-
-  let startD = new Date();
-  let endD = new Date();
-
-  switch (preset) {
-    case 'today':
-      startD = new Date();
-      endD = new Date();
-      break;
-    case '7days':
-      startD.setDate(today.getDate() - 7);
-      break;
-    case '30days':
-      startD.setDate(today.getDate() - 30);
-      break;
-    case 'thisMonth':
-      startD = new Date(today.getFullYear(), today.getMonth(), 1);
-      endD = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      break;
-    case 'thisQuarter':
-      const qMonth = Math.floor(today.getMonth() / 3) * 3;
-      startD = new Date(today.getFullYear(), qMonth, 1);
-      endD = new Date(today.getFullYear(), qMonth + 3, 0);
-      break;
-    case 'thisYear':
-      startD = new Date(today.getFullYear(), 0, 1);
-      endD = new Date(today.getFullYear(), 11, 31);
-      break;
-  }
-
-  startInput.value = formatDate(startD);
-  endInput.value = formatDate(endD);
-  updateDateRangePreview();
-}
-
-function updateDateRangePreview() {
-  const startInput = document.getElementById('filterStartDate');
-  const endInput = document.getElementById('filterEndDate');
-  const daysCountEl = document.getElementById('previewDaysCount');
-  const estRevEl = document.getElementById('previewEstRevenue');
-
-  if (!startInput || !endInput) return;
-
-  const d1 = new Date(startInput.value);
-  const d2 = new Date(endInput.value);
-
-  let diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-  if (diffDays <= 0 || isNaN(diffDays)) {
-    diffDays = 1;
-  }
-
-  const estTotal = diffDays * 5280000;
-
-  if (daysCountEl) daysCountEl.textContent = `${diffDays} ngày`;
-  if (estRevEl) estRevEl.textContent = `${estTotal.toLocaleString('vi-VN')} ₫`;
-}
-
-function confirmDateRangeFilter() {
-  const startInput = document.getElementById('filterStartDate');
-  const endInput = document.getElementById('filterEndDate');
-  const dateRangeLabel = document.getElementById('dateRangeLabel');
-  const btnCustom = document.getElementById('btnCustomDateRange');
-
-  if (!startInput || !endInput) return;
-
-  const d1 = new Date(startInput.value);
-  const d2 = new Date(endInput.value);
-  const formatDisplay = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-
-  const labelStr = `${formatDisplay(d1)} - ${formatDisplay(d2)}`;
-  if (dateRangeLabel) {
-    dateRangeLabel.textContent = labelStr;
-  }
-
-  const filterTabsBar = document.querySelector('.page-header .filter-tabs-bar');
-  if (filterTabsBar) {
-    filterTabsBar.querySelectorAll('.tab-chip').forEach(b => b.classList.remove('active'));
-    if (btnCustom) btnCustom.classList.add('active');
-  }
-
-  closeDateRangeModal();
-
-  if (typeof showToast === 'function') {
-    showToast(`Đã áp dụng bộ lọc tùy chọn: ${labelStr}. Chỉ số đã được cập nhật!`, 'success');
-  }
-
-  // Trigger biểu đồ cập nhật
-  if (mainChartInstance) {
-    mainChartInstance.update();
-  }
-}
-
-function setupDateModalListeners() {
-  const modal = document.getElementById('dateRangeModal');
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeDateRangeModal();
-    });
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeDateRangeModal();
-  });
-}
-
-/**
- * 5. CHUYỂN ĐỔI CHẾ ĐỘ XEM TRUYỆN TRANH (Tất cả / Bán chạy / Bán ế)
- */
-function switchComicsView(viewType, btn) {
-  const tabsContainer = document.getElementById('comicsViewTabs');
-  if (tabsContainer) {
-    tabsContainer.querySelectorAll('.comics-view-tab').forEach(b => b.classList.remove('active'));
-  }
-  if (btn) btn.classList.add('active');
-
-  const cardBest = document.getElementById('cardBestSellers');
-  const cardSlow = document.getElementById('cardSlowMoving');
-
-  if (viewType === 'best') {
-    if (cardBest) cardBest.style.display = 'block';
-    if (cardSlow) cardSlow.style.display = 'none';
-  } else if (viewType === 'slow') {
-    if (cardBest) cardBest.style.display = 'none';
-    if (cardSlow) cardSlow.style.display = 'block';
-  } else {
-    if (cardBest) cardBest.style.display = 'block';
-    if (cardSlow) cardSlow.style.display = 'block';
-  }
-}
-
-/**
- * 6. HÀNH ĐỘNG XẢ KHO CHO TRUYỆN BÁN Ế (SLOW-MOVING)
- */
-function showClearanceAction(comicTitle, actionType, btn) {
-  if (typeof showToast === 'function') {
-    showToast(`Đã áp dụng chiến dịch [${actionType}] cho ${comicTitle}! Bắt đầu kích cầu xả kho.`, 'success');
-  }
-
-  const targetBtn = btn || (typeof event !== 'undefined' ? event.currentTarget : null);
-  if (targetBtn) {
-    targetBtn.className = 'btn btn-primary btn-sm';
-    targetBtn.style.fontSize = '0.78rem';
-    targetBtn.style.padding = '5px 12px';
-    targetBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 14px;">check</span> Đã chạy`;
-    targetBtn.disabled = true;
-  }
-}
-
-/**
- * 7. SẮP XẾP BẢNG TOP SẢN PHẨM
- */
-function initTopProductsSorting() {
-  const tables = document.querySelectorAll('.data-table');
-  tables.forEach(table => {
-    const ths = table.querySelectorAll('thead th');
-    ths.forEach((th, colIdx) => {
-      const title = th.textContent.trim();
-      if (!title || title.includes('Hạng') || title.includes('Xử lý')) return;
-
-      th.classList.add('sortable');
-      th.style.cursor = 'pointer';
-
-      th.addEventListener('click', () => {
-        const isAsc = th.classList.contains('sort-asc');
-        ths.forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
-
-        if (isAsc) {
-          th.classList.add('sort-desc');
-        } else {
-          th.classList.add('sort-asc');
-        }
-
-        const tbody = table.querySelector('tbody');
-        if (!tbody) return;
-
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        rows.sort((a, b) => {
-          const aText = a.cells[colIdx]?.textContent.replace(/\D/g, '') || '0';
-          const bText = b.cells[colIdx]?.textContent.replace(/\D/g, '') || '0';
-          const aVal = parseInt(aText, 10);
-          const bVal = parseInt(bText, 10);
-
-          if (!isNaN(aVal) && !isNaN(bVal) && aVal !== bVal) {
-            return !isAsc ? aVal - bVal : bVal - aVal;
-          }
-          return (a.cells[colIdx]?.textContent || '').localeCompare(b.cells[colIdx]?.textContent || '', 'vi');
-        });
-
-        rows.forEach(r => tbody.appendChild(r));
-      });
-    });
-  });
-}
-
-/**
- * 8. HỆ THỐNG BIỂU ĐỒ & THỐNG KÊ DOANH THU THEO KHU VỰC (GEOGRAPHIC SALES ANALYTICS)
- */
-function initRegionChart() {
-  const canvas = document.getElementById('regionChartCanvas');
-  if (!canvas || typeof Chart === 'undefined') return;
-
-  const dataObj = regionAnalyticsData[currentRegionView];
-  const datasetValues = currentRegionMetric === 'revenue' ? dataObj.revenue : dataObj.orders;
-
-  if (regionChartInstance) {
-    regionChartInstance.destroy();
-  }
-
-  const ctx = canvas.getContext('2d');
-  regionChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: dataObj.labels,
-      datasets: [{
-        label: currentRegionMetric === 'revenue' ? 'Doanh thu (triệu ₫)' : 'Số đơn hàng',
-        data: datasetValues,
-        backgroundColor: dataObj.colors,
-        borderRadius: 6,
-        borderSkipped: false,
-        maxBarThickness: 28,
-        barPercentage: 0.72,
-        categoryPercentage: 0.85
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 550,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          titleFont: { family: "'Plus Jakarta Sans', sans-serif", size: 13, weight: '700' },
-          bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12 },
-          padding: 12,
-          cornerRadius: 8,
-          borderColor: 'rgba(255, 255, 255, 0.12)',
-          borderWidth: 1,
-          boxPadding: 4,
-          callbacks: {
-            label: function(ctx) {
-              const idx = ctx.dataIndex;
-              const rev = dataObj.revenueFmt[idx];
-              const ord = dataObj.ordersFmt[idx];
-              const pct = dataObj.pcts[idx];
-              return ` ${rev} (${ord}) • Chiếm ${pct}`;
-            },
-            afterLabel: function(ctx) {
-              const idx = ctx.dataIndex;
-              return `⚡ Phát TB: ${dataObj.deliverySpeed[idx]} • Thành công: ${dataObj.successRate[idx]}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: {
-            color: '#f1f5f9',
-            drawBorder: false
-          },
-          ticks: {
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' },
-            color: '#64748b',
-            callback: function(val) {
-              return currentRegionMetric === 'revenue' ? val + 'M' : val;
-            }
-          }
-        },
-        y: {
-          grid: { display: false, drawBorder: false },
-          ticks: {
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' },
-            color: '#334155'
-          }
-        }
-      }
-    }
-  });
-}
-
-function switchRegionView(viewMode, btnEl) {
-  if (currentRegionView === viewMode) return;
-  currentRegionView = viewMode;
-
-  const group = document.getElementById('regionViewControl');
-  if (group) {
-    group.querySelectorAll('.pill-seg-btn').forEach(b => b.classList.remove('active'));
-  }
-  if (btnEl) btnEl.classList.add('active');
-
-  const titleEl = document.getElementById('regionChartTitle');
-  const subEl = document.getElementById('regionChartSubtitle');
-  const badgeEl = document.getElementById('regionChartBadge');
-  const insightEl = document.getElementById('regionInsightText');
-  const dataObj = regionAnalyticsData[currentRegionView];
-
-  if (viewMode === 'region') {
-    if (titleEl) titleEl.textContent = 'Mật độ Doanh thu theo Vùng miền';
-    if (subEl) subEl.textContent = 'So sánh tỷ trọng đóng góp doanh thu giữa các khu vực địa lý';
-    if (badgeEl) {
-      badgeEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 14px;">location_on</span> ${dataObj.topBadge}`;
-    }
-  } else {
-    if (titleEl) titleEl.textContent = 'Doanh số theo Top Tỉnh & Thành phố';
-    if (subEl) subEl.textContent = 'Xếp hạng các đô thị có lượng tiêu thụ sách và truyện tranh lớn nhất';
-    if (badgeEl) {
-      badgeEl.innerHTML = `<span class="material-symbols-outlined" style="font-size: 14px;">location_city</span> ${dataObj.topBadge}`;
-    }
-  }
-
-  if (insightEl) {
-    insightEl.innerHTML = dataObj.insightText;
-  }
-
-  initRegionChart();
-  updateRegionRankings();
-}
-
-function switchRegionMetric(metricMode, btnEl) {
-  if (currentRegionMetric === metricMode) return;
-  currentRegionMetric = metricMode;
-
-  const group = document.getElementById('regionMetricControl');
-  if (group) {
-    group.querySelectorAll('.pill-seg-btn').forEach(b => b.classList.remove('active'));
-  }
-  if (btnEl) btnEl.classList.add('active');
-
-  initRegionChart();
-  updateRegionRankings();
-}
-
-function updateRegionRankings() {
-  const container = document.getElementById('regionRankingList');
-  if (!container) return;
-
-  const dataObj = regionAnalyticsData[currentRegionView];
-  const maxVal = Math.max(...(currentRegionMetric === 'revenue' ? dataObj.revenue : dataObj.orders));
-
-  let html = '';
-  dataObj.labels.forEach((label, idx) => {
-    const valFmt = currentRegionMetric === 'revenue' ? dataObj.revenueFmt[idx] : dataObj.ordersFmt[idx];
-    const rawVal = currentRegionMetric === 'revenue' ? dataObj.revenue[idx] : dataObj.orders[idx];
-    const pct = dataObj.pcts[idx];
-    const fillWidth = Math.round((rawVal / maxVal) * 100);
-    const color = dataObj.colors[idx];
-    const tag = dataObj.tags[idx];
-    const speed = dataObj.deliverySpeed[idx];
-    const success = dataObj.successRate[idx];
-
-    html += `
-      <div class="region-rank-item" onmouseenter="highlightRegionBar(${idx})" onmouseleave="resetRegionBar()">
-        <div class="region-rank-header">
-          <div class="region-rank-title-box">
-            <span class="region-rank-badge" style="background-color: ${color};">${idx + 1}</span>
-            <span class="region-rank-title">${label}</span>
-          </div>
-          <div class="region-rank-metric-box">
-            <span class="region-rank-metric">${valFmt}</span>
-            <span class="region-rank-pct-pill" style="color: ${color}; background-color: ${color}18;">${pct}</span>
-          </div>
-        </div>
-        <div class="region-rank-progress-bg">
-          <div class="region-rank-progress-fill" style="width: ${fillWidth}%; background-color: ${color};"></div>
-        </div>
-        <div class="region-rank-tags">
-          <span class="rank-tag-chip">
-            <span class="material-symbols-outlined" style="font-size: 13px;">schedule</span>
-            ${speed}
-          </span>
-          <span class="rank-tag-chip success">
-            <span class="material-symbols-outlined" style="font-size: 13px;">verified</span>
-            ${success}
-          </span>
-          <span class="rank-tag-chip note" style="margin-left: auto;">
-            ${tag}
-          </span>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
-
-function highlightRegionBar(idx) {
-  if (!regionChartInstance) return;
-  const activeElements = [{ datasetIndex: 0, index: idx }];
-  regionChartInstance.setActiveElements(activeElements);
-  regionChartInstance.tooltip.setActiveElements(activeElements, { x: 0, y: 0 });
-  regionChartInstance.update();
-}
-
-function resetRegionBar() {
-  if (!regionChartInstance) return;
-  regionChartInstance.setActiveElements([]);
-  regionChartInstance.tooltip.setActiveElements([], { x: 0, y: 0 });
-  regionChartInstance.update();
-}
-
+  window.initRevenueModule = function () {
+    if(root) return;
+    root=document.querySelector('#view-revenue') || document.querySelector('main.content-body'); if(!root) return;
+    status=document.createElement('p'); status.id='revenueDataSource'; status.className='database-report-status'; status.setAttribute('role','status'); root.querySelector('.page-header').after(status);
+    clear();
+    if(el('filterStartDate')) { el('filterStartDate').value=range.from; el('filterEndDate').value=range.to; }
+    else { const form=document.createElement('form'); form.className='database-date-filter'; form.innerHTML=`<label>Từ ngày<input type="date" id="filterStartDate" value="${range.from}" required></label><label>Đến ngày<input type="date" id="filterEndDate" value="${range.to}" required></label><button class="btn btn-primary" type="submit">Áp dụng</button>`; status.after(form); form.addEventListener('submit',event=>{event.preventDefault();window.confirmDateRangeFilter();}); }
+    root.querySelectorAll('.page-header button').forEach(button=>{if(button.textContent.includes('CSV')){button.removeAttribute('onclick');button.addEventListener('click',()=>{if(!report)return;const url=URL.createObjectURL(new Blob([A.csv([['Từ ngày','Đến ngày','Doanh thu','Số đơn','Sản lượng'],...report.series.map(row=>[row.from,row.to,row.revenue,row.orders,row.units])])],{type:'text/csv;charset=utf-8;'}));const link=document.createElement('a');link.href=url;link.download=`doanh_thu_${range.from}_${range.to}.csv`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});} if(button.textContent.includes('Năm nay'))set(button,'Năm nay');});
+    const table=root.querySelector('#cardBestSellers table') || root.querySelector('.data-table');
+    table?.querySelectorAll('thead th').forEach((heading,index)=>{const columns=table.querySelectorAll('thead th').length;if(index===(columns===7?3:2)||index===(columns===7?4:3)){heading.style.cursor='pointer';heading.addEventListener('click',()=>{sort=index===(columns===7?4:3)?'revenue':'units';renderProducts();});}});
+    el('dateRangeModal')?.addEventListener('click',event=>{if(event.target===el('dateRangeModal'))window.closeDateRangeModal();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')window.closeDateRangeModal();});
+    load();
+  };
+  window.toggleChartMode=(button,mode)=>{grouping=mode==='weekly'?'week':'day';segment(button);load();};
+  window.switchGlobalDonutType=(next,button)=>{type=next;segment(button);renderPies();};
+  window.switchDonutMetric=(next,button)=>{metric=next==='qty'?'units':'revenue';segment(button);renderPies();};
+  window.toggleChartSlice=(id,index)=>{const item=charts.get(id+'ChartCanvas');if(!item)return;item.toggleDataVisibility(index);item.update();const button=el(id+'LegendList').children[index];button.classList.toggle('hidden-slice',!item.getDataVisibility(index));button.setAttribute('aria-pressed',String(item.getDataVisibility(index)));};
+  window.hoverChartSlice=(id,index,hover)=>{const item=charts.get(id+'ChartCanvas');if(!item)return;item.setActiveElements(hover?[{datasetIndex:0,index}]:[]);item.update();};
+  window.switchRegionView=(next,button)=>{regionView=next==='city'?'cities':'regions';segment(button);renderRegions();};
+  window.switchRegionMetric=(next,button)=>{regionMetric=next;segment(button);renderRegions();};
+  window.openDateRangeModal=()=>{el('filterStartDate').value=range.from;el('filterEndDate').value=range.to;el('dateRangeModal')?.classList.add('active');window.updateDateRangePreview();};
+  window.closeDateRangeModal=()=>el('dateRangeModal')?.classList.remove('active');
+  window.applyDatePreset=(name,button)=>{const next=preset(name);el('filterStartDate').value=next.from;el('filterEndDate').value=next.to;segment(button);window.updateDateRangePreview();};
+  window.updateDateRangePreview=()=>{try{const selected=A.validateRange(el('filterStartDate').value,el('filterEndDate').value);set(el('previewDaysCount'),`${selected.days} ngày`);set(el('previewEstRevenue'),'Tính từ database sau khi áp dụng');}catch(error){set(el('previewDaysCount'),error.message);set(el('previewEstRevenue'),'—');}};
+  window.confirmDateRangeFilter=()=>{if(apply({from:el('filterStartDate').value,to:el('filterEndDate').value})){segment(el('btnCustomDateRange'));set(el('dateRangeLabel'),`${range.from} – ${range.to}`);window.closeDateRangeModal();}};
+  window.selectTimeFilter=button=>{const label=button.textContent;const name=label.includes('Hôm nay')?'today':label.includes('7 ngày')?'7days':label.includes('Năm nay')?'thisYear':'30days';segment(button);const next=preset(name);if(el('filterStartDate')){el('filterStartDate').value=next.from;el('filterEndDate').value=next.to;}apply(next);};
+  window.switchComicsView=(view,button)=>{segment(button);if(el('cardBestSellers'))el('cardBestSellers').style.display=view==='slow'?'none':'';if(el('cardSlowMoving'))el('cardSlowMoving').style.display=view==='best'?'none':'';};
+  document.addEventListener('DOMContentLoaded',window.initRevenueModule);
+})();
