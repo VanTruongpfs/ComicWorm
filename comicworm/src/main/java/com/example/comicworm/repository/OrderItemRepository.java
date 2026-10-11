@@ -37,4 +37,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             GROUP BY oi.productId
             """)
     List<Object[]> sumSoldByProductIds(@Param("productIds") Collection<Long> productIds);
+
+    List<OrderItem> findByOrderId(Long orderId);
 }
