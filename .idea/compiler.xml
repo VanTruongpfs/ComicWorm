@@ -11,9 +11,14 @@
         <module name="comicworm.test" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="com.example.comicworm" target="21" />
+      <module name="comicworm" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="com.example.comicworm" options="-parameters" />
       <module name="comicworm" options="-parameters" />
       <module name="comicworm.main" options="-parameters" />
       <module name="comicworm.test" options="-parameters" />

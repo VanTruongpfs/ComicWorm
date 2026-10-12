@@ -33,48 +33,66 @@ public class SellerProductService {
             "conditionPercent", "isActive", "moderationStatus", "createdAt");
 
     public SellerProductService(ProductRepository products, CategoryRepository categories,
-            AuthorRepository authors, PublisherRepository publishers, ProductImageRepository images, SellerProductImageService productImages) {
-        this.products = products; this.categories = categories; this.authors = authors; this.publishers = publishers;
+                                AuthorRepository authors, PublisherRepository publishers, ProductImageRepository images, SellerProductImageService productImages) {
+        this.products = products;
+        this.categories = categories;
+        this.authors = authors;
+        this.publishers = publishers;
         this.images = images;
         this.productImages = productImages;
     }
 
     public Map<String, Object> list(Long sellerId, int start, int size, String sorting,
-            String search, Integer categoryId, String stock) {
+                                    String search, Integer categoryId, String stock) {
+
+        // Tránh NullPointerException cho search và stock
+        String cleanSearch = (search == null) ? "" : search.trim();
+        String cleanStock = (stock == null) ? "all" : stock.trim();
+        String cleanSorting = (sorting == null || sorting.isBlank()) ? "id DESC" : sorting;
+
         if (size < 1 || size > 100 || start < 0 || start % size != 0) {
             throw badRequest("Phân trang không hợp lệ (tối đa 100 sản phẩm/trang).");
         }
-        if (search.length() > 255) throw badRequest("Từ khóa tìm kiếm tối đa 255 ký tự.");
-        if (!Set.of("all", "in_stock", "low_stock", "out_of_stock").contains(stock)) {
+        if (cleanSearch.length() > 255) throw badRequest("Từ khóa tìm kiếm tối đa 255 ký tự.");
+        if (!Set.of("all", "in_stock", "low_stock", "out_of_stock").contains(cleanStock)) {
             throw badRequest("Bộ lọc tồn kho không hợp lệ.");
         }
+
         Specification<Product> scope = (root, query, builder) -> {
             var predicates = new ArrayList<jakarta.persistence.criteria.Predicate>();
             predicates.add(builder.equal(root.get("sellerId"), sellerId));
             predicates.add(builder.isNull(root.get("deletedAt")));
-            if (!search.isBlank()) {
-                String term = search.trim().toLowerCase(Locale.ROOT).replace("\\", "\\\\")
+
+            if (!cleanSearch.isBlank()) {
+                String term = cleanSearch.toLowerCase(Locale.ROOT).replace("\\", "\\\\")
                         .replace("%", "\\%").replace("_", "\\_");
                 var title = builder.like(builder.lower(root.get("title")), "%" + term + "%", '\\');
-                try { predicates.add(builder.or(title, builder.equal(root.get("id"), Long.parseLong(search.trim())))); }
-                catch (NumberFormatException ignored) { predicates.add(title); }
+                try {
+                    predicates.add(builder.or(title, builder.equal(root.get("id"), Long.parseLong(cleanSearch))));
+                } catch (NumberFormatException ignored) {
+                    predicates.add(title);
+                }
             }
             if (categoryId != null) predicates.add(builder.equal(root.get("categoryId"), categoryId));
-            if (stock.equals("in_stock")) predicates.add(builder.greaterThan(root.get("stockQuantity"), 0));
-            if (stock.equals("low_stock")) {
+            if (cleanStock.equals("in_stock")) predicates.add(builder.greaterThan(root.get("stockQuantity"), 0));
+            if (cleanStock.equals("low_stock")) {
                 predicates.add(builder.greaterThan(root.get("stockQuantity"), 0));
                 predicates.add(builder.lessThan(root.get("stockQuantity"), 3));
             }
-            if (stock.equals("out_of_stock")) predicates.add(builder.equal(root.get("stockQuantity"), 0));
+            if (cleanStock.equals("out_of_stock")) predicates.add(builder.equal(root.get("stockQuantity"), 0));
             return builder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
         };
-        var page = products.findAll(scope, PageRequest.of(start / size, size, parseSort(sorting)));
+
+        var page = products.findAll(scope, PageRequest.of(start / size, size, parseSort(cleanSorting)));
         var imageGroups = page.isEmpty() ? Map.<Long, List<com.example.comicworm.model.ProductImage>>of()
                 : images.findByProductIdInOrderByDisplayOrderAscIdAsc(page.getContent().stream().map(Product::getId).toList())
-                    .stream().collect(java.util.stream.Collectors.groupingBy(com.example.comicworm.model.ProductImage::getProductId));
-        return Map.of("Result", "OK", "Records", page.map(product -> SellerProductRecord.from(product,
-                imageGroups.getOrDefault(product.getId(), List.of()))).getContent(),
-                "TotalRecordCount", page.getTotalElements(), "Summary", summary(sellerId));
+                .stream().collect(java.util.stream.Collectors.groupingBy(com.example.comicworm.model.ProductImage::getProductId));
+
+        return Map.of("Result", "OK",
+                "Records", page.map(product -> SellerProductRecord.from(product,
+                        imageGroups.getOrDefault(product.getId(), List.of()))).getContent(),
+                "TotalRecordCount", page.getTotalElements(),
+                "Summary", summary(sellerId));
     }
 
     public SellerProductRecord get(Long sellerId, Long id) { return record(owned(sellerId, id)); }
@@ -95,13 +113,16 @@ public class SellerProductService {
 
     public Map<String, Object> summary(Long sellerId) {
         var summary = products.summarizeInventory(sellerId);
-        return Map.of("productCount", summary.getProductCount(), "stockQuantity", summary.getStockQuantity(),
-                "lowStockCount", summary.getLowStockCount(), "outOfStockCount", summary.getOutOfStockCount(),
+        return Map.of("productCount", summary.getProductCount(),
+                "stockQuantity", summary.getStockQuantity(),
+                "lowStockCount", summary.getLowStockCount(),
+                "outOfStockCount", summary.getOutOfStockCount(),
                 "inventoryValue", summary.getInventoryValue());
     }
 
     @Transactional
     public SellerProductRecord create(Long sellerId, SellerProductRequest request) {
+        validateRequest(request);
         validateReferences(request);
         var product = new Product();
         product.setSellerId(sellerId);
@@ -112,8 +133,13 @@ public class SellerProductService {
 
     @Transactional
     public SellerProductRecord update(Long sellerId, Long id, SellerProductRequest request) {
+        validateRequest(request);
         var product = lockOwned(sellerId, id);
         validateReferences(request);
+        // Cập nhật lại slug nếu tiêu đề bị thay đổi
+        if (!product.getTitle().equalsIgnoreCase(request.title().trim())) {
+            product.setSlug(slug(request.title()));
+        }
         apply(product, request);
         return record(products.saveAndFlush(product));
     }
@@ -128,7 +154,7 @@ public class SellerProductService {
 
     @Transactional
     public SellerProductRecord createWithImages(Long sellerId, SellerProductRequest request, MultipartFile cover,
-            List<MultipartFile> details) {
+                                                List<MultipartFile> details) {
         if (cover == null || cover.isEmpty()) throw badRequest("Vui lòng chọn ảnh bìa sản phẩm.");
         var created = create(sellerId, request);
         productImages.save(sellerId, created.id(), cover, details, List.of());
@@ -137,7 +163,7 @@ public class SellerProductService {
 
     @Transactional
     public SellerProductRecord updateWithImages(Long sellerId, Long id, SellerProductRequest request, MultipartFile cover,
-            List<MultipartFile> details, List<Long> removeIds) {
+                                                List<MultipartFile> details, List<Long> removeIds) {
         update(sellerId, id, request);
         productImages.save(sellerId, id, cover, details, removeIds);
         return get(sellerId, id);
@@ -153,6 +179,12 @@ public class SellerProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm trong gian hàng của bạn."));
     }
 
+    private void validateRequest(SellerProductRequest request) {
+        if (request == null) throw badRequest("Dữ liệu yêu cầu không được rỗng.");
+        if (request.title() == null || request.title().isBlank()) throw badRequest("Tên sản phẩm không được để trống.");
+        if (request.categoryId() == null) throw badRequest("Vui lòng chọn thể loại.");
+    }
+
     private void validateReferences(SellerProductRequest request) {
         if (!categories.existsById(request.categoryId())) throw badRequest("Thể loại đã chọn không tồn tại.");
         if (request.authorId() != null && !authors.existsById(request.authorId())) throw badRequest("Tác giả đã chọn không tồn tại.");
@@ -160,20 +192,30 @@ public class SellerProductService {
     }
 
     private void apply(Product product, SellerProductRequest request) {
-        product.setTitle(request.title().trim()); product.setDescription(request.description().trim());
-        product.setCategoryId(request.categoryId()); product.setAuthorId(request.authorId());
-        product.setPublisherId(request.publisherId()); product.setVolumeNumbers(trim(request.volumeNumbers()));
-        product.setEditionType(trim(request.editionType())); product.setPublicationYear(request.publicationYear());
-        product.setConditionPercent(request.conditionPercent()); product.setPrice(request.price());
-        product.setStockQuantity(request.stockQuantity()); product.setListingType(request.listingType());
-        product.setTradeWishNote(trim(request.tradeWishNote())); product.setIsActive(request.isActive());
+        product.setTitle(request.title().trim());
+        product.setDescription(request.description() != null ? request.description().trim() : "");
+        product.setCategoryId(request.categoryId());
+        product.setAuthorId(request.authorId());
+        product.setPublisherId(request.publisherId());
+        product.setVolumeNumbers(trim(request.volumeNumbers()));
+        product.setEditionType(trim(request.editionType()));
+        product.setPublicationYear(request.publicationYear());
+        product.setConditionPercent(request.conditionPercent());
+        product.setPrice(request.price());
+        product.setStockQuantity(request.stockQuantity());
+        product.setListingType(request.listingType());
+        product.setTradeWishNote(trim(request.tradeWishNote()));
+        product.setIsActive(request.isActive());
         product.setModerationStatus(ModerationStatus.PENDING);
-        product.setModeratedBy(null); product.setModeratedAt(null); product.setModerationReason(null);
+        product.setModeratedBy(null);
+        product.setModeratedAt(null);
+        product.setModerationReason(null);
     }
 
     private String trim(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 
     private String slug(String title) {
+        if (title == null || title.isBlank()) return "truyen-" + UUID.randomUUID();
         String prefix = Normalizer.normalize(title.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "").replace('đ', 'd').replaceAll("[^a-z0-9]+", "-")
                 .replaceAll("^-|-$", "");
