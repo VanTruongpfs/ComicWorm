@@ -1,15 +1,17 @@
 package com.example.comicworm.repository;
 
 import com.example.comicworm.model.Product;
+import com.example.comicworm.model.enums.ModerationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.Lock;
-import jakarta.persistence.LockModeType;
 
 import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
@@ -67,4 +69,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             GROUP BY p.publisherId
             """)
     List<Object[]> countVisibleByPublisher();
+
+    List<Product> findByModerationStatusAndIsActiveTrue(ModerationStatus moderationStatus);
+    Optional<Product> findFirstByModerationStatusAndIsActiveTrueOrderByIdDesc(ModerationStatus moderationStatus);
+    Optional<Product> findBySlug(String slug);
+    List<Product> findByCategoryIdAndModerationStatusAndIsActiveTrue(Long categoryId, ModerationStatus moderationStatus);
 }
+

@@ -334,30 +334,151 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 5. NÚT "MUA NGAY (BẢO CHỨNG PAY)"
+    // 5. TẢI DỮ LIỆU SẢN PHẨM TỪ DATABASE & XỬ LÝ THÊM VÀO GIỎ / MUA NGAY
     // --------------------------------------------------------------------------
-    const btnBuyNow = document.querySelector('.btn-buy-now, button.bg-\\[\\#F97316\\].shadow-lg');
+    let currentProductId = 1;
 
-    if (btnBuyNow) {
-        btnBuyNow.addEventListener('click', (e) => {
+    const loadProductFromDB = async () => {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const prodId = urlParams.get('id');
+            const prodSlug = urlParams.get('slug');
+
+            let endpoint = '/api/products/first';
+            if (prodId) {
+                endpoint = `/api/products/${prodId}`;
+            } else if (prodSlug) {
+                endpoint = `/api/products/slug/${prodSlug}`;
+            }
+
+            const res = await fetch(endpoint);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.id) return;
+
+            currentProductId = data.id;
+
+            // Cập nhật tên truyện
+            const titleEl = document.querySelector('.comic-main-title');
+            if (titleEl) titleEl.textContent = data.title;
+
+            // Cập nhật giá
+            const priceEl = document.querySelector('.current-price');
+            if (priceEl && data.price != null) {
+                priceEl.textContent = new Intl.NumberFormat('vi-VN').format(data.price) + '₫';
+            }
+
+            // Cập nhật mã tin và tồn kho
+            const metaTags = document.querySelector('.listing-id');
+            if (metaTags) metaTags.innerHTML = `Mã tin: <strong>#CW-${data.id}</strong> (Tồn kho: ${data.stockQuantity} cuốn)`;
+
+            // Cập nhật tình trạng sách
+            const gradePill = document.querySelector('.grade-pill');
+            if (gradePill && data.conditionPercent) {
+                gradePill.textContent = `Độ mới ${data.conditionPercent}%`;
+            }
+
+            // Cập nhật thông tin thông số (Specs)
+            const specsGrid = document.querySelector('.specs-grid');
+            if (specsGrid) {
+                const specItems = specsGrid.querySelectorAll('.spec-card');
+                if (specItems.length >= 2) {
+                    const pubName = data.publisherName || (data.publisher && data.publisher.name);
+                    const catName = data.categoryName || (data.categoryPath && data.categoryPath.length > 0 && data.categoryPath[data.categoryPath.length - 1].name);
+                    if (pubName) specItems[0].querySelector('.spec-value').textContent = pubName;
+                    if (catName) specItems[1].querySelector('.spec-value').textContent = catName;
+                }
+            }
+
+            // Cập nhật người bán
+            const sellerNameEl = document.querySelector('.seller-info-group h4, .seller-profile-card strong');
+            const sellerName = data.sellerName || (data.seller && data.seller.fullName);
+            if (sellerNameEl && sellerName) {
+                sellerNameEl.textContent = sellerName;
+            }
+
+            // Cập nhật mô tả
+            const synopsisWrapper = document.querySelector('.synopsis-wrapper p');
+            if (synopsisWrapper && data.description) {
+                synopsisWrapper.textContent = data.description;
+            }
+
+            // Cập nhật ảnh chính
+            const mainImg = document.querySelector('.primary-preview-img');
+            if (mainImg) {
+                if (data.imageUrls && data.imageUrls.length > 0) {
+                    mainImg.src = data.imageUrls[0];
+                } else if (data.images && data.images.length > 0) {
+                    mainImg.src = data.images[0].url;
+                }
+            }
+        } catch (err) {
+            console.warn('Không thể nạp dữ liệu chi tiết từ DB:', err);
+        }
+    };
+
+    loadProductFromDB();
+
+    // Nút Thêm Vào Giỏ Hàng
+    const btnAddToCart = document.getElementById('btn-add-to-cart') || document.querySelector('.btn-add-cart');
+    if (btnAddToCart) {
+        btnAddToCart.addEventListener('click', async (e) => {
             e.preventDefault();
-            const priceText = document.querySelector('.current-price, .text-3xl.text-\\[\\#F97316\\]')?.textContent.trim() || '1.850.000₫';
+            try {
+                const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: currentProductId, quantity: 1 })
+                });
 
-            let cartItems = JSON.parse(localStorage.getItem('comichub_cart') || '[]');
-            cartItems.push({
-                title: bookTitle,
-                price: priceText,
-                condition: 'Near Mint 9.8',
-                seller: 'AnVinh Collector',
-                time: Date.now()
-            });
-            localStorage.setItem('comichub_cart', JSON.stringify(cartItems));
+                if (res.status === 401) {
+                    showToast('Vui lòng đăng ký tài khoản để mua hàng!', 'warning', 'fa-right-to-bracket');
+                    setTimeout(() => window.location.href = '/auth/register', 1200);
+                    return;
+                }
 
-            showToast(`Đang chuyển đến trang Thanh Toán Bảo Chứng cho "${bookTitle}"...`, 'primary', 'fa-spinner fa-spin');
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Đã thêm sản phẩm vào giỏ hàng thành công!', 'success', 'fa-cart-plus');
+                    const badge = document.querySelector('.cart-count-badge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent.trim(), 10) || 0;
+                        badge.textContent = currentCount + 1;
+                    }
+                } else {
+                    showToast(data.message || 'Lỗi thêm giỏ hàng', 'danger', 'fa-triangle-exclamation');
+                }
+            } catch (err) {
+                showToast('Không thể kết nối đến máy chủ', 'danger', 'fa-circle-xmark');
+            }
+        });
+    }
 
-            setTimeout(() => {
-                window.location.href = 'payment.html';
-            }, 700);
+    // Nút Mua Ngay
+    const btnBuyNow = document.getElementById('btn-buy-now') || document.querySelector('.btn-buy-now');
+    if (btnBuyNow) {
+        btnBuyNow.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: currentProductId, quantity: 1 })
+                });
+
+                if (res.status === 401) {
+                    showToast('Vui lòng đăng ký tài khoản để tiếp tục mua hàng!', 'warning', 'fa-right-to-bracket');
+                    setTimeout(() => window.location.href = '/auth/register', 1200);
+                    return;
+                }
+
+                showToast('Đang chuyển đến giỏ hàng...', 'primary', 'fa-spinner fa-spin');
+                setTimeout(() => {
+                    window.location.href = 'shopping_cart.html';
+                }, 600);
+            } catch (err) {
+                window.location.href = 'shopping_cart.html';
+            }
         });
     }
 

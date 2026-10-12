@@ -75,7 +75,6 @@
             if (buy && p) {
                 e.stopPropagation();
                 A.addToLocalCart(p);
-                A.toast('Đã thêm "' + p.title + '" (' + A.formatPrice(p.price) + ') vào giỏ hàng!', 'success', 'fa-cart-plus');
                 return;
             }
 
