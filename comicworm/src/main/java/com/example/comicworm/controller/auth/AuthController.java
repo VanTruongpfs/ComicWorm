@@ -121,15 +121,42 @@ public class AuthController {
         return "view/auth/html/verify";
     }
 
-    @GetMapping("/logout")
+    @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST})
     public String logout(HttpServletResponse response, HttpServletRequest request) {
         csrfTokens.saveToken(null, request, response);
         // Clear both tokens so the filter cannot restore the logged-out session.
         addJwtCookie(response, "accessToken", "", 0);
         addJwtCookie(response, "refreshToken", "", 0);
 
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+
         // Redirect về Endpoint URL "/auth/login?logout"
         return "redirect:/auth/login?logout";
+    }
+
+    @PostMapping("/api/logout")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<java.util.Map<String, Object>> apiLogout(
+            HttpServletResponse response,
+            HttpServletRequest request) {
+        csrfTokens.saveToken(null, request, response);
+        addJwtCookie(response, "accessToken", "", 0);
+        addJwtCookie(response, "refreshToken", "", 0);
+
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("success", true);
+        result.put("message", "Đăng xuất thành công");
+        return org.springframework.http.ResponseEntity.ok(result);
     }
 
     // Helper tạo HttpOnly Cookie chuẩn Spring (Hỗ trợ SameSite chống CSRF)
