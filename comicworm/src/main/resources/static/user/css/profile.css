@@ -11,9 +11,14 @@
 .role-card h3 { margin: 0; color: var(--text-main); }
 .role-card .button { margin-top: 18px; text-decoration: none; }
 .role-hint { margin: 20px 0 0; color: var(--text-muted); font-size: .74rem; }
-.security-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 20px; }
-.security-card h2 { margin: 0; color: var(--text-main); }
+.security-card { display: flex; flex-direction: column; gap: 20px; margin-top: 24px; padding: 24px; }
+.security-card h2 { margin: 4px 0 6px; color: var(--text-main); }
 .security-card .page-subtitle { margin-bottom: 0; }
+.password-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 10px; }
+.password-field-wrap { position: relative; display: flex; align-items: center; }
+.password-field-wrap input { width: 100%; padding-right: 48px !important; }
+.password-toggle-btn { position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; color: #64748b; padding: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; border-radius: 6px; }
+.password-toggle-btn:hover { color: var(--primary, #ea580c); background: rgba(0,0,0,0.04); }
 .field-note { color: var(--text-muted); font-size: .78rem; }
 .wishlist-profile-card { margin-top: 20px; }
 .wishlist-profile-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }

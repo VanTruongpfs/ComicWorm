@@ -74,17 +74,22 @@
                     </div>
                     <form id="profile-form" class="form-grid" novalidate>
                         <div class="field">
-                            <label for="display-name">Tên hiển thị</label>
-                            <input id="display-name" name="displayName" required>
+                            <label for="display-name">Họ và tên</label>
+                            <input id="display-name" name="displayName" placeholder="Nhập họ và tên của bạn" required>
                             <small class="field-error" data-error-for="displayName"></small>
+                        </div>
+                        <div class="field">
+                            <label for="phone">Số điện thoại</label>
+                            <input id="phone" name="phone" type="tel" placeholder="Ví dụ: 0912345678">
+                            <small class="field-error" data-error-for="phone"></small>
                         </div>
                         <div class="field">
                             <label for="email">Email tài khoản</label>
                             <input id="email" name="email" type="email" readonly>
-                            <small class="field-note">Email tài khoản không thể thay đổi tại đây.</small>
+                            <small class="field-note">Email đăng nhập chính, không thể thay đổi tại đây.</small>
                         </div>
                         <div class="form-actions">
-                            <button class="button" type="submit">Lưu thay đổi</button>
+                            <button class="button" type="submit" id="btn-save-profile">Lưu thay đổi</button>
                         </div>
                     </form>
                 </section>
@@ -111,14 +116,55 @@
                 </aside>
             </div>
 
-            <!-- BẢO MẬT TÀI KHOẢN -->
+            <!-- BẢO MẬT & ĐỔI MẬT KHẨU -->
             <section class="surface-card security-card">
                 <div>
                     <p class="eyebrow">Bảo mật tài khoản</p>
-                    <h2>Đặt lại mật khẩu</h2>
-                    <p class="page-subtitle">Chúng tôi sẽ gửi đường dẫn khôi phục đến email đang dùng trong phiên đăng nhập.</p>
+                    <h2>Đổi mật khẩu trực tiếp</h2>
+                    <p class="page-subtitle">Để bảo vệ tài khoản an toàn, bạn nên sử dụng mật khẩu mạnh tối thiểu 8 ký tự.</p>
                 </div>
-                <button class="button" id="request-password-reset" type="button">Đổi mật khẩu</button>
+
+                <form id="change-password-form" class="form-grid" novalidate style="max-width: 600px;">
+                    <div class="field" id="field-current-password">
+                        <label for="current-password">Mật khẩu hiện tại</label>
+                        <div class="password-field-wrap">
+                            <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu đang dùng...">
+                            <button type="button" class="password-toggle-btn" data-toggle="current-password" aria-label="Ẩn/Hiện mật khẩu">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="field-error" data-error-for="currentPassword"></small>
+                    </div>
+
+                    <div class="field">
+                        <label for="new-password">Mật khẩu mới</label>
+                        <div class="password-field-wrap">
+                            <input id="new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự..." required>
+                            <button type="button" class="password-toggle-btn" data-toggle="new-password" aria-label="Ẩn/Hiện mật khẩu">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="field-error" data-error-for="newPassword"></small>
+                    </div>
+
+                    <div class="field">
+                        <label for="confirm-password">Nhập lại mật khẩu mới</label>
+                        <div class="password-field-wrap">
+                            <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới..." required>
+                            <button type="button" class="password-toggle-btn" data-toggle="confirm-password" aria-label="Ẩn/Hiện mật khẩu">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="field-error" data-error-for="confirmPassword"></small>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 6px;">
+                        <button class="button" type="submit" id="btn-change-password">Cập nhật mật khẩu</button>
+                        <a href="/auth/forgot-password" style="font-size: 0.86rem; color: #ea580c; font-weight: 600; text-decoration: none;">
+                            Quên mật khẩu hiện tại? &rarr;
+                        </a>
+                    </div>
+                </form>
             </section>
 
         </main>
