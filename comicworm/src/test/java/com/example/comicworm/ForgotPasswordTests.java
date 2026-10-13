@@ -30,7 +30,6 @@ class ForgotPasswordTests {
     private JwtUtils jwtUtils;
     private IEmailService emailService;
     private PasswordResetTokenRepository passwordResetTokenRepository;
-    private com.example.comicworm.repository.VerificationTokenRepository tokenRepository;
     private AuthServiceImpl authService;
 
     @BeforeEach
@@ -41,7 +40,6 @@ class ForgotPasswordTests {
         jwtUtils = mock(JwtUtils.class);
         emailService = mock(IEmailService.class);
         passwordResetTokenRepository = mock(PasswordResetTokenRepository.class);
-        tokenRepository = mock(com.example.comicworm.repository.VerificationTokenRepository.class);
 
         authService = new AuthServiceImpl(
                 userRepository,
@@ -49,7 +47,6 @@ class ForgotPasswordTests {
                 passwordEncoder,
                 jwtUtils,
                 emailService,
-                tokenRepository,
                 passwordResetTokenRepository
         );
 

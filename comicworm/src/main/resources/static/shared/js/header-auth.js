@@ -266,13 +266,9 @@
             ? '<a href="/admin/html/dashboard.html" class="user-dropdown-item"><i class="fa-solid fa-shield-halved"></i> <span>Quản trị Admin</span></a>'
             : '';
 
-        const avatarHtml = user.avatarUrl
-            ? `<img src="${user.avatarUrl}" class="user-avatar-img" alt="${fullName}" style="object-fit:cover;">`
-            : `<div class="user-avatar-img">${initials}</div>`;
-
         container.innerHTML = `
             <div class="user-avatar-trigger" id="comic-avatar-trigger" title="${fullName}">
-                ${avatarHtml}
+                <div class="user-avatar-img">${initials}</div>
                 <span class="user-name-label">${fullName}</span>
                 <i class="fa-solid fa-chevron-down user-dropdown-arrow"></i>
             </div>

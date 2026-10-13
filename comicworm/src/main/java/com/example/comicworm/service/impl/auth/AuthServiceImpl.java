@@ -24,6 +24,7 @@ import com.example.comicworm.model.PasswordResetToken;
 import com.example.comicworm.repository.PasswordResetTokenRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -51,15 +52,16 @@ public class AuthServiceImpl implements IAuthService {
                            PasswordEncoder passwordEncoder,
                            JwtUtils jwtUtils,
                            IEmailService emailService,
-                           VerificationTokenRepository tokenRepository,
-                           PasswordResetTokenRepository passwordResetTokenRepository
+                           VerificationTokenRepository tokenRepository
     ) {
+        this.tokenRepository = tokenRepository;
+                           PasswordResetTokenRepository passwordResetTokenRepository
+                           ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
-        this.tokenRepository = tokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 

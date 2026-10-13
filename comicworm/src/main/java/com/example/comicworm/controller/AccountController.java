@@ -9,11 +9,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class AccountController {
-    public record Account(Long id, String fullName, String email, String role, boolean isSeller, String phone, String avatarUrl) {}
+    public record Account(Long id, String fullName, String email, String role, boolean isSeller) {}
 
     @GetMapping("/api/account/me")
     public Account currentAccount(@AuthenticationPrincipal CustomUserDetails user) {
         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        return new Account(user.getId(), user.getFullName(), user.getUsername(), user.getRole(), user.isSeller(), user.getPhone(), user.getAvatarUrl());
+        return new Account(user.getId(), user.getFullName(), user.getUsername(), user.getRole(), user.isSeller());
     }
 }
