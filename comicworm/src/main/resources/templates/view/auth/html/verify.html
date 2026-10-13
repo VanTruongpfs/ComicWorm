@@ -25,19 +25,35 @@
             font-size: 56px;
             margin-bottom: 16px;
         }
-        .btn-login {
+        .btn-action {
             display: inline-block;
-            margin-top: 24px;
-            padding: 12px 30px;
+            margin-top: 16px;
+            padding: 12px 28px;
             background-color: #4A90E2;
             color: #ffffff;
             text-decoration: none;
+            border: none;
             border-radius: 6px;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
             transition: background-color 0.2s;
         }
-        .btn-login:hover {
+        .btn-action:hover {
             background-color: #357abd;
+        }
+        .resend-box {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .email-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -49,7 +65,7 @@
             <div class="status-icon">🎉</div>
             <h2 style="color: #2e7d32; margin-bottom: 12px;">Xác Thực Thành Công</h2>
             <p style="color: #555; line-height: 1.6;" th:text="${message}"></p>
-            <a th:href="@{/auth/login}" class="btn-login">Đăng Nhập Ngay</a>
+            <a th:href="@{/auth/login}" class="btn-action">Đăng Nhập Ngay</a>
         </div>
 
         <!-- Trường hợp THẤT BẠI -->
@@ -57,7 +73,19 @@
             <div class="status-icon">❌</div>
             <h2 style="color: #d32f2f; margin-bottom: 12px;">Xác Thực Thất Bại</h2>
             <p style="color: #555; line-height: 1.6;" th:text="${message}"></p>
-            <a th:href="@{/auth/register}" class="btn-login" style="background-color: #757575;">Quay Lại Đăng Ký</a>
+
+            <!-- Khối gửi lại link kích hoạt khi Token hết hạn -->
+            <div th:if="${canResend}" class="resend-box">
+                <form th:action="@{/auth/resend-verification}" method="post">
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">Nhập email của bạn để nhận lại liên kết mới:</p>
+                    <input type="email" name="email" class="email-input" placeholder="Nhập email tài khoản..." required>
+                    <button type="submit" class="btn-action" style="background-color: #ff9800; width: 100%;">Gửi Luôn Link Mới</button>
+                </form>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <a th:href="@{/auth/register}" style="color: #757575; font-size: 0.9em; text-decoration: none;">&larr; Quay lại trang Đăng ký</a>
+            </div>
         </div>
     </div>
 </div>

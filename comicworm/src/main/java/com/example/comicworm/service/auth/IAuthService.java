@@ -16,6 +16,10 @@ public interface IAuthService {
 
     AuthResponseDTO refreshToken(String refreshToken);
 
+    String verifyAccount(String token);
+
+    void resendVerificationEmail(String email);
+
     boolean verifyAccount(String token);
 
     String getMaskedEmail(String identifier);
