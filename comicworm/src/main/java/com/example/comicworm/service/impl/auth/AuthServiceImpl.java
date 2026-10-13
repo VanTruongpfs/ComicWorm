@@ -20,9 +20,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.comicworm.model.PasswordResetToken;
+import com.example.comicworm.repository.PasswordResetTokenRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,6 +41,7 @@ public class AuthServiceImpl implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final IEmailService emailService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Value("${app.base.url}")
     private String baseUrl;
@@ -47,11 +55,14 @@ public class AuthServiceImpl implements IAuthService {
                            VerificationTokenRepository tokenRepository
     ) {
         this.tokenRepository = tokenRepository;
+                           PasswordResetTokenRepository passwordResetTokenRepository
+                           ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     @Override
@@ -243,5 +254,166 @@ public class AuthServiceImpl implements IAuthService {
         tokenRepository.save(token);
 
         return "SUCCESS";
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getMaskedEmail(String identifier) {
+        User user = findUserByIdentifier(identifier);
+        return maskEmail(user.getEmail());
+    }
+
+    @Override
+    @Transactional
+    public void requestPasswordReset(String identifier, String fullEmail) {
+        if (fullEmail == null || fullEmail.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập địa chỉ email xác nhận.");
+        }
+
+        User user = findUserByIdentifier(identifier);
+
+        if (!user.getEmail().trim().equalsIgnoreCase(fullEmail.trim())) {
+            throw new IllegalArgumentException("Email xác nhận không khớp với email của tài khoản.");
+        }
+
+        if (user.getAccountStatus() == AccountStatus.LOCKED) {
+            throw new IllegalStateException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+        }
+
+        String rawToken = UUID.randomUUID().toString();
+        String tokenHash = hashToken(rawToken);
+
+        // Xóa token đặt lại mật khẩu cũ của người dùng này (nếu có)
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setUserId(user.getId());
+        resetToken.setTokenHash(tokenHash);
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        resetToken.setUsedAt(null);
+        passwordResetTokenRepository.save(resetToken);
+
+        user.setVerificationToken(rawToken);
+        userRepository.save(user);
+
+        String resetLink = baseUrl + "/auth/reset-password?token=" + rawToken;
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getFullName(), resetLink);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean validatePasswordResetToken(String token) {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        String tokenHash = hashToken(token.trim());
+        return passwordResetTokenRepository.findByTokenHash(tokenHash)
+                .or(() -> passwordResetTokenRepository.findByTokenHash(token.trim()))
+                .filter(t -> t.getUsedAt() == null && t.getExpiresAt().isAfter(LocalDateTime.now()))
+                .isPresent();
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newPassword, String confirmPassword) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Mã xác nhận không hợp lệ hoặc đã hết hạn.");
+        }
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 8 ký tự.");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Mật khẩu xác nhận không trùng khớp.");
+        }
+
+        String tokenHash = hashToken(token.trim());
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(tokenHash)
+                .or(() -> passwordResetTokenRepository.findByTokenHash(token.trim()))
+                .orElseThrow(() -> new IllegalArgumentException("Liên kết đổi mật khẩu không hợp lệ hoặc không tồn tại."));
+
+        if (resetToken.getUsedAt() != null) {
+            throw new IllegalArgumentException("Liên kết đổi mật khẩu này đã được sử dụng trước đó.");
+        }
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Liên kết đổi mật khẩu đã hết hạn (chỉ có hiệu lực trong 15 phút). Vui lòng yêu cầu lại.");
+        }
+
+        User user = userRepository.findById(resetToken.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin tài khoản người dùng."));
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setVerificationToken(null);
+        userRepository.save(user);
+
+        resetToken.setUsedAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    private User findUserByIdentifier(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập email hoặc thông tin tài khoản.");
+        }
+        String cleanId = identifier.trim();
+
+        // 1. Thử tìm chính xác theo email
+        Optional<User> userOpt = userRepository.findByEmailAndDeletedAtIsNull(cleanId.toLowerCase());
+        if (userOpt.isPresent()) {
+            return userOpt.get();
+        }
+
+        // 2. Thử tìm chính xác theo số điện thoại
+        userOpt = userRepository.findByPhoneAndDeletedAtIsNull(cleanId);
+        if (userOpt.isPresent()) {
+            return userOpt.get();
+        }
+
+        // 3. Thử tìm theo danh sách ứng viên (ví dụ tiền tố email trước @)
+        List<User> candidates = userRepository.findByIdentifierCandidates(cleanId.toLowerCase());
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        } else if (candidates.size() > 1) {
+            throw new IllegalArgumentException("Có nhiều tài khoản khớp với thông tin này, vui lòng nhập chính xác địa chỉ email.");
+        }
+
+        throw new IllegalArgumentException("Không tìm thấy tài khoản nào khớp với thông tin bạn cung cấp.");
+    }
+
+    public static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "******";
+        }
+        String[] parts = email.trim().toLowerCase().split("@", 2);
+        String name = parts[0];
+        String domain = parts[1];
+
+        if (name.length() <= 2) {
+            return name.charAt(0) + "***@" + domain;
+        } else if (name.length() <= 4) {
+            return name.charAt(0) + "***" + name.charAt(name.length() - 1) + "@" + domain;
+        } else {
+            String prefix = name.substring(0, 2);
+            String suffix = name.substring(name.length() - 1);
+            int starCount = Math.max(5, name.length() - 3);
+            return prefix + "*".repeat(starCount) + suffix + "@" + domain;
+        }
+    }
+
+    private String hashToken(String rawToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Lỗi thuật toán mã hóa SHA-256: " + e.getMessage(), e);
+        }
     }
 }

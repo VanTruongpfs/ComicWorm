@@ -108,7 +108,7 @@ function getFallbackSidebarTemplate() {
         <a href="#" class="sidebar-action-btn" onclick="showToast('Mở cài đặt tài khoản quản trị')">
           <span class="material-symbols-outlined" style="font-size: 18px;">settings</span><span>Cài đặt</span>
         </a>
-        <a href="login.html" class="sidebar-action-btn logout" onclick="localStorage.removeItem('bm_admin_session')">
+        <a href="/auth/logout" class="sidebar-action-btn logout" onclick="localStorage.removeItem('bm_admin_session')">
           <span class="material-symbols-outlined" style="font-size: 18px;">logout</span><span>Đăng xuất</span>
         </a>
       </div>
