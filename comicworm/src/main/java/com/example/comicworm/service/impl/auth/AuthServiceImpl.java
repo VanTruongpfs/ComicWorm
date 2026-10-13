@@ -5,10 +5,12 @@ import com.example.comicworm.dto.general.auth.UserLoginDTO;
 import com.example.comicworm.dto.general.auth.UserRegisterDTO;
 import com.example.comicworm.dto.response.AuthResponseDTO;
 import com.example.comicworm.mapper.UserMapper;
+import com.example.comicworm.model.PasswordResetToken;
 import com.example.comicworm.model.User;
 import com.example.comicworm.model.VerificationToken;
 import com.example.comicworm.model.enums.AccountStatus;
 import com.example.comicworm.model.enums.TokenType;
+import com.example.comicworm.repository.PasswordResetTokenRepository;
 import com.example.comicworm.repository.UserRepository;
 import com.example.comicworm.repository.VerificationTokenRepository;
 import com.example.comicworm.service.auth.IAuthService;
@@ -20,8 +22,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.comicworm.model.PasswordResetToken;
-import com.example.comicworm.repository.PasswordResetTokenRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -35,12 +35,13 @@ import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements IAuthService {
-    private final VerificationTokenRepository tokenRepository;
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final IEmailService emailService;
+    private final VerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Value("${app.base.url}")
@@ -52,17 +53,25 @@ public class AuthServiceImpl implements IAuthService {
                            PasswordEncoder passwordEncoder,
                            JwtUtils jwtUtils,
                            IEmailService emailService,
-                           VerificationTokenRepository tokenRepository,
-                           PasswordResetTokenRepository passwordResetTokenRepository
+                           VerificationTokenRepository tokenRepository
     ) {
         this.tokenRepository = tokenRepository;
+                           PasswordResetTokenRepository passwordResetTokenRepository
+                           ) {
+                           VerificationTokenRepository tokenRepository,
+                           PasswordResetTokenRepository passwordResetTokenRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.emailService = emailService;
+        this.tokenRepository = tokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
+
+    // =========================================================================
+    // 1. ĐĂNG KÝ & ĐĂNG NHẬP
+    // =========================================================================
 
     @Override
     @Transactional
@@ -104,7 +113,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new BadCredentialsException("Email hoặc mật khẩu không chính xác");
         }
 
-// Check trạng thái tài khoản chưa xác minh Email
+        // Check trạng thái tài khoản chưa xác minh Email
         if (user.getAccountStatus() == AccountStatus.PENDING_VERIFY) {
             throw new DisabledException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email hoặc yêu cầu gửi lại link xác thực.");
         }
@@ -125,15 +134,12 @@ public class AuthServiceImpl implements IAuthService {
     public AuthResponseDTO loginWithGoogle(GoogleLoginDTO googleDTO) {
         String email = googleDTO.getEmail().trim().toLowerCase();
 
-        //Kiểm tra xem người dùng đã tồn tại qua googleSub chưa
         User user = userRepository.findByGoogleSub(googleDTO.getGoogleSub())
                 .orElse(null);
 
         if (user == null) {
-            //Nếu chưa tìm thấy theo googleSub, kiểm tra theo email
             user = userRepository.findByEmailAndDeletedAtIsNull(email)
                     .map(existingUser -> {
-                        //liên kết googleSub vào tài khoản đã đăng ký trước đó
                         existingUser.setGoogleSub(googleDTO.getGoogleSub());
                         if (existingUser.getAvatarUrl() == null) {
                             existingUser.setAvatarUrl(googleDTO.getAvatarUrl());
@@ -141,7 +147,6 @@ public class AuthServiceImpl implements IAuthService {
                         return userRepository.save(existingUser);
                     })
                     .orElseGet(() -> {
-                        //Người dùng hoàn toàn mới -> Tạo tài khoản mới
                         User newUser = userMapper.toEntity(googleDTO);
                         return userRepository.save(newUser);
                     });
@@ -151,7 +156,6 @@ public class AuthServiceImpl implements IAuthService {
             throw new IllegalStateException("Tài khoản đã bị khóa");
         }
 
-        // Cấp phát App JWT Token của server
         String accessToken = jwtUtils.generateAccessToken(user.getEmail());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
 
@@ -173,7 +177,10 @@ public class AuthServiceImpl implements IAuthService {
         return userMapper.toAuthResponseDTO(user, newAccessToken, refreshToken);
     }
 
-    // Tạo hoặc refresh token kích hoạt (có kiểm tra chống spam)
+    // =========================================================================
+    // 2. KÍCH HOẠT TÀI KHOẢN & RESEND VERIFICATION
+    // =========================================================================
+
     @Transactional
     public VerificationToken createOrRefreshToken(User user, TokenType tokenType) {
         Optional<VerificationToken> existingTokenOpt =
@@ -184,13 +191,12 @@ public class AuthServiceImpl implements IAuthService {
         if (existingTokenOpt.isPresent()) {
             VerificationToken existingToken = existingTokenOpt.get();
 
-            // Kiểm tra xem đã qua thời gian cooldown chưa (ví dụ: 15 phút)
+            // Kiểm tra cooldown 15 phút chống spam
             if (!existingToken.getIsUsed() && now.isBefore(existingToken.getResendAvailableAt())) {
                 long minutesRemaining = java.time.Duration.between(now, existingToken.getResendAvailableAt()).toMinutes() + 1;
                 throw new IllegalStateException("Vui lòng đợi " + minutesRemaining + " phút nữa trước khi yêu cầu gửi lại link mới.");
             }
 
-            // Đã đủ điều kiện gửi lại -> Cập nhật trực tiếp trên record cũ
             existingToken.setToken(UUID.randomUUID().toString());
             existingToken.setExpiryDate(now.plusHours(24)); // Hiệu lực 24 tiếng
             existingToken.setResendAvailableAt(now.plusMinutes(15)); // Cooldown 15 phút
@@ -198,7 +204,6 @@ public class AuthServiceImpl implements IAuthService {
             return tokenRepository.save(existingToken);
         }
 
-        // Chưa có record nào -> Tạo mới
         VerificationToken newToken = new VerificationToken();
         newToken.setUser(user);
         newToken.setTokenType(tokenType);
@@ -209,6 +214,7 @@ public class AuthServiceImpl implements IAuthService {
         return tokenRepository.save(newToken);
     }
 
+    @Override
     @Transactional
     public void resendVerificationEmail(String email) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(email.trim().toLowerCase())
@@ -218,33 +224,31 @@ public class AuthServiceImpl implements IAuthService {
             throw new IllegalStateException("Tài khoản này đã được kích hoạt trước đó");
         }
 
-        // Hàm này sẽ tự kiểm tra cooldown 15 phút, nếu gửi liên tục sẽ quăng Exception
         VerificationToken newToken = createOrRefreshToken(user, TokenType.ACCOUNT_ACTIVATION);
 
         String verifyLink = baseUrl + "/auth/verify?token=" + newToken.getToken();
         emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), verifyLink);
     }
 
-    // Logic kiểm tra khi người dùng nhấp vào link từ email
+    @Override
     @Transactional
     public String verifyAccount(String tokenValue) {
         Optional<VerificationToken> tokenOpt = tokenRepository.findByToken(tokenValue);
 
         if (tokenOpt.isEmpty()) {
-            return "TOKEN_NOT_FOUND"; // Token không tồn tại
+            return "TOKEN_NOT_FOUND";
         }
 
         VerificationToken token = tokenOpt.get();
 
         if (token.getIsUsed()) {
-            return "TOKEN_ALREADY_USED"; // Token đã từng kích hoạt rồi
+            return "TOKEN_ALREADY_USED";
         }
 
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return "TOKEN_EXPIRED"; // Link đã quá 24 giờ
+            return "TOKEN_EXPIRED";
         }
 
-        // Hợp lệ: Kích hoạt tài khoản User và đánh dấu token đã dùng
         User user = token.getUser();
         user.setAccountStatus(AccountStatus.ACTIVE);
         userRepository.save(user);
@@ -254,6 +258,10 @@ public class AuthServiceImpl implements IAuthService {
 
         return "SUCCESS";
     }
+
+    // =========================================================================
+    // 3. QUÊN & ĐẶT LẠI MẬT KHẨU (PASSWORD RESET)
+    // =========================================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -282,7 +290,6 @@ public class AuthServiceImpl implements IAuthService {
         String rawToken = UUID.randomUUID().toString();
         String tokenHash = hashToken(rawToken);
 
-        // Xóa token đặt lại mật khẩu cũ của người dùng này (nếu có)
         passwordResetTokenRepository.deleteByUserId(user.getId());
 
         PasswordResetToken resetToken = new PasswordResetToken();
@@ -349,25 +356,26 @@ public class AuthServiceImpl implements IAuthService {
         passwordResetTokenRepository.save(resetToken);
     }
 
+    // =========================================================================
+    // 4. TIỆN ÍCH HỖ TRỢ (PRIVATE HELPERS)
+    // =========================================================================
+
     private User findUserByIdentifier(String identifier) {
         if (identifier == null || identifier.isBlank()) {
             throw new IllegalArgumentException("Vui lòng nhập email hoặc thông tin tài khoản.");
         }
         String cleanId = identifier.trim();
 
-        // 1. Thử tìm chính xác theo email
         Optional<User> userOpt = userRepository.findByEmailAndDeletedAtIsNull(cleanId.toLowerCase());
         if (userOpt.isPresent()) {
             return userOpt.get();
         }
 
-        // 2. Thử tìm chính xác theo số điện thoại
         userOpt = userRepository.findByPhoneAndDeletedAtIsNull(cleanId);
         if (userOpt.isPresent()) {
             return userOpt.get();
         }
 
-        // 3. Thử tìm theo danh sách ứng viên (ví dụ tiền tố email trước @)
         List<User> candidates = userRepository.findByIdentifierCandidates(cleanId.toLowerCase());
         if (candidates.size() == 1) {
             return candidates.get(0);
