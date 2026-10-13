@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/auth")
@@ -51,6 +54,84 @@ public class AuthController {
         }
         model.addAttribute("registerDTO", new UserRegisterDTO());
         return "view/auth/html/register";
+    }
+
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordForm(@RequestParam(value = "email", required = false) String email, Model model) {
+        if (isAuthenticated()) {
+            return "redirect:/buyer/html/home.html";
+        }
+        model.addAttribute("prefillEmail", email != null ? email.trim() : "");
+        return "view/auth/html/forgot-password";
+    }
+
+    @PostMapping("/api/forgot-password/find")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> findAccountForReset(@RequestBody Map<String, String> payload) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String identifier = payload.get("identifier");
+            String maskedEmail = authService.getMaskedEmail(identifier);
+            result.put("success", true);
+            result.put("maskedEmail", maskedEmail);
+            result.put("identifier", identifier != null ? identifier.trim() : "");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/api/forgot-password/send")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> sendResetLink(@RequestBody Map<String, String> payload) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String identifier = payload.get("identifier");
+            String fullEmail = payload.get("fullEmail");
+            authService.requestPasswordReset(identifier, fullEmail);
+            result.put("success", true);
+            result.put("message", "Đã gửi đường dẫn đổi mật khẩu tới email của bạn. Vui lòng kiểm tra hộp thư!");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(@RequestParam(value = "token", required = false) String token, Model model) {
+        if (isAuthenticated()) {
+            return "redirect:/buyer/html/home.html";
+        }
+        boolean isValid = authService.validatePasswordResetToken(token);
+        model.addAttribute("token", token != null ? token : "");
+        model.addAttribute("validToken", isValid);
+        if (!isValid) {
+            model.addAttribute("errorMessage", "Đường dẫn đổi mật khẩu không hợp lệ hoặc đã hết hạn.");
+        }
+        return "view/auth/html/reset-password";
+    }
+
+    @PostMapping("/api/reset-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> processResetPassword(@RequestBody Map<String, String> payload) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String token = payload.get("token");
+            String password = payload.get("password");
+            String confirmPassword = payload.get("confirmPassword");
+            authService.resetPassword(token, password, confirmPassword);
+            result.put("success", true);
+            result.put("message", "Đổi mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
     }
 
     @PostMapping("/login")
@@ -121,15 +202,42 @@ public class AuthController {
         return "view/auth/html/verify";
     }
 
-    @GetMapping("/logout")
+    @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST})
     public String logout(HttpServletResponse response, HttpServletRequest request) {
         csrfTokens.saveToken(null, request, response);
         // Clear both tokens so the filter cannot restore the logged-out session.
         addJwtCookie(response, "accessToken", "", 0);
         addJwtCookie(response, "refreshToken", "", 0);
 
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+
         // Redirect về Endpoint URL "/auth/login?logout"
         return "redirect:/auth/login?logout";
+    }
+
+    @PostMapping("/api/logout")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<java.util.Map<String, Object>> apiLogout(
+            HttpServletResponse response,
+            HttpServletRequest request) {
+        csrfTokens.saveToken(null, request, response);
+        addJwtCookie(response, "accessToken", "", 0);
+        addJwtCookie(response, "refreshToken", "", 0);
+
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("success", true);
+        result.put("message", "Đăng xuất thành công");
+        return org.springframework.http.ResponseEntity.ok(result);
     }
 
     // Helper tạo HttpOnly Cookie chuẩn Spring (Hỗ trợ SameSite chống CSRF)

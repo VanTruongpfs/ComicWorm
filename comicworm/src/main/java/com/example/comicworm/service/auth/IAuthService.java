@@ -17,4 +17,12 @@ public interface IAuthService {
     AuthResponseDTO refreshToken(String refreshToken);
 
     boolean verifyAccount(String token);
+
+    String getMaskedEmail(String identifier);
+
+    void requestPasswordReset(String identifier, String fullEmail);
+
+    boolean validatePasswordResetToken(String token);
+
+    void resetPassword(String token, String newPassword, String confirmPassword);
 }
