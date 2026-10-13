@@ -13,8 +13,8 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <link rel="stylesheet" th:href="@{/buyer/css/home.css}">
 
-    <link rel="stylesheet" href="../css/home.css">
 </head>
 <body>
 
@@ -556,9 +556,54 @@
     </div>
 </footer>
 
-<script src="../js/home.js"></script>
-<script src="../js/product-api.js"></script>
-<script src="../js/home-products.js"></script>
-<script src="/shared/js/header-auth.js"></script>
+<!-- ================= CHATBOT WIDGET ================= -->
+<!-- 1. Nút Icon nổi (Floating Action Button) -->
+<button id="chat-toggle-btn" class="chat-float-btn" title="Chat với trợ lý ComicWorm">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+</button>
+
+<!-- 2. Khung Popup Chat nổi -->
+<div id="chat-popup" class="chat-popup hidden">
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <span class="bot-status-dot"></span>
+            <div>
+                <strong>Trợ lý ComicWorm</strong>
+                <p>Tư vấn truyện tranh 24/7</p>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button id="clear-chat-btn" title="Xóa lịch sử trò chuyện">&#128465;</button>
+            <button id="close-chat-btn" title="Đóng">&times;</button>
+        </div>
+    </div>
+
+    <!-- Vùng hiển thị tin nhắn -->
+    <div id="chat-messages" class="chat-messages">
+        <!-- Tin nhắn khởi tạo nếu chưa có lịch sử -->
+        <div class="msg msg-bot">
+            Xin chào! Tôi có thể giúp bạn tìm kiếm cuốn truyện tranh nào hôm nay?
+        </div>
+    </div>
+
+    <!-- Vùng nhập tin nhắn -->
+    <form id="chat-form" class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." autocomplete="off" required>
+        <button type="submit" id="chat-send-btn">Gửi</button>
+    </form>
+</div>
+
+<!-- Nạp CSS và JS -->
+<link rel="stylesheet" th:href="@{/buyer/css/chat-widget.css}">
+<!-- ================= END CHATBOT WIDGET ================= -->
+
+<script th:src="@{/buyer/js/home.js}"></script>
+<script  th:src="@{/buyer/js/product-api.js}"></script>
+<script  th:src="@{/shared/js/header-auth.js}"></script>
+<script  th:src="@{/buyer/js/chat-widget.js}"></script>
+
 </body>
 </html>
