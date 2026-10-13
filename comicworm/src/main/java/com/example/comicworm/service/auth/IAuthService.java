@@ -1,6 +1,5 @@
 package com.example.comicworm.service.auth;
 
-
 import com.example.comicworm.dto.general.auth.GoogleLoginDTO;
 import com.example.comicworm.dto.general.auth.UserLoginDTO;
 import com.example.comicworm.dto.general.auth.UserRegisterDTO;
@@ -19,8 +18,6 @@ public interface IAuthService {
     String verifyAccount(String token);
 
     void resendVerificationEmail(String email);
-
-    boolean verifyAccount(String token);
 
     String getMaskedEmail(String identifier);
 
