@@ -33,18 +33,6 @@ public class CustomUserDetails implements UserDetails {
         return user.getRole().name();
     }
 
-    public String getPhone() {
-        return user.getPhone();
-    }
-
-    public String getAvatarUrl() {
-        return user.getAvatarUrl();
-    }
-
-    public User getUser() {
-        return user;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
