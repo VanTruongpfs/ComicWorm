@@ -127,6 +127,9 @@
             <button class="filter-tab" onclick="setTabFilter('hidden', this)">
               Đã ẩn (<span id="tabCountHidden">0</span>)
             </button>
+            <button class="filter-tab" onclick="setTabFilter('rejected', this)">
+              Từ chối (<span id="tabCountRejected">0</span>)
+            </button>
             <button class="filter-tab" onclick="setTabFilter('out_of_stock', this)">
               Hết hàng (<span id="tabCountOutOfStock">0</span>)
             </button>
@@ -271,6 +274,7 @@
       document.getElementById('tabCountActive').innerText = posts.filter(p => p.status === 'active').length;
       document.getElementById('tabCountPending').innerText = posts.filter(p => p.status === 'pending').length;
       document.getElementById('tabCountHidden').innerText = posts.filter(p => p.status === 'hidden').length;
+      document.getElementById('tabCountRejected').innerText = posts.filter(p => p.status === 'rejected').length;
       document.getElementById('tabCountOutOfStock').innerText = posts.filter(p => p.status === 'out_of_stock').length;
 
       applyFilters();
@@ -320,6 +324,7 @@
         let statusBadge = '';
         if (post.status === 'active') statusBadge = '<span class="badge badge-success"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đang bán</span>';
         else if (post.status === 'pending') statusBadge = '<span class="badge badge-warning"><span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> Chờ duyệt</span>';
+        else if (post.status === 'rejected') statusBadge = `<span class="badge badge-danger" title="Lý do từ chối: ${post.rejectReason || 'Không đạt chuẩn'}"><span class="material-symbols-outlined" style="font-size: 14px;">cancel</span> Từ chối</span>${post.rejectReason ? `<div style="font-size: 0.73rem; color: #dc2626; margin-top: 3px; max-width: 140px; line-height: 1.2;">Lý do: ${post.rejectReason}</div>` : ''}`;
         else if (post.status === 'hidden') statusBadge = '<span class="badge badge-neutral"><span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> Đã ẩn</span>';
         else if (post.status === 'out_of_stock') statusBadge = '<span class="badge badge-danger"><span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> Hết hàng</span>';
 
@@ -445,6 +450,15 @@
       };
 
       document.getElementById('detailModalBody').innerHTML = `
+        ${post.status === 'rejected' ? `
+          <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 14px; border-radius: 8px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;">
+            <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">error</span>
+            <div>
+              <strong style="color: #991b1b;">Bài đăng bị từ chối kiểm duyệt</strong>
+              <div style="margin-top: 4px; font-size: 0.88rem; color: #b91c1c;"><strong>Lý do từ chối:</strong> ${post.rejectReason || 'Nội dung hoặc hình ảnh chưa đạt tiêu chuẩn theo quy định của sàn.'}</div>
+            </div>
+          </div>
+        ` : ''}
         <div style="display: flex; gap: 18px; margin-bottom: 16px;">
           <img src="${post.image}" style="width: 110px; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
           <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">

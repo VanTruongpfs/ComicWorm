@@ -596,6 +596,175 @@ if (defaultProductTab) {
 }
 
     // =========================================================
+    // 13.6 TÍCH HỢP API DUYỆT VÀ TỪ CHỐI SẢN PHẨM (ADMIN)
+    // =========================================================
+    const productApproveBtn = document.getElementById("productApproveBtn");
+    const productRejectBtn = document.getElementById("productRejectBtn");
+    const rejectProductModal = document.getElementById("rejectProductModal");
+    const cancelRejectBtn = document.getElementById("cancelRejectBtn");
+    const confirmRejectBtn = document.getElementById("confirmRejectBtn");
+    const rejectReasonInput = document.getElementById("rejectReasonInput");
+
+    let currentPendingProducts = [];
+    let currentProductIndex = 0;
+
+    async function loadPendingProducts() {
+        try {
+            const res = await fetch("/api/admin/products?status=PENDING&page=0&size=20", {
+                headers: { "Accept": "application/json" },
+                credentials: "include"
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.Result === "OK" && data.Records && data.Records.length > 0) {
+                    currentPendingProducts = data.Records;
+                    currentProductIndex = 0;
+                    renderCurrentProduct(currentPendingProducts[0]);
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn("Chưa kết nối được API admin products, sử dụng dữ liệu mặc định:", e);
+        }
+    }
+
+    function renderCurrentProduct(product) {
+        if (!product) return;
+        if (productDemo) productDemo.setAttribute("data-product-id", product.id);
+        const titleEl = document.getElementById("productTitle");
+        const priceEl = document.getElementById("productPrice");
+        const descEl = document.getElementById("productDescription");
+        const coverEl = document.getElementById("productCoverImg");
+        const sellerEl = document.getElementById("productSellerInfo");
+        const catEl = document.getElementById("productCategory");
+        const condEl = document.getElementById("productCondition");
+        const stockEl = document.getElementById("productStock");
+        const statusBadge = document.getElementById("productStatusBadge");
+        const reasonAlert = document.getElementById("productRejectReasonAlert");
+        const reasonText = document.getElementById("productRejectReasonText");
+
+        if (titleEl) titleEl.textContent = product.title || "Chưa có tiêu đề";
+        if (priceEl) priceEl.textContent = product.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price) : "0 ₫";
+        if (descEl) descEl.textContent = product.description || "Không có mô tả";
+        if (coverEl && product.coverImageUrl) coverEl.src = product.coverImageUrl;
+        if (sellerEl) sellerEl.textContent = "Người bán: " + (product.sellerName || "ID " + product.sellerId);
+        if (catEl) catEl.textContent = "📚 " + (product.categoryName || "Truyện tranh");
+        if (condEl) condEl.textContent = "✨ Mới " + (product.conditionPercent || 100) + "%";
+        if (stockEl) stockEl.textContent = "📦 Còn " + (product.stockQuantity || 1) + " sản phẩm";
+
+        if (statusBadge) {
+            const st = product.moderationStatus || "PENDING";
+            statusBadge.textContent = st === "APPROVED" ? "Đã duyệt" : (st === "REJECTED" ? "Từ chối" : "Chờ duyệt");
+            statusBadge.style.background = st === "APPROVED" ? "#d1fae5" : (st === "REJECTED" ? "#fee2e2" : "#fef3c7");
+            statusBadge.style.color = st === "APPROVED" ? "#065f46" : (st === "REJECTED" ? "#991b1b" : "#d97706");
+        }
+
+        if (reasonAlert && reasonText) {
+            if (product.moderationReason) {
+                reasonText.textContent = product.moderationReason;
+                reasonAlert.style.display = "block";
+            } else {
+                reasonAlert.style.display = "none";
+            }
+        }
+    }
+
+    if (productApproveBtn) {
+        productApproveBtn.addEventListener("click", async function () {
+            const pId = productDemo ? productDemo.getAttribute("data-product-id") : null;
+            if (!confirm("Bạn có chắc chắn muốn PHÊ DUYỆT sản phẩm này để bán trên sàn?")) return;
+
+            if (pId) {
+                try {
+                    const res = await fetch(`/api/admin/products/${pId}/approve`, {
+                        method: "POST",
+                        headers: { "Accept": "application/json" },
+                        credentials: "include"
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.Result === "OK") {
+                        showToast("Đã phê duyệt sản phẩm thành công!", "success");
+                        nextProduct();
+                        return;
+                    } else {
+                        showToast(data.Message || "Lỗi khi phê duyệt sản phẩm", "danger");
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("API lỗi, chạy chế độ demo:", e);
+                }
+            }
+            showToast("Đã phê duyệt sản phẩm thành công!", "success");
+            nextProduct();
+        });
+    }
+
+    if (productRejectBtn) {
+        productRejectBtn.addEventListener("click", function () {
+            if (rejectProductModal) {
+                if (rejectReasonInput) rejectReasonInput.value = "";
+                rejectProductModal.style.display = "flex";
+            }
+        });
+    }
+
+    if (cancelRejectBtn) {
+        cancelRejectBtn.addEventListener("click", function () {
+            if (rejectProductModal) rejectProductModal.style.display = "none";
+        });
+    }
+
+    if (confirmRejectBtn) {
+        confirmRejectBtn.addEventListener("click", async function () {
+            const reason = rejectReasonInput ? rejectReasonInput.value.trim() : "";
+            if (!reason) {
+                alert("Vui lòng nhập lý do từ chối kiểm duyệt!");
+                if (rejectReasonInput) rejectReasonInput.focus();
+                return;
+            }
+
+            const pId = productDemo ? productDemo.getAttribute("data-product-id") : null;
+            if (pId) {
+                try {
+                    const res = await fetch(`/api/admin/products/${pId}/reject`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ reason: reason })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.Result === "OK") {
+                        showToast("Đã từ chối kiểm duyệt sản phẩm với lý do: " + reason, "warning");
+                        if (rejectProductModal) rejectProductModal.style.display = "none";
+                        nextProduct();
+                        return;
+                    } else {
+                        showToast(data.Message || "Lỗi khi từ chối sản phẩm", "danger");
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("API lỗi, chạy chế độ demo:", e);
+                }
+            }
+
+            showToast("Đã từ chối duyệt sản phẩm với lý do: " + reason, "warning");
+            if (rejectProductModal) rejectProductModal.style.display = "none";
+            nextProduct();
+        });
+    }
+
+    function nextProduct() {
+        currentProductIndex++;
+        if (currentProductIndex < currentPendingProducts.length) {
+            renderCurrentProduct(currentPendingProducts[currentProductIndex]);
+        } else {
+            showToast("Đã xử lý hết sản phẩm trong danh sách chờ duyệt!", "success");
+        }
+    }
+
+    loadPendingProducts();
+
+    // =========================================================
     // 14. KHỞI TẠO
     // =========================================================
 

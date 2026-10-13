@@ -138,11 +138,35 @@ const DEFAULT_POSTS = [
     isTradeable: false,
     status: "active",
     hideReason: "",
+    rejectReason: "",
     image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&auto=format&fit=crop&q=60",
     description: "Bộ Boxset cao cấp, có kèm hộp cứng và toàn bộ phụ kiện độc quyền, thích hợp cho người sưu tầm.",
     weight: 2900,
     dimensions: "22x30x18 cm",
     createdAt: "2026-09-05"
+  },
+  {
+    id: "POST-007",
+    title: "Tokyo Ghoul - Trọn bộ 14 tập (Bản Tái Bản)",
+    author: "Sui Ishida",
+    category: "Hành động / Siêu nhiên",
+    volume: "Trọn bộ 14 tập",
+    publisher: "NXB Trẻ",
+    year: 2020,
+    condition: "90% Cũ theo thời gian",
+    price: 380000,
+    originalPrice: 500000,
+    stock: 1,
+    views: 120,
+    isTradeable: false,
+    status: "rejected", // Bị từ chối kiểm duyệt
+    hideReason: "",
+    rejectReason: "Hình ảnh bìa chụp bị mờ và thông tin năm xuất bản không trùng khớp với sách thực tế.",
+    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&auto=format&fit=crop&q=60",
+    description: "Bộ truyện Tokyo Ghoul trọn bộ 14 tập, đọc 1 lần. Sách đủ trang, không rách rời chắp vá.",
+    weight: 1600,
+    dimensions: "13x19x14 cm",
+    createdAt: "2026-09-18"
   }
 ];
 

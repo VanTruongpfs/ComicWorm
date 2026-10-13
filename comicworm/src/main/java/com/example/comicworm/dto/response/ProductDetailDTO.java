@@ -46,6 +46,8 @@ public class ProductDetailDTO {
     /** false khi chỉ chủ tin/admin xem được (chờ duyệt, bị từ chối hoặc đã ẩn). */
     private final boolean publiclyVisible;
     private final ModerationStatus moderationStatus;
+    private final String moderationReason;
+    private final LocalDateTime moderatedAt;
 
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;

@@ -52,11 +52,10 @@ public class AuthServiceImpl implements IAuthService {
                            PasswordEncoder passwordEncoder,
                            JwtUtils jwtUtils,
                            IEmailService emailService,
-                           VerificationTokenRepository tokenRepository
+                           VerificationTokenRepository tokenRepository,
+                           PasswordResetTokenRepository passwordResetTokenRepository
     ) {
         this.tokenRepository = tokenRepository;
-                           PasswordResetTokenRepository passwordResetTokenRepository
-                           ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.emailService = emailService;

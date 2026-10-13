@@ -617,6 +617,33 @@
             state.requestFormOpen = false;
             state.editingOfferId = null;
             toast('Đã gửi đề xuất.');
+
+            if (state.backendRoomId) {
+                var itemInputs = (p.comics || []).map(function(cid) {
+                    var c = comicById(cid);
+                    return { productId: (c && c.productId) ? c.productId : null, quantity: 1 };
+                }).filter(function(it) { return it.productId != null; });
+
+                var dir = p.money > 0 ? 'pay' : (p.money < 0 ? 'get' : 'none');
+                fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cashCompensation: Math.abs(p.money || 0),
+                        compensationDirection: dir,
+                        note: p.note || '',
+                        items: itemInputs
+                    })
+                }).then(function (res) {
+                    if (res.status === 401) {
+                        toast('Vui lòng đăng nhập để lưu đề xuất lên hệ thống.');
+                    } else if (res.ok) {
+                        toast('Đề xuất đã được gửi lên hệ thống sàn.');
+                    }
+                }).catch(function (err) {
+                    console.error("Lỗi gửi đề xuất:", err);
+                });
+            }
         }
         syncDraft();
         renderAll();
@@ -643,6 +670,12 @@
         addSystem(who(state.role) + ' đã đồng ý đề xuất #' + o.id + '. Chờ chủ sở hữu chốt giá & khóa phòng.');
         toast('Bạn đã đồng ý đề xuất #' + o.id);
         renderAll();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + id + '/respond?accept=true', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi chấp nhận đề xuất:", err); });
+        }
     }
 
     function declineOffer(id) {
@@ -652,6 +685,12 @@
         addSystem(who(state.role) + ' đã từ chối đề xuất #' + o.id);
         toast('Đã từ chối đề xuất #' + o.id);
         renderAll();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + id + '/respond?accept=false', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi từ chối đề xuất:", err); });
+        }
     }
 
     function sendMessage(text) {
@@ -659,6 +698,20 @@
         if (!text || roomClosed()) return;
         state.messages.push({ type: 'text', by: state.role, text: text, time: nowTime() });
         renderChat();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: text })
+            }).then(function (res) {
+                if (res.status === 401) {
+                    toast('Vui lòng đăng nhập để gửi tin nhắn.');
+                }
+            }).catch(function (err) {
+                console.error("Lỗi gửi tin nhắn:", err);
+            });
+        }
     }
 
     /* ---------- CHỐT & KHÓA PHÒNG ---------- */
@@ -970,4 +1023,246 @@
     /* ---------- KHỞI TẠO ---------- */
     syncDraft();
     renderAll();
+
+    /* ---------- TÍCH HỢP DỮ LIỆU BACKEND THẬT ---------- */
+    var backendRoomParam = params.get('room') || params.get('id') || params.get('code');
+    if (backendRoomParam) {
+        initBackendRoom(backendRoomParam);
+    }
+
+    function initBackendRoom(roomParam) {
+        var isNum = /^\d+$/.test(String(roomParam).trim());
+        var url = isNum ? ('/api/exchange/rooms/' + encodeURIComponent(roomParam))
+                        : ('/api/exchange/rooms/by-code/' + encodeURIComponent(roomParam));
+
+        fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            })
+            .then(function (data) {
+                state.backendRoomId = data.id;
+                applyBackendRoomData(data);
+                loadBackendInventory();
+                loadBackendMessages(data.id);
+                startPolling(data.id);
+            })
+            .catch(function (err) {
+                console.log("Dùng dữ liệu demo/mẫu cho phòng trao đổi:", err);
+            });
+    }
+
+    function applyBackendRoomData(data) {
+        state.room.id = data.id;
+        state.room.code = data.roomCode;
+        if (data.status === 'OPEN') state.room.status = 'negotiating';
+        else if (data.status === 'AGREED') state.room.status = 'agreed';
+        else if (data.status === 'COMPLETED') state.room.status = 'locked';
+        else state.room.status = 'locked';
+
+        ITEM.title = data.targetProductTitle || ITEM.title;
+        ITEM.price = Number(data.targetProductPrice || ITEM.price);
+        if (data.targetProductCover) ITEM.cover = data.targetProductCover;
+        if (data.targetProductWishNote) {
+            ITEM.wants = data.targetProductWishNote.split(',').map(function (s) { return s.trim(); });
+        }
+        ITEM.specs = [
+            ['Tình trạng', (data.targetProductCondition || 90) + '%'],
+            ['Tập truyện', data.targetProductVolumeNumbers || 'Trọn bộ'],
+            ['Nhà xuất bản', data.targetProductPublisher || 'Kim Đồng'],
+            ['Tác giả', data.targetProductAuthor || 'N/A']
+        ];
+        if (data.targetProductWishNote) ITEM.note = data.targetProductWishNote;
+
+        if (data.hostName) {
+            USERS.owner.name = data.hostName;
+            USERS.owner.short = data.hostName;
+            USERS.owner.initials = data.hostName.substring(0, 2).toUpperCase();
+        }
+
+        if (data.isCurrentUserHost) {
+            state.role = 'owner';
+        } else {
+            state.role = 'proposer';
+        }
+
+        $$('.dc-roleswitch button[data-role]').forEach(function (btn) {
+            var isCurrent = btn.getAttribute('data-role') === state.role;
+            btn.classList.toggle('is-on', isCurrent);
+            btn.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        });
+
+        var pageTitleHeading = document.querySelector('.page-title h1');
+        if (pageTitleHeading) {
+            pageTitleHeading.innerText = 'Phòng trao đổi giá #' + data.roomCode;
+        }
+        var breadcrumbStrong = document.querySelector('.breadcrumb strong');
+        if (breadcrumbStrong) {
+            breadcrumbStrong.innerText = '#' + data.roomCode;
+        }
+
+        if (data.members && data.members.length > 0) {
+            ROOM_PARTICIPANTS = data.members.map(function (m) {
+                var uKey = m.isHost ? 'owner' : (m.userId === data.currentUserId ? 'proposer' : 'buyer_' + m.userId);
+                if (!USERS[uKey]) {
+                    USERS[uKey] = {
+                        key: uKey,
+                        name: m.fullName,
+                        short: m.fullName,
+                        initials: m.fullName ? m.fullName.substring(0, 2).toUpperCase() : 'TV',
+                        roleLabel: m.isHost ? 'Chủ phòng' : 'Người đề xuất',
+                        verified: true, rating: 5.0, reviews: 10, deals: 5, successRate: 100, response: '~10p', location: 'Toàn quốc', since: '2026'
+                    };
+                }
+                return {
+                    key: uKey,
+                    dealType: m.isHost ? 'host' : 'trade',
+                    dealLabel: m.isHost ? 'Chủ phòng' : 'Thành viên',
+                    offer: m.isHost ? ('Giá niêm yết ' + fmt(ITEM.price)) : 'Đang tham gia trao đổi',
+                    status: 'Đang mở'
+                };
+            });
+        }
+
+        if (data.offers && data.offers.length > 0) {
+            state.offers = data.offers.map(function (o) {
+                var isMine = (o.buyerId === data.currentUserId);
+                var bKey = isMine ? 'proposer' : ('buyer_' + o.buyerId);
+                if (!USERS[bKey]) {
+                    USERS[bKey] = {
+                        key: bKey,
+                        name: o.buyerName || 'Người mua',
+                        short: o.buyerName || 'Người mua',
+                        initials: o.buyerName ? o.buyerName.substring(0, 2).toUpperCase() : 'NM',
+                        roleLabel: 'Người đề xuất',
+                        verified: true, rating: 4.8, reviews: 12, deals: 8, successRate: 95, response: '~15p', location: 'Toàn quốc', since: '2026'
+                    };
+                }
+                var cIds = (o.items || []).map(function (it) {
+                    var cid = 'c_' + it.productId;
+                    if (!comicById(cid)) {
+                        INVENTORY.push({
+                            id: cid,
+                            productId: it.productId,
+                            title: it.titleSnapshot,
+                            vol: 'Tập 1',
+                            cond: it.conditionSnapshot + '%',
+                            value: Number(it.price || 0),
+                            series: it.titleSnapshot,
+                            bg: '1E293B'
+                        });
+                    }
+                    return cid;
+                });
+
+                var mVal = o.compensationDirection === 'get' ? -Number(o.cashCompensation) : Number(o.cashCompensation || 0);
+                var optType = cIds.length > 0 ? (mVal !== 0 ? 'both' : 'comic') : 'money';
+
+                return {
+                    id: o.id,
+                    by: bKey,
+                    buyerKey: bKey,
+                    requestId: 'RQ-' + o.id,
+                    type: optType === 'money' ? 'buy' : 'trade',
+                    optionType: optType,
+                    comics: cIds,
+                    money: mVal,
+                    note: o.note || '',
+                    status: (o.status === 'ACCEPTED' ? 'accepted' : (o.status === 'DECLINED' ? 'declined' : 'pending')),
+                    edited: false,
+                    time: o.createdAt ? o.createdAt.substring(11, 16) : nowTime()
+                };
+            });
+
+            DEAL_REQUESTS = state.offers.map(function (o) {
+                return {
+                    id: o.requestId,
+                    buyer: o.buyerKey,
+                    type: o.type,
+                    optionType: o.optionType,
+                    comics: o.comics.slice(),
+                    money: o.money,
+                    note: o.note || (o.type === 'buy' ? fmt(o.money) : 'Đề xuất trao đổi'),
+                    status: o.status,
+                    time: o.time
+                };
+            });
+        }
+
+        syncDraft();
+        renderAll();
+    }
+
+    function loadBackendInventory() {
+        fetch('/api/exchange/rooms/inventory')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (items) {
+                if (Array.isArray(items) && items.length > 0) {
+                    items.forEach(function (p) {
+                        var cid = 'c_' + p.id;
+                        if (!comicById(cid)) {
+                            INVENTORY.push({
+                                id: cid,
+                                productId: p.id,
+                                title: p.title,
+                                vol: p.volumeNumbers || 'Tập 1',
+                                cond: (p.conditionPercent || 90) + '%',
+                                value: Number(p.price || 0),
+                                series: p.title,
+                                bg: 'C2410C'
+                            });
+                        }
+                    });
+                    renderSide();
+                }
+            })
+            .catch(function () {});
+    }
+
+    function loadBackendMessages(roomId) {
+        fetch('/api/exchange/rooms/' + roomId + '/messages')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (msgs) {
+                if (Array.isArray(msgs) && msgs.length > 0) {
+                    state.messages = msgs.map(function (m) {
+                        return {
+                            type: 'text',
+                            by: m.isHost ? 'owner' : 'proposer',
+                            text: (m.senderName ? '[' + m.senderName + '] ' : '') + m.content,
+                            time: m.createdAt ? m.createdAt.substring(11, 16) : ''
+                        };
+                    });
+                    renderChat();
+                }
+            })
+            .catch(function () {});
+    }
+
+    function startPolling(roomId) {
+        setInterval(function () {
+            if (document.hidden) return;
+            fetch('/api/exchange/rooms/' + roomId + '/messages')
+                .then(function (res) { return res.ok ? res.json() : []; })
+                .then(function (msgs) {
+                    if (Array.isArray(msgs) && msgs.length > state.messages.length) {
+                        state.messages = msgs.map(function (m) {
+                            return {
+                                type: 'text',
+                                by: m.isHost ? 'owner' : 'proposer',
+                                text: (m.senderName ? '[' + m.senderName + '] ' : '') + m.content,
+                                time: m.createdAt ? m.createdAt.substring(11, 16) : ''
+                            };
+                        });
+                        renderChat();
+                    }
+                })
+                .catch(function () {});
+        }, 3500);
+    }
 })();

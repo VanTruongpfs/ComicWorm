@@ -100,12 +100,21 @@
             </p>
         </div>
 
-        <button
-                class="btn-secondary"
-                onclick="refreshRooms()"
-        >
-            ↻ Làm mới
-        </button>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button
+                    class="btn btn-primary"
+                    onclick="openCreateRoomModal()"
+                    style="display:inline-flex; align-items:center; gap:8px; background:#f97316; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; cursor:pointer;"
+            >
+                <i class="fa-solid fa-plus"></i> Tạo phòng trao đổi
+            </button>
+            <button
+                    class="btn-secondary"
+                    onclick="refreshRooms()"
+            >
+                ↻ Làm mới
+            </button>
+        </div>
 
     </div>
 
