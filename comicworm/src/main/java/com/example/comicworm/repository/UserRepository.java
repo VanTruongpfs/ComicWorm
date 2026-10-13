@@ -19,12 +19,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByGoogleSub(String googleSub);
 
     Optional<User> findByVerificationToken(String verificationToken);
-
-    Optional<User> findByPhoneAndDeletedAtIsNull(String phone);
-
-    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND (" +
-            "LOWER(u.email) = LOWER(:identifier) OR " +
-            "(u.phone IS NOT NULL AND u.phone = :identifier) OR " +
-            "LOWER(u.email) LIKE LOWER(CONCAT(:identifier, '@%')))")
-    java.util.List<User> findByIdentifierCandidates(@org.springframework.data.repository.query.Param("identifier") String identifier);
 }

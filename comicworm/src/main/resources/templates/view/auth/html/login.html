@@ -16,16 +16,6 @@
         <h1 class="auth-title" id="login-title">Chào mừng trở lại</h1>
         <p class="auth-subtitle">Đăng nhập để tiếp tục trao đổi những cuốn sách bạn yêu thích.</p>
 
-        <!-- Thông báo đăng xuất thành công -->
-        <div th:if="${param.logout}" class="field-success" style="color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; padding: 10px 16px; border-radius: 8px; margin-bottom: 1.25rem; text-align: center; font-weight: 600; font-size: 0.9rem;">
-            Bạn đã đăng xuất thành công khỏi hệ thống!
-        </div>
-
-        <!-- Thông báo đổi mật khẩu thành công -->
-        <div th:if="${param.resetSuccess}" class="field-success" style="color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; padding: 10px 16px; border-radius: 8px; margin-bottom: 1.25rem; text-align: center; font-weight: 600; font-size: 0.9rem;">
-            Đổi mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.
-        </div>
-
         <!-- Thông báo lỗi chung từ Controller -->
         <div th:if="${errorMessage}" class="field-error" style="color: #dc3545; margin-bottom: 1rem; text-align: center; font-weight: bold;" th:text="${errorMessage}">
         </div>

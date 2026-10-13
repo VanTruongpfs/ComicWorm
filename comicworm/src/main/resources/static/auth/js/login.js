@@ -29,14 +29,3 @@ form.addEventListener("submit", (event) => {
 
     form.submit();
 });
-
-const forgotLink = document.querySelector("a[href*='forgot-password']");
-if (forgotLink) {
-    forgotLink.addEventListener("click", (e) => {
-        const emailVal = email ? email.value.trim() : "";
-        if (emailVal) {
-            e.preventDefault();
-            window.location.href = `/auth/forgot-password?email=${encodeURIComponent(emailVal)}`;
-        }
-    });
-}

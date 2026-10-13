@@ -65,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
 
                         //public API
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers("/api/cart/**", "/api/checkout/**").permitAll()
