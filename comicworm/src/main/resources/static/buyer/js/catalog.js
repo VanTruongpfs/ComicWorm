@@ -381,7 +381,6 @@
             const p = lastItems.find(x => x.id === Number(btn.dataset.addCart));
             if (!p) return;
             A.addToLocalCart(p);
-            A.toast('Đã thêm "' + p.title + '" vào giỏ hàng!', 'success', 'fa-cart-plus');
         });
         // Ảnh lỗi -> ảnh thay thế (sự kiện error không nổi bọt nên dùng capture)
         grid?.addEventListener('error', e => {

@@ -14,6 +14,7 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
 
     /** Ảnh của một sản phẩm theo thứ tự hiển thị (ảnh đầu tiên là ảnh bìa). */
     List<ProductImage> findByProductIdOrderByDisplayOrderAsc(Long productId);
+    Optional<ProductImage> findFirstByProductIdOrderByDisplayOrderAsc(Long productId);
 
     /** Ảnh của nhiều sản phẩm trong một truy vấn (tránh N+1 khi dựng danh sách). */
     List<ProductImage> findByProductIdInOrderByProductIdAscDisplayOrderAsc(Collection<Long> productIds);
