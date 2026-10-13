@@ -108,19 +108,44 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/resend-verification")
+    public String resendVerification(@RequestParam("email") String email, RedirectAttributes redirectAttributes) {
+        try {
+            authService.resendVerificationEmail(email);
+            redirectAttributes.addFlashAttribute("message", "Link kích hoạt mới đã được gửi đến email của bạn.");
+            redirectAttributes.addFlashAttribute("success", true);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
+            redirectAttributes.addFlashAttribute("success", false);
+        }
+        return "redirect:/auth/register";
+    }
+
     @GetMapping("/verify")
     public String verifyAccount(@RequestParam("token") String token, Model model) {
-        try {
-            authService.verifyAccount(token);
-            model.addAttribute("success", true);
-            model.addAttribute("message", "Xác thực tài khoản thành công! Tài khoản của bạn đã được kích hoạt.");
-        } catch (Exception e) {
-            model.addAttribute("success", false);
-            model.addAttribute("message", "Xác thực thất bại: " + e.getMessage());
+        String result = authService.verifyAccount(token);
+
+        switch (result) {
+            case "SUCCESS" -> {
+                model.addAttribute("success", true);
+                model.addAttribute("message", "Kích hoạt tài khoản thành công! Hãy đăng nhập để trải nghiệm.");
+            }
+            case "TOKEN_ALREADY_USED" -> {
+                model.addAttribute("success", true);
+                model.addAttribute("message", "Tài khoản này đã được kích hoạt trước đó. Bạn có thể đăng nhập ngay.");
+            }
+            case "TOKEN_EXPIRED" -> {
+                model.addAttribute("success", false);
+                model.addAttribute("canResend", true); // Bật nút gửi lại link trên View
+                model.addAttribute("message", "Liên kết kích hoạt đã hết hạn (quá 24 giờ). Vui lòng yêu cầu gửi lại link mới.");
+            }
+            default -> {
+                model.addAttribute("success", false);
+                model.addAttribute("message", "Liên kết xác thực không hợp lệ hoặc không tồn tại.");
+            }
         }
         return "view/auth/html/verify";
     }
-
     @GetMapping("/logout")
     public String logout(HttpServletResponse response, HttpServletRequest request) {
         csrfTokens.saveToken(null, request, response);

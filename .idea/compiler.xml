@@ -12,7 +12,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="com.example.comicworm" target="21" />
       <module name="comicworm" target="21" />
     </bytecodeTargetLevel>
   </component>

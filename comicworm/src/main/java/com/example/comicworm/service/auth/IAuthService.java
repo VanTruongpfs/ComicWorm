@@ -16,5 +16,8 @@ public interface IAuthService {
 
     AuthResponseDTO refreshToken(String refreshToken);
 
-    boolean verifyAccount(String token);
+    String verifyAccount(String token);
+
+    void resendVerificationEmail(String email);
+
 }
