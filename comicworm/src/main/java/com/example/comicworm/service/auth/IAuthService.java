@@ -19,7 +19,6 @@ public interface IAuthService {
 
     void resendVerificationEmail(String email);
 
-    boolean verifyAccount(String token);
 
     String getMaskedEmail(String identifier);
 

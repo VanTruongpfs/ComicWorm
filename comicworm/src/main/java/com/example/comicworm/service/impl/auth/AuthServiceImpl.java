@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,18 +47,15 @@ public class AuthServiceImpl implements IAuthService {
     private String baseUrl;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository,
-                           UserMapper userMapper,
-                           PasswordEncoder passwordEncoder,
-                           JwtUtils jwtUtils,
-                           IEmailService emailService,
-                           VerificationTokenRepository tokenRepository
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            UserMapper userMapper,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils,
+            IEmailService emailService,
+            VerificationTokenRepository tokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository
     ) {
-        this.tokenRepository = tokenRepository;
-                           PasswordResetTokenRepository passwordResetTokenRepository
-                           ) {
-                           VerificationTokenRepository tokenRepository,
-                           PasswordResetTokenRepository passwordResetTokenRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
