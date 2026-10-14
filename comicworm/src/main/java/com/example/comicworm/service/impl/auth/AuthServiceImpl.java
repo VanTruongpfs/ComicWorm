@@ -46,7 +46,6 @@ public class AuthServiceImpl implements IAuthService {
     private String baseUrl;
 
     @Autowired
-<<<<<<< HEAD
     public AuthServiceImpl(
             UserRepository userRepository,
             UserMapper userMapper,
@@ -56,7 +55,6 @@ public class AuthServiceImpl implements IAuthService {
             VerificationTokenRepository tokenRepository,
             PasswordResetTokenRepository passwordResetTokenRepository
     ) {
-=======
     public AuthServiceImpl(UserRepository userRepository,
                            UserMapper userMapper,
                            PasswordEncoder passwordEncoder,
@@ -64,7 +62,6 @@ public class AuthServiceImpl implements IAuthService {
                            IEmailService emailService,
                            VerificationTokenRepository tokenRepository,
                            PasswordResetTokenRepository passwordResetTokenRepository) {
->>>>>>> f700927ddee828288f86d4e2740f169c46449bd0
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
