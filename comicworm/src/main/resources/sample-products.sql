@@ -22,9 +22,9 @@ INSERT IGNORE INTO products
      edition_type, publication_year, condition_percent, price, stock_quantity,
     listing_type, is_active, moderation_status, created_at, updated_at)
 VALUES
-    (@sample_seller_id, 'Doraemon - Tập 1', 'sample-doraemon-volume-1',
-     'Truyện mẫu để kiểm tra danh sách và trang chi tiết sản phẩm.',
-     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1000&q=80',
+    (@sample_seller_id, 'Doraemon', 'sample-doraemon-volume-1',
+     'Doraemon Vip pro',
+     'https://cdn2.tuoitre.vn/thumb_w/730/471584752817336320/2026/8/12/doraemon-nobita-va-binh-doan-nguoi-sat-1986-17865463142031159189037.png',
     @sample_category_id, 'Tập 1', 'Bìa mềm', 2024, 98, 35000, 8, 'SELL', TRUE, 'APPROVED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (@sample_seller_id, 'Thám tử lừng danh Conan - Tập 1', 'sample-conan-volume-1',
      'Sản phẩm mẫu còn hàng, có thể dùng để thử thao tác mua.',
