@@ -24,7 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -47,6 +46,7 @@ public class AuthServiceImpl implements IAuthService {
     private String baseUrl;
 
     @Autowired
+<<<<<<< HEAD
     public AuthServiceImpl(
             UserRepository userRepository,
             UserMapper userMapper,
@@ -56,6 +56,15 @@ public class AuthServiceImpl implements IAuthService {
             VerificationTokenRepository tokenRepository,
             PasswordResetTokenRepository passwordResetTokenRepository
     ) {
+=======
+    public AuthServiceImpl(UserRepository userRepository,
+                           UserMapper userMapper,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtils jwtUtils,
+                           IEmailService emailService,
+                           VerificationTokenRepository tokenRepository,
+                           PasswordResetTokenRepository passwordResetTokenRepository) {
+>>>>>>> f700927ddee828288f86d4e2740f169c46449bd0
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;

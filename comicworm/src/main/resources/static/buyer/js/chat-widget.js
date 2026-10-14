@@ -86,15 +86,48 @@ document.addEventListener("DOMContentLoaded", () => {
             listDiv.className = "product-suggestions";
 
             products.forEach(p => {
-                const card = document.createElement("div");
+                const card = document.createElement("a");
                 card.className = "product-card-mini";
-                card.innerHTML = `
-                    <img src="${p.imageUrl || '/shared/images/default-book.png'}" alt="${p.name || p.title}">
-                    <div class="product-card-info">
-                        <h4>${p.name || p.title}</h4>
-                        <div class="price">${Number(p.price || 0).toLocaleString('vi-VN')} đ</div>
-                    </div>
-                `;
+                card.href = `product_details.html?id=${encodeURIComponent(p.id)}`;
+
+                const image = document.createElement("img");
+                image.src = p.coverImageUrl || "/shared/images/default-book.png";
+                image.alt = p.title || "Ảnh bìa sản phẩm";
+                card.appendChild(image);
+
+                const info = document.createElement("div");
+                info.className = "product-card-info";
+
+                const title = document.createElement("h4");
+                title.textContent = p.title || "Sản phẩm";
+                info.appendChild(title);
+
+                const price = document.createElement("div");
+                price.className = "price";
+                const priceValue = Number(p.price);
+                price.textContent = Number.isFinite(priceValue)
+                    ? `${priceValue.toLocaleString("vi-VN")} đ`
+                    : "Chưa có giá";
+                info.appendChild(price);
+
+                const details = [
+                    p.volumeNumbers,
+                    p.editionType,
+                    p.conditionPercent != null ? `Tình trạng ${p.conditionPercent}%` : null,
+                    p.stockQuantity != null ? `Còn ${p.stockQuantity}` : null,
+                    p.authorName,
+                    p.categoryName,
+                    p.listingType
+                ].filter(value => value != null && String(value).trim() !== "");
+
+                if (details.length > 0) {
+                    const metadata = document.createElement("div");
+                    metadata.className = "product-card-meta";
+                    metadata.textContent = details.join(" | ");
+                    info.appendChild(metadata);
+                }
+
+                card.appendChild(info);
                 listDiv.appendChild(card);
             });
 
@@ -151,9 +184,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 typingIndicator.remove();
 
                 if (response.ok) {
-                    // Trích xuất đúng tên trường botReply và suggestedProducts từ DTO
-                    const botReplyText = data.botReply || data.message || "Không có phản hồi từ hệ thống.";
-                    const suggestedProducts = data.suggestedProducts || data.products || [];
+                    const botReplyText = data.botReply || "Không có phản hồi từ hệ thống.";
+                    const suggestedProducts = Array.isArray(data.suggestedProducts)
+                        ? data.suggestedProducts
+                        : [];
 
                     appendMessageUI("bot", botReplyText, suggestedProducts);
                     saveToHistory("bot", botReplyText, suggestedProducts);
