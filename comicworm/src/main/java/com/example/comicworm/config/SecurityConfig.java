@@ -65,21 +65,23 @@ public class SecurityConfig {
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
 
                         //public API
-                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                         // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers("/api/cart/**", "/api/checkout/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/index.js", "/favicon.ico",
-                                "/admin/**", "/auth/**", "/buyer/**", "/exchange/**",
-                                "/seller/**", "/shared/**", "/user/**",
-                                "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html", "/favicon.ico",
+                                "/css/**", "/js/**", "/images/**",
+                                "/buyer/css/**", "/buyer/js/**", "/buyer/images/**",
+                                "/buyer/**", "/seller/**", "/admin/**", "/auth/**", "/exchange/**", "/shared/**", "/user/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.HEAD, "/", "/index.html", "/index.js", "/favicon.ico",
                                 "/admin/**", "/auth/**", "/buyer/**", "/exchange/**",
                                 "/seller/**", "/shared/**", "/user/**").permitAll()
-
+                        .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
                         //Auth API, mai mốt API nào cần quyền/authorize thì cứ
                         //thêm vào là xong
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

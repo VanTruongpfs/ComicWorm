@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Render the moved templates while retaining existing navigation and fetch URLs. */
 @Controller
 public class ViewController {
 
-    @GetMapping({"/", "/index.html"})
+    // Đã xóa "/" chỉ giữ lại "/index.html"
+    @GetMapping("/index.html")
     public String home() {
         return "view/index";
     }
