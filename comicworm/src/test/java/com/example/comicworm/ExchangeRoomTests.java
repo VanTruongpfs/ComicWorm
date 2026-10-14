@@ -208,6 +208,34 @@ class ExchangeRoomTests {
     }
 
     @Test
+    @DisplayName("Không thể đề xuất chính bộ truyện mục tiêu của phòng")
+    void proposeOffer_failsWhenOfferingTargetProduct() {
+        ExchangeRoom room = new ExchangeRoom();
+        room.setId(1L);
+        room.setHostId(10L);
+        room.setTargetProductId(101L);
+        room.setStatus(ExchangeRoomStatus.OPEN);
+
+        when(exchangeRoomRepository.findById(1L)).thenReturn(Optional.of(room));
+        when(exchangeRoomMemberRepository.existsByRoomIdAndUserId(1L, 20L)).thenReturn(true);
+
+        Product sameProduct = new Product();
+        sameProduct.setId(101L);
+        sameProduct.setSellerId(20L);
+        sameProduct.setTitle("Trùng truyện phòng");
+
+        when(productRepository.findById(101L)).thenReturn(Optional.of(sameProduct));
+
+        CreateExchangeOfferRequest req = new CreateExchangeOfferRequest();
+        req.setItems(List.of(new OfferItemInput(101L, 1)));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> exchangeRoomService.proposeOffer(1L, 20L, req));
+        assertEquals(org.springframework.http.HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("Không thể dùng chính bộ truyện"));
+    }
+
+    @Test
     @DisplayName("Chủ phòng đồng ý đề xuất -> chuyển trạng thái phòng sang AGREED")
     void respondToOffer_acceptUpdatesRoomStatusToAgreed() {
         ExchangeRoom room = new ExchangeRoom();

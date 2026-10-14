@@ -248,6 +248,10 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                         .filter(prod -> prod.getDeletedAt() == null)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Truyện đề xuất #" + itemInput.getProductId() + " không tồn tại"));
 
+                if (p.getId().equals(room.getTargetProductId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể dùng chính bộ truyện của phòng để đề xuất trao đổi");
+                }
+
                 if (!p.getSellerId().equals(buyerId)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn chỉ có thể đề xuất truyện thuộc quyền sở hữu của bạn: " + p.getTitle());
                 }
@@ -622,7 +626,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                 .targetProductCover(targetProduct != null ? targetProduct.getCoverImageUrl() : null)
                 .targetProductPrice(targetProduct != null ? targetProduct.getPrice() : BigDecimal.ZERO)
                 .targetProductCondition(targetProduct != null ? targetProduct.getConditionPercent() : 100)
-                .targetProductListingType(targetProduct != null ? targetProduct.getListingType().name() : "TRADE")
+                .targetProductListingType(targetProduct != null && targetProduct.getListingType() != null ? targetProduct.getListingType().name() : "TRADE")
                 .targetProductWishNote(targetProduct != null ? targetProduct.getTradeWishNote() : null)
                 .targetProductVolumeNumbers(targetProduct != null ? targetProduct.getVolumeNumbers() : null)
                 .targetProductPublisher(targetProduct != null && targetProduct.getPublisher() != null ? targetProduct.getPublisher().getName() : null)
@@ -660,7 +664,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
 
         String dir = "none";
         if (off.getCashCompensation() != null && off.getCashCompensation().compareTo(BigDecimal.ZERO) > 0) {
-            dir = Objects.equals(off.getCompensationPayerId(), off.getBuyerId()) ? "pay" : "get";
+            dir = (off.getCompensationPayerId() == null || Objects.equals(off.getCompensationPayerId(), off.getBuyerId())) ? "pay" : "get";
         }
 
         return ExchangeOfferDTO.builder()

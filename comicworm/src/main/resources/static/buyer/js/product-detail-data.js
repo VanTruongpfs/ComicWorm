@@ -166,6 +166,44 @@
         });
     }
 
+    function setupExchangeButtons(p) {
+        const handleExchange = async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch('/api/exchange/rooms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        targetProductId: p.id,
+                        initialMessage: 'Xin chào, mình quan tâm và muốn trao đổi bộ truyện này.'
+                    })
+                });
+                if (res.status === 401) {
+                    alert('Vui lòng đăng nhập để mở hoặc tham gia phòng trao đổi truyện.');
+                    window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href);
+                    return;
+                }
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    alert(err.message || 'Không thể mở phòng trao đổi.');
+                    return;
+                }
+                const room = await res.json();
+                window.location.href = '/exchange/html/dealing-chat.html?room=' + encodeURIComponent(room.id);
+            } catch (err) {
+                console.error('Lỗi khi mở phòng trao đổi:', err);
+                window.location.href = '/exchange/html/dealing-chat.html';
+            }
+        };
+
+        const exchangeBtns = document.querySelectorAll('.btn-match-barter, .btn-propose-exchange, .btn-chat-seller');
+        exchangeBtns.forEach(btn => {
+            const clean = stripListeners(btn);
+            if (clean) clean.addEventListener('click', handleExchange);
+        });
+    }
+
     function renderSeller(p) {
         const card = $('.seller-profile-card');
         const s = p.seller;
@@ -347,6 +385,7 @@
             renderGallery(p);
             renderInfo(p);
             renderBuyButton(p);
+            setupExchangeButtons(p);
             renderSeller(p);
             renderTabs(p);
             renderRelated(p);

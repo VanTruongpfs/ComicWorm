@@ -747,6 +747,12 @@
         closeModals();
         toast('Đã chốt giá. Chờ hai bên xác nhận giao dịch.');
         renderAll();
+
+        if (state.backendRoomId && l.id) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + l.id + '/respond?accept=true', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi chốt đề xuất:", err); });
+        }
     }
 
     function confirmDetails() {
@@ -762,6 +768,15 @@
             toast('Đã ghi nhận xác nhận của bạn.');
         }
         renderAll();
+
+        if (state.backendRoomId) {
+            var selectedOffer = selectedDealOffer();
+            if (selectedOffer && selectedOffer.id) {
+                fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + selectedOffer.id + '/confirm', {
+                    method: 'POST'
+                }).catch(function (err) { console.error("Lỗi xác nhận deal:", err); });
+            }
+        }
     }
 
     function selectRequest(requestId) {
