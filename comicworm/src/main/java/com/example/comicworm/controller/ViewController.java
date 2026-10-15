@@ -16,6 +16,12 @@ public class ViewController {
         return "view/index";
     }
 
+    // Admin dung chung trang dang nhap /auth/login (he thong phan quyen theo role).
+    @GetMapping("/admin/html/login.html")
+    public String adminLogin() {
+        return "redirect:/auth/login";
+    }
+
     @GetMapping("/{area:admin|auth|buyer|exchange|seller|user}/html/{page:[A-Za-z0-9_-]+}.html")
     public String page(@PathVariable("area") String area, @PathVariable("page") String page) {
         return resolve(area + "/html/" + page);

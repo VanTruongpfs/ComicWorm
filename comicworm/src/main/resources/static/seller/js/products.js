@@ -219,7 +219,13 @@
           listingType: { title: 'Hình thức *', list: false, input: select('listingType', listing, false, 'SELL') },
           tradeWishNote: { title: 'Mong muốn trao đổi', list: false, input: textarea('tradeWishNote') },
           isActive: { title: 'Hiển thị', width: '8%', display: data => badge(data.record.isActive ? 'Bật' : 'Ẩn', data.record.isActive ? 'available' : 'muted'), input: select('isActive', [{ Value: 'true', DisplayText: 'Bật hiển thị' }, { Value: 'false', DisplayText: 'Ẩn sản phẩm' }], false, 'true') },
-          moderationStatus: { title: 'Kiểm duyệt', width: '10%', create: false, edit: false, display: data => badge(({ PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' })[data.record.moderationStatus], data.record.moderationStatus === 'APPROVED' ? 'available' : 'low') },
+          moderationStatus: { title: 'Kiểm duyệt', width: '10%', create: false, edit: false, display: data => {
+            const status = data.record.moderationStatus;
+            const tag = badge(({ PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' })[status], status === 'APPROVED' ? 'available' : status === 'REJECTED' ? 'empty' : 'low');
+            if (status !== 'REJECTED' || !data.record.moderationReason) return tag;
+            tag.attr('title', 'Lý do: ' + data.record.moderationReason);
+            return $('<div>').append(tag, $('<div>').addClass('product-reject-reason').text('Lý do: ' + data.record.moderationReason));
+          } },
           detail: { title: 'Chi tiết', width: '7%', sorting: false, create: false, edit: false, display: data => $('<button type="button">').addClass('product-detail-button').attr('aria-label', 'Xem chi tiết ' + data.record.title).text('Xem').on('click', () => details(data.record.id)) }
         },
         formCreated: (_, data) => {

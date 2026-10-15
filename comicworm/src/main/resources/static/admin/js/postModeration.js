@@ -1,610 +1,288 @@
-document.addEventListener("DOMContentLoaded", function () {
-
-    // =========================================================
-    // 1. CÁC PHẦN TỬ CHÍNH
-    // =========================================================
-
-    const searchInput = document.querySelector(".search-input");
-    const notificationBtn = document.querySelector(".notification-btn");
-
-    const skipBtn = document.querySelector(".btn-text");
-
-    const deleteBanBtn = document.querySelector(".btn.btn-danger");
-    const deleteWarnBtn = document.querySelector(".btn.btn-warning");
-    const approveBtn = document.querySelector(
-        ".action-group-right .btn-outline"
-    );
-
-    const queueItems = document.querySelectorAll(".queue-item");
-    const queueCount = document.querySelector(".queue-count");
-
-
-    // =========================================================
-    // 2. HÀM HIỂN THỊ THÔNG BÁO
-    // =========================================================
-
-    function showToast(message, type = "normal") {
-
-        // Xóa toast cũ nếu đang tồn tại
-        const oldToast = document.querySelector(".moderation-toast");
-
-        if (oldToast) {
-            oldToast.remove();
-        }
-
-        // Tạo toast mới
-        const toast = document.createElement("div");
-
-        toast.className = "moderation-toast";
-        toast.textContent = message;
-
-        // Style cho toast
-        toast.style.position = "fixed";
-        toast.style.right = "24px";
-        toast.style.bottom = "24px";
-        toast.style.zIndex = "9999";
-
-        toast.style.padding = "12px 18px";
-        toast.style.borderRadius = "8px";
-
-        toast.style.fontSize = "14px";
-        toast.style.fontWeight = "600";
-
-        toast.style.boxShadow =
-            "0 8px 20px rgba(15, 23, 42, 0.15)";
-
-        toast.style.color = "#0F172A";
-        toast.style.background = "#FFFFFF";
-
-        toast.style.border = "1px solid #E2E8F0";
-
-
-        // Màu border theo loại thông báo
-        if (type === "danger") {
-            toast.style.borderColor = "#EF4444";
-        }
-
-        if (type === "success") {
-            toast.style.borderColor = "#10B981";
-        }
-
-        if (type === "warning") {
-            toast.style.borderColor = "#F59E0B";
-        }
-
-
-        // Thêm toast vào trang
-        document.body.appendChild(toast);
-
-
-        // Tự động xóa sau 2.5 giây
-        setTimeout(function () {
-            toast.remove();
-        }, 2500);
-    }
-
-
-    // =========================================================
-    // 3. TÌM KIẾM BÀI ĐĂNG
-    // =========================================================
-
-    if (searchInput) {
-
-        searchInput.addEventListener("input", function () {
-
-            // Lấy từ khóa người dùng nhập
-            const keyword = this.value.trim().toLowerCase();
-
-
-            // Duyệt qua từng bài trong hàng đợi
-            queueItems.forEach(function (item) {
-
-                const text = item.textContent.toLowerCase();
-
-
-                // Nếu không nhập gì hoặc bài có chứa từ khóa
-                if (
-                    keyword === "" ||
-                    text.includes(keyword)
-                ) {
-
-                    item.style.display = "";
-
-                } else {
-
-                    item.style.display = "none";
-                }
-            });
-
-
-            // Đếm số bài đang hiển thị
-            const visibleItems = Array.from(queueItems).filter(
-                function (item) {
-
-                    return item.style.display !== "none";
-                }
-            );
-
-
-            // Cập nhật số lượng
-            if (queueCount) {
-
-                queueCount.textContent =
-                    visibleItems.length + " bài";
-            }
-        });
-    }
-
-
-    // =========================================================
-    // 4. NÚT THÔNG BÁO
-    // =========================================================
-
-    if (notificationBtn) {
-
-        notificationBtn.addEventListener("click", function () {
-
-            showToast("Bạn có 3 thông báo mới");
-        });
-    }
-
-
-    // =========================================================
-    // 5. BỎ QUA BÀI ĐANG KIỂM DUYỆT
-    // =========================================================
-
-    if (skipBtn) {
-
-        skipBtn.addEventListener("click", function () {
-
-            const confirmed = confirm(
-                "Bạn có chắc muốn bỏ qua bài đăng này và chuyển sang bài tiếp theo?"
-            );
-
-
-            // Người dùng bấm Cancel
-            if (!confirmed) {
-                return;
-            }
-
-
-            // Hiển thị thông báo
-            showToast(
-                "Đã bỏ qua bài đăng. Đang chuyển sang bài tiếp theo...",
-                "warning"
-            );
-
-
-            // Demo chuyển bài
-            setTimeout(function () {
-
-                window.location.reload();
-
-            }, 1200);
-        });
-    }
-
-
-    // =========================================================
-    // 6. XÓA BÀI + CẤM TÀI KHOẢN
-    // =========================================================
-
-    if (deleteBanBtn) {
-
-        deleteBanBtn.addEventListener("click", function () {
-
-            const confirmed = confirm(
-                "Bạn có chắc muốn XÓA bài đăng và CẤM tài khoản này?"
-            );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            processModeration(
-                "Đã xóa bài đăng và cấm tài khoản.",
-                deleteBanBtn,
-                "danger"
-            );
-        });
-    }
-
-
-    // =========================================================
-    // 7. XÓA BÀI + CẢNH CÁO
-    // =========================================================
-
-    if (deleteWarnBtn) {
-
-        deleteWarnBtn.addEventListener("click", function () {
-
-            const confirmed = confirm(
-                "Bạn có chắc muốn XÓA bài đăng và gửi cảnh cáo cho tài khoản?"
-            );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            processModeration(
-                "Đã xóa bài đăng và gửi cảnh cáo.",
-                deleteWarnBtn,
-                "warning"
-            );
-        });
-    }
-
-
-    // =========================================================
-    // 8. PHÊ DUYỆT BÀI
-    // =========================================================
-
-    if (approveBtn) {
-
-        approveBtn.addEventListener("click", function () {
-
-            const confirmed = confirm(
-                "Bạn có chắc bài đăng này không vi phạm và muốn phê duyệt?"
-            );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            processModeration(
-                "Đã phê duyệt bài đăng.",
-                approveBtn,
-                "success"
-            );
-        });
-    }
-
-
-    // =========================================================
-    // 9. HÀM XỬ LÝ KIỂM DUYỆT
-    // =========================================================
-
-    function processModeration(
-        message,
-        clickedButton,
-        type
-    ) {
-
-        // Lấy tất cả nút xử lý
-        const actionButtons =
-            document.querySelectorAll(".action-bar .btn");
-
-
-        // Khóa tất cả nút
-        actionButtons.forEach(function (button) {
-
-            button.disabled = true;
-
-            button.style.opacity = "0.6";
-
-            button.style.cursor = "not-allowed";
-        });
-
-
-        // Giữ nút vừa click rõ hơn
-        if (clickedButton) {
-
-            clickedButton.style.opacity = "1";
-        }
-
-
-        // =====================================================
-        // Cập nhật warning banner
-        // =====================================================
-
-        const warningBanner =
-            document.querySelector(".warning-banner");
-
-
-        if (warningBanner) {
-
-            warningBanner.innerHTML = `
-                <div class="warning-text">
-                    <strong>Đã xử lý:</strong>
-                    ${message}
-                </div>
-            `;
-
-
-            // Đổi màu border
-            if (type === "danger") {
-
-                warningBanner.style.borderLeftColor =
-                    "#EF4444";
-
-            } else if (type === "warning") {
-
-                warningBanner.style.borderLeftColor =
-                    "#F59E0B";
-
-            } else {
-
-                warningBanner.style.borderLeftColor =
-                    "#10B981";
-            }
-        }
-
-
-        // Hiển thị thông báo
-        showToast(message, type);
-
-
-        // =====================================================
-        // Sau khi xử lý → xóa bài đầu tiên khỏi queue
-        // =====================================================
-
-        setTimeout(function () {
-
-            if (queueItems.length > 0) {
-
-                const firstQueueItem =
-                    queueItems[0];
-
-
-                if (firstQueueItem) {
-
-                    // Hiệu ứng mờ dần
-                    firstQueueItem.style.transition =
-                        "opacity 0.3s";
-
-                    firstQueueItem.style.opacity = "0";
-
-
-                    setTimeout(function () {
-
-                        firstQueueItem.remove();
-
-
-                        // Đếm lại số bài
-                        if (queueCount) {
-
-                            const remaining =
-                                document.querySelectorAll(
-                                    ".queue-item"
-                                ).length;
-
-
-                            queueCount.textContent =
-                                remaining + " bài";
-                        }
-
-                    }, 300);
-                }
-            }
-
-        }, 1500);
-    }
-
-
-    // =========================================================
-    // 10. CLICK VÀO BÀI TRONG HÀNG ĐỢI
-    // =========================================================
-
-    queueItems.forEach(function (item) {
-
-        // Cho biết item có thể click
-        item.style.cursor = "pointer";
-
-
-        item.addEventListener("click", function () {
-
-            // Bỏ highlight tất cả item
-            queueItems.forEach(function (otherItem) {
-
-                otherItem.style.outline = "none";
-            });
-
-
-            // Highlight item được chọn
-            item.style.outline =
-                "2px solid #F97316";
-
-
-            // Lấy username
-            const authorElement =
-                item.querySelector(".author-name");
-
-
-            let authorName = "bài đăng";
-
-
-            if (authorElement) {
-
-                authorName =
-                    authorElement.textContent.trim();
-            }
-
-
-            // Thông báo
-            showToast(
-                "Đã chọn bài đăng của " + authorName
-            );
-        });
+/* Admin moderation screen: list pending product posts, approve, or reject with a reason.
+   All data comes from /api/admin/moderation (ADMIN only). Text is always inserted with
+   textContent so seller-provided content can never inject HTML. */
+(function () {
+  'use strict';
+
+  const API = '/api/admin/moderation';
+  const PAGE_SIZE = 10;
+  const STATUS_TITLES = { PENDING: 'Bài chờ duyệt', APPROVED: 'Bài đã duyệt', REJECTED: 'Bài đã từ chối' };
+  const STATUS_LABELS = { PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Đã từ chối' };
+  const LISTING_LABELS = { SELL: 'Bán', TRADE: 'Trao đổi', SELL_AND_TRADE: 'Bán & trao đổi' };
+
+  const state = { status: 'PENDING', search: '', page: 0, total: 0, items: [], selectedId: null, busy: false };
+  let csrf = null;
+  let searchTimer = null;
+  let toastTimer = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  // ------------------------------------------------------------------ helpers
+  function el(tag, props, children) {
+    const node = document.createElement(tag);
+    Object.entries(props || {}).forEach(([key, value]) => {
+      if (value == null || value === false) return;
+      if (key === 'className') node.className = value;
+      else if (key === 'text') node.textContent = value;
+      else node.setAttribute(key, value === true ? '' : value);
     });
+    (children || []).forEach((child) => child && node.appendChild(child));
+    return node;
+  }
 
+  function safeUrl(url) { return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : ''; }
+  function money(value) { return new Intl.NumberFormat('vi-VN').format(Number(value || 0)) + 'đ'; }
+  function when(iso) {
+    if (!iso) return '';
+    const date = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : iso + 'Z'); // server stores UTC
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('vi-VN');
+  }
 
-    // =========================================================
-    // 11. SIDEBAR NAVIGATION
-    // =========================================================
+  function toast(message, isError) {
+    const box = $('toast');
+    box.textContent = message;
+    box.className = 'mod-toast' + (isError ? ' error' : '');
+    box.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { box.hidden = true; }, 4500);
+  }
 
-    const navItems =
-        document.querySelectorAll(".nav-item");
+  async function request(path, options) {
+    const opts = Object.assign({ credentials: 'include', headers: {} }, options);
+    opts.headers = Object.assign({ Accept: 'application/json' }, opts.headers);
+    let response;
+    try { response = await fetch(API + path, opts); }
+    catch (_) { throw new Error('Không kết nối được máy chủ. Vui lòng thử lại.'); }
+    if (response.status === 401) { window.location.href = '/auth/login'; throw new Error('Phiên đăng nhập đã hết hạn.'); }
+    let body = null;
+    try { body = await response.json(); } catch (_) { /* no body */ }
+    if (!response.ok) {
+      const error = new Error((body && body.message) || (response.status === 403
+        ? 'Bạn không có quyền thực hiện thao tác này hoặc phiên đã hết hạn. Hãy tải lại trang.'
+        : 'Có lỗi xảy ra (' + response.status + ').'));
+      error.status = response.status;
+      throw error;
+    }
+    return body;
+  }
 
+  async function csrfHeaders(forceRefresh) {
+    if (!csrf || forceRefresh) csrf = await request('/csrf');
+    return { [csrf.headerName]: csrf.token };
+  }
 
-    navItems.forEach(function (item) {
-
-        item.addEventListener("click", function (event) {
-
-            const href =
-                item.getAttribute("href");
-
-
-            // Nếu href bắt đầu bằng #
-            if (
-                href &&
-                href.startsWith("#")
-            ) {
-
-                const target =
-                    document.querySelector(href);
-
-
-                // Nếu tìm thấy section
-                if (target) {
-
-                    event.preventDefault();
-
-
-                    target.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-                }
-            }
-
-
-            // Bỏ active của tất cả menu
-            navItems.forEach(function (nav) {
-
-                nav.classList.remove(
-                    "nav-item-active"
-                );
-            });
-
-
-            // Active menu được click
-            item.classList.add(
-                "nav-item-active"
-            );
-        });
+  async function post(path, payload) {
+    const send = async (refresh) => request(path, {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, await csrfHeaders(refresh)),
+      body: JSON.stringify(payload || {})
     });
+    try { return await send(false); }
+    catch (error) {
+      if (error.status !== 403) throw error;
+      return send(true); // CSRF token may have rotated (e.g. re-login): retry once with a fresh one
+    }
+  }
 
+  // ------------------------------------------------------------------ list
+  async function loadList(keepSelection) {
+    try {
+      const params = new URLSearchParams({ status: state.status, search: state.search, page: state.page, size: PAGE_SIZE });
+      const data = await request('/products?' + params);
+      state.items = data.items;
+      state.total = data.total;
+      renderCounts(data.counts);
+      // Page became empty after handling the last item of a page: step back.
+      if (!data.items.length && state.page > 0) { state.page -= 1; return loadList(keepSelection); }
+      if (!keepSelection || !state.items.some((item) => item.id === state.selectedId)) {
+        state.selectedId = state.items.length ? state.items[0].id : null;
+      }
+      renderList();
+      renderDetail();
+    } catch (error) {
+      toast(error.message, true);
+      $('headerStatus').textContent = 'Không tải được danh sách';
+    }
+  }
 
-    // =========================================================
-    // 12. CẬP NHẬT SỐ BÀI TRÊN SIDEBAR
-    // =========================================================
+  function renderCounts(counts) {
+    ['PENDING', 'APPROVED', 'REJECTED'].forEach((key) => { $('count' + key).textContent = counts[key] ?? 0; });
+    $('navPendingBadge').textContent = counts.PENDING ?? 0;
+    $('headerStatus').textContent = counts.PENDING
+      ? 'Đang có ' + counts.PENDING + ' bài cần xử lý' : 'Không còn bài nào chờ duyệt';
+  }
 
-    const navBadge =
-        document.querySelector(".nav-badge");
+  function renderList() {
+    $('listTitle').textContent = STATUS_TITLES[state.status];
+    $('listCount').textContent = state.total + ' bài';
+    const list = $('postList');
+    list.replaceChildren();
+    if (!state.items.length) {
+      list.appendChild(el('div', { className: 'mod-empty', text: state.search
+        ? 'Không có bài nào khớp từ khóa.' : 'Không có bài nào trong mục này.' }));
+    }
+    state.items.forEach((item) => {
+      const cover = safeUrl(item.coverImageUrl);
+      const row = el('div', { className: 'queue-item' + (item.id === state.selectedId ? ' selected' : ''), tabindex: '0', role: 'button' }, [
+        cover ? el('img', { className: 'mod-thumb', src: cover, alt: '', loading: 'lazy' }) : el('div', { className: 'mod-thumb' }),
+        el('div', { className: 'mod-item-main' }, [
+          el('div', { className: 'mod-item-title', text: item.title }),
+          el('div', { className: 'mod-item-meta', text: money(item.price) + ' • #' + item.id }),
+          el('div', { className: 'mod-item-meta', text: (item.sellerName || 'Người bán') + ' • ' + when(item.createdAt) })
+        ])
+      ]);
+      const choose = () => { state.selectedId = item.id; renderList(); renderDetail(); };
+      row.addEventListener('click', choose);
+      row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); } });
+      list.appendChild(row);
+    });
+    renderPager();
+  }
 
+  function renderPager() {
+    const pager = $('pager');
+    pager.replaceChildren();
+    const pages = Math.max(1, Math.ceil(state.total / PAGE_SIZE));
+    if (pages <= 1) return;
+    const prev = el('button', { type: 'button', className: 'btn btn-outline', text: '‹ Trước', disabled: state.page === 0 });
+    const next = el('button', { type: 'button', className: 'btn btn-outline', text: 'Sau ›', disabled: state.page >= pages - 1 });
+    prev.addEventListener('click', () => { state.page -= 1; loadList(false); });
+    next.addEventListener('click', () => { state.page += 1; loadList(false); });
+    pager.append(prev, el('span', { text: 'Trang ' + (state.page + 1) + '/' + pages }), next);
+  }
 
-    function updateQueueNumber() {
+  // ------------------------------------------------------------------ detail
+  function fact(label, value) {
+    if (value == null || value === '') return null;
+    return el('div', {}, [el('div', { className: 'mod-fact-label', text: label }), el('div', { className: 'mod-fact-value', text: String(value) })]);
+  }
 
-        const currentQueue =
-            document.querySelectorAll(
-                ".queue-item"
-            ).length;
-
-
-        // +15 là số bài demo còn lại
-        const count = currentQueue + 15;
-
-
-        if (navBadge) {
-
-            navBadge.textContent = count;
-        }
+  function renderDetail() {
+    const panel = $('detailPanel');
+    panel.replaceChildren();
+    const item = state.items.find((entry) => entry.id === state.selectedId);
+    if (!item) {
+      panel.appendChild(el('div', { className: 'mod-empty', text: state.status === 'PENDING'
+        ? 'Tuyệt vời! Không còn bài nào chờ duyệt.' : 'Chọn một bài ở danh sách bên trái để xem chi tiết.' }));
+      return;
     }
 
+    panel.appendChild(el('div', { className: 'mod-detail-head' }, [
+      el('div', {}, [el('h2', { text: item.title }), el('div', { className: 'mod-price', text: money(item.price) })]),
+      el('span', { className: 'mod-status ' + item.moderationStatus, text: STATUS_LABELS[item.moderationStatus] })
+    ]));
 
-    // =========================================================
-    // 13. CHO PHÉP ENTER KÍCH HOẠT BUTTON
-    // =========================================================
-
-    const buttons =
-        document.querySelectorAll("button");
-
-
-    buttons.forEach(function (button) {
-
-        button.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (event.key === "Enter") {
-
-                    button.click();
-                }
-            }
-        );
+    const gallery = el('div', { className: 'mod-gallery' });
+    const urls = (item.imageUrls && item.imageUrls.length ? item.imageUrls : [item.coverImageUrl]).map(safeUrl).filter(Boolean);
+    if (!urls.length) gallery.appendChild(el('div', { className: 'mod-item-meta', text: 'Bài đăng chưa có hình ảnh.' }));
+    urls.forEach((url) => {
+      const link = el('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, [el('img', { src: url, alt: 'Ảnh sản phẩm', loading: 'lazy' })]);
+      gallery.appendChild(link);
     });
-    //13.5
-const postTypeTabs = document.querySelectorAll(".post-type-tab");
-const productDemo = document.querySelector("#productDemo");
-const communityPost = document.querySelector("#communityPost");
-const currentPostType = document.querySelector("#currentPostType");
+    panel.appendChild(gallery);
 
-postTypeTabs.forEach(function (tab) {
+    const facts = el('div', { className: 'mod-facts' }, [
+      fact('Người bán', item.sellerName ? item.sellerName + (item.sellerEmail ? ' (' + item.sellerEmail + ')' : '') : null),
+      fact('Thể loại', item.categoryName), fact('Tác giả', item.authorName), fact('Nhà xuất bản', item.publisherName),
+      fact('Tập', item.volumeNumbers), fact('Phiên bản', item.editionType), fact('Năm xuất bản', item.publicationYear),
+      fact('Độ mới', item.conditionPercent != null ? item.conditionPercent + '%' : null),
+      fact('Tồn kho', item.stockQuantity != null ? item.stockQuantity + ' cuốn' : null),
+      fact('Hình thức', LISTING_LABELS[item.listingType] || item.listingType),
+      fact('Mong muốn trao đổi', item.tradeWishNote),
+      fact('Hiển thị khi duyệt', item.isActive ? 'Bật' : 'Ẩn'),
+      fact('Ngày đăng', when(item.createdAt)), fact('Cập nhật', when(item.updatedAt))
+    ]);
+    panel.appendChild(facts);
 
-    tab.addEventListener("click", function () {
+    panel.appendChild(el('div', { className: 'mod-fact-label', text: 'Mô tả' }));
+    panel.appendChild(el('div', { className: 'mod-desc', text: item.description || '(Không có mô tả)' }));
 
-        // Xóa active ở tất cả tab
-        postTypeTabs.forEach(function (item) {
-            item.classList.remove("active");
-        });
+    if (item.moderationStatus !== 'PENDING') {
+      const by = item.moderatedByName ? ' bởi ' + item.moderatedByName : '';
+      const text = item.moderationStatus === 'REJECTED'
+        ? 'Đã từ chối' + by + (item.moderatedAt ? ' lúc ' + when(item.moderatedAt) : '') + '. Lý do: ' + (item.moderationReason || '')
+        : 'Đã duyệt' + by + (item.moderatedAt ? ' lúc ' + when(item.moderatedAt) : '') + '.';
+      panel.appendChild(el('div', { className: 'mod-result ' + item.moderationStatus, text }));
+      return;
+    }
 
-        // Active tab đang chọn
-        tab.classList.add("active");
+    const reject = el('button', { type: 'button', className: 'btn btn-danger', id: 'btnReject', text: 'Từ chối' });
+    const approve = el('button', { type: 'button', className: 'btn btn-approve', id: 'btnApprove', text: 'Duyệt bài' });
+    reject.addEventListener('click', () => openReject(item));
+    approve.addEventListener('click', () => approveItem(item, approve));
+    panel.appendChild(el('div', { className: 'mod-actions' }, [reject, approve]));
+  }
 
-        const type = tab.getAttribute("data-type");
+  // ------------------------------------------------------------------ actions
+  async function approveItem(item, button) {
+    if (state.busy) return;
+    state.busy = true; button.disabled = true;
+    try {
+      await post('/products/' + item.id + '/approve');
+      toast('Đã duyệt bài "' + item.title + '".');
+      await loadList(false);
+    } catch (error) {
+      toast(error.message, true);
+      if (error.status === 409) await loadList(false);
+    } finally { state.busy = false; button.disabled = false; }
+  }
 
-        if (type === "product") {
+  let rejecting = null;
+  function openReject(item) {
+    rejecting = item;
+    $('rejectPostName').textContent = item.title + ' (#' + item.id + ')';
+    $('rejectPreset').value = '';
+    $('rejectReason').value = '';
+    showRejectError('');
+    $('rejectModal').hidden = false;
+    $('rejectReason').focus();
+  }
+  function closeReject() { $('rejectModal').hidden = true; rejecting = null; }
+  function showRejectError(message) { const box = $('rejectError'); box.textContent = message; box.hidden = !message; }
 
-            // Hiện sản phẩm
-            productDemo.style.display = "flex";
+  async function confirmReject() {
+    if (!rejecting || state.busy) return;
+    const reason = $('rejectReason').value.trim();
+    if (reason.length < 5) { showRejectError('Vui lòng nhập lý do từ chối (tối thiểu 5 ký tự).'); return; }
+    const button = $('rejectConfirm');
+    state.busy = true; button.disabled = true;
+    try {
+      const item = rejecting;
+      await post('/products/' + item.id + '/reject', { reason });
+      closeReject();
+      toast('Đã từ chối bài "' + item.title + '" và lưu lý do.');
+      await loadList(false);
+    } catch (error) {
+      showRejectError(error.message);
+      if (error.status === 409) { closeReject(); toast(error.message, true); await loadList(false); }
+    } finally { state.busy = false; button.disabled = false; }
+  }
 
-            // Ẩn bài viết cộng đồng
-            communityPost.style.display = "none";
-
-            // Đổi nhãn
-            currentPostType.textContent = "🛒 BÀI ĐĂNG SẢN PHẨM BÁN MỚI";
-
-            showToast("Đang hiển thị bài đăng sản phẩm bán mới.", "success");
-
-        } else {
-
-            // Ẩn sản phẩm
-            productDemo.style.display = "none";
-
-            // Hiện bài viết cộng đồng
-            communityPost.style.display = "block";
-
-            // Đổi nhãn
-            currentPostType.textContent = "📝 BÀI VIẾT CỘNG ĐỒNG";
-
-            showToast("Đang hiển thị bài viết cộng đồng.", "success");
-        }
+  // ------------------------------------------------------------------ wiring
+  function init() {
+    document.querySelectorAll('#statusTabs .mod-tab').forEach((tab) => tab.addEventListener('click', () => {
+      document.querySelectorAll('#statusTabs .mod-tab').forEach((other) => other.classList.toggle('active', other === tab));
+      state.status = tab.dataset.status; state.page = 0; state.selectedId = null;
+      loadList(false);
+    }));
+    $('searchInput').addEventListener('input', (event) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { state.search = event.target.value.trim(); state.page = 0; loadList(false); }, 300);
     });
-}
-);
-// Mặc định khi mở trang: hiển thị bài đăng sản phẩm
-const defaultProductTab = document.querySelector('.post-type-tab[data-type="product"]');
+    $('rejectPreset').addEventListener('change', (event) => {
+      if (event.target.value) { $('rejectReason').value = event.target.value + '. '; $('rejectReason').focus(); showRejectError(''); }
+    });
+    $('rejectConfirm').addEventListener('click', confirmReject);
+    $('rejectModal').addEventListener('click', (event) => { if (event.target.hasAttribute('data-close')) closeReject(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('rejectModal').hidden) closeReject(); });
 
-if (defaultProductTab) {
-    defaultProductTab.click();
-}
+    fetch('/api/account/me', { credentials: 'include', headers: { Accept: 'application/json' }, cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((me) => { if (me && me.fullName) $('adminName').textContent = me.fullName; })
+      .catch(() => { /* name is cosmetic */ });
 
-    // =========================================================
-    // 14. KHỞI TẠO
-    // =========================================================
+    loadList(false);
+  }
 
-    updateQueueNumber();
-
-
-    console.log(
-        "Post Moderation JavaScript đã được tải thành công."
-    );
-    
-
-});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();

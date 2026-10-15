@@ -22,6 +22,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("select p from Product p where p.id = :id and p.sellerId = :sellerId and p.deletedAt is null")
     Optional<Product> lockOwnedProduct(@Param("id") Long id, @Param("sellerId") Long sellerId);
 
+    // ---- Admin moderation ----
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Product p where p.id = :id and p.deletedAt is null")
+    Optional<Product> lockForModeration(@Param("id") Long id);
+
+    long countByModerationStatusAndDeletedAtIsNull(ModerationStatus moderationStatus);
+
     interface InventorySummary {
         Long getProductCount();
 

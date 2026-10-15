@@ -72,3 +72,4 @@
   .product-detail dl { grid-template-columns: 1fr; gap: 5px; }
   .product-detail dd { margin-bottom: 10px; }
 }
+.product-reject-reason { margin-top: 4px; max-width: 220px; font-size: .74rem; line-height: 1.35; color: #b91c1c; white-space: normal; }
