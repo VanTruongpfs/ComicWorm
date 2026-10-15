@@ -6,6 +6,7 @@ import com.example.comicworm.model.User;
 import com.example.comicworm.model.enums.AccountStatus;
 import com.example.comicworm.repository.PasswordResetTokenRepository;
 import com.example.comicworm.repository.UserRepository;
+import com.example.comicworm.repository.VerificationTokenRepository;
 import com.example.comicworm.service.common.IEmailService;
 import com.example.comicworm.service.impl.auth.AuthServiceImpl;
 import com.example.comicworm.utils.JwtUtils;
@@ -29,6 +30,7 @@ class ForgotPasswordTests {
     private PasswordEncoder passwordEncoder;
     private JwtUtils jwtUtils;
     private IEmailService emailService;
+    private VerificationTokenRepository tokenRepository;
     private PasswordResetTokenRepository passwordResetTokenRepository;
     private AuthServiceImpl authService;
 
@@ -41,12 +43,15 @@ class ForgotPasswordTests {
         emailService = mock(IEmailService.class);
         passwordResetTokenRepository = mock(PasswordResetTokenRepository.class);
 
+        tokenRepository = mock(VerificationTokenRepository.class);
+
         authService = new AuthServiceImpl(
                 userRepository,
                 userMapper,
                 passwordEncoder,
                 jwtUtils,
                 emailService,
+                tokenRepository,
                 passwordResetTokenRepository
         );
 

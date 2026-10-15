@@ -98,6 +98,8 @@ public class ProductMapper {
                 .soldCount(soldCount)
                 .publiclyVisible(publiclyVisible)
                 .moderationStatus(p.getModerationStatus())
+                .moderationReason(p.getModerationReason())
+                .moderatedAt(p.getModeratedAt())
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();

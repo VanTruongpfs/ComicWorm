@@ -3,6 +3,7 @@ package com.example.comicworm.dto.general.auth;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,13 +20,15 @@ public class UserRegisterDTO {
     private String email;
 
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu phải từ 6 ký tự trở lên")
+    @Size(min = 8, message = "Mật khẩu phải từ 8 ký tự trở lên")
     private String password;
 
+    @NotBlank(message = "Mật khẩu xác nhận không được để trống")
     private String confirmPassword;
 
     private String phone;
 
+    @NotNull(message = "Bạn cần đồng ý với Điều khoản dịch vụ để tiếp tục")
     @AssertTrue(message = "Bạn cần đồng ý với Điều khoản dịch vụ để tiếp tục")
     private Boolean terms;
 }

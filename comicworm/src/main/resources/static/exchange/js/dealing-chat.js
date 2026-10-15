@@ -286,6 +286,24 @@
     }
 
     /* ---------- RENDER: CHAT ---------- */
+    function isMyMessage(m) {
+        if (!m) return false;
+        if (m.isMine === true) return true;
+        if (state.currentUserId && m.senderId) {
+            return String(m.senderId) === String(state.currentUserId);
+        }
+        if (m.clientKey && state.myClientKeys && state.myClientKeys.has(m.clientKey)) {
+            return true;
+        }
+        if (state.isCurrentUserHost || state.role === 'owner') {
+            return !!m.isHost;
+        }
+        if (state.role === 'proposer') {
+            return !m.isHost && (m.by === 'proposer' || m.by === state.dealBuyer);
+        }
+        return false;
+    }
+
     function offerCardHTML(o, forSide) {
         var mine = o.by === state.role;
         var value = offerValue(o);
@@ -315,16 +333,32 @@
 
         $('#chatScroll').innerHTML = visibleMessages.map(function (m) {
             if (m.type === 'system') return '<span class="dc-system">' + esc(m.text) + '</span>';
-            var mine = m.by === state.role;
-            var u = USERS[m.by];
-            if (!u) return '';
+
+            var mine = isMyMessage(m);
+            var displayName = mine ? 'Bạn' : (m.senderName || (USERS[m.by] ? USERS[m.by].name : (m.isHost ? 'Chủ phòng' : 'Thành viên')));
+            if (!mine && m.isHost && displayName.indexOf('Chủ phòng') === -1) {
+                displayName += ' (Chủ phòng)';
+            }
+
+            var initials = displayName.substring(0, 2).toUpperCase();
+            var avatarClass = mine ? 'dc-msg-avatar--me' : (m.isHost ? 'dc-msg-avatar--owner' : 'dc-msg-avatar--proposer');
+            var avatarHtml = m.senderAvatar
+                ? '<img src="' + esc(m.senderAvatar) + '" alt="' + esc(displayName) + '" class="dc-msg-avatar-img">'
+                : initials;
+
             var inner = m.type === 'offer'
                 ? offerCardHTML(offerById(m.offerId), false)
                 : '<div class="dc-bubble">' + esc(m.text) + '</div>';
-            var time = m.type === 'offer' ? offerById(m.offerId).time : m.time;
-            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + ' dc-msg--' + m.by + '">' +
-                '<div class="dc-msg-avatar dc-msg-avatar--' + m.by + '">' + u.initials + '</div>' +
-                '<div class="dc-msg-body"><div class="dc-msg-name">' + (mine ? 'Bạn' : u.name) + '</div>' + inner + '<span class="dc-msg-time">' + time + '</span></div></div>';
+            var time = m.type === 'offer' ? (offerById(m.offerId) ? offerById(m.offerId).time : m.time) : (m.time || '');
+
+            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + '">' +
+                '<div class="dc-msg-avatar ' + avatarClass + '">' + avatarHtml + '</div>' +
+                '<div class="dc-msg-body">' +
+                    '<div class="dc-msg-name">' + esc(displayName) + '</div>' +
+                    inner +
+                    '<span class="dc-msg-time">' + esc(time) + '</span>' +
+                '</div>' +
+            '</div>';
         }).join('');
         var sc = $('#chatScroll');
         sc.scrollTop = sc.scrollHeight;
@@ -617,6 +651,33 @@
             state.requestFormOpen = false;
             state.editingOfferId = null;
             toast('Đã gửi đề xuất.');
+
+            if (state.backendRoomId) {
+                var itemInputs = (p.comics || []).map(function(cid) {
+                    var c = comicById(cid);
+                    return { productId: (c && c.productId) ? c.productId : null, quantity: 1 };
+                }).filter(function(it) { return it.productId != null; });
+
+                var dir = p.money > 0 ? 'pay' : (p.money < 0 ? 'get' : 'none');
+                fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cashCompensation: Math.abs(p.money || 0),
+                        compensationDirection: dir,
+                        note: p.note || '',
+                        items: itemInputs
+                    })
+                }).then(function (res) {
+                    if (res.status === 401) {
+                        toast('Vui lòng đăng nhập để lưu đề xuất lên hệ thống.');
+                    } else if (res.ok) {
+                        toast('Đề xuất đã được gửi lên hệ thống sàn.');
+                    }
+                }).catch(function (err) {
+                    console.error("Lỗi gửi đề xuất:", err);
+                });
+            }
         }
         syncDraft();
         renderAll();
@@ -643,6 +704,12 @@
         addSystem(who(state.role) + ' đã đồng ý đề xuất #' + o.id + '. Chờ chủ sở hữu chốt giá & khóa phòng.');
         toast('Bạn đã đồng ý đề xuất #' + o.id);
         renderAll();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + id + '/respond?accept=true', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi chấp nhận đề xuất:", err); });
+        }
     }
 
     function declineOffer(id) {
@@ -652,13 +719,52 @@
         addSystem(who(state.role) + ' đã từ chối đề xuất #' + o.id);
         toast('Đã từ chối đề xuất #' + o.id);
         renderAll();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + id + '/respond?accept=false', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi từ chối đề xuất:", err); });
+        }
     }
 
     function sendMessage(text) {
         text = (text || '').trim();
         if (!text || roomClosed()) return;
-        state.messages.push({ type: 'text', by: state.role, text: text, time: nowTime() });
+
+        var tempKey = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        if (!state.myClientKeys) state.myClientKeys = new Set();
+        state.myClientKeys.add(tempKey);
+
+        state.messages.push({
+            id: null,
+            clientKey: tempKey,
+            senderId: state.currentUserId,
+            senderName: 'Bạn',
+            isHost: !!state.isCurrentUserHost,
+            isMine: true,
+            type: 'text',
+            by: state.role,
+            text: text,
+            time: nowTime()
+        });
         renderChat();
+
+        if (state.backendRoomId) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: text,
+                    clientMessageKey: tempKey
+                })
+            }).then(function (res) {
+                if (res.status === 401) {
+                    toast('Vui lòng đăng nhập để gửi tin nhắn.');
+                }
+            }).catch(function (err) {
+                console.error("Lỗi gửi tin nhắn:", err);
+            });
+        }
     }
 
     /* ---------- CHỐT & KHÓA PHÒNG ---------- */
@@ -694,6 +800,12 @@
         closeModals();
         toast('Đã chốt giá. Chờ hai bên xác nhận giao dịch.');
         renderAll();
+
+        if (state.backendRoomId && l.id) {
+            fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + l.id + '/respond?accept=true', {
+                method: 'POST'
+            }).catch(function (err) { console.error("Lỗi chốt đề xuất:", err); });
+        }
     }
 
     function confirmDetails() {
@@ -709,6 +821,15 @@
             toast('Đã ghi nhận xác nhận của bạn.');
         }
         renderAll();
+
+        if (state.backendRoomId) {
+            var selectedOffer = selectedDealOffer();
+            if (selectedOffer && selectedOffer.id) {
+                fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + selectedOffer.id + '/confirm', {
+                    method: 'POST'
+                }).catch(function (err) { console.error("Lỗi xác nhận deal:", err); });
+            }
+        }
     }
 
     function selectRequest(requestId) {
@@ -970,4 +1091,429 @@
     /* ---------- KHỞI TẠO ---------- */
     syncDraft();
     renderAll();
+
+    /* ---------- TÍCH HỢP DỮ LIỆU BACKEND THẬT ---------- */
+    var backendRoomParam = params.get('room') || params.get('id') || params.get('code');
+    if (backendRoomParam) {
+        initBackendRoom(backendRoomParam);
+    }
+
+    function initBackendRoom(roomParam) {
+        var isNum = /^\d+$/.test(String(roomParam).trim());
+        var url = isNum ? ('/api/exchange/rooms/' + encodeURIComponent(roomParam))
+                        : ('/api/exchange/rooms/by-code/' + encodeURIComponent(roomParam));
+
+        fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            })
+            .then(function (data) {
+                state.backendRoomId = data.id;
+                applyBackendRoomData(data);
+                loadBackendInventory();
+                loadBackendMessages(data.id);
+                initExchangeWebSocket(data.id);
+            })
+            .catch(function (err) {
+                console.log("Dùng dữ liệu demo/mẫu cho phòng trao đổi:", err);
+            });
+    }
+
+    function applyBackendRoomData(data) {
+        state.room.id = data.id;
+        state.room.code = data.roomCode;
+        state.currentUserId = data.currentUserId;
+        state.isCurrentUserHost = !!data.isCurrentUserHost;
+        state.hostId = data.hostId;
+
+        if (!state.currentUserId) {
+            try {
+                var sess = JSON.parse(localStorage.getItem('bookmooch_session') || sessionStorage.getItem('bookmooch_session') || 'null');
+                if (sess && (sess.id || sess.userId)) state.currentUserId = sess.id || sess.userId;
+            } catch (e) {}
+        }
+
+        if (data.status === 'OPEN') state.room.status = 'negotiating';
+        else if (data.status === 'AGREED') state.room.status = 'agreed';
+        else if (data.status === 'COMPLETED') state.room.status = 'locked';
+        else state.room.status = 'locked';
+
+        ITEM.title = data.targetProductTitle || ITEM.title;
+        ITEM.price = Number(data.targetProductPrice || ITEM.price);
+        if (data.targetProductCover) ITEM.cover = data.targetProductCover;
+        if (data.targetProductWishNote) {
+            ITEM.wants = data.targetProductWishNote.split(',').map(function (s) { return s.trim(); });
+        }
+        ITEM.specs = [
+            ['Tình trạng', (data.targetProductCondition || 90) + '%'],
+            ['Tập truyện', data.targetProductVolumeNumbers || 'Trọn bộ'],
+            ['Nhà xuất bản', data.targetProductPublisher || 'Kim Đồng'],
+            ['Tác giả', data.targetProductAuthor || 'N/A']
+        ];
+        if (data.targetProductWishNote) ITEM.note = data.targetProductWishNote;
+
+        if (data.hostName) {
+            USERS.owner.name = data.hostName;
+            USERS.owner.short = data.hostName;
+            USERS.owner.initials = data.hostName.substring(0, 2).toUpperCase();
+        }
+
+        if (data.isCurrentUserHost) {
+            state.role = 'owner';
+        } else {
+            state.role = 'proposer';
+        }
+
+        $$('.dc-roleswitch button[data-role]').forEach(function (btn) {
+            var isCurrent = btn.getAttribute('data-role') === state.role;
+            btn.classList.toggle('is-on', isCurrent);
+            btn.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        });
+
+        var pageTitleHeading = document.querySelector('.page-title h1');
+        if (pageTitleHeading) {
+            pageTitleHeading.innerText = 'Phòng trao đổi giá #' + data.roomCode;
+        }
+        var breadcrumbStrong = document.querySelector('.breadcrumb strong');
+        if (breadcrumbStrong) {
+            breadcrumbStrong.innerText = '#' + data.roomCode;
+        }
+
+        if (data.members && data.members.length > 0) {
+            ROOM_PARTICIPANTS = data.members.map(function (m) {
+                var uKey = m.isHost ? 'owner' : (m.userId === data.currentUserId ? 'proposer' : 'buyer_' + m.userId);
+                if (!USERS[uKey]) {
+                    USERS[uKey] = {
+                        key: uKey,
+                        name: m.fullName,
+                        short: m.fullName,
+                        initials: m.fullName ? m.fullName.substring(0, 2).toUpperCase() : 'TV',
+                        roleLabel: m.isHost ? 'Chủ phòng' : 'Người đề xuất',
+                        verified: true, rating: 5.0, reviews: 10, deals: 5, successRate: 100, response: '~10p', location: 'Toàn quốc', since: '2026'
+                    };
+                }
+                return {
+                    key: uKey,
+                    dealType: m.isHost ? 'host' : 'trade',
+                    dealLabel: m.isHost ? 'Chủ phòng' : 'Thành viên',
+                    offer: m.isHost ? ('Giá niêm yết ' + fmt(ITEM.price)) : 'Đang tham gia trao đổi',
+                    status: 'Đang mở'
+                };
+            });
+        }
+
+        if (data.offers && data.offers.length > 0) {
+            state.offers = data.offers.map(function (o) {
+                var isMine = (o.buyerId === data.currentUserId);
+                var bKey = isMine ? 'proposer' : ('buyer_' + o.buyerId);
+                if (!USERS[bKey]) {
+                    USERS[bKey] = {
+                        key: bKey,
+                        name: o.buyerName || 'Người mua',
+                        short: o.buyerName || 'Người mua',
+                        initials: o.buyerName ? o.buyerName.substring(0, 2).toUpperCase() : 'NM',
+                        roleLabel: 'Người đề xuất',
+                        verified: true, rating: 4.8, reviews: 12, deals: 8, successRate: 95, response: '~15p', location: 'Toàn quốc', since: '2026'
+                    };
+                }
+                var cIds = (o.items || []).map(function (it) {
+                    var cid = 'c_' + it.productId;
+                    if (!comicById(cid)) {
+                        INVENTORY.push({
+                            id: cid,
+                            productId: it.productId,
+                            title: it.titleSnapshot,
+                            vol: 'Tập 1',
+                            cond: it.conditionSnapshot + '%',
+                            value: Number(it.price || 0),
+                            series: it.titleSnapshot,
+                            bg: '1E293B'
+                        });
+                    }
+                    return cid;
+                });
+
+                var mVal = o.compensationDirection === 'get' ? -Number(o.cashCompensation) : Number(o.cashCompensation || 0);
+                var optType = cIds.length > 0 ? (mVal !== 0 ? 'both' : 'comic') : 'money';
+
+                return {
+                    id: o.id,
+                    by: bKey,
+                    buyerKey: bKey,
+                    requestId: 'RQ-' + o.id,
+                    type: optType === 'money' ? 'buy' : 'trade',
+                    optionType: optType,
+                    comics: cIds,
+                    money: mVal,
+                    note: o.note || '',
+                    status: (o.status === 'ACCEPTED' ? 'accepted' : (o.status === 'DECLINED' ? 'declined' : 'pending')),
+                    edited: false,
+                    time: o.createdAt ? o.createdAt.substring(11, 16) : nowTime()
+                };
+            });
+
+            DEAL_REQUESTS = state.offers.map(function (o) {
+                return {
+                    id: o.requestId,
+                    buyer: o.buyerKey,
+                    type: o.type,
+                    optionType: o.optionType,
+                    comics: o.comics.slice(),
+                    money: o.money,
+                    note: o.note || (o.type === 'buy' ? fmt(o.money) : 'Đề xuất trao đổi'),
+                    status: o.status,
+                    time: o.time
+                };
+            });
+        }
+
+        syncDraft();
+        renderAll();
+    }
+
+    function loadBackendInventory() {
+        fetch('/api/exchange/rooms/inventory')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (items) {
+                if (Array.isArray(items) && items.length > 0) {
+                    items.forEach(function (p) {
+                        var cid = 'c_' + p.id;
+                        if (!comicById(cid)) {
+                            INVENTORY.push({
+                                id: cid,
+                                productId: p.id,
+                                title: p.title,
+                                vol: p.volumeNumbers || 'Tập 1',
+                                cond: (p.conditionPercent || 90) + '%',
+                                value: Number(p.price || 0),
+                                series: p.title,
+                                bg: 'C2410C'
+                            });
+                        }
+                    });
+                    renderSide();
+                }
+            })
+            .catch(function () {});
+    }
+
+    function loadBackendMessages(roomId) {
+        fetch('/api/exchange/rooms/' + roomId + '/messages')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (msgs) {
+                if (Array.isArray(msgs) && msgs.length > 0) {
+                    state.messages = msgs.map(function (m) {
+                        var mine = isMyMessage(m);
+                        return {
+                            id: m.id,
+                            clientKey: m.clientMessageKey,
+                            senderId: m.senderId,
+                            senderName: m.senderName,
+                            senderAvatar: m.senderAvatar,
+                            isHost: !!m.isHost,
+                            isMine: mine,
+                            type: 'text',
+                            by: m.isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+                            text: m.content,
+                            time: m.createdAt ? m.createdAt.substring(11, 16) : ''
+                        };
+                    });
+                    renderChat();
+                }
+            })
+            .catch(function () {});
+    }
+
+    /* ---------- WEBSOCKET REAL-TIME TRONG PHÒNG TRAO ĐỔI ---------- */
+    var exchangeWs = null;
+    var wsReconnectTimer = null;
+    var fallbackPollingTimer = null;
+
+    function initExchangeWebSocket(roomId) {
+        if (!roomId || typeof WebSocket === 'undefined') {
+            startFallbackPolling(roomId);
+            return;
+        }
+
+        if (exchangeWs) {
+            try {
+                exchangeWs.onclose = null;
+                exchangeWs.close();
+            } catch (e) {}
+            exchangeWs = null;
+        }
+
+        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var wsUrl = protocol + '//' + location.host + '/ws/exchange/' + encodeURIComponent(roomId);
+        console.log('[WebSocket] Đang kết nối tới phòng #' + roomId + ' qua ' + wsUrl);
+
+        try {
+            exchangeWs = new WebSocket(wsUrl);
+
+            exchangeWs.onopen = function () {
+                console.log('[WebSocket] Kết nối thời gian thực thành công (Phòng #' + roomId + ')');
+                if (wsReconnectTimer) {
+                    clearTimeout(wsReconnectTimer);
+                    wsReconnectTimer = null;
+                }
+                stopFallbackPolling();
+            };
+
+            exchangeWs.onmessage = function (event) {
+                try {
+                    var data = JSON.parse(event.data);
+                    handleWebSocketEvent(data);
+                } catch (err) {
+                    console.warn('[WebSocket] Không thể phân tích JSON tin nhắn:', event.data, err);
+                }
+            };
+
+            exchangeWs.onerror = function (err) {
+                console.warn('[WebSocket] Gặp sự cố kết nối:', err);
+            };
+
+            exchangeWs.onclose = function (evt) {
+                console.log('[WebSocket] Mất kết nối (' + evt.code + '). Sẽ tự động kết nối lại sau 3 giây...');
+                startFallbackPolling(roomId);
+                if (!wsReconnectTimer) {
+                    wsReconnectTimer = setTimeout(function () {
+                        wsReconnectTimer = null;
+                        if (state.backendRoomId) {
+                            initExchangeWebSocket(state.backendRoomId);
+                        }
+                    }, 3000);
+                }
+            };
+        } catch (e) {
+            console.error('[WebSocket] Lỗi khi tạo WebSocket, dùng fallback polling:', e);
+            startFallbackPolling(roomId);
+        }
+    }
+
+    function handleWebSocketEvent(data) {
+        if (!data) return;
+
+        // Xử lý tin nhắn chat trực tiếp hoặc sự kiện dạng CHAT_MESSAGE
+        if (data.type === 'CHAT_MESSAGE' || (!data.type && data.content)) {
+            var msg = data.message || data;
+            appendIncomingMessage(msg);
+            return;
+        }
+
+        // Xử lý các sự kiện đề xuất và chốt thỏa thuận (OFFER_PROPOSED, OFFER_ACCEPTED, OFFER_DECLINED, DEAL_CONFIRMED)
+        if (data.type === 'OFFER_PROPOSED' || data.type === 'OFFER_ACCEPTED' ||
+            data.type === 'OFFER_DECLINED' || data.type === 'DEAL_CONFIRMED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+
+        // Xử lý sự kiện rút đề xuất hoặc đóng phòng (OFFER_WITHDRAWN, ROOM_CLOSED)
+        if (data.type === 'OFFER_WITHDRAWN' || data.type === 'ROOM_CLOSED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+    }
+
+    function appendIncomingMessage(m) {
+        if (!m || !m.content) return;
+
+        var senderName = m.senderName || 'Thành viên';
+        var isHost = !!m.isHost;
+        var formattedTime = m.createdAt ? m.createdAt.substring(11, 16) : nowTime();
+        var mine = isMyMessage(m);
+
+        // 1. Nếu tin nhắn từ server có clientMessageKey trùng với tin nhắn vừa gửi ở local -> gắn ID thật vào
+        if (m.clientMessageKey) {
+            var localMatch = state.messages.find(function (item) {
+                return item.clientKey && item.clientKey === m.clientMessageKey;
+            });
+            if (localMatch) {
+                localMatch.id = m.id;
+                localMatch.senderId = m.senderId;
+                localMatch.senderName = senderName;
+                localMatch.senderAvatar = m.senderAvatar;
+                localMatch.isMine = true;
+                return;
+            }
+        }
+
+        // 2. Kiểm tra tránh trùng lặp tin nhắn nếu đã có ID tương ứng
+        if (m.id) {
+            var idExists = state.messages.some(function (item) {
+                return item.id && item.id === m.id;
+            });
+            if (idExists) return;
+        }
+
+        // 3. Đẩy tin nhắn mới vào giao diện chat
+        state.messages.push({
+            id: m.id,
+            clientKey: m.clientMessageKey,
+            senderId: m.senderId,
+            senderName: senderName,
+            senderAvatar: m.senderAvatar,
+            isHost: isHost,
+            isMine: mine,
+            type: 'text',
+            by: isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+            text: m.content,
+            time: formattedTime
+        });
+
+        renderChat();
+    }
+
+    function refreshBackendRoom(roomId) {
+        if (!roomId) return;
+        fetch('/api/exchange/rooms/' + roomId)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (data) {
+                    applyBackendRoomData(data);
+                }
+            })
+            .catch(function () {});
+    }
+
+    function startFallbackPolling(roomId) {
+        if (fallbackPollingTimer) return;
+        fallbackPollingTimer = setInterval(function () {
+            if (document.hidden || !roomId) return;
+            fetch('/api/exchange/rooms/' + roomId + '/messages')
+                .then(function (res) { return res.ok ? res.json() : []; })
+                .then(function (msgs) {
+                    if (Array.isArray(msgs) && msgs.length > state.messages.length) {
+                        msgs.forEach(function (m) {
+                            appendIncomingMessage(m);
+                        });
+                    }
+                })
+                .catch(function () {});
+        }, 10000);
+    }
+
+    function stopFallbackPolling() {
+        if (fallbackPollingTimer) {
+            clearInterval(fallbackPollingTimer);
+            fallbackPollingTimer = null;
+        }
+    }
 })();
+

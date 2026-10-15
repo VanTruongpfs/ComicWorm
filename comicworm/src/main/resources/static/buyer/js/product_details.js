@@ -761,5 +761,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --------------------------------------------------------------------------
+    // 12. VÀO PHÒNG TRAO ĐỔI / ĐÀM PHÁN TỪ CHI TIẾT SẢN PHẨM
+    // --------------------------------------------------------------------------
+    window.enterExchangeRoom = function (e) {
+        if (e) e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id') || params.get('productId');
+        if (!productId) {
+            window.location.href = '../../exchange/html/dealing-chat.html';
+            return;
+        }
+        fetch('/api/exchange/rooms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetProductId: Number(productId) })
+        })
+        .then(function (res) {
+            if (res.status === 401) {
+                window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href);
+                return null;
+            }
+            return res.json();
+        })
+        .then(function (room) {
+            if (room && room.id) {
+                window.location.href = '../../exchange/html/dealing-chat.html?room=' + encodeURIComponent(room.id);
+            } else {
+                window.location.href = '../../exchange/html/dealing-chat.html';
+            }
+        })
+        .catch(function () {
+            window.location.href = '../../exchange/html/dealing-chat.html';
+        });
+    };
+
+    document.querySelectorAll('.btn-match-barter, .btn-propose-exchange, .btn-chat-seller').forEach(btn => {
+        btn.addEventListener('click', window.enterExchangeRoom);
+    });
+
     console.log('ComicHub Product Detail scripts (detail.js) loaded successfully.');
 });

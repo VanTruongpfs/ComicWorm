@@ -434,8 +434,9 @@
         stock: stock,
         views: 1,
         isTradeable: isTradeable,
-        status: "active",
+        status: "pending", // Đăng xong tự vào "chờ duyệt"
         hideReason: "",
+        rejectReason: "",
         image: document.getElementById('mainPreviewImg').src,
         description: document.getElementById('postDescription').value || "Sách đẹp, đóng gói chống sốc kỹ càng khi gửi.",
         weight: parseFloat(document.getElementById('packWeight').value) || 250,
@@ -446,7 +447,7 @@
       posts.unshift(newPost);
       DataStore.savePosts(posts);
 
-      showToast(`Đã đăng bán thành công "${title}"! Chuyển hướng sang danh sách...`, 'success');
+      showToast(`Đã đăng bài thành công "${title}"! Bài đăng tự động vào trạng thái "Chờ duyệt" để kiểm duyệt.`, 'success');
       setTimeout(() => {
         window.location.href = 'quan-ly-bai-dang.html';
       }, 1200);

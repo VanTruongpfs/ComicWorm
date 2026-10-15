@@ -168,7 +168,11 @@
         ['Tác giả', label('authors', product.authorId)], ['Nhà xuất bản', label('publishers', product.publisherId)],
         ['Số tập', product.volumeNumbers], ['Phiên bản', product.editionType], ['Năm xuất bản', product.publicationYear],
         ['Độ mới', `${product.conditionPercent}%`], ['Giá bán', money(product.price)], ['Tồn kho', `${product.stockQuantity} cuốn`],
-        ['Mong muốn trao đổi', product.tradeWishNote], ['Ngày tạo', timestamp(product.createdAt)], ['Cập nhật', timestamp(product.updatedAt)]
+        ['Mong muốn trao đổi', product.tradeWishNote],
+        ['Trạng thái duyệt', ({ PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' })[product.moderationStatus] || 'Chờ duyệt'],
+        ...(product.moderationReason ? [['Lý do từ chối', product.moderationReason]] : []),
+        ...(product.moderatedAt ? [['Thời gian kiểm duyệt', timestamp(product.moderatedAt)]] : []),
+        ['Ngày tạo', timestamp(product.createdAt)], ['Cập nhật', timestamp(product.updatedAt)]
       ];
       values.forEach(([name, value]) => { $('<dt>').text(name).appendTo(definition); $('<dd>').text(value ?? '—').appendTo(definition); });
       content.dialog({ title: 'Chi tiết sản phẩm', modal: true, width: Math.min(620, window.innerWidth - 32),
@@ -221,10 +225,13 @@
           isActive: { title: 'Hiển thị', width: '8%', display: data => badge(data.record.isActive ? 'Bật' : 'Ẩn', data.record.isActive ? 'available' : 'muted'), input: select('isActive', [{ Value: 'true', DisplayText: 'Bật hiển thị' }, { Value: 'false', DisplayText: 'Ẩn sản phẩm' }], false, 'true') },
           moderationStatus: { title: 'Kiểm duyệt', width: '10%', create: false, edit: false, display: data => {
             const status = data.record.moderationStatus;
-            const tag = badge(({ PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' })[status], status === 'APPROVED' ? 'available' : status === 'REJECTED' ? 'empty' : 'low');
-            if (status !== 'REJECTED' || !data.record.moderationReason) return tag;
-            tag.attr('title', 'Lý do: ' + data.record.moderationReason);
-            return $('<div>').append(tag, $('<div>').addClass('product-reject-reason').text('Lý do: ' + data.record.moderationReason));
+            const textLabel = ({ PENDING: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Từ chối' })[status] || 'Chờ duyệt';
+            const style = status === 'APPROVED' ? 'available' : status === 'REJECTED' ? 'empty' : 'low';
+            const el = badge(textLabel, style);
+            if (status === 'REJECTED' && data.record.moderationReason) {
+              el.attr('title', 'Lý do: ' + data.record.moderationReason);
+            }
+            return el;
           } },
           detail: { title: 'Chi tiết', width: '7%', sorting: false, create: false, edit: false, display: data => $('<button type="button">').addClass('product-detail-button').attr('aria-label', 'Xem chi tiết ' + data.record.title).text('Xem').on('click', () => details(data.record.id)) }
         },
