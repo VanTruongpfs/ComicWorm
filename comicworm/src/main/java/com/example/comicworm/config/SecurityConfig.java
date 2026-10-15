@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/analytics/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .requestMatchers("/seller/html/**").hasRole("SELLER")
@@ -68,7 +69,10 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                         // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
+                                "/api/exchange/rooms/by-code/**", "/api/exchange/rooms/{id:[0-9]+}/messages").permitAll()
                         .requestMatchers("/api/cart/**", "/api/checkout/**").permitAll()
+                        .requestMatchers("/ws/**", "/ws/exchange/**").permitAll()
                         .requestMatchers(
                                 "/", "/index.html", "/favicon.ico",
                                 "/css/**", "/js/**", "/images/**",
@@ -126,6 +130,7 @@ public class SecurityConfig {
         products.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         products.setAllowedHeaders(List.of("Accept", "Content-Type", "Authorization", "X-CSRF-TOKEN"));
         source.registerCorsConfiguration("/api/seller/**", products);
+        source.registerCorsConfiguration("/api/admin/**", products);
         return source;
     }
 

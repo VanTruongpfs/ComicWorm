@@ -206,66 +206,58 @@
               <div class="post-type-badge" id="currentPostType">
                 📝 BÀI VIẾT CỘNG ĐỒNG
               </div>
-              <div class="product-demo" id="productDemo" style="display:none;">
-
+              <div class="product-demo" id="productDemo" style="display:none;" data-product-id="">
                 <div class="product-image">
-                  <img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400" alt="One Piece">
+                  <img id="productCoverImg" src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400" alt="Ảnh sản phẩm">
                 </div>
 
                 <div class="product-info">
-                  <h3>One Piece tập 105 – Bản tiếng Việt</h3>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span id="productStatusBadge" class="badge" style="background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px;">Chờ duyệt</span>
+                    <small id="productSellerInfo" style="color:#64748b; font-size:12px;">Người bán: Đang tải...</small>
+                  </div>
+                  <h3 id="productTitle">One Piece tập 105 – Bản tiếng Việt</h3>
 
-                  <div class="product-price">
+                  <div class="product-price" id="productPrice">
                     35.000đ
                   </div>
 
-                  <div class="product-details">
-                    <span>📚 Truyện tranh</span>
-                    <span>✨ Mới 95%</span>
-                    <span>📦 Còn 1 sản phẩm</span>
+                  <div class="product-details" id="productMetaDetails">
+                    <span id="productCategory">📚 Truyện tranh</span>
+                    <span id="productCondition">✨ Mới 95%</span>
+                    <span id="productStock">📦 Còn 1 sản phẩm</span>
                   </div>
 
-                  <p class="product-description">
+                  <p class="product-description" id="productDescription">
                     Bán lại truyện One Piece tập 105 bản tiếng Việt.
                     Sách còn đẹp, không rách, không viết lên sách.
                   </p>
+
+                  <div id="productRejectReasonAlert" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:8px; margin-top:12px; font-size:13px;">
+                    <strong>Lý do từ chối:</strong> <span id="productRejectReasonText"></span>
+                  </div>
                 </div>
                 <!-- Product Action Buttons -->
                 <div class="product-action-bar">
-
                   <div class="action-group-left">
-
-                    <button class="btn btn-danger" onclick="window.location.href='hide_post.html?action=ban'">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                    <button type="button" class="btn btn-danger" id="productRejectBtn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
-                      Xóa & Cấm tài khoản
+                      Từ chối duyệt
                     </button>
-
-                    <button class="btn btn-warning" onclick="window.location.href='hide_post.html?action=warn'">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path
-                          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71 3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                        <line x1="12" y1="9" x2="12" y2="13" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                      Xóa & Cảnh cáo
-                    </button>
-
                   </div>
 
                   <div class="action-group-right">
-                    <button class="btn btn-outline" onclick="alert('Đã phê duyệt bài đăng sản phẩm thành công!')">
-                      Phê duyệt bài
+                    <button type="button" class="btn btn-outline" id="productApproveBtn" style="border-color:#10b981; color:#059669; font-weight:700;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Phê duyệt sản phẩm
                     </button>
                   </div>
-
                 </div>
-
               </div>
 
               <div class="community-post" id="communityPost">
@@ -397,6 +389,22 @@
       </main>
     </div>
   </div>
+  <!-- Modal Nhập Lý Do Từ Chối Duyệt Sản Phẩm -->
+  <div id="rejectProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; width:90%; max-width:480px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#dc2626; display:flex; align-items:center; gap:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Từ chối duyệt sản phẩm
+      </h3>
+      <p style="color:#64748b; font-size:14px; margin-bottom:12px;">Vui lòng nhập lý do từ chối để thông báo cho người bán:</p>
+      <textarea id="rejectReasonInput" rows="4" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical;" placeholder="Ví dụ: Hình ảnh bìa mờ, thông tin tác giả và năm xuất bản chưa chính xác, hoặc vi phạm bản quyền..."></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" class="btn btn-outline" id="cancelRejectBtn">Hủy bỏ</button>
+        <button type="button" class="btn btn-danger" id="confirmRejectBtn">Xác nhận từ chối</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/postModeration.js"></script>
 </body>
 

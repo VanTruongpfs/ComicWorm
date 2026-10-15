@@ -20,7 +20,7 @@ CREATE TABLE `users` (
   `deleted_at` DATETIME NULL,
   CONSTRAINT `ck_user_login_identity` CHECK (password_hash IS NOT NULL OR google_sub IS NOT NULL),
   CONSTRAINT `ck_users_role` CHECK (role IN ('USER', 'ADMIN')),
-  CONSTRAINT `ck_users_account_status` CHECK (account_status IN ('ACTIVE', 'LOCKED'))
+  CONSTRAINT `ck_users_account_status` CHECK (account_status IN ('ACTIVE', 'PENDING_VERIFY', 'LOCKED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `auth_sessions` (

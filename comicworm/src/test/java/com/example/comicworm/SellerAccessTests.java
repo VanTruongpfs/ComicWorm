@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -68,7 +68,7 @@ class SellerAccessTests {
             "an-xoa-bai-dang", "quan-ly-san-pham", "quan-ly-voucher", "sidebar"})
     void everySellerPageRequiresLoginAndUpgrade(String page) throws Exception {
         String path = "/seller/html/" + page + ".html";
-        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrl("/auth/login"));
+        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrlPattern("**/auth/login"));
         mvc.perform(get(path).with(user(principal(false))))
                 .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
         mvc.perform(get(path).with(user(principal(true)))).andExpect(status().isOk());

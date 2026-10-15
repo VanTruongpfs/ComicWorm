@@ -14,6 +14,7 @@ public record SellerProductRecord(Long id, String title, String description, Int
         Integer authorId, Integer publisherId, String volumeNumbers, String editionType,
         Integer publicationYear, Integer conditionPercent, BigDecimal price, Integer stockQuantity,
         ListingType listingType, String tradeWishNote, Boolean isActive, ModerationStatus moderationStatus,
+        String moderationReason, LocalDateTime moderatedAt,
         LocalDateTime createdAt, LocalDateTime updatedAt, String coverImageUrl,
         List<SellerProductImageRecord> detailImages, List<SellerProductImageRecord> images) {
     public static SellerProductRecord from(Product product) {
@@ -28,7 +29,8 @@ public record SellerProductRecord(Long id, String title, String description, Int
                 product.getVolumeNumbers(), product.getEditionType(), product.getPublicationYear(),
                 product.getConditionPercent(), product.getPrice(), product.getStockQuantity(),
                 product.getListingType(), product.getTradeWishNote(), product.getIsActive(),
-                product.getModerationStatus(), product.getCreatedAt(), product.getUpdatedAt(),
+                product.getModerationStatus(), product.getModerationReason(), product.getModeratedAt(),
+                product.getCreatedAt(), product.getUpdatedAt(),
                 product.getCoverImageUrl(), records.stream().filter(image -> image.imageType() == ProductImageType.DETAIL).toList(), records);
     }
 }

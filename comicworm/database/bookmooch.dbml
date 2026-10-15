@@ -15,7 +15,7 @@ Table users {
   avatar_url text
   role varchar(20) [not null, default: 'USER', check: `role IN ('USER', 'ADMIN')`]
   is_seller boolean [not null, default: false]
-  account_status varchar(20) [not null, default: 'ACTIVE', check: `account_status IN ('ACTIVE', 'LOCKED')`]
+  account_status varchar(20) [not null, default: 'ACTIVE', check: `account_status IN ('ACTIVE', 'PENDING_VERIFY', 'LOCKED')`]
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'SQL: ON UPDATE CURRENT_TIMESTAMP']
   deleted_at datetime
