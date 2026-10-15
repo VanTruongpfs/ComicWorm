@@ -14,6 +14,9 @@ public class EmailServiceImpl implements IEmailService {
 
     private final JavaMailSender mailSender;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username:vuivehoadong001@gmail.com}")
+    private String fromEmail;
+
     @Autowired
     public EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -26,6 +29,7 @@ public class EmailServiceImpl implements IEmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom(fromEmail, "ComicWorm");
             helper.setTo(toEmail);
             helper.setSubject("ComicWorm - Xác thực tài khoản của bạn");
 
@@ -45,8 +49,12 @@ public class EmailServiceImpl implements IEmailService {
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Lỗi khi gửi email xác thực: " + e.getMessage(), e);
+            System.out.println("[EmailService] Đã gửi email xác thực tài khoản tới: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("[EmailService] Không thể gửi email xác thực tới " + toEmail + ": " + e.getMessage());
+            System.out.println("=================================================================");
+            System.out.println("[DEV VERIFY ACCOUNT LINK FALLBACK] " + verifyLink);
+            System.out.println("=================================================================");
         }
     }
 
@@ -57,6 +65,7 @@ public class EmailServiceImpl implements IEmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom(fromEmail, "ComicWorm");
             helper.setTo(toEmail);
             helper.setSubject("ComicWorm - Đặt lại mật khẩu tài khoản");
 

@@ -30,6 +30,9 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.example.comicworm.config.websocket.ExchangeChatWebSocketHandler webSocketHandler;
+
     @Override
     public ExchangeRoomDTO createOrGetRoomForProduct(Long currentUserId, Long targetProductId, String initialMessage) {
         Product product = productRepository.findById(targetProductId)
@@ -306,14 +309,15 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         offerMsg.setRoomId(roomId);
         offerMsg.setSenderId(buyerId);
         offerMsg.setContent(msgText.toString());
-        exchangeMessageRepository.save(offerMsg);
+        ExchangeMessage savedOfferMsg = exchangeMessageRepository.save(offerMsg);
+        ExchangeMessage finalOfferMsg = savedOfferMsg != null ? savedOfferMsg : offerMsg;
 
         String dir = "none";
         if (cash.compareTo(BigDecimal.ZERO) > 0) {
             dir = Objects.equals(payerId, buyerId) ? "pay" : "get";
         }
 
-        return ExchangeOfferDTO.builder()
+        ExchangeOfferDTO offerDto = ExchangeOfferDTO.builder()
                 .id(offer.getId())
                 .roomId(roomId)
                 .buyerId(buyerId)
@@ -330,6 +334,24 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                 .respondedAt(offer.getRespondedAt())
                 .items(itemDTOs)
                 .build();
+
+        Map<String, Object> offerEvent = new HashMap<>();
+        offerEvent.put("type", "OFFER_PROPOSED");
+        offerEvent.put("roomId", roomId);
+        offerEvent.put("offer", offerDto);
+        offerEvent.put("message", ExchangeMessageDTO.builder()
+                .id(finalOfferMsg.getId())
+                .roomId(roomId)
+                .senderId(buyerId)
+                .senderName(buyerName)
+                .senderAvatar(buyer != null ? buyer.getAvatarUrl() : null)
+                .isHost(buyerId.equals(room.getHostId()))
+                .content(finalOfferMsg.getContent())
+                .createdAt(finalOfferMsg.getCreatedAt() != null ? finalOfferMsg.getCreatedAt() : LocalDateTime.now())
+                .build());
+        broadcastToRoom(roomId, room.getRoomCode(), offerEvent);
+
+        return offerDto;
     }
 
     @Override
@@ -349,6 +371,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         }
 
         offer.setRespondedAt(LocalDateTime.now());
+        ExchangeMessage resMsg;
 
         if (accept) {
             offer.setStatus(ExchangeOfferStatus.ACCEPTED);
@@ -362,7 +385,8 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             acceptMsg.setRoomId(roomId);
             acceptMsg.setSenderId(hostId);
             acceptMsg.setContent("Chủ phòng đã chấp thuận đề xuất #" + offer.getId() + "! Hai bên có thể tiến hành chốt và tạo đơn trao đổi.");
-            exchangeMessageRepository.save(acceptMsg);
+            ExchangeMessage saved = exchangeMessageRepository.save(acceptMsg);
+            resMsg = saved != null ? saved : acceptMsg;
         } else {
             offer.setStatus(ExchangeOfferStatus.DECLINED);
 
@@ -370,13 +394,33 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             declineMsg.setRoomId(roomId);
             declineMsg.setSenderId(hostId);
             declineMsg.setContent("Chủ phòng đã từ chối đề xuất #" + offer.getId() + ".");
-            exchangeMessageRepository.save(declineMsg);
+            ExchangeMessage saved = exchangeMessageRepository.save(declineMsg);
+            resMsg = saved != null ? saved : declineMsg;
         }
 
         exchangeOfferRepository.save(offer);
         exchangeRoomRepository.save(room);
 
-        return toOfferDTO(offer);
+        ExchangeOfferDTO offerDto = toOfferDTO(offer);
+
+        Map<String, Object> resEvent = new HashMap<>();
+        resEvent.put("type", accept ? "OFFER_ACCEPTED" : "OFFER_DECLINED");
+        resEvent.put("roomId", roomId);
+        resEvent.put("offerId", offerId);
+        resEvent.put("offer", offerDto);
+        resEvent.put("roomStatus", room.getStatus().name());
+        resEvent.put("message", ExchangeMessageDTO.builder()
+                .id(resMsg != null ? resMsg.getId() : null)
+                .roomId(roomId)
+                .senderId(hostId)
+                .senderName(userRepository.findById(hostId).map(User::getFullName).orElse("Chủ phòng"))
+                .isHost(true)
+                .content(resMsg != null ? resMsg.getContent() : "")
+                .createdAt(resMsg != null && resMsg.getCreatedAt() != null ? resMsg.getCreatedAt() : LocalDateTime.now())
+                .build());
+        broadcastToRoom(roomId, room.getRoomCode(), resEvent);
+
+        return offerDto;
     }
 
     @Override
@@ -399,6 +443,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải là chủ phòng hoặc người đề xuất thỏa thuận này");
         }
 
+        ExchangeMessage completeMsg = null;
         // Nếu cả hai đã xác nhận -> chuyển trạng thái phòng
         if (Boolean.TRUE.equals(offer.getHostConfirmed()) && Boolean.TRUE.equals(offer.getBuyerConfirmed())) {
             room.setStatus(ExchangeRoomStatus.COMPLETED);
@@ -406,15 +451,37 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             room.setSelectedOfferId(offer.getId());
             exchangeRoomRepository.save(room);
 
-            ExchangeMessage completeMsg = new ExchangeMessage();
-            completeMsg.setRoomId(roomId);
-            completeMsg.setSenderId(userId);
-            completeMsg.setContent("Hai bên đã xác nhận chốt thỏa thuận thành công! Đang chuyển sang bước hoàn tất đơn hàng trao đổi.");
-            exchangeMessageRepository.save(completeMsg);
+            ExchangeMessage msg = new ExchangeMessage();
+            msg.setRoomId(roomId);
+            msg.setSenderId(userId);
+            msg.setContent("Hai bên đã xác nhận chốt thỏa thuận thành công! Đang chuyển sang bước hoàn tất đơn hàng trao đổi.");
+            ExchangeMessage saved = exchangeMessageRepository.save(msg);
+            completeMsg = saved != null ? saved : msg;
         }
 
         exchangeOfferRepository.save(offer);
-        return toOfferDTO(offer);
+        ExchangeOfferDTO offerDto = toOfferDTO(offer);
+
+        Map<String, Object> dealEvent = new HashMap<>();
+        dealEvent.put("type", "DEAL_CONFIRMED");
+        dealEvent.put("roomId", roomId);
+        dealEvent.put("offerId", offerId);
+        dealEvent.put("offer", offerDto);
+        dealEvent.put("roomStatus", room.getStatus().name());
+        if (completeMsg != null) {
+            dealEvent.put("message", ExchangeMessageDTO.builder()
+                    .id(completeMsg.getId())
+                    .roomId(roomId)
+                    .senderId(userId)
+                    .senderName(userRepository.findById(userId).map(User::getFullName).orElse("Thành viên"))
+                    .isHost(userId.equals(room.getHostId()))
+                    .content(completeMsg.getContent())
+                    .createdAt(completeMsg.getCreatedAt() != null ? completeMsg.getCreatedAt() : LocalDateTime.now())
+                    .build());
+        }
+        broadcastToRoom(roomId, room.getRoomCode(), dealEvent);
+
+        return offerDto;
     }
 
     @Override
@@ -438,7 +505,23 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         msg.setRoomId(roomId);
         msg.setSenderId(userId);
         msg.setContent("Người đề xuất đã rút lại đề xuất #" + offerId + ".");
-        exchangeMessageRepository.save(msg);
+        ExchangeMessage savedMsg = exchangeMessageRepository.save(msg);
+        ExchangeMessage finalMsg = savedMsg != null ? savedMsg : msg;
+
+        Map<String, Object> withdrawEvent = new HashMap<>();
+        withdrawEvent.put("type", "OFFER_WITHDRAWN");
+        withdrawEvent.put("roomId", roomId);
+        withdrawEvent.put("offerId", offerId);
+        withdrawEvent.put("message", ExchangeMessageDTO.builder()
+                .id(finalMsg.getId())
+                .roomId(roomId)
+                .senderId(userId)
+                .senderName(userRepository.findById(userId).map(User::getFullName).orElse("Thành viên"))
+                .isHost(false)
+                .content(finalMsg.getContent())
+                .createdAt(finalMsg.getCreatedAt() != null ? finalMsg.getCreatedAt() : LocalDateTime.now())
+                .build());
+        broadcastToRoom(roomId, null, withdrawEvent);
     }
 
     @Override
@@ -458,7 +541,23 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         msg.setRoomId(roomId);
         msg.setSenderId(hostId);
         msg.setContent("Chủ phòng đã đóng phòng trao đổi này.");
-        exchangeMessageRepository.save(msg);
+        ExchangeMessage savedMsg = exchangeMessageRepository.save(msg);
+        ExchangeMessage finalMsg = savedMsg != null ? savedMsg : msg;
+
+        Map<String, Object> closeEvent = new HashMap<>();
+        closeEvent.put("type", "ROOM_CLOSED");
+        closeEvent.put("roomId", roomId);
+        closeEvent.put("roomStatus", ExchangeRoomStatus.CANCELLED.name());
+        closeEvent.put("message", ExchangeMessageDTO.builder()
+                .id(finalMsg.getId())
+                .roomId(roomId)
+                .senderId(hostId)
+                .senderName("Chủ phòng")
+                .isHost(true)
+                .content(finalMsg.getContent())
+                .createdAt(finalMsg.getCreatedAt() != null ? finalMsg.getCreatedAt() : LocalDateTime.now())
+                .build());
+        broadcastToRoom(roomId, room.getRoomCode(), closeEvent);
     }
 
     @Override
@@ -486,22 +585,43 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         message.setContent(req.getContent() != null ? req.getContent().trim() : null);
         message.setImageUrl(req.getImageUrl());
         message.setClientMessageKey(req.getClientMessageKey());
-        message = exchangeMessageRepository.save(message);
+        ExchangeMessage savedMessage = exchangeMessageRepository.save(message);
+        ExchangeMessage finalMsg = savedMessage != null ? savedMessage : message;
 
         User sender = userRepository.findById(senderId).orElse(null);
 
-        return ExchangeMessageDTO.builder()
-                .id(message.getId())
+        ExchangeMessageDTO dto = ExchangeMessageDTO.builder()
+                .id(finalMsg.getId())
                 .roomId(roomId)
                 .senderId(senderId)
                 .senderName(sender != null ? sender.getFullName() : "Thành viên")
                 .senderAvatar(sender != null ? sender.getAvatarUrl() : null)
                 .isHost(senderId.equals(room.getHostId()))
-                .content(message.getContent())
-                .imageUrl(message.getImageUrl())
-                .clientMessageKey(message.getClientMessageKey())
-                .createdAt(message.getCreatedAt())
+                .content(finalMsg.getContent())
+                .imageUrl(finalMsg.getImageUrl())
+                .clientMessageKey(finalMsg.getClientMessageKey())
+                .createdAt(finalMsg.getCreatedAt() != null ? finalMsg.getCreatedAt() : LocalDateTime.now())
                 .build();
+
+        Map<String, Object> chatEvent = new HashMap<>();
+        chatEvent.put("type", "CHAT_MESSAGE");
+        chatEvent.put("roomId", roomId);
+        chatEvent.put("message", dto);
+        broadcastToRoom(roomId, room.getRoomCode(), chatEvent);
+        broadcastToRoom(roomId, room.getRoomCode(), dto);
+
+        return dto;
+    }
+
+    private void broadcastToRoom(Long roomId, String roomCode, Object payload) {
+        if (webSocketHandler != null) {
+            if (roomId != null) {
+                webSocketHandler.broadcast(roomId, payload);
+            }
+            if (roomCode != null && !roomCode.isBlank()) {
+                webSocketHandler.broadcast(roomCode, payload);
+            }
+        }
     }
 
     @Override

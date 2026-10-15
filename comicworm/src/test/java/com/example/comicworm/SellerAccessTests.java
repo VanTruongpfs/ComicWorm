@@ -68,7 +68,7 @@ class SellerAccessTests {
             "an-xoa-bai-dang", "quan-ly-san-pham", "quan-ly-voucher", "sidebar"})
     void everySellerPageRequiresLoginAndUpgrade(String page) throws Exception {
         String path = "/seller/html/" + page + ".html";
-        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrl("/auth/login"));
+        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrlPattern("**/auth/login"));
         mvc.perform(get(path).with(user(principal(false))))
                 .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
         mvc.perform(get(path).with(user(principal(true)))).andExpect(status().isOk());

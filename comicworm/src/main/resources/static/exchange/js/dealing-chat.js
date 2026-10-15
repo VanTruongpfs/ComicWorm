@@ -286,6 +286,24 @@
     }
 
     /* ---------- RENDER: CHAT ---------- */
+    function isMyMessage(m) {
+        if (!m) return false;
+        if (m.isMine === true) return true;
+        if (state.currentUserId && m.senderId) {
+            return String(m.senderId) === String(state.currentUserId);
+        }
+        if (m.clientKey && state.myClientKeys && state.myClientKeys.has(m.clientKey)) {
+            return true;
+        }
+        if (state.isCurrentUserHost || state.role === 'owner') {
+            return !!m.isHost;
+        }
+        if (state.role === 'proposer') {
+            return !m.isHost && (m.by === 'proposer' || m.by === state.dealBuyer);
+        }
+        return false;
+    }
+
     function offerCardHTML(o, forSide) {
         var mine = o.by === state.role;
         var value = offerValue(o);
@@ -315,16 +333,32 @@
 
         $('#chatScroll').innerHTML = visibleMessages.map(function (m) {
             if (m.type === 'system') return '<span class="dc-system">' + esc(m.text) + '</span>';
-            var mine = m.by === state.role;
-            var u = USERS[m.by];
-            if (!u) return '';
+
+            var mine = isMyMessage(m);
+            var displayName = mine ? 'Bạn' : (m.senderName || (USERS[m.by] ? USERS[m.by].name : (m.isHost ? 'Chủ phòng' : 'Thành viên')));
+            if (!mine && m.isHost && displayName.indexOf('Chủ phòng') === -1) {
+                displayName += ' (Chủ phòng)';
+            }
+
+            var initials = displayName.substring(0, 2).toUpperCase();
+            var avatarClass = mine ? 'dc-msg-avatar--me' : (m.isHost ? 'dc-msg-avatar--owner' : 'dc-msg-avatar--proposer');
+            var avatarHtml = m.senderAvatar
+                ? '<img src="' + esc(m.senderAvatar) + '" alt="' + esc(displayName) + '" class="dc-msg-avatar-img">'
+                : initials;
+
             var inner = m.type === 'offer'
                 ? offerCardHTML(offerById(m.offerId), false)
                 : '<div class="dc-bubble">' + esc(m.text) + '</div>';
-            var time = m.type === 'offer' ? offerById(m.offerId).time : m.time;
-            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + ' dc-msg--' + m.by + '">' +
-                '<div class="dc-msg-avatar dc-msg-avatar--' + m.by + '">' + u.initials + '</div>' +
-                '<div class="dc-msg-body"><div class="dc-msg-name">' + (mine ? 'Bạn' : u.name) + '</div>' + inner + '<span class="dc-msg-time">' + time + '</span></div></div>';
+            var time = m.type === 'offer' ? (offerById(m.offerId) ? offerById(m.offerId).time : m.time) : (m.time || '');
+
+            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + '">' +
+                '<div class="dc-msg-avatar ' + avatarClass + '">' + avatarHtml + '</div>' +
+                '<div class="dc-msg-body">' +
+                    '<div class="dc-msg-name">' + esc(displayName) + '</div>' +
+                    inner +
+                    '<span class="dc-msg-time">' + esc(time) + '</span>' +
+                '</div>' +
+            '</div>';
         }).join('');
         var sc = $('#chatScroll');
         sc.scrollTop = sc.scrollHeight;
@@ -696,14 +730,33 @@
     function sendMessage(text) {
         text = (text || '').trim();
         if (!text || roomClosed()) return;
-        state.messages.push({ type: 'text', by: state.role, text: text, time: nowTime() });
+
+        var tempKey = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        if (!state.myClientKeys) state.myClientKeys = new Set();
+        state.myClientKeys.add(tempKey);
+
+        state.messages.push({
+            id: null,
+            clientKey: tempKey,
+            senderId: state.currentUserId,
+            senderName: 'Bạn',
+            isHost: !!state.isCurrentUserHost,
+            isMine: true,
+            type: 'text',
+            by: state.role,
+            text: text,
+            time: nowTime()
+        });
         renderChat();
 
         if (state.backendRoomId) {
             fetch('/api/exchange/rooms/' + state.backendRoomId + '/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: text })
+                body: JSON.stringify({
+                    content: text,
+                    clientMessageKey: tempKey
+                })
             }).then(function (res) {
                 if (res.status === 401) {
                     toast('Vui lòng đăng nhập để gửi tin nhắn.');
@@ -1060,7 +1113,7 @@
                 applyBackendRoomData(data);
                 loadBackendInventory();
                 loadBackendMessages(data.id);
-                startPolling(data.id);
+                initExchangeWebSocket(data.id);
             })
             .catch(function (err) {
                 console.log("Dùng dữ liệu demo/mẫu cho phòng trao đổi:", err);
@@ -1070,6 +1123,17 @@
     function applyBackendRoomData(data) {
         state.room.id = data.id;
         state.room.code = data.roomCode;
+        state.currentUserId = data.currentUserId;
+        state.isCurrentUserHost = !!data.isCurrentUserHost;
+        state.hostId = data.hostId;
+
+        if (!state.currentUserId) {
+            try {
+                var sess = JSON.parse(localStorage.getItem('bookmooch_session') || sessionStorage.getItem('bookmooch_session') || 'null');
+                if (sess && (sess.id || sess.userId)) state.currentUserId = sess.id || sess.userId;
+            } catch (e) {}
+        }
+
         if (data.status === 'OPEN') state.room.status = 'negotiating';
         else if (data.status === 'AGREED') state.room.status = 'agreed';
         else if (data.status === 'COMPLETED') state.room.status = 'locked';
@@ -1246,10 +1310,18 @@
             .then(function (msgs) {
                 if (Array.isArray(msgs) && msgs.length > 0) {
                     state.messages = msgs.map(function (m) {
+                        var mine = isMyMessage(m);
                         return {
+                            id: m.id,
+                            clientKey: m.clientMessageKey,
+                            senderId: m.senderId,
+                            senderName: m.senderName,
+                            senderAvatar: m.senderAvatar,
+                            isHost: !!m.isHost,
+                            isMine: mine,
                             type: 'text',
-                            by: m.isHost ? 'owner' : 'proposer',
-                            text: (m.senderName ? '[' + m.senderName + '] ' : '') + m.content,
+                            by: m.isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+                            text: m.content,
                             time: m.createdAt ? m.createdAt.substring(11, 16) : ''
                         };
                     });
@@ -1259,25 +1331,189 @@
             .catch(function () {});
     }
 
-    function startPolling(roomId) {
-        setInterval(function () {
-            if (document.hidden) return;
+    /* ---------- WEBSOCKET REAL-TIME TRONG PHÒNG TRAO ĐỔI ---------- */
+    var exchangeWs = null;
+    var wsReconnectTimer = null;
+    var fallbackPollingTimer = null;
+
+    function initExchangeWebSocket(roomId) {
+        if (!roomId || typeof WebSocket === 'undefined') {
+            startFallbackPolling(roomId);
+            return;
+        }
+
+        if (exchangeWs) {
+            try {
+                exchangeWs.onclose = null;
+                exchangeWs.close();
+            } catch (e) {}
+            exchangeWs = null;
+        }
+
+        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var wsUrl = protocol + '//' + location.host + '/ws/exchange/' + encodeURIComponent(roomId);
+        console.log('[WebSocket] Đang kết nối tới phòng #' + roomId + ' qua ' + wsUrl);
+
+        try {
+            exchangeWs = new WebSocket(wsUrl);
+
+            exchangeWs.onopen = function () {
+                console.log('[WebSocket] Kết nối thời gian thực thành công (Phòng #' + roomId + ')');
+                if (wsReconnectTimer) {
+                    clearTimeout(wsReconnectTimer);
+                    wsReconnectTimer = null;
+                }
+                stopFallbackPolling();
+            };
+
+            exchangeWs.onmessage = function (event) {
+                try {
+                    var data = JSON.parse(event.data);
+                    handleWebSocketEvent(data);
+                } catch (err) {
+                    console.warn('[WebSocket] Không thể phân tích JSON tin nhắn:', event.data, err);
+                }
+            };
+
+            exchangeWs.onerror = function (err) {
+                console.warn('[WebSocket] Gặp sự cố kết nối:', err);
+            };
+
+            exchangeWs.onclose = function (evt) {
+                console.log('[WebSocket] Mất kết nối (' + evt.code + '). Sẽ tự động kết nối lại sau 3 giây...');
+                startFallbackPolling(roomId);
+                if (!wsReconnectTimer) {
+                    wsReconnectTimer = setTimeout(function () {
+                        wsReconnectTimer = null;
+                        if (state.backendRoomId) {
+                            initExchangeWebSocket(state.backendRoomId);
+                        }
+                    }, 3000);
+                }
+            };
+        } catch (e) {
+            console.error('[WebSocket] Lỗi khi tạo WebSocket, dùng fallback polling:', e);
+            startFallbackPolling(roomId);
+        }
+    }
+
+    function handleWebSocketEvent(data) {
+        if (!data) return;
+
+        // Xử lý tin nhắn chat trực tiếp hoặc sự kiện dạng CHAT_MESSAGE
+        if (data.type === 'CHAT_MESSAGE' || (!data.type && data.content)) {
+            var msg = data.message || data;
+            appendIncomingMessage(msg);
+            return;
+        }
+
+        // Xử lý các sự kiện đề xuất và chốt thỏa thuận (OFFER_PROPOSED, OFFER_ACCEPTED, OFFER_DECLINED, DEAL_CONFIRMED)
+        if (data.type === 'OFFER_PROPOSED' || data.type === 'OFFER_ACCEPTED' ||
+            data.type === 'OFFER_DECLINED' || data.type === 'DEAL_CONFIRMED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+
+        // Xử lý sự kiện rút đề xuất hoặc đóng phòng (OFFER_WITHDRAWN, ROOM_CLOSED)
+        if (data.type === 'OFFER_WITHDRAWN' || data.type === 'ROOM_CLOSED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+    }
+
+    function appendIncomingMessage(m) {
+        if (!m || !m.content) return;
+
+        var senderName = m.senderName || 'Thành viên';
+        var isHost = !!m.isHost;
+        var formattedTime = m.createdAt ? m.createdAt.substring(11, 16) : nowTime();
+        var mine = isMyMessage(m);
+
+        // 1. Nếu tin nhắn từ server có clientMessageKey trùng với tin nhắn vừa gửi ở local -> gắn ID thật vào
+        if (m.clientMessageKey) {
+            var localMatch = state.messages.find(function (item) {
+                return item.clientKey && item.clientKey === m.clientMessageKey;
+            });
+            if (localMatch) {
+                localMatch.id = m.id;
+                localMatch.senderId = m.senderId;
+                localMatch.senderName = senderName;
+                localMatch.senderAvatar = m.senderAvatar;
+                localMatch.isMine = true;
+                return;
+            }
+        }
+
+        // 2. Kiểm tra tránh trùng lặp tin nhắn nếu đã có ID tương ứng
+        if (m.id) {
+            var idExists = state.messages.some(function (item) {
+                return item.id && item.id === m.id;
+            });
+            if (idExists) return;
+        }
+
+        // 3. Đẩy tin nhắn mới vào giao diện chat
+        state.messages.push({
+            id: m.id,
+            clientKey: m.clientMessageKey,
+            senderId: m.senderId,
+            senderName: senderName,
+            senderAvatar: m.senderAvatar,
+            isHost: isHost,
+            isMine: mine,
+            type: 'text',
+            by: isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+            text: m.content,
+            time: formattedTime
+        });
+
+        renderChat();
+    }
+
+    function refreshBackendRoom(roomId) {
+        if (!roomId) return;
+        fetch('/api/exchange/rooms/' + roomId)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (data) {
+                    applyBackendRoomData(data);
+                }
+            })
+            .catch(function () {});
+    }
+
+    function startFallbackPolling(roomId) {
+        if (fallbackPollingTimer) return;
+        fallbackPollingTimer = setInterval(function () {
+            if (document.hidden || !roomId) return;
             fetch('/api/exchange/rooms/' + roomId + '/messages')
                 .then(function (res) { return res.ok ? res.json() : []; })
                 .then(function (msgs) {
                     if (Array.isArray(msgs) && msgs.length > state.messages.length) {
-                        state.messages = msgs.map(function (m) {
-                            return {
-                                type: 'text',
-                                by: m.isHost ? 'owner' : 'proposer',
-                                text: (m.senderName ? '[' + m.senderName + '] ' : '') + m.content,
-                                time: m.createdAt ? m.createdAt.substring(11, 16) : ''
-                            };
+                        msgs.forEach(function (m) {
+                            appendIncomingMessage(m);
                         });
-                        renderChat();
                     }
                 })
                 .catch(function () {});
-        }, 3500);
+        }, 10000);
+    }
+
+    function stopFallbackPolling() {
+        if (fallbackPollingTimer) {
+            clearInterval(fallbackPollingTimer);
+            fallbackPollingTimer = null;
+        }
     }
 })();
+

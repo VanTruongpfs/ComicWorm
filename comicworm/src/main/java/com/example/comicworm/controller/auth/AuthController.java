@@ -170,7 +170,7 @@ public class AuthController {
         }
 
         try {
-            if (registerDTO.getConfirmPassword() != null &&
+            if (registerDTO.getConfirmPassword() == null ||
                     !registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
                 bindingResult.rejectValue("confirmPassword", "error.registerDTO", "Mật khẩu xác nhận không khớp");
                 return "view/auth/html/register";
@@ -186,6 +186,26 @@ public class AuthController {
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "view/auth/html/register";
+        }
+    }
+
+    @PostMapping("/api/resend-verification")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiResendVerification(@RequestBody Map<String, String> payload) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String email = payload.get("email");
+            if (email == null || email.isBlank()) {
+                throw new IllegalArgumentException("Vui lòng nhập địa chỉ email.");
+            }
+            authService.resendVerificationEmail(email);
+            result.put("success", true);
+            result.put("message", "Link kích hoạt mới đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
         }
     }
 
@@ -222,6 +242,7 @@ public class AuthController {
             }
             default -> {
                 model.addAttribute("success", false);
+                model.addAttribute("canResend", true);
                 model.addAttribute("message", "Liên kết xác thực không hợp lệ hoặc không tồn tại.");
             }
         }

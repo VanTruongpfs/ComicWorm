@@ -72,6 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
                                 "/api/exchange/rooms/by-code/**", "/api/exchange/rooms/{id:[0-9]+}/messages").permitAll()
                         .requestMatchers("/api/cart/**", "/api/checkout/**").permitAll()
+                        .requestMatchers("/ws/**", "/ws/exchange/**").permitAll()
                         .requestMatchers(
                                 "/", "/index.html", "/favicon.ico",
                                 "/css/**", "/js/**", "/images/**",
