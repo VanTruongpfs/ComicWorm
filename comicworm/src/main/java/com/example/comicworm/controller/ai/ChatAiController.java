@@ -18,6 +18,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,13 +57,13 @@ public class ChatAiController {
             4. Nếu khách chỉ trò chuyện, hãy trả lời bình thường về thế giới truyện tranh.
             """;
 
-    private final ChatModel chatModel;
+    private final ChatModel chatModel; // null khi chua cau hinh API key
     private final ProductSearchTool productSearchTool;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public ChatAiController(ChatModel chatModel, ProductSearchTool productSearchTool) {
-        this.chatModel = chatModel;
+    public ChatAiController(ObjectProvider<ChatModel> chatModelProvider, ProductSearchTool productSearchTool) {
+        this.chatModel = chatModelProvider.getIfAvailable();
         this.productSearchTool = productSearchTool;
     }
 
@@ -71,6 +72,11 @@ public class ChatAiController {
         if (request == null || request.message() == null || request.message().isBlank()) {
             return ResponseEntity.badRequest()
                     .body(new BotChatResponseDTO("Nội dung tin nhắn không được để trống.", false, List.of()));
+        }
+
+        if (chatModel == null) {
+            return ResponseEntity.ok(new BotChatResponseDTO(
+                    "Trợ lý AI chưa được cấu hình API key nên tạm thời chưa hoạt động.", false, List.of()));
         }
 
         try {

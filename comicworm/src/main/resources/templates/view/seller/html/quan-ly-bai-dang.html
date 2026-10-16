@@ -249,6 +249,27 @@
   <script src="../js/post-management.js"></script>
   <script>
     let currentTab = 'all';
+    let livePosts = [];
+    let categoryNames = {};
+    let authorNames = {};
+    let publisherNames = {};
+    const sellerApi = '/api/seller/products';
+
+    async function loadSellerPosts() {
+      const response = await fetch(sellerApi + '?jtStartIndex=0&jtPageSize=100&jtSorting=id%20DESC', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.Result !== 'OK') throw new Error(data.Message || `Không tải được bài đăng (HTTP ${response.status}).`);
+      livePosts = (data.Records || []).map(p => ({
+        id: String(p.id), title: p.title || '', author: authorNames[p.authorId] || '', category: categoryNames[p.categoryId] || String(p.categoryId ?? ''),
+        volume: p.volumeNumbers || '', publisher: publisherNames[p.publisherId] || '', year: p.publicationYear, condition: p.editionType || `${p.conditionPercent || 0}%`,
+        price: Number(p.price || 0), originalPrice: Number(p.price || 0), stock: Number(p.stockQuantity || 0), views: 0,
+        isTradeable: String(p.listingType || '').includes('TRADE'), status: p.moderationStatus === 'APPROVED' ? (p.isActive ? 'active' : 'hidden') : p.moderationStatus === 'REJECTED' ? 'rejected' : 'pending',
+        rejectReason: p.moderationReason || '', image: p.coverImageUrl || (p.images || []).find(i => i.imageType === 'COVER')?.imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300',
+        description: p.description || '', createdAt: p.createdAt || '', hideReason: ''
+      }));
+      renderPosts();
+    }
+
 
     function setTabFilter(tab, btn) {
       currentTab = tab;
@@ -258,7 +279,7 @@
     }
 
     function renderPosts() {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       
       // Update stats
       document.getElementById('statTotalPosts').innerText = posts.length;
@@ -281,7 +302,7 @@
     }
 
     function applyFilters() {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       const category = document.getElementById('categoryFilter').value;
       const sort = document.getElementById('sortFilter').value;
@@ -398,12 +419,12 @@
     function confirmHidePost() {
       const id = document.getElementById('hideTargetId').value;
       const reason = document.getElementById('hideReasonSelect').value;
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const target = posts.find(p => p.id === id);
       if (target) {
         target.status = 'hidden';
         target.hideReason = reason;
-        DataStore.savePosts(posts);
+        
         showToast(`Đã ẩn bài đăng ${id}`, 'info');
         closeModal('hideModal');
         renderPosts();
@@ -411,12 +432,12 @@
     }
 
     function unhidePost(id) {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const target = posts.find(p => p.id === id);
       if (target) {
         target.status = 'active';
         target.hideReason = '';
-        DataStore.savePosts(posts);
+        
         showToast(`Đã mở hiển thị lại bài đăng ${id}`, 'success');
         renderPosts();
       }
@@ -428,20 +449,20 @@
         showToast('Vui lòng tích chọn ít nhất 1 bài đăng cần ẩn!', 'error');
         return;
       }
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       posts.forEach(p => {
         if (checked.includes(p.id)) {
           p.status = 'hidden';
           p.hideReason = 'Ẩn hàng loạt bởi Seller';
         }
       });
-      DataStore.savePosts(posts);
+      
       showToast(`Đã ẩn thành công ${checked.length} bài đăng đã chọn!`, 'success');
       renderPosts();
     }
 
     function openDetailModal(id) {
-      const post = DataStore.getPosts().find(p => p.id === id);
+      const post = livePosts.find(p => p.id === id);
       if (!post) return;
 
       document.getElementById('detailModalTitle').innerText = post.title;
@@ -486,16 +507,29 @@
     }
 
     function resetSampleData() {
-      if (confirm('Khôi phục lại danh sách bài đăng mẫu mặc định ban đầu?')) {
-        DataStore.resetAll();
-        showToast('Đã nạp lại dữ liệu bài đăng mẫu!', 'info');
-        renderPosts();
-      }
+      showToast('Danh sách đang lấy từ database thật; không còn nạp dữ liệu mẫu ở màn hình này.', 'info');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      renderPosts();
+      fetch('/api/seller/products/options', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' })
+        .then(r => r.json()).then(data => {
+          if (data.Result === 'OK') {
+            categoryNames = Object.fromEntries((data.categories || []).map(x => [x.Value, x.DisplayText]));
+            authorNames = Object.fromEntries((data.authors || []).map(x => [x.Value, x.DisplayText]));
+            publisherNames = Object.fromEntries((data.publishers || []).map(x => [x.Value, x.DisplayText]));
+            return loadSellerPosts();
+          }
+          throw new Error(data.Message || 'Không tải được danh mục.');
+        }).catch(error => {
+          console.error(error);
+          document.getElementById('postsTableBody').innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:#dc2626">${escapePostText(error.message || 'Không tải được bài đăng. Vui lòng đăng nhập lại bằng tài khoản người bán.')}</td></tr>`;
+          showToast(error.message || 'Không tải được bài đăng.', 'error');
+        });
     });
+
+    function escapePostText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
   </script>
 </body>
 </html>

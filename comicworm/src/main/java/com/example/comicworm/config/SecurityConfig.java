@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -51,7 +53,8 @@ public class SecurityConfig {
                         .requireCsrfProtectionMatcher(request -> {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
                     return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
-                            && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/"));
+                            && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/")
+                                    || path.startsWith("/api/admin/"));
                 }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
@@ -62,7 +65,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .requestMatchers("/seller/html/**").hasRole("SELLER")
-                        .requestMatchers("/admin/html/statistics.html").hasRole("ADMIN")
+                        // ---- Khu vuc ADMIN: bat buoc dang nhap + role ADMIN ----
+                        .requestMatchers("/admin/html/login.html").permitAll() // chi redirect ve /auth/login
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/html/**").hasRole("ADMIN")
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
 
                         //public API
@@ -114,7 +120,7 @@ public class SecurityConfig {
     }
     private boolean isAccountPage(String path) {
         return path.startsWith("/seller/html/") || path.equals("/user/seller-upgrade")
-                || path.equals("/user/html/profile.html") || path.equals("/admin/html/statistics.html");
+                || path.equals("/user/html/profile.html") || path.startsWith("/admin/html/");
     }
     private UrlBasedCorsConfigurationSource reportCors() {
         CorsConfiguration config = new CorsConfiguration();
