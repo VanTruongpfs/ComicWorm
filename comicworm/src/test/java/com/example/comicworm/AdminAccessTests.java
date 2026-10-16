@@ -13,8 +13,10 @@ import com.example.comicworm.model.enums.UserRole;
 import com.example.comicworm.service.admin.AdminModerationService;
 import com.example.comicworm.service.auth.IAuthService;
 import com.example.comicworm.utils.JwtUtils;
+
 import java.util.List;
 import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -26,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.comicworm.repository.UserRepository;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
@@ -36,20 +39,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         AdminModerationController.class})
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 class AdminAccessTests {
-    @Autowired MockMvc mvc;
-    @MockitoBean UserRepository users;
-    @MockitoBean UserDetailsService details;
-    @MockitoBean JwtUtils jwt;
-    @MockitoBean IAuthService auth;
-    @MockitoBean AdminModerationService moderation;
+    @Autowired
+    MockMvc mvc;
+    @MockitoBean
+    UserRepository users;
+    @MockitoBean
+    UserDetailsService details;
+    @MockitoBean
+    JwtUtils jwt;
+    @MockitoBean
+    IAuthService auth;
+    @MockitoBean
+    AdminModerationService moderation;
 
     CustomUserDetails principal(long id, UserRole role, boolean seller) {
         var user = new User();
-        user.setId(id); user.setEmail("user" + id + "@example.invalid"); user.setFullName("User " + id);
-        user.setRole(role); user.setIsSeller(seller);
+        user.setId(id);
+        user.setEmail("user" + id + "@example.invalid");
+        user.setFullName("User " + id);
+        user.setRole(role);
+        user.setIsSeller(seller);
         return new CustomUserDetails(user);
     }
-    CustomUserDetails admin() { return principal(1, UserRole.ADMIN, false); }
+
+    CustomUserDetails admin() {
+        return principal(1, UserRole.ADMIN, false);
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {"postModeration", "dashboard", "accounts", "statistics", "hide_post"})
@@ -62,13 +77,15 @@ class AdminAccessTests {
         mvc.perform(get(path).with(user(admin()))).andExpect(status().isOk());
     }
 
-    @Test void adminStaticAssetsStayPublicAndOldAdminLoginUsesSharedLogin() throws Exception {
+    @Test
+    void adminStaticAssetsStayPublicAndOldAdminLoginUsesSharedLogin() throws Exception {
         mvc.perform(get("/admin/js/postModeration.js")).andExpect(status().isOk());
         mvc.perform(get("/admin/html/login.html")).andExpect(status().isFound())
                 .andExpect(redirectedUrl("/auth/login"));
     }
 
-    @Test void moderationApiRequiresAdmin() throws Exception {
+    @Test
+    void moderationApiRequiresAdmin() throws Exception {
         when(moderation.list(any(), any(), anyInt(), anyInt())).thenReturn(Map.of("items", List.of(), "total", 0));
         mvc.perform(get("/api/admin/moderation/products")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/admin/moderation/products").with(user(principal(7, UserRole.USER, true))))
@@ -78,7 +95,8 @@ class AdminAccessTests {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test void approveAndRejectNeedAdminAndCsrfAndReason() throws Exception {
+    @Test
+    void approveAndRejectNeedAdminAndCsrfAndReason() throws Exception {
         mvc.perform(post("/api/admin/moderation/products/5/approve").with(csrf())).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/admin/moderation/products/5/approve").with(user(principal(7, UserRole.USER, true))).with(csrf()))
                 .andExpect(status().isForbidden());
@@ -99,7 +117,8 @@ class AdminAccessTests {
         verify(moderation).reject(1L, 5L, "Anh khong ro rang");
     }
 
-    @Test void loginSendsAdminToModerationAndEveryoneElseToHome() throws Exception {
+    @Test
+    void loginSendsAdminToModerationAndEveryoneElseToHome() throws Exception {
         when(auth.login(any())).thenReturn(AuthResponseDTO.builder().accessToken("a").refreshToken("r")
                 .role(UserRole.ADMIN).build());
         mvc.perform(post("/auth/login").param("email", "admin@example.invalid").param("password", "ExamplePassword2026!"))
