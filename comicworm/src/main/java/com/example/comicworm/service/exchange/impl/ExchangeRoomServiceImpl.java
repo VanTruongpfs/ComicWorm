@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -36,7 +38,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
     @Override
     public ExchangeRoomDTO createOrGetRoomForProduct(Long currentUserId, Long targetProductId, String initialMessage) {
         Product product = productRepository.findById(targetProductId)
-                .filter(p -> p.getDeletedAt() == null && Boolean.TRUE.equals(p.getIsActive()))
+                .filter(p -> p.getDeletedAt() == null && Boolean.TRUE.equals(p.getIsActive()) && p.getStockQuantity() > 0)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm trao đổi không tồn tại hoặc đã ngừng hoạt động"));
 
         Long hostId = product.getSellerId();
@@ -218,6 +220,8 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         // Đảm bảo buyer là thành viên
         ensureMembership(roomId, buyerId);
 
+        validateOffer(room, buyerId, req);
+
         BigDecimal cash = req.getCashCompensation() != null ? req.getCashCompensation().abs() : BigDecimal.ZERO;
         Long payerId = null;
 
@@ -228,7 +232,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                 payerId = room.getHostId();
             } else {
                 // Mặc định hoặc "pay": buyer bù cho host
-                payerId = req.getCompensationPayerId() != null ? req.getCompensationPayerId() : buyerId;
+                payerId = buyerId;
             }
         }
 
@@ -355,12 +359,69 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
     }
 
     @Override
+    public ExchangeOfferDTO updateOffer(Long roomId, Long offerId, Long buyerId, CreateExchangeOfferRequest req) {
+        ExchangeRoom room = exchangeRoomRepository.findByIdForUpdate(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng"));
+        ExchangeOffer offer = exchangeOfferRepository.findByIdAndRoomId(offerId, roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đề xuất"));
+        if (!Objects.equals(buyerId, offer.getBuyerId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn chỉ có thể sửa đề xuất của mình");
+        if (room.getStatus() != ExchangeRoomStatus.OPEN || offer.getStatus() != ExchangeOfferStatus.PENDING)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Chỉ sửa được đề xuất đang chờ trong phòng mở");
+        validateOffer(room, buyerId, req);
+        var oldItems = exchangeOfferItemRepository.findByOfferId(offerId);
+        boolean oldHasCash = offer.getCashCompensation().signum() > 0;
+        boolean newHasCash = req.getCashCompensation() != null && req.getCashCompensation().signum() > 0;
+        if (oldItems.isEmpty() != req.getItems().isEmpty() || oldHasCash != newHasCash)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giữ nguyên loại deal khi chỉnh sửa");
+        exchangeOfferItemRepository.deleteAll(oldItems);
+        exchangeOfferItemRepository.flush();
+        for (var input : req.getItems()) {
+            var p = productRepository.findById(input.getProductId()).orElseThrow();
+            var item = new ExchangeOfferItem(); item.setOfferId(offerId); item.setProductId(p.getId());
+            item.setOwnerId(buyerId); item.setQuantity(input.getQuantity());
+            item.setTitleSnapshot(p.getTitle()); item.setConditionSnapshot(p.getConditionPercent());
+            exchangeOfferItemRepository.save(item);
+        }
+        offer.setCashCompensation(req.getCashCompensation() == null ? BigDecimal.ZERO : req.getCashCompensation());
+        offer.setCompensationPayerId(newHasCash ? ("get".equals(req.getCompensationDirection()) ? room.getHostId() : buyerId) : null);
+        offer.setNote(req.getNote());
+        exchangeOfferRepository.save(offer);
+        var dto = toOfferDTO(offer);
+        broadcastToRoom(roomId, room.getRoomCode(), Map.of("type", "OFFER_UPDATED", "offer", dto));
+        return dto;
+    }
+
+    private void validateOffer(ExchangeRoom room, Long buyerId, CreateExchangeOfferRequest req) {
+        BigDecimal cash = req.getCashCompensation() == null ? BigDecimal.ZERO : req.getCashCompensation();
+        if (cash.signum() < 0 || cash.compareTo(new BigDecimal("100000000")) > 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Khoản tiền không hợp lệ");
+        if (cash.signum() > 0 && !Set.of("pay", "get").contains(req.getCompensationDirection()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn bên thanh toán khoản tiền");
+        if (req.getItems() == null) req.setItems(new ArrayList<>());
+        if (req.getItems().isEmpty() && (cash.signum() <= 0 || "get".equals(req.getCompensationDirection())))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đề xuất cần có truyện hoặc khoản tiền trả cho chủ phòng");
+        var ids = new HashSet<Long>();
+        for (var input : req.getItems()) {
+            if (input.getProductId() == null || !ids.add(input.getProductId()) || input.getQuantity() == null || input.getQuantity() < 1)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Truyện hoặc số lượng đề xuất không hợp lệ");
+            var p = productRepository.findById(input.getProductId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Truyện không tồn tại"));
+            if (p.getId().equals(room.getTargetProductId())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể dùng chính bộ truyện của phòng để đề xuất trao đổi");
+            if (!buyerId.equals(p.getSellerId()) || p.getDeletedAt() != null || !Boolean.TRUE.equals(p.getIsActive()) || p.getStockQuantity() < input.getQuantity())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ chọn truyện còn hàng thuộc sở hữu của bạn");
+        }
+    }
+
+    @Override
     public ExchangeOfferDTO respondToOffer(Long roomId, Long offerId, Long hostId, boolean accept) {
-        ExchangeRoom room = exchangeRoomRepository.findById(roomId)
+        ExchangeRoom room = exchangeRoomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng trao đổi"));
 
         if (!room.getHostId().equals(hostId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ chủ phòng mới có quyền chấp nhận hoặc từ chối đề xuất");
+        }
+
+        if (room.getStatus() != ExchangeRoomStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phòng đã chốt đề xuất hoặc đã đóng");
         }
 
         ExchangeOffer offer = exchangeOfferRepository.findByIdAndRoomId(offerId, roomId)
@@ -375,7 +436,8 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
 
         if (accept) {
             offer.setStatus(ExchangeOfferStatus.ACCEPTED);
-            offer.setHostConfirmed(true);
+            offer.setHostConfirmed(false);
+            offer.setBuyerConfirmed(false);
 
             // Chuyển phòng sang trạng thái đã đồng ý (AGREED) và gán offer được chọn
             room.setStatus(ExchangeRoomStatus.AGREED);
@@ -384,7 +446,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             ExchangeMessage acceptMsg = new ExchangeMessage();
             acceptMsg.setRoomId(roomId);
             acceptMsg.setSenderId(hostId);
-            acceptMsg.setContent("Chủ phòng đã chấp thuận đề xuất #" + offer.getId() + "! Hai bên có thể tiến hành chốt và tạo đơn trao đổi.");
+            acceptMsg.setContent("Chủ phòng đã chọn đề xuất #" + offer.getId() + ". Mỗi bên cần tự xác nhận giao dịch trước khi tạo đơn trao đổi.");
             ExchangeMessage saved = exchangeMessageRepository.save(acceptMsg);
             resMsg = saved != null ? saved : acceptMsg;
         } else {
@@ -425,26 +487,36 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
 
     @Override
     public ExchangeOfferDTO confirmDeal(Long roomId, Long offerId, Long userId) {
-        ExchangeRoom room = exchangeRoomRepository.findById(roomId)
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để xác nhận giao dịch");
+        }
+        ExchangeRoom room = exchangeRoomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng trao đổi"));
 
         ExchangeOffer offer = exchangeOfferRepository.findByIdAndRoomId(offerId, roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đề xuất"));
 
-        if (offer.getStatus() != ExchangeOfferStatus.ACCEPTED && offer.getStatus() != ExchangeOfferStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể chốt đề xuất đã được chấp thuận hoặc hợp lệ");
-        }
-
-        if (userId.equals(room.getHostId())) {
-            offer.setHostConfirmed(true);
-        } else if (userId.equals(offer.getBuyerId())) {
-            offer.setBuyerConfirmed(true);
-        } else {
+        boolean isHost = userId.equals(room.getHostId());
+        if (!isHost && !userId.equals(offer.getBuyerId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải là chủ phòng hoặc người đề xuất thỏa thuận này");
         }
+        if (offer.getStatus() != ExchangeOfferStatus.ACCEPTED || !Objects.equals(room.getSelectedOfferId(), offerId)
+                || (room.getStatus() != ExchangeRoomStatus.AGREED && room.getStatus() != ExchangeRoomStatus.COMPLETED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể xác nhận đề xuất được chủ phòng chọn trong phòng đang chốt");
+        }
 
-        ExchangeMessage completeMsg = null;
-        // Nếu cả hai đã xác nhận -> chuyển trạng thái phòng
+        if (Boolean.TRUE.equals(isHost ? offer.getHostConfirmed() : offer.getBuyerConfirmed())) {
+            return toOfferDTO(offer);
+        }
+
+        if (isHost) {
+            offer.setHostConfirmed(true);
+        } else {
+            offer.setBuyerConfirmed(true);
+        }
+
+        ExchangeMessage statusMsg = null;
+        // Nếu cả hai đã xác nhận -> chuyển trạng thái phòng sang COMPLETED
         if (Boolean.TRUE.equals(offer.getHostConfirmed()) && Boolean.TRUE.equals(offer.getBuyerConfirmed())) {
             room.setStatus(ExchangeRoomStatus.COMPLETED);
             room.setClosedAt(LocalDateTime.now());
@@ -456,7 +528,16 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
             msg.setSenderId(userId);
             msg.setContent("Hai bên đã xác nhận chốt thỏa thuận thành công! Đang chuyển sang bước hoàn tất đơn hàng trao đổi.");
             ExchangeMessage saved = exchangeMessageRepository.save(msg);
-            completeMsg = saved != null ? saved : msg;
+            statusMsg = saved != null ? saved : msg;
+        } else {
+            // Khi 1 bên xác nhận trước, gửi tin nhắn thông báo trong phòng
+            ExchangeMessage msg = new ExchangeMessage();
+            msg.setRoomId(roomId);
+            msg.setSenderId(userId);
+            String roleName = userId.equals(room.getHostId()) ? "Chủ phòng (Người bán)" : "Người mua";
+            msg.setContent(roleName + " đã xác nhận thông tin giao dịch đề xuất #" + offer.getId() + ". Đang chờ bên còn lại xác nhận để tạo đơn hàng.");
+            ExchangeMessage saved = exchangeMessageRepository.save(msg);
+            statusMsg = saved != null ? saved : msg;
         }
 
         exchangeOfferRepository.save(offer);
@@ -468,15 +549,15 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         dealEvent.put("offerId", offerId);
         dealEvent.put("offer", offerDto);
         dealEvent.put("roomStatus", room.getStatus().name());
-        if (completeMsg != null) {
+        if (statusMsg != null) {
             dealEvent.put("message", ExchangeMessageDTO.builder()
-                    .id(completeMsg.getId())
+                    .id(statusMsg.getId())
                     .roomId(roomId)
                     .senderId(userId)
                     .senderName(userRepository.findById(userId).map(User::getFullName).orElse("Thành viên"))
                     .isHost(userId.equals(room.getHostId()))
-                    .content(completeMsg.getContent())
-                    .createdAt(completeMsg.getCreatedAt() != null ? completeMsg.getCreatedAt() : LocalDateTime.now())
+                    .content(statusMsg.getContent())
+                    .createdAt(statusMsg.getCreatedAt() != null ? statusMsg.getCreatedAt() : LocalDateTime.now())
                     .build());
         }
         broadcastToRoom(roomId, room.getRoomCode(), dealEvent);
@@ -486,6 +567,9 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
 
     @Override
     public void withdrawOffer(Long roomId, Long offerId, Long userId) {
+        var room = exchangeRoomRepository.findByIdForUpdate(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng"));
+        if (room.getStatus() != ExchangeRoomStatus.OPEN) throw new ResponseStatusException(HttpStatus.CONFLICT, "Phòng đã chốt hoặc đã đóng");
         ExchangeOffer offer = exchangeOfferRepository.findByIdAndRoomId(offerId, roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đề xuất"));
 
@@ -526,13 +610,15 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
 
     @Override
     public void closeRoom(Long roomId, Long hostId) {
-        ExchangeRoom room = exchangeRoomRepository.findById(roomId)
+        ExchangeRoom room = exchangeRoomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phòng trao đổi"));
 
         if (!room.getHostId().equals(hostId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ chủ phòng mới có thể đóng phòng trao đổi");
         }
 
+        if (room.getStatus() == ExchangeRoomStatus.COMPLETED)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Hãy hủy giao dịch tại trang đơn hàng trao đổi");
         room.setStatus(ExchangeRoomStatus.CANCELLED);
         room.setClosedAt(LocalDateTime.now());
         exchangeRoomRepository.save(room);
@@ -608,17 +694,30 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         chatEvent.put("roomId", roomId);
         chatEvent.put("message", dto);
         broadcastToRoom(roomId, room.getRoomCode(), chatEvent);
-        broadcastToRoom(roomId, room.getRoomCode(), dto);
 
         return dto;
     }
 
     private void broadcastToRoom(Long roomId, String roomCode, Object payload) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    publishToRoom(roomId, roomCode, payload);
+                }
+            });
+        } else {
+            publishToRoom(roomId, roomCode, payload);
+        }
+    }
+
+    private void publishToRoom(Long roomId, String roomCode, Object payload) {
         if (webSocketHandler != null) {
             if (roomId != null) {
                 webSocketHandler.broadcast(roomId, payload);
             }
-            if (roomCode != null && !roomCode.isBlank()) {
+            if (roomCode != null && !roomCode.isBlank() && !roomCode.equals(String.valueOf(roomId))) {
                 webSocketHandler.broadcast(roomCode, payload);
             }
         }
@@ -667,6 +766,7 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
         List<Product> products = productRepository.findBySellerIdAndIsActiveTrueAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         List<UserTradeProductDTO> result = new ArrayList<>();
         for (Product p : products) {
+            if (p.getStockQuantity() == null || p.getStockQuantity() < 1) continue;
             result.add(UserTradeProductDTO.builder()
                     .id(p.getId())
                     .title(p.getTitle())
@@ -740,7 +840,6 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                 .hostId(room.getHostId())
                 .hostName(host != null ? host.getFullName() : "Chủ phòng")
                 .hostAvatar(host != null ? host.getAvatarUrl() : null)
-                .hostEmail(host != null ? host.getEmail() : null)
                 .targetProductId(room.getTargetProductId())
                 .targetProductTitle(targetProduct != null ? targetProduct.getTitle() : "Sản phẩm #" + room.getTargetProductId())
                 .targetProductCover(targetProduct != null ? targetProduct.getCoverImageUrl() : null)
@@ -751,6 +850,10 @@ public class ExchangeRoomServiceImpl implements IExchangeRoomService {
                 .targetProductVolumeNumbers(targetProduct != null ? targetProduct.getVolumeNumbers() : null)
                 .targetProductPublisher(targetProduct != null && targetProduct.getPublisher() != null ? targetProduct.getPublisher().getName() : null)
                 .targetProductAuthor(targetProduct != null && targetProduct.getAuthor() != null ? targetProduct.getAuthor().getName() : null)
+                .targetProductDescription(targetProduct != null ? targetProduct.getDescription() : null)
+                .targetProductCategory(targetProduct != null && targetProduct.getCategory() != null ? targetProduct.getCategory().getName() : null)
+                .targetProductEdition(targetProduct != null ? targetProduct.getEditionType() : null)
+                .targetProductPublicationYear(targetProduct != null ? targetProduct.getPublicationYear() : null)
                 .selectedOfferId(room.getSelectedOfferId())
                 .status(room.getStatus())
                 .createdAt(room.getCreatedAt())

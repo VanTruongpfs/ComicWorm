@@ -70,16 +70,16 @@ class SellerAccessTests {
         String path = "/seller/html/" + page + ".html";
         mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrlPattern("**/auth/login"));
         mvc.perform(get(path).with(user(principal(false))))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
+                .andExpect(status().isForbidden());
         mvc.perform(get(path).with(user(principal(true)))).andExpect(status().isOk());
     }
 
     @Test void headAndAdminCannotBypassSellerUpgrade() throws Exception {
         var admin = account(1, false); admin.setRole(UserRole.ADMIN);
         mvc.perform(head("/seller/html/revenue.html").with(user(principal(false))))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
+                .andExpect(status().isForbidden());
         mvc.perform(get("/seller/html/index.html").with(user(new CustomUserDetails(admin))))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
+                .andExpect(status().isForbidden());
     }
 
     @Test void assetsStayPublicAndStatisticsRemainRoleProtected() throws Exception {
@@ -93,41 +93,32 @@ class SellerAccessTests {
         verifyNoInteractions(analytics);
     }
 
-    @Test void upgradePageExplainsRequirementAndIncludesCsrfToken() throws Exception {
-        var response = mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertTrue(response.contains("Nâng cấp lên Người bán"));
-        assertTrue(response.contains("name=\"_csrf\""));
-        assertTrue(response.contains("User 7"));
+    @Test void upgradeEndpointIsForbiddenForBuyers() throws Exception {
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))).with(csrf()))
+                .andExpect(status().isForbidden());
         mvc.perform(get("/user/seller-upgrade").with(user(principal(true))))
                 .andExpect(status().isFound()).andExpect(redirectedUrl("/seller/html/index.html"));
     }
 
-    @Test void upgradeRequiresLoginAndCsrfAndGetDoesNotMutate() throws Exception {
+    @Test void upgradeRequiresLoginAndDisallowsNonSellers() throws Exception {
         mvc.perform(get("/user/seller-upgrade")).andExpect(status().isFound());
-        mvc.perform(get("/user/seller-upgrade").with(user(principal(false)))).andExpect(status().isOk());
-        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade?csrfExpired=true"));
-        mvc.perform(get("/user/seller-upgrade?csrfExpired=true").with(user(principal(false))))
-                .andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("Phiên xác nhận đã hết hạn")));
-        mvc.perform(post("/user/seller-upgrade").with(csrf())).andExpect(status().isFound());
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(false)))).andExpect(status().isForbidden());
+        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))).with(csrf()))
+                .andExpect(status().isForbidden());
         verifyNoInteractions(users);
     }
 
-    @Test void upgradeChangesOnlyLoggedInAccountAndSameJwtCanOpenStatisticsImmediately() throws Exception {
-        User buyer = account(7, false);
-        when(users.findById(7L)).thenReturn(Optional.of(buyer));
+    @Test void sellerAccountWithJwtCanOpenStatisticsAndSellerPages() throws Exception {
+        User seller = account(7, true);
+        when(users.findById(7L)).thenReturn(Optional.of(seller));
         when(jwt.validateToken("valid-token")).thenReturn(true);
-        when(jwt.getEmailFromToken("valid-token")).thenReturn(buyer.getEmail());
-        when(details.loadUserByUsername(buyer.getEmail())).thenAnswer(call -> new CustomUserDetails(buyer));
+        when(jwt.getEmailFromToken("valid-token")).thenReturn(seller.getEmail());
+        when(details.loadUserByUsername(seller.getEmail())).thenAnswer(call -> new CustomUserDetails(seller));
         Cookie cookie = new Cookie("accessToken", "valid-token");
-        mvc.perform(get("/api/account/me").cookie(cookie)).andExpect(jsonPath("$.isSeller").value(false));
-        mvc.perform(post("/user/seller-upgrade").cookie(cookie).with(csrf()).param("userId", "999"))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/seller/html/index.html"));
-        assertTrue(buyer.getIsSeller()); assertEquals(UserRole.USER, buyer.getRole());
-        verify(users).findById(7L); verify(users, never()).findById(999L); verify(users).save(buyer);
-        mvc.perform(get("/seller/html/revenue.html").cookie(cookie)).andExpect(status().isOk());
         mvc.perform(get("/api/account/me").cookie(cookie)).andExpect(jsonPath("$.isSeller").value(true));
+        mvc.perform(get("/seller/html/revenue.html").cookie(cookie)).andExpect(status().isOk());
         when(analytics.report(LocalDate.of(2026,10,1), LocalDate.of(2026,10,3), "day", 7L, "User 7"))
                 .thenReturn(Map.of("sellerId", "7", "revenue", 0));
         mvc.perform(get("/api/analytics/seller?from=2026-10-01&to=2026-10-03&sellerId=999").cookie(cookie))
@@ -170,10 +161,9 @@ class SellerAccessTests {
                 .param("email", "buyer@example.invalid").param("password", "ExamplePassword2026!"))
                 .andExpect(status().isFound()).andExpect(redirectedUrl("/buyer/html/home.html")).andReturn();
         assertNull(csrfTokens.loadToken(loggedIn.getRequest()));
-        var upgradePage = mvc.perform(get("/user/seller-upgrade").session(session).with(user(principal(false))))
-                .andExpect(status().isOk()).andReturn();
-        assertNotNull(csrfTokens.loadToken(upgradePage.getRequest()));
         var loggedOut = mvc.perform(get("/auth/logout").session(session)).andExpect(status().isFound()).andReturn();
         assertNull(csrfTokens.loadToken(loggedOut.getRequest()));
+        var postLogoutLogin = mvc.perform(get("/auth/login")).andExpect(status().isOk()).andReturn();
+        assertNotNull(csrfTokens.loadToken(postLogoutLogin.getRequest()));
     }
 }

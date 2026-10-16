@@ -163,6 +163,12 @@ public class ExchangeRoomController {
         return ResponseEntity.ok(offer);
     }
 
+    @PutMapping("/{id}/offers/{offerId}")
+    public ExchangeOfferDTO updateOffer(@PathVariable Long id, @PathVariable Long offerId,
+            @AuthenticationPrincipal CustomUserDetails user, @Valid @RequestBody CreateExchangeOfferRequest req) {
+        return exchangeRoomService.updateOffer(id, offerId, requireUserId(user), req);
+    }
+
     /**
      * Xác nhận chốt thỏa thuận (host hoặc buyer)
      */

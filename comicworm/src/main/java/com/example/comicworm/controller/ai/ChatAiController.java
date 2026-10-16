@@ -31,6 +31,7 @@ public class ChatAiController {
     private static final Logger log = LoggerFactory.getLogger(ChatAiController.class);
 
     private static final List<String> MODELS = List.of(
+            "gemini-3.8-flash",
             "gemini-3.5-flash-lite",
             "gemini-3.7-flash",
             "gemini-flash-lite-latest");
@@ -108,10 +109,15 @@ public class ChatAiController {
             return ResponseEntity.ok(new BotChatResponseDTO(reply, !products.isEmpty(), products));
 
         } catch (Exception e) {
-            log.error("Chat lỗi", e);
-            return ResponseEntity.ok(new BotChatResponseDTO(
-                    "Xin lỗi, hệ thống AI hiện đang bận hoặc chưa thể kết nối. Bạn vui lòng thử lại sau!",
-                    false, List.of()));
+            log.error("Chat lỗi: {}", e.getMessage(), e);
+            String root = rootMessage(e);
+            String botMsg = "Xin lỗi, hệ thống AI hiện đang bận hoặc chưa thể kết nối. Bạn vui lòng thử lại sau!";
+            if (root != null && (root.contains("denied access") || root.contains("403"))) {
+                botMsg = "Lỗi kết nối Gemini API: Google đã chặn quyền truy cập của Project này (403: Your project has been denied access). Bạn vui lòng truy cập Google AI Studio để tạo API Key mới từ một Project khác nhé!";
+            } else if (root != null && (root.contains("API_KEY_INVALID") || root.contains("401"))) {
+                botMsg = "API Key Gemini chưa chính xác hoặc đã hết hạn. Vui lòng cập nhật lại key trong application-local.properties!";
+            }
+            return ResponseEntity.ok(new BotChatResponseDTO(botMsg, false, List.of()));
         }
     }
 

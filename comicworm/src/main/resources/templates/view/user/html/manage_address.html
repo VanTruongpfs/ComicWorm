@@ -22,9 +22,30 @@
                 <form id="address-form" class="form-grid" novalidate>
                     <input type="hidden" name="id">
                     <div class="form-grid two-columns"><div class="field"><label for="recipient-name">Tên người nhận</label><input id="recipient-name" name="recipientName" required><small class="field-error" data-error-for="recipientName"></small></div><div class="field"><label for="recipient-phone">Số điện thoại</label><input id="recipient-phone" name="phone" type="tel" required><small class="field-error" data-error-for="phone"></small></div></div>
-                    <div class="form-grid two-columns"><div class="field"><label for="province">Tỉnh/Thành phố</label><input id="province" name="province" required></div><div class="field"><label for="district">Quận/Huyện</label><input id="district" name="district" required></div></div>
-                    <div class="field"><label for="ward">Phường/Xã</label><input id="ward" name="ward" required></div>
-                    <div class="field"><label for="address-detail">Địa chỉ chi tiết</label><textarea id="address-detail" name="addressDetail" placeholder="Số nhà, tên đường, tòa nhà..." required></textarea></div>
+                    <div class="form-grid two-columns">
+                        <div class="field">
+                            <label for="province">Tỉnh / Thành phố *</label>
+                            <select id="province" name="province" required>
+                                <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                            </select>
+                            <small class="field-error" data-error-for="province"></small>
+                        </div>
+                        <div class="field">
+                            <label for="district">Quận / Huyện *</label>
+                            <select id="district" name="district" required disabled>
+                                <option value="">-- Chọn Quận / Huyện --</option>
+                            </select>
+                            <small class="field-error" data-error-for="district"></small>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="ward">Phường / Xã *</label>
+                        <select id="ward" name="ward" required disabled>
+                            <option value="">-- Chọn Phường / Xã --</option>
+                        </select>
+                        <small class="field-error" data-error-for="ward"></small>
+                    </div>
+                    <div class="field"><label for="address-detail">Địa chỉ chi tiết (Số nhà, tên đường...) *</label><textarea id="address-detail" name="addressDetail" placeholder="Ví dụ: Số 25, ngõ 123..." required></textarea><small class="field-error" data-error-for="addressDetail"></small></div>
                     <label class="check-label"><input name="isDefault" type="checkbox"> Đặt làm địa chỉ mặc định</label>
                     <div class="form-actions"><button class="button secondary" type="button" data-close-address-form>Hủy</button><button class="button" type="submit">Lưu địa chỉ</button></div>
                 </form>
@@ -35,6 +56,7 @@
     <div class="toast-region" data-toast-region aria-live="polite"></div>
     <script src="../../shared/js/account-api.js"></script>
     <script src="../../shared/sidebar/sidebar.js"></script>
+    <script src="../../exchange/js/exchange-api.js"></script>
     <script src="../js/manage_address.js"></script>
 </body>
 </html>

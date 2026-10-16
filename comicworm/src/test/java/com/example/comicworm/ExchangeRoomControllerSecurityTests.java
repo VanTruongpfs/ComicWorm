@@ -65,6 +65,37 @@ class ExchangeRoomControllerSecurityTests {
     }
 
     @Test
+    void roomDetail_preservesRoleFieldNamesUsedByBrowser() throws Exception {
+        ExchangeRoomDTO room = ExchangeRoomDTO.builder()
+                .id(1L).hostId(10L).currentUserId(10L)
+                .isCurrentUserHost(true).isCurrentUserMember(true)
+                .members(List.of(ExchangeMemberDTO.builder().userId(10L).isHost(true).build()))
+                .build();
+        when(exchangeRoomService.getRoomDetail(1L, 10L)).thenReturn(room);
+        mvc.perform(get("/api/exchange/rooms/1").with(user(userPrincipal(10L))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isCurrentUserHost").value(true))
+                .andExpect(jsonPath("$.isCurrentUserMember").value(true))
+                .andExpect(jsonPath("$.members[0].isHost").value(true));
+    }
+
+    @Test
+    void confirmDeal_usesAuthenticatedUserAndReturnsBothConfirmationFlags() throws Exception {
+        when(exchangeRoomService.confirmDeal(1L, 50L, 20L)).thenReturn(ExchangeOfferDTO.builder()
+                .id(50L).buyerConfirmed(true).hostConfirmed(false).build());
+        mvc.perform(post("/api/exchange/rooms/1/offers/50/confirm").with(user(userPrincipal(20L))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.buyerConfirmed").value(true))
+                .andExpect(jsonPath("$.hostConfirmed").value(false));
+    }
+
+    @Test
+    void anonymous_cannotConfirmDeal() throws Exception {
+        mvc.perform(post("/api/exchange/rooms/1/offers/50/confirm"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("Khách chưa đăng nhập có thể xem danh sách phòng công khai")
     void anonymous_canListRooms() throws Exception {
         ExchangeRoomSummaryDTO summary = ExchangeRoomSummaryDTO.builder()
@@ -154,6 +185,7 @@ class ExchangeRoomControllerSecurityTests {
                 .id(1001L)
                 .roomId(1L)
                 .senderId(20L)
+                .isHost(false)
                 .content("Chào bạn, mình muốn thương lượng")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -167,6 +199,7 @@ class ExchangeRoomControllerSecurityTests {
                         .content("{\"content\": \"Chào bạn, mình muốn thương lượng\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1001))
+                .andExpect(jsonPath("$.isHost").value(false))
                 .andExpect(jsonPath("$.content").value("Chào bạn, mình muốn thương lượng"));
     }
 }

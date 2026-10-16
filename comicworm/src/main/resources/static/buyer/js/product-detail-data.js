@@ -143,27 +143,54 @@
         if (proposeBtn && !p.tradable) proposeBtn.style.display = 'none';
     }
 
-    function renderBuyButton(p) {
-        const old = $('.primary-actions-row .btn-buy-now');
-        const btn = stripListeners(old);
-        if (!btn) return;
-        if (!p.purchasable) {
-            btn.removeAttribute('href');
-            btn.style.opacity = '.5';
-            btn.style.pointerEvents = 'none';
-            btn.innerHTML = '<i class="fa-solid fa-ban"></i> ' +
-                (!p.publiclyVisible ? 'Tin chưa được công khai' : (p.inStock ? 'Tin này chỉ nhận trao đổi' : 'Đã hết hàng'));
-            return;
+    function renderActionButtons(p) {
+        // 1. Xử lý nút THÊM VÀO GIỎ HÀNG
+        const oldAdd = $('.primary-actions-row .btn-add-cart, #btn-add-to-cart');
+        const btnAdd = stripListeners(oldAdd);
+        if (btnAdd) {
+            if (!p.purchasable) {
+                btnAdd.style.opacity = '.5';
+                btnAdd.style.pointerEvents = 'none';
+            } else {
+                btnAdd.addEventListener('click', async e => {
+                    e.preventDefault();
+                    btnAdd.disabled = true;
+                    await A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
+                    btnAdd.disabled = false;
+                });
+            }
         }
-        btn.addEventListener('click', async e => {
-            e.preventDefault();
-            const ok = await A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
-            if (!ok) return; // Nếu 401, addToLocalCart đã tự hiển thị thông báo và điều hướng sang /auth/register
-            A.toast('Đang chuyển đến giỏ hàng...', 'primary', 'fa-spinner fa-spin');
-            setTimeout(() => {
-                location.href = 'shopping_cart.html';
-            }, 600);
-        });
+
+        // 2. Xử lý nút MUA NGAY (Chuyển thẳng đến trang thanh toán Payment)
+        const oldBuy = $('.primary-actions-row .btn-buy-now, #btn-buy-now');
+        const btnBuy = stripListeners(oldBuy);
+        if (btnBuy) {
+            if (!p.purchasable) {
+                btnBuy.removeAttribute('href');
+                btnBuy.style.opacity = '.5';
+                btnBuy.style.pointerEvents = 'none';
+                btnBuy.innerHTML = '<i class="fa-solid fa-ban"></i> ' +
+                    (!p.publiclyVisible ? 'Tin chưa được công khai' : (p.inStock ? 'Tin này chỉ nhận trao đổi' : 'Đã hết hàng'));
+                return;
+            }
+            btnBuy.addEventListener('click', async e => {
+                e.preventDefault();
+                btnBuy.disabled = true;
+                const originalHtml = btnBuy.innerHTML;
+                btnBuy.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang khởi tạo đơn hàng...';
+
+                const checkoutCode = await A.buyNow({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
+                if (checkoutCode) {
+                    A.toast('Khởi tạo đơn mua ngay thành công! Đang chuyển đến thanh toán...', 'success', 'fa-circle-check');
+                    setTimeout(() => {
+                        window.location.href = 'payment.html?checkoutCode=' + encodeURIComponent(checkoutCode);
+                    }, 400);
+                } else {
+                    btnBuy.disabled = false;
+                    btnBuy.innerHTML = originalHtml;
+                }
+            });
+        }
     }
 
     function setupExchangeButtons(p) {
@@ -384,7 +411,7 @@
             renderBreadcrumb(p);
             renderGallery(p);
             renderInfo(p);
-            renderBuyButton(p);
+            renderActionButtons(p);
             setupExchangeButtons(p);
             renderSeller(p);
             renderTabs(p);
