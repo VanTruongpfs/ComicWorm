@@ -110,7 +110,7 @@
 
                 <i class="fa-solid fa-bag-shopping"></i>
 
-                <span class="cart-count-badge">3</span>
+                <span class="cart-count-badge" id="header-cart-badge">0</span>
 
             </a>
 
@@ -150,7 +150,7 @@
     <div class="cart-page-header">
         <div class="cart-title-wrap">
             <h1 class="page-headline">Giỏ Hàng Của Bạn</h1>
-            <span class="cart-items-counter">(3 sản phẩm đang chờ xử lý)</span>
+            <span class="cart-items-counter">(Đang tải...)</span>
         </div>
         <!-- Checkout Step Indicator -->
         <div class="checkout-steps-bar">
@@ -179,7 +179,7 @@
             <div class="cart-bulk-actions-bar">
                 <label class="custom-checkbox-label">
                     <input type="checkbox" class="checkbox-select-all" checked>
-                    <span class="checkbox-text">Chọn tất cả (3 sản phẩm)</span>
+                    <span class="checkbox-text">Chọn tất cả</span>
                 </label>
                 <button type="button" class="btn-bulk-delete">
                     <i class="fa-regular fa-trash-can"></i> Xóa mục đã chọn
@@ -187,213 +187,10 @@
             </div>
 
             <div id="cart-groups-container">
-            <!-- ================= NHÓM SẢN PHẨM 1: MUA THẲNG (SELLER: AnVinh Collector) ================= -->
-            <section class="seller-cart-group">
-                <!-- Thông tin Người bán của nhóm hàng này -->
-                <header class="group-seller-header">
-                    <label class="custom-checkbox-label">
-                        <input type="checkbox" checked>
-                        <span class="seller-shop-name">
-                  <i class="fa-solid fa-store"></i> AnVinh Collector
-                </span>
-                    </label>
-                    <span class="seller-trust-badge">
-                <i class="fa-solid fa-certificate"></i> Đối tác uy tín (5.0★)
-              </span>
-                    <a href="#" class="btn-chat-with-seller">
-                        <i class="fa-regular fa-comment-dots"></i> Chat
-                    </a>
-                </header>
-
-                <!-- Item 1: Slam Dunk Deluxe -->
-                <article class="cart-item-card">
-                    <div class="item-select-wrap">
-                        <input type="checkbox" class="item-checkbox" checked>
-                    </div>
-                    <div class="item-thumbnail-wrap">
-                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80" alt="Slam Dunk Deluxe Edition" class="item-thumb-img">
-                        <span class="item-condition-badge">Near Mint 9.8</span>
-                    </div>
-                    <div class="item-details-wrap">
-                        <div class="item-badge-row">
-                            <span class="badge-type buy">Mua thẳng</span>
-                            <span class="badge-format">Trọn bộ 24 tập • NXB Kim Đồng</span>
-                        </div>
-                        <h2 class="item-title">
-                            <a href="product_details.html">Slam Dunk Deluxe Edition - Trọn Bộ 24 Tập (Bản Bìa Rời Kèm Obi &amp; Postcard)</a>
-                        </h2>
-                        <div class="item-spec-note">Quà tặng: Full 24 Postcard nguyên bao seal</div>
-                        <div class="item-pricing-mobile">
-                            <span class="item-price-current">1.850.000₫</span>
-                            <del class="item-price-original">2.300.000₫</del>
-                        </div>
-                    </div>
-                    <!-- Cột Đơn giá -->
-                    <div class="item-pricing-column">
-                        <span class="item-price-current">1.850.000₫</span>
-                        <del class="item-price-original">2.300.000₫</del>
-                        <span class="discount-pill">-20%</span>
-                    </div>
-                    <!-- Cột Bộ tăng giảm số lượng (Cập nhật) -->
-                    <div class="item-quantity-column">
-                        <div class="quantity-stepper">
-                            <button type="button" class="btn-qty-minus" aria-label="Giảm số lượng">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                            <input type="number" class="qty-input" value="1" min="1" max="1" readonly>
-                            <button type="button" class="btn-qty-plus disabled" aria-label="Tăng số lượng (Chỉ có 1 bộ duy nhất)" disabled>
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                        <span class="stock-limit-note">Bản sưu tầm độc bản (Còn 1)</span>
-                    </div>
-                    <!-- Cột Thành tiền -->
-                    <div class="item-subtotal-column">
-                        <span class="subtotal-label">Thành tiền:</span>
-                        <span class="item-subtotal-price">1.850.000₫</span>
-                    </div>
-                    <!-- Cột Nút Xóa & Yêu thích -->
-                    <div class="item-actions-column">
-                        <button type="button" class="btn-item-action delete" aria-label="Xóa sản phẩm khỏi giỏ">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                        <button type="button" class="btn-item-action wishlist" aria-label="Lưu vào danh sách muốn mua">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                    </div>
-                </article>
-            </section>
-
-            <!-- ================= NHÓM SẢN PHẨM 2: MUA & ĐỔI (SELLER: Otaku BookShop HCM) ================= -->
-            <section class="seller-cart-group">
-                <!-- Thông tin Người bán -->
-                <header class="group-seller-header">
-                    <label class="custom-checkbox-label">
-                        <input type="checkbox" checked>
-                        <span class="seller-shop-name">
-                  <i class="fa-solid fa-store"></i> Otaku BookShop HCM
-                </span>
-                    </label>
-                    <span class="seller-trust-badge">
-                <i class="fa-solid fa-certificate"></i> Shop Uy Tín (4.9★)
-              </span>
-                    <a href="#" class="btn-chat-with-seller">
-                        <i class="fa-regular fa-comment-dots"></i> Chat
-                    </a>
-                </header>
-
-                <!-- Item 2: Haikyu!! Trọn bộ -->
-                <article class="cart-item-card">
-                    <div class="item-select-wrap">
-                        <input type="checkbox" class="item-checkbox" checked>
-                    </div>
-                    <div class="item-thumbnail-wrap">
-                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80" alt="Haikyu!! - Vua Bóng Chuyền" class="item-thumb-img">
-                        <span class="item-condition-badge">Near Mint 9.5</span>
-                    </div>
-                    <div class="item-details-wrap">
-                        <div class="item-badge-row">
-                            <span class="badge-type buy">Mua thẳng</span>
-                            <span class="badge-format">Trọn bộ 45 tập</span>
-                        </div>
-                        <h2 class="item-title">
-                            <a href="#">Haikyu!! - Vua Bóng Chuyền (Trọn bộ 45 tập NXB Kim Đồng bản in đầu)</a>
-                        </h2>
-                        <div class="item-spec-note">Tình trạng: Mép sách trắng tinh, không foxing</div>
-                        <div class="item-pricing-mobile">
-                            <span class="item-price-current">2.100.000₫</span>
-                        </div>
-                    </div>
-                    <!-- Cột Đơn giá -->
-                    <div class="item-pricing-column">
-                        <span class="item-price-current">2.100.000₫</span>
-                    </div>
-                    <!-- Cột Tăng giảm số lượng (Cập nhật) -->
-                    <div class="item-quantity-column">
-                        <div class="quantity-stepper">
-                            <button type="button" class="btn-qty-minus" aria-label="Giảm số lượng">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                            <input type="number" class="qty-input" value="1" min="1" max="2">
-                            <button type="button" class="btn-qty-plus" aria-label="Tăng số lượng">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                        <span class="stock-limit-note">Kho còn: 2 bộ</span>
-                    </div>
-                    <!-- Cột Thành tiền -->
-                    <div class="item-subtotal-column">
-                        <span class="subtotal-label">Thành tiền:</span>
-                        <span class="item-subtotal-price">2.100.000₫</span>
-                    </div>
-                    <!-- Cột Thao tác -->
-                    <div class="item-actions-column">
-                        <button type="button" class="btn-item-action delete" aria-label="Xóa sản phẩm khỏi giỏ">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                        <button type="button" class="btn-item-action wishlist" aria-label="Lưu vào yêu thích">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                    </div>
-                </article>
-
-                <!-- Item 3: Kèo Trao Đổi Barter 1-1 Kèm Tiền Bù -->
-                <article class="cart-item-card barter-cart-item">
-                    <div class="item-select-wrap">
-                        <input type="checkbox" class="item-checkbox" checked>
-                    </div>
-                    <div class="item-thumbnail-wrap">
-                        <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=300&q=80" alt="Dragon Ball Super" class="item-thumb-img">
-                        <span class="item-condition-badge amber">Kèo Đổi 1-1</span>
-                    </div>
-                    <div class="item-details-wrap">
-                        <div class="item-badge-row">
-                            <span class="badge-type barter">Giao dịch trao đổi</span>
-                            <span class="badge-format">Khớp lệnh đề xuất 1-1</span>
-                        </div>
-                        <h2 class="item-title">
-                            <a href="#">Dragon Ball Super (Tập 1 - 20) — Đổi ngang với One Piece Boxset</a>
-                        </h2>
-                        <!-- Chi tiết cặp truyện trao đổi -->
-                        <div class="barter-exchange-inline-card">
-                            <div class="exchange-part receive">
-                                <span class="exchange-tag">Nhận về:</span> Dragon Ball Super (Tập 1-20)
-                            </div>
-                            <i class="fa-solid fa-arrow-right-arrow-left exchange-icon"></i>
-                            <div class="exchange-part send">
-                                <span class="exchange-tag">Gửi đi:</span> One Piece (Boxset Vol 1)
-                            </div>
-                        </div>
-                        <div class="item-spec-note">Phí chênh lệch tiền bù thỏa thuận: <strong>120.000₫</strong></div>
-                    </div>
-                    <!-- Cột Đơn giá -->
-                    <div class="item-pricing-column">
-                        <span class="item-price-current">120.000₫</span>
-                        <span class="price-note-sub">(Tiền bù giao dịch)</span>
-                    </div>
-                    <!-- Cột Số lượng (Kèo đổi cố định 1-1) -->
-                    <div class="item-quantity-column">
-                        <div class="barter-locked-qty">
-                            <span>1 Kèo Đổi</span>
-                        </div>
-                        <span class="stock-limit-note">Đã chốt thỏa thuận</span>
-                    </div>
-                    <!-- Cột Thành tiền -->
-                    <div class="item-subtotal-column">
-                        <span class="subtotal-label">Tiền bù:</span>
-                        <span class="item-subtotal-price">120.000₫</span>
-                    </div>
-                    <!-- Cột Thao tác -->
-                    <div class="item-actions-column">
-                        <button type="button" class="btn-item-action delete" aria-label="Hủy kèo đổi khỏi giỏ">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                        <button type="button" class="btn-item-action wishlist" aria-label="Xem lại chi tiết kèo">
-                            <i class="fa-solid fa-file-contract"></i>
-                        </button>
-                    </div>
-                </article>
-            </section>
+                <div style="background: #ffffff; border-radius: 20px; padding: 48px 24px; text-align: center; border: 1px solid #e2e8f0;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 32px; color: #f97316; margin-bottom: 12px;"></i>
+                    <p style="color: #64748b; font-size: 14px; font-weight: 600;">Đang tải giỏ hàng của bạn...</p>
+                </div>
             </div>
 
             <!-- Nút tiếp tục mua sắm & Xóa toàn bộ giỏ hàng -->
@@ -440,18 +237,7 @@
                     <a href="voucher.html" style="font-size:0.8rem; color:#f97316; text-decoration:none; font-weight:600;"><i class="fa-solid fa-ticket"></i> Mở Kho Voucher để lấy mã ưu đãi &rarr;</a>
                 </div>
                 <!-- Danh sách coupon đã áp dụng -->
-                <div class="applied-coupons-list">
-                    <div class="coupon-chip">
-                        <div class="coupon-info">
-                            <i class="fa-solid fa-tag"></i>
-                            <span class="coupon-code">COMICFREE</span>
-                            <span class="coupon-desc">(Giảm 30.000đ phí ship)</span>
-                        </div>
-                        <button type="button" class="btn-remove-coupon" aria-label="Bỏ mã giảm giá">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </div>
+                <div class="applied-coupons-list" id="applied-coupons-container" style="display: none;"></div>
             </section>
 
             <!-- Thẻ Tóm Tắt Chi Phí Đơn Hàng -->
@@ -459,24 +245,20 @@
                 <h2 class="summary-heading">Tóm Tắt Đơn Hàng</h2>
                 <div class="summary-rows-group">
                     <div class="summary-row">
-                        <span class="summary-label">Tạm tính tiền hàng (2 mục mua):</span>
-                        <span class="summary-value">3.950.000₫</span>
+                        <span class="summary-label">Tạm tính tiền hàng:</span>
+                        <span class="summary-value" id="summary-subtotal">0₫</span>
                     </div>
                     <div class="summary-row">
-                        <span class="summary-label">Tiền bù trao đổi (1 kèo 1-1):</span>
-                        <span class="summary-value">120.000₫</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Phí đóng gói chuyên dụng sưu tầm:</span>
+                        <span class="summary-label">Phí đóng gói chuyên dụng:</span>
                         <span class="summary-value free-text">Miễn phí</span>
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">Phí vận chuyển ước tính:</span>
-                        <span class="summary-value">30.000₫</span>
+                        <span class="summary-value" id="summary-shipping">0₫</span>
                     </div>
-                    <div class="summary-row discount">
-                        <span class="summary-label">Giảm giá vận chuyển:</span>
-                        <span class="summary-value discount-text">-30.000₫</span>
+                    <div class="summary-row discount" id="summary-discount-row" style="display: none;">
+                        <span class="summary-label">Mã giảm giá:</span>
+                        <span class="summary-value discount-text" id="summary-discount">-0₫</span>
                     </div>
                     <div class="summary-row divider"></div>
                     <div class="summary-total-row">
@@ -485,8 +267,7 @@
                             <span class="total-tax-note">(Đã bao gồm VAT &amp; Phí bảo chứng)</span>
                         </div>
                         <div class="total-price-wrap">
-                            <span class="total-price-amount">4.070.000₫</span>
-                            <span class="total-saved-note">Tiết kiệm 480.000₫ so với giá gốc</span>
+                            <span class="total-price-amount" id="summary-total">0₫</span>
                         </div>
                     </div>
                 </div>

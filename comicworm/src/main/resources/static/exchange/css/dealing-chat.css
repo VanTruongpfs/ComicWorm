@@ -127,15 +127,18 @@ body.dc-noscroll {
    ROLE SWITCH
 ========================= */
 
-.dc-roleswitch {
-    display: flex;
+.dc-current-role-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 6px 6px 14px;
+    gap: 8px;
+    padding: 8px 18px;
     background: var(--white);
     border: 1px solid var(--border);
     border-radius: 999px;
     box-shadow: var(--shadow-sm);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--secondary);
 }
 
 .dc-roleswitch-label {
@@ -148,31 +151,6 @@ body.dc-noscroll {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .06em;
-}
-
-.dc-roleswitch button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--neutral);
-    font-size: 13px;
-    font-weight: 700;
-    transition: all .18s ease;
-}
-
-.dc-roleswitch button:hover {
-    color: var(--secondary);
-    background: #F1F5F9;
-}
-
-.dc-roleswitch button.is-on {
-    background: var(--secondary);
-    color: #fff;
-    box-shadow: 0 6px 16px rgba(15, 23, 42, .22);
 }
 
 /* =========================
@@ -2276,20 +2254,9 @@ body.dc-noscroll {
         font-size: 21px;
     }
 
-    .dc-roleswitch {
-        width: 100%;
-        padding: 6px;
-        justify-content: space-between;
-    }
-
-    .dc-roleswitch-label {
-        display: none;
-    }
-
-    .dc-roleswitch button {
-        flex: 1;
-        justify-content: center;
-        padding: 9px 10px;
+    .dc-current-role-badge {
+        width: fit-content;
+        padding: 6px 14px;
         font-size: 12px;
     }
 

@@ -1,6 +1,7 @@
 package com.example.comicworm.controller;
 
 import com.example.comicworm.dto.general.auth.CustomUserDetails;
+import com.example.comicworm.dto.request.CreateOrderRequest;
 import com.example.comicworm.dto.request.ProcessPaymentRequest;
 import com.example.comicworm.dto.response.CheckoutSummaryDTO;
 import com.example.comicworm.service.IOrderService;
@@ -33,6 +34,18 @@ public class PaymentController {
         }
         CheckoutSummaryDTO summary = orderService.getCheckoutSummary(checkoutCode, userDetails.getId());
         return ResponseEntity.ok(summary);
+    }
+
+    @PutMapping("/{checkoutCode}/address")
+    public ResponseEntity<?> updateCheckoutAddress(
+            @PathVariable String checkoutCode,
+            @Valid @RequestBody CreateOrderRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        orderService.updateCheckoutAddress(checkoutCode, userDetails.getId(), request);
+        return ResponseEntity.ok(Map.of("message", "Đã cập nhật địa chỉ giao hàng thành công"));
     }
 
     @PostMapping("/{checkoutCode}/pay")

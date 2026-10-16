@@ -87,58 +87,22 @@ class SellerProductMySqlTests {
         return client.send(HttpRequest.newBuilder(uri(path)).GET().build(), HttpResponse.BodyHandlers.ofString());
     }
 
-    @Test void browserUpgradeFormWorksWithItsRenderedCsrfTokenAndExistingJwt() throws Exception {
+    @Test void buyerCannotAccessSellerPagesOrSelfUpgrade() throws Exception {
         var buyer = login("products-buyer@example.invalid");
-        var page = get(buyer, "/user/seller-upgrade");
-        assertEquals(200, page.statusCode(), page.body());
-        var token = java.util.regex.Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"").matcher(page.body());
-        assertTrue(token.find(), "Upgrade form must render a CSRF token.");
-        assertEquals(200, get(buyer, "/buyer/html/home.html").statusCode());
-        assertEquals(200, get(buyer, "/api/account/me").statusCode());
+        var upgradePage = get(buyer, "/user/seller-upgrade");
+        assertEquals(403, upgradePage.statusCode());
+        assertEquals(403, get(buyer, "/seller/html/index.html").statusCode());
+        assertEquals(403, get(buyer, "/api/seller/products/options").statusCode());
+
         var request = HttpRequest.newBuilder(uri("/user/seller-upgrade"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Origin", "http://127.0.0.1:" + port)
                 .header("Referer", uri("/user/seller-upgrade").toString())
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(token.group(1), StandardCharsets.UTF_8)))
+                .POST(HttpRequest.BodyPublishers.ofString("dummy=1"))
                 .build();
         var upgraded = buyer.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, upgraded.statusCode(), upgraded.body());
-        assertEquals(uri("/seller/html/index.html"), uri("/").resolve(upgraded.headers().firstValue("Location").orElseThrow()));
-        assertTrue(Boolean.TRUE.equals(jdbc.queryForObject("SELECT is_seller FROM users WHERE id=92003", Boolean.class)));
-        assertEquals(200, get(buyer, "/seller/html/index.html").statusCode());
-        assertEquals(200, get(buyer, "/api/seller/products/options").statusCode());
-    }
-
-    @Test void expiredUpgradeFormDoesNotChangeAccountAndCanBeRefreshedAndConfirmed() throws Exception {
-        var original = login("products-buyer@example.invalid");
-        var page = get(original, "/user/seller-upgrade");
-        var tokenPattern = java.util.regex.Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
-        var oldToken = tokenPattern.matcher(page.body()); assertTrue(oldToken.find());
-        var freshCookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-        var oldCookies = (CookieManager) original.cookieHandler().orElseThrow();
-        for (var cookie : oldCookies.getCookieStore().getCookies()) {
-            if (Set.of("accessToken", "refreshToken").contains(cookie.getName())) {
-                freshCookies.getCookieStore().add(uri("/"), (HttpCookie) cookie.clone());
-            }
-        }
-        var expired = HttpClient.newBuilder().cookieHandler(freshCookies).build();
-        var rejected = expired.send(HttpRequest.newBuilder(uri("/user/seller-upgrade"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(oldToken.group(1), StandardCharsets.UTF_8)))
-                .build(), HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, rejected.statusCode(), rejected.body());
-        assertEquals(uri("/user/seller-upgrade?csrfExpired=true"), uri("/").resolve(rejected.headers().firstValue("Location").orElseThrow()));
+        assertEquals(403, upgraded.statusCode());
         assertFalse(Boolean.TRUE.equals(jdbc.queryForObject("SELECT is_seller FROM users WHERE id=92003", Boolean.class)));
-        var refreshed = get(expired, "/user/seller-upgrade?csrfExpired=true");
-        assertEquals(200, refreshed.statusCode()); assertTrue(refreshed.body().contains("Phiên xác nhận đã hết hạn"));
-        var freshToken = tokenPattern.matcher(refreshed.body()); assertTrue(freshToken.find());
-        var confirmed = expired.send(HttpRequest.newBuilder(uri("/user/seller-upgrade"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(freshToken.group(1), StandardCharsets.UTF_8)))
-                .build(), HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, confirmed.statusCode(), confirmed.body());
-        assertEquals(uri("/seller/html/index.html"), uri("/").resolve(confirmed.headers().firstValue("Location").orElseThrow()));
-        assertEquals(200, get(expired, "/api/seller/products/options").statusCode());
     }
     HttpResponse<String> mutate(HttpClient client, String method, String path, Object body, boolean csrf) throws Exception {
         var builder = HttpRequest.newBuilder(uri(path)).header("Content-Type", "application/json");

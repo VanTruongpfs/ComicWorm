@@ -113,18 +113,18 @@
     }
 
     // ---- Giỏ hàng: gọi API Database /api/cart/add (B05) và đồng bộ badge/localStorage
-    async function addToLocalCart(product) {
+    async function addToLocalCart(product, quantity = 1) {
         if (!product || !product.id) return false;
         try {
             const res = await fetch('/api/cart/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: product.id, quantity: 1 })
+                body: JSON.stringify({ productId: product.id, quantity: quantity || 1 })
             });
 
             if (res.status === 401) {
-                toast('Vui lòng đăng ký tài khoản để mua hàng!', 'warning', 'fa-right-to-bracket');
-                setTimeout(() => window.location.href = '/auth/register', 1200);
+                toast('Vui lòng đăng nhập hoặc đăng ký để mua hàng!', 'warning', 'fa-right-to-bracket');
+                setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href), 1200);
                 return false;
             }
 
@@ -134,14 +134,14 @@
                 return false;
             }
 
-            toast('Đã thêm "' + product.title + '" vào giỏ hàng!', 'success', 'fa-cart-plus');
+            toast('Đã thêm "' + product.title + '" vào giỏ hàng thành công!', 'success', 'fa-cart-plus');
 
             // Cập nhật badge giỏ hàng nếu có
-            const badge = document.querySelector('.cart-count-badge');
-            if (badge) {
-                const c = parseInt(badge.textContent.trim(), 10) || 0;
-                badge.textContent = c + 1;
-            }
+            const badges = document.querySelectorAll('.cart-count-badge, #header-cart-badge');
+            badges.forEach(b => {
+                const c = parseInt(b.textContent.trim(), 10) || 0;
+                b.textContent = c + (quantity || 1);
+            });
 
             const items = JSON.parse(localStorage.getItem('comichub_cart') || '[]');
             items.push({
@@ -155,7 +155,38 @@
             return true;
         } catch (e) {
             console.warn('Lỗi kết nối khi thêm vào giỏ hàng:', e);
+            toast('Không thể kết nối đến máy chủ', 'danger');
             return false;
+        }
+    }
+
+    // ---- Mua ngay: gọi API Database /api/cart/buy-now và trả về checkoutCode để chuyển thẳng đến Payment
+    async function buyNow(product, quantity = 1) {
+        if (!product || !product.id) return null;
+        try {
+            const res = await fetch('/api/cart/buy-now', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product.id, quantity: quantity || 1 })
+            });
+
+            if (res.status === 401) {
+                toast('Vui lòng đăng nhập để tiến hành thanh toán!', 'warning', 'fa-right-to-bracket');
+                setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href), 1200);
+                return null;
+            }
+
+            const data = await res.json();
+            if (!res.ok) {
+                toast(data.message || 'Không thể tạo đơn mua ngay', 'danger', 'fa-triangle-exclamation');
+                return null;
+            }
+
+            return data.checkoutCode;
+        } catch (e) {
+            console.warn('Lỗi kết nối khi mua ngay:', e);
+            toast('Không thể kết nối đến máy chủ', 'danger');
+            return null;
         }
     }
 
@@ -183,6 +214,6 @@
         related: (id, limit) => request('/' + encodeURIComponent(id) + '/related', {limit}),
         reviews: (id, page, size) => request('/' + encodeURIComponent(id) + '/reviews', {page, size}),
         esc, formatPrice, parseUtc, timeAgo, formatDate, detailUrl, categoryUrl, toast,
-        addToLocalCart, isWishlisted, toggleWishlist
+        addToLocalCart, buyNow, isWishlisted, toggleWishlist
     };
 })(window);

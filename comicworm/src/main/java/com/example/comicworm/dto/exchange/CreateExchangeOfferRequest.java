@@ -14,6 +14,7 @@ import lombok.Setter;
 public class CreateExchangeOfferRequest {
 
     @DecimalMin(value = "0", message = "Số tiền bù không được âm")
+    @jakarta.validation.constraints.Digits(integer = 9, fraction = 2)
     private BigDecimal cashCompensation = BigDecimal.ZERO;
 
     /**
@@ -25,7 +26,10 @@ public class CreateExchangeOfferRequest {
 
     private Long compensationPayerId;
 
+    @jakarta.validation.constraints.Size(max = 1000)
     private String note;
 
+    @jakarta.validation.Valid
+    @jakarta.validation.constraints.Size(max = 50)
     private List<OfferItemInput> items = new ArrayList<>();
 }

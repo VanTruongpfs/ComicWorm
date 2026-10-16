@@ -23,13 +23,15 @@ function loadRoomsFromApi() {
             return res.json();
         })
         .then(function (rooms) {
-            if (Array.isArray(rooms) && rooms.length > 0) {
+            if (Array.isArray(rooms)) {
                 renderRooms(rooms);
                 updateStats(rooms);
             }
         })
         .catch(function (err) {
-            console.log("Dùng danh sách phòng mặc định do chưa tải được API:", err);
+            document.getElementById('roomList').innerHTML = '';
+            document.getElementById('resultCount').textContent = 'Không tải được phòng trao đổi. Bấm Tải lại để thử lại.';
+            document.getElementById('emptyState').style.display = 'none';
         });
 }
 
@@ -64,19 +66,19 @@ function renderRooms(rooms) {
             statusClass = "cancelled";
         }
 
-        const dateStr = r.createdAt ? r.createdAt.substring(0, 10) : "2026-10-13";
+        const dateStr = r.createdAt ? r.createdAt.substring(0, 10) : "";
         const priceNum = r.targetProductPrice || 0;
         card.dataset.status = statusKey;
         card.dataset.price = priceNum;
         card.dataset.date = dateStr;
 
-        const coverImg = r.targetProductCover || "https://images.unsplash.com/photo-1613376023733-0a73315d9b06?auto=format&fit=crop&w=300&q=80";
+        const coverImg = r.targetProductCover;
         const formattedPrice = Number(priceNum).toLocaleString("vi-VN") + "đ";
 
         card.innerHTML =
             '<div class="room-main">' +
                 '<div class="product-image">' +
-                    '<img src="' + escapeHtml(coverImg) + '" alt="' + escapeHtml(r.targetProductTitle) + '" onerror="this.src=\'https://placehold.co/300x400/1e293b/FFF?text=Comic\'">' +
+                    ExchangeAPI.image(coverImg, r.targetProductTitle) +
                 '</div>' +
                 '<div class="room-info">' +
                     '<div class="room-heading">' +
@@ -103,7 +105,7 @@ function renderRooms(rooms) {
                         '</div>' +
                         '<div class="deal-count">' +
                             '<span>Tình trạng</span>' +
-                            '<strong>' + (r.targetProductCondition || 90) + '%</strong>' +
+                            '<strong>' + (r.targetProductCondition ?? 0) + '%</strong>' +
                         '</div>' +
                     '</div>' +
                     (r.targetProductWishNote ? '<div style="margin-top:8px; font-size:13px; color:#64748b;"><i class="fa-solid fa-heart" style="color:#ef4444;"></i> Muốn đổi: <strong>' + escapeHtml(r.targetProductWishNote) + '</strong></div>' : '') +
@@ -123,6 +125,7 @@ function renderRooms(rooms) {
 
     initialOrder = Array.prototype.slice.call(list.querySelectorAll(".room-card"));
     filterRooms();
+    sortRooms();
 }
 
 function updateStats(rooms) {
@@ -161,44 +164,24 @@ function escapeHtml(s) {
 /* =========================
    TẠO PHÒNG TRAO ĐỔI MỚI
 ========================== */
-function openCreateRoomModal() {
-    const productId = prompt("Nhập ID truyện bạn muốn mở phòng trao đổi (hoặc thương lượng):");
-    if (!productId || isNaN(Number(productId))) {
-        if (productId !== null) alert("Vui lòng nhập ID truyện hợp lệ.");
-        return;
-    }
-
-    const note = prompt("Nhập lời nhắn ban đầu (tùy chọn):", "Chào các bạn, mình mở phòng trao đổi cho bộ truyện này.");
-
-    fetch('/api/exchange/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            targetProductId: Number(productId),
-            initialMessage: note || ""
-        })
-    })
-    .then(function (res) {
-        if (res.status === 401) {
-            alert("Vui lòng đăng nhập tài khoản để tạo phòng trao đổi.");
-            window.location.href = "/auth/login";
-            return null;
-        }
-        if (!res.ok) {
-            return res.json().then(function (data) {
-                throw new Error(data.message || "Không thể tạo phòng.");
-            });
-        }
-        return res.json();
-    })
-    .then(function (room) {
-        if (!room) return;
-        alert("Đã tạo phòng trao đổi #" + room.roomCode + " thành công!");
-        window.location.href = "dealing-chat.html?room=" + encodeURIComponent(room.id);
-    })
-    .catch(function (err) {
-        alert("Lỗi: " + err.message);
-    });
+async function openCreateRoomModal() {
+    try {
+        const inventory = await ExchangeAPI.request('/api/exchange/rooms/inventory');
+        if (!inventory.length) { alert('Bạn chưa có truyện còn hàng. Hãy đăng truyện trước khi mở phòng.'); return; }
+        document.getElementById('createRoomDialog')?.remove();
+        const dialog = document.createElement('dialog');
+        dialog.id = 'createRoomDialog'; dialog.className = 'ex-panel ex-room-dialog';
+        dialog.innerHTML = '<h2>Mở phòng trao đổi</h2><form class="ex-form"><label>Truyện của bạn<select name="product">' + inventory.map(p => '<option value="' + p.id + '">' + escapeHtml(p.title) + '</option>').join('') + '</select></label><label>Lời nhắn<textarea name="message" maxlength="1000"></textarea></label><div class="ex-actions"><button type="submit">Mở phòng</button><button type="button" data-close-room>Hủy</button></div></form>';
+        document.body.append(dialog); dialog.showModal();
+        dialog.querySelector('[data-close-room]').onclick = () => dialog.close();
+        dialog.querySelector('form').onsubmit = async event => {
+            event.preventDefault(); const form = event.target, button = form.querySelector('[type="submit"]'); button.disabled = true;
+            try {
+                const room = await ExchangeAPI.post('/api/exchange/rooms', { targetProductId: Number(form.elements.product.value), initialMessage: form.elements.message.value.trim() });
+                location.href = 'dealing-chat.html?room=' + room.id;
+            } catch (err) { alert(err.message); button.disabled = false; }
+        };
+    } catch(err) { alert(err.message); }
 }
 
 /* =========================

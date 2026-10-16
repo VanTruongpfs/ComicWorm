@@ -45,6 +45,21 @@ Table password_reset_tokens {
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 }
 
+Table user_addresses {
+  id bigint [pk, increment, not null]
+  user_id bigint [not null]
+  recipient_name varchar(100) [not null]
+  phone varchar(20) [not null]
+  province varchar(100) [not null]
+  district varchar(100) [not null]
+  ward varchar(100) [not null]
+  address_detail varchar(500) [not null]
+  default_address boolean [not null, default: false]
+  indexes {
+    user_id [name: 'idx_user_addresses']
+  }
+}
+
 // tg_catalog
 Table categories {
   id int [pk, increment, not null]
@@ -198,7 +213,7 @@ Table payments {
   id bigint [pk, increment, not null]
   payment_code varchar(60) [unique, not null]
   checkout_id bigint [not null]
-  method varchar(20) [not null, check: `method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD')`]
+  method varchar(20) [not null, check: `method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD', 'COD')`]
   amount decimal(15,2) [not null, check: `amount > 0`]
   status varchar(20) [not null, default: 'PENDING', check: `status IN ('PENDING', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED')`]
   provider_transaction_id varchar(150)
@@ -360,6 +375,18 @@ Table exchange_messages {
   }
 }
 
+Table exchange_order_links {
+  id bigint [pk, increment, not null]
+  room_id bigint [not null]
+  offer_id bigint [not null]
+  recipient_id bigint [not null]
+  order_id bigint [unique, not null]
+  shipping_method varchar(30) [not null]
+  indexes {
+    (room_id, recipient_id) [unique, name: 'uq_exchange_recipient']
+  }
+}
+
 // tg_ai
 Table product_image_features {
   image_id bigint [pk, not null]
@@ -465,5 +492,10 @@ Ref fk_consultation_sessions_user_id: consultation_sessions.user_id >? users.id 
 Ref fk_consultation_messages_session_id: consultation_messages.session_id > consultation_sessions.id [delete: restrict, update: restrict]
 Ref fk_notifications_user_id: notifications.user_id > users.id [delete: restrict, update: restrict]
 Ref fk_notifications_order_id: notifications.order_id > orders.id [delete: restrict, update: restrict]
+Ref fk_user_addresses_user_id: user_addresses.user_id > users.id [delete: restrict, update: restrict]
+Ref fk_exchange_order_links_room_id: exchange_order_links.room_id > exchange_rooms.id [delete: restrict, update: restrict]
+Ref fk_exchange_order_links_offer_id: exchange_order_links.offer_id > exchange_offers.id [delete: restrict, update: restrict]
+Ref fk_exchange_order_links_recipient_id: exchange_order_links.recipient_id > users.id [delete: restrict, update: restrict]
+Ref fk_exchange_order_links_order_id: orders.id - exchange_order_links.order_id [delete: restrict, update: restrict]
 
 // Optional groups: bookmooch.grouped.dbml (requires TableGroup support).

@@ -26,6 +26,7 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
+    private final UserAddressRepository userAddressRepository;
 
     public OrderServiceImpl(
             CartRepository cartRepository,
@@ -35,7 +36,8 @@ public class OrderServiceImpl implements IOrderService {
             CheckoutBatchRepository checkoutBatchRepository,
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            UserAddressRepository userAddressRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
@@ -44,6 +46,7 @@ public class OrderServiceImpl implements IOrderService {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
+        this.userAddressRepository = userAddressRepository;
     }
 
     @Override
@@ -156,6 +159,101 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
+    @Transactional
+    public String createDirectOrder(Long buyerId, Long productId, Integer quantity) {
+        if (quantity == null || quantity < 1) {
+            quantity = 1;
+        }
+
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại: ID " + productId));
+
+        if (p.getSellerId().equals(buyerId)) {
+            throw new IllegalStateException("Bạn không thể mua sản phẩm '" + p.getTitle() + "' do chính mình đăng bán");
+        }
+
+        if (p.getStockQuantity() < quantity) {
+            throw new IllegalStateException("Sản phẩm '" + p.getTitle() + "' không còn đủ số lượng trong kho (còn " + p.getStockQuantity() + ")");
+        }
+
+        // Lấy thông tin người nhận và địa chỉ giao hàng
+        String recipientName = "Khách hàng";
+        String recipientPhone = "0900000000";
+        String shippingAddress = "Vui lòng bấm Thay đổi địa chỉ để nhập địa chỉ nhận hàng";
+
+        List<UserAddress> addresses = userAddressRepository.findByUserIdOrderByDefaultAddressDescIdDesc(buyerId);
+        if (!addresses.isEmpty()) {
+            UserAddress addr = addresses.get(0);
+            recipientName = addr.getRecipientName();
+            recipientPhone = addr.getPhone();
+            shippingAddress = String.format("%s, %s, %s, %s",
+                    addr.getAddressDetail(), addr.getWard(), addr.getDistrict(), addr.getProvince());
+        } else {
+            User user = userRepository.findById(buyerId).orElse(null);
+            if (user != null) {
+                if (user.getFullName() != null && !user.getFullName().isBlank()) {
+                    recipientName = user.getFullName();
+                }
+                if (user.getPhone() != null && !user.getPhone().isBlank()) {
+                    recipientPhone = user.getPhone();
+                }
+            }
+        }
+
+        BigDecimal subtotal = p.getPrice().multiply(BigDecimal.valueOf(quantity));
+        BigDecimal shippingFee = new BigDecimal("30000"); // 30.000đ
+        BigDecimal totalBatchWithShipping = subtotal.add(shippingFee);
+
+        // 1. Tạo Checkout Batch
+        String checkoutCode = "CHK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        CheckoutBatch batch = new CheckoutBatch();
+        batch.setCheckoutCode(checkoutCode);
+        batch.setBuyerId(buyerId);
+        batch.setIdempotencyKey(UUID.randomUUID().toString());
+        batch.setTotalAmount(totalBatchWithShipping);
+        batch.setExpiresAt(LocalDateTime.now().plusHours(24));
+        batch = checkoutBatchRepository.save(batch);
+
+        // 2. Tạo Order cho người bán
+        Order order = new Order();
+        order.setOrderCode("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        order.setCheckoutId(batch.getId());
+        order.setBuyerId(buyerId);
+        order.setSellerId(p.getSellerId());
+        order.setSubtotalAmount(subtotal);
+        order.setShippingFee(shippingFee);
+        order.setTotalAmount(totalBatchWithShipping);
+        order.setRecipientName(recipientName);
+        order.setRecipientPhone(recipientPhone);
+        order.setShippingAddress(shippingAddress);
+        order.setBuyerNote("Mua ngay trực tiếp");
+        order.setStatus(OrderStatus.WAITING_PAYMENT);
+        order.setPaymentStatus(OrderPaymentStatus.PENDING);
+        order = orderRepository.save(order);
+
+        // 3. Tạo Order Item
+        String imageUrl = productImageRepository.findFirstByProductIdOrderByDisplayOrderAsc(p.getId())
+                .map(ProductImage::getImageUrl)
+                .orElse(null);
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrderId(order.getId());
+        orderItem.setProductId(p.getId());
+        orderItem.setProductTitle(p.getTitle());
+        orderItem.setImageUrl(imageUrl);
+        orderItem.setConditionPercent(p.getConditionPercent());
+        orderItem.setUnitPrice(p.getPrice());
+        orderItem.setQuantity(quantity);
+        orderItemRepository.save(orderItem);
+
+        // 4. Trừ kho sản phẩm
+        p.setStockQuantity(p.getStockQuantity() - quantity);
+        productRepository.save(p);
+
+        return checkoutCode;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CheckoutSummaryDTO getCheckoutSummary(String checkoutCode, Long buyerId) {
         CheckoutBatch batch = checkoutBatchRepository.findByCheckoutCode(checkoutCode)
@@ -219,5 +317,27 @@ public class OrderServiceImpl implements IOrderService {
                 .buyerNote(buyerNote)
                 .orders(orderDTOs)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void updateCheckoutAddress(String checkoutCode, Long buyerId, CreateOrderRequest request) {
+        CheckoutBatch batch = checkoutBatchRepository.findByCheckoutCode(checkoutCode)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đợt đặt hàng với mã: " + checkoutCode));
+
+        if (buyerId != null && !batch.getBuyerId().equals(buyerId)) {
+            throw new IllegalStateException("Bạn không có quyền chỉnh sửa đợt đặt hàng này");
+        }
+
+        List<Order> orders = orderRepository.findByCheckoutId(batch.getId());
+        for (Order order : orders) {
+            order.setRecipientName(request.getRecipientName());
+            order.setRecipientPhone(request.getRecipientPhone());
+            order.setShippingAddress(request.getShippingAddress());
+            if (request.getBuyerNote() != null && !request.getBuyerNote().isBlank()) {
+                order.setBuyerNote(request.getBuyerNote());
+            }
+            orderRepository.save(order);
+        }
     }
 }
