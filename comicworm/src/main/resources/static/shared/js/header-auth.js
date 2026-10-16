@@ -260,7 +260,7 @@
 
         const sellerLink = user.isSeller
             ? '<a href="/seller/html/index.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
-            : '<a href="/user/seller-upgrade" class="user-dropdown-item"><i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Nâng cấp Người bán</span></a>';
+            : '';
 
         const adminLink = role === 'ADMIN'
             ? '<a href="/admin/html/dashboard.html" class="user-dropdown-item"><i class="fa-solid fa-shield-halved"></i> <span>Quản trị Admin</span></a>'
@@ -346,12 +346,19 @@
         `;
     };
 
+    // Cập nhật ẩn/hiện nút Đăng bán truyện dựa theo quyền Người bán
+    const updateSellerButtonsVisibility = (isSeller) => {
+        const postButtons = document.querySelectorAll('.btn-post-listing, a[href*="/seller/html/dang-ban-truyen"]');
+        postButtons.forEach(btn => {
+            btn.style.display = isSeller ? '' : 'none';
+        });
+    };
+
     // Khởi tạo
     const initHeaderAuth = async () => {
         injectStyles();
 
         const profileMenus = document.querySelectorAll('.user-profile-menu');
-        if (!profileMenus.length) return;
 
         try {
             const res = await fetch('/api/account/me', {
@@ -363,7 +370,11 @@
             if (res.ok) {
                 const user = await res.json();
                 if (user && user.id && user.email) {
-                    profileMenus.forEach(menu => renderAuthenticatedMenu(menu, user));
+                    const isSeller = Boolean(user.isSeller);
+                    updateSellerButtonsVisibility(isSeller);
+                    if (profileMenus.length) {
+                        profileMenus.forEach(menu => renderAuthenticatedMenu(menu, user));
+                    }
                     return;
                 }
             }
@@ -372,7 +383,10 @@
         }
 
         // Nếu 401 hoặc chưa đăng nhập
-        profileMenus.forEach(menu => renderGuestMenu(menu));
+        updateSellerButtonsVisibility(false);
+        if (profileMenus.length) {
+            profileMenus.forEach(menu => renderGuestMenu(menu));
+        }
     };
 
     if (document.readyState === 'loading') {

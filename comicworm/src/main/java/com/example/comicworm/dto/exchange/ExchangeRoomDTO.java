@@ -1,5 +1,6 @@
 package com.example.comicworm.dto.exchange;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.example.comicworm.model.enums.ExchangeRoomStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,13 +36,19 @@ public class ExchangeRoomDTO {
     private String targetProductVolumeNumbers;
     private String targetProductPublisher;
     private String targetProductAuthor;
+    private String targetProductDescription;
+    private String targetProductCategory;
+    private String targetProductEdition;
+    private Integer targetProductPublicationYear;
 
     private Long selectedOfferId;
     private ExchangeRoomStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime closedAt;
 
+    @Getter(onMethod_ = @JsonProperty("isCurrentUserHost"))
     private boolean isCurrentUserHost;
+    @Getter(onMethod_ = @JsonProperty("isCurrentUserMember"))
     private boolean isCurrentUserMember;
     private Long currentUserId;
 

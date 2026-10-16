@@ -7,6 +7,7 @@ import com.example.comicworm.model.enums.ExchangeRoomStatus;
 import com.example.comicworm.model.enums.ListingType;
 import com.example.comicworm.repository.*;
 import com.example.comicworm.service.exchange.impl.ExchangeRoomServiceImpl;
+import com.example.comicworm.config.websocket.ExchangeChatWebSocketHandler;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +43,8 @@ class ExchangeRoomTests {
     private ProductRepository productRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private ExchangeChatWebSocketHandler webSocketHandler;
 
     @InjectMocks
     private ExchangeRoomServiceImpl exchangeRoomService;
@@ -250,7 +254,7 @@ class ExchangeRoomTests {
         offer.setStatus(ExchangeOfferStatus.PENDING);
         offer.setCashCompensation(BigDecimal.ZERO);
 
-        when(exchangeRoomRepository.findById(1L)).thenReturn(Optional.of(room));
+        when(exchangeRoomRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(room));
         when(exchangeOfferRepository.findByIdAndRoomId(50L, 1L)).thenReturn(Optional.of(offer));
         when(exchangeOfferItemRepository.findByOfferId(50L)).thenReturn(Collections.emptyList());
         when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
@@ -260,7 +264,8 @@ class ExchangeRoomTests {
         assertEquals(ExchangeOfferStatus.ACCEPTED, result.getStatus());
         assertEquals(ExchangeRoomStatus.AGREED, room.getStatus());
         assertEquals(50L, room.getSelectedOfferId());
-        assertTrue(offer.getHostConfirmed());
+        assertFalse(offer.getHostConfirmed());
+        assertFalse(offer.getBuyerConfirmed());
     }
 
     @Test
@@ -270,6 +275,7 @@ class ExchangeRoomTests {
         room.setId(1L);
         room.setHostId(10L);
         room.setStatus(ExchangeRoomStatus.AGREED);
+        room.setSelectedOfferId(50L);
 
         ExchangeOffer offer = new ExchangeOffer();
         offer.setId(50L);
@@ -279,7 +285,7 @@ class ExchangeRoomTests {
         offer.setHostConfirmed(true);
         offer.setBuyerConfirmed(false);
 
-        when(exchangeRoomRepository.findById(1L)).thenReturn(Optional.of(room));
+        when(exchangeRoomRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(room));
         when(exchangeOfferRepository.findByIdAndRoomId(50L, 1L)).thenReturn(Optional.of(offer));
         when(exchangeOfferItemRepository.findByOfferId(50L)).thenReturn(Collections.emptyList());
         when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
@@ -289,6 +295,117 @@ class ExchangeRoomTests {
         assertTrue(result.getBuyerConfirmed());
         assertEquals(ExchangeRoomStatus.COMPLETED, room.getStatus());
         assertNotNull(room.getClosedAt());
+    }
+
+    private ExchangeRoom agreedRoom() {
+        ExchangeRoom room = new ExchangeRoom();
+        room.setId(1L);
+        room.setHostId(10L);
+        room.setStatus(ExchangeRoomStatus.AGREED);
+        room.setSelectedOfferId(50L);
+        when(exchangeRoomRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(room));
+        return room;
+    }
+
+    private ExchangeOffer acceptedOffer() {
+        ExchangeOffer offer = new ExchangeOffer();
+        offer.setId(50L);
+        offer.setRoomId(1L);
+        offer.setBuyerId(20L);
+        offer.setStatus(ExchangeOfferStatus.ACCEPTED);
+        when(exchangeOfferRepository.findByIdAndRoomId(50L, 1L)).thenReturn(Optional.of(offer));
+        return offer;
+    }
+
+    @Test
+    void confirmDeal_requiresEachPartyThenCompletesAndIsIdempotent() {
+        ExchangeRoom room = agreedRoom();
+        ExchangeOffer offer = acceptedOffer();
+        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(host));
+
+        ExchangeOfferDTO first = exchangeRoomService.confirmDeal(1L, 50L, 20L);
+        assertTrue(first.getBuyerConfirmed());
+        assertFalse(first.getHostConfirmed());
+        assertEquals(ExchangeRoomStatus.AGREED, room.getStatus());
+        assertNull(room.getClosedAt());
+
+        ExchangeOfferDTO second = exchangeRoomService.confirmDeal(1L, 50L, 10L);
+        assertTrue(second.getHostConfirmed());
+        assertTrue(second.getBuyerConfirmed());
+        assertEquals(ExchangeRoomStatus.COMPLETED, room.getStatus());
+        var closedAt = room.getClosedAt();
+
+        exchangeRoomService.confirmDeal(1L, 50L, 10L);
+        assertEquals(closedAt, room.getClosedAt());
+        verify(exchangeMessageRepository, times(2)).save(any(ExchangeMessage.class));
+        verify(exchangeOfferRepository, times(2)).save(offer);
+        verify(exchangeRoomRepository, times(3)).findByIdForUpdate(1L);
+    }
+
+    @Test
+    void confirmDeal_rejectsPendingOffer() {
+        ExchangeRoom room = agreedRoom();
+        room.setStatus(ExchangeRoomStatus.OPEN);
+        ExchangeOffer offer = acceptedOffer();
+        offer.setStatus(ExchangeOfferStatus.PENDING);
+        assertThrows(ResponseStatusException.class, () -> exchangeRoomService.confirmDeal(1L, 50L, 20L));
+        assertFalse(offer.getBuyerConfirmed());
+        verify(exchangeOfferRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmDeal_rejectsUnselectedOffer() {
+        ExchangeRoom room = agreedRoom();
+        room.setSelectedOfferId(99L);
+        ExchangeOffer offer = acceptedOffer();
+        assertThrows(ResponseStatusException.class, () -> exchangeRoomService.confirmDeal(1L, 50L, 20L));
+        assertFalse(offer.getBuyerConfirmed());
+    }
+
+    @Test
+    void confirmDeal_rejectsCancelledRoom() {
+        ExchangeRoom room = agreedRoom();
+        room.setStatus(ExchangeRoomStatus.CANCELLED);
+        ExchangeOffer offer = acceptedOffer();
+        assertThrows(ResponseStatusException.class, () -> exchangeRoomService.confirmDeal(1L, 50L, 10L));
+        assertFalse(offer.getHostConfirmed());
+        assertEquals(ExchangeRoomStatus.CANCELLED, room.getStatus());
+    }
+
+    @Test
+    void confirmDeal_rejectsOtherRoomMember() {
+        agreedRoom();
+        acceptedOffer();
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> exchangeRoomService.confirmDeal(1L, 50L, 30L));
+        assertEquals(org.springframework.http.HttpStatus.FORBIDDEN, ex.getStatusCode());
+        verify(exchangeOfferRepository, never()).save(any());
+    }
+
+    @Test
+    void respondToOffer_cannotChooseAnotherOfferAfterAgreement() {
+        agreedRoom();
+        assertThrows(ResponseStatusException.class, () -> exchangeRoomService.respondToOffer(1L, 99L, 10L, true));
+        verify(exchangeOfferRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmDeal_broadcastsOnlyAfterTransactionCommits() {
+        org.springframework.test.util.ReflectionTestUtils.setField(exchangeRoomService, "webSocketHandler", webSocketHandler);
+        agreedRoom();
+        acceptedOffer();
+        when(userRepository.findById(20L)).thenReturn(Optional.of(buyer));
+        TransactionSynchronizationManager.initSynchronization();
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+        try {
+            exchangeRoomService.confirmDeal(1L, 50L, 20L);
+            verifyNoInteractions(webSocketHandler);
+            TransactionSynchronizationManager.getSynchronizations().forEach(sync -> sync.afterCommit());
+            verify(webSocketHandler).broadcast(eq(1L), any());
+        } finally {
+            TransactionSynchronizationManager.clear();
+        }
     }
 
     @Test

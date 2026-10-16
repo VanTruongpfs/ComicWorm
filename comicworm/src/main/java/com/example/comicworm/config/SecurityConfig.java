@@ -98,14 +98,7 @@ public class SecurityConfig {
                             }
                         })
                         .accessDeniedHandler((request, response, error) -> {
-                            String path = request.getRequestURI().substring(request.getContextPath().length());
-                            if (error instanceof CsrfException && path.equals("/user/seller-upgrade")) {
-                                response.sendRedirect(request.getContextPath() + "/user/seller-upgrade?csrfExpired=true");
-                            } else if (path.startsWith("/seller/html/")) {
-                                response.sendRedirect(request.getContextPath() + "/user/seller-upgrade");
-                            } else {
-                                response.sendError(HttpStatus.FORBIDDEN.value());
-                            }
+                            response.sendError(HttpStatus.FORBIDDEN.value(), "Tài khoản của bạn không có quyền truy cập Kênh Người bán.");
                         })
                 )
                  .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

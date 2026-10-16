@@ -56,23 +56,28 @@ public class PaymentServiceImpl implements IPaymentService {
             throw new IllegalStateException("Đợt thanh toán không có đơn hàng nào");
         }
 
-        boolean allPaid = orders.stream().allMatch(o -> o.getPaymentStatus() == OrderPaymentStatus.PAID);
-        if (allPaid) {
+        boolean alreadyProcessed = orders.stream().allMatch(o -> o.getStatus() != OrderStatus.WAITING_PAYMENT);
+        if (alreadyProcessed) {
             Map<String, Object> res = new HashMap<>();
             res.put("success", true);
-            res.put("message", "Đợt hàng này đã được xác nhận thanh toán trước đó");
+            res.put("message", "Đợt hàng này đã được xác nhận đặt hàng trước đó");
             res.put("checkoutCode", checkoutCode);
             return res;
         }
 
+        com.example.comicworm.model.enums.PaymentMethod method = (request != null && request.getMethod() != null)
+                ? request.getMethod()
+                : com.example.comicworm.model.enums.PaymentMethod.VIETQR;
+        boolean isCod = (method == com.example.comicworm.model.enums.PaymentMethod.COD);
+
         Payment payment = new Payment();
         payment.setCheckoutId(batch.getId());
         payment.setPaymentCode("PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        payment.setMethod(request != null && request.getMethod() != null ? request.getMethod() : com.example.comicworm.model.enums.PaymentMethod.VIETQR);
-        payment.setStatus(PaymentStatus.SUCCEEDED);
+        payment.setMethod(method);
+        payment.setStatus(isCod ? PaymentStatus.PENDING : PaymentStatus.SUCCEEDED);
         payment.setAmount(batch.getTotalAmount());
         payment.setIdempotencyKey(UUID.randomUUID().toString());
-        payment.setPaidAt(LocalDateTime.now());
+        payment.setPaidAt(isCod ? null : LocalDateTime.now());
         Payment savedPayment = paymentRepository.save(payment);
 
         for (Order order : orders) {
@@ -83,15 +88,16 @@ public class PaymentServiceImpl implements IPaymentService {
             paymentAllocationRepository.save(allocation);
 
             order.setStatus(OrderStatus.WAITING_CONFIRM);
-            order.setPaymentStatus(OrderPaymentStatus.PAID);
+            order.setPaymentStatus(isCod ? OrderPaymentStatus.PENDING : OrderPaymentStatus.PAID);
             orderRepository.save(order);
         }
 
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
-        res.put("message", "Thanh toán thành công");
+        res.put("message", isCod ? "Đặt hàng COD thành công! Vui lòng thanh toán tiền mặt khi nhận hàng." : "Thanh toán thành công");
         res.put("paymentCode", savedPayment.getPaymentCode());
         res.put("checkoutCode", checkoutCode);
+        res.put("paymentMethod", method.name());
         return res;
     }
 }

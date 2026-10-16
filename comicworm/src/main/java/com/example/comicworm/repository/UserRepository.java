@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select u from User u where u.id = :id and u.deletedAt is null")
+    Optional<User> lockById(@org.springframework.data.repository.query.Param("id") Long id);
     // Tìm user theo email và đảm bảo chưa bị xóa mềm (deletedAt IS NULL)
     Optional<User> findByEmailAndDeletedAtIsNull(String email);
 

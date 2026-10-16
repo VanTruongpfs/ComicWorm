@@ -74,7 +74,20 @@
             const buy = e.target.closest('[data-buy]');
             if (buy && p) {
                 e.stopPropagation();
-                A.addToLocalCart(p);
+                buy.disabled = true;
+                A.toast('Đang khởi tạo đơn hàng...', 'primary', 'fa-spinner fa-spin');
+                A.buyNow(p).then(checkoutCode => {
+                    if (checkoutCode) {
+                        A.toast('Đang chuyển đến trang thanh toán...', 'success', 'fa-circle-check');
+                        setTimeout(() => {
+                            window.location.href = 'payment.html?checkoutCode=' + encodeURIComponent(checkoutCode);
+                        }, 400);
+                    } else {
+                        buy.disabled = false;
+                    }
+                }).catch(() => {
+                    buy.disabled = false;
+                });
                 return;
             }
 

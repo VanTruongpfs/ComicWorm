@@ -4,5 +4,6 @@ public enum PaymentMethod {
     VNPAY,
     MOMO,
     VIETQR,
-    CREDIT_CARD
+    CREDIT_CARD,
+    COD
 }

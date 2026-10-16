@@ -19,6 +19,7 @@ public interface IExchangeRoomService {
     void joinRoom(Long roomId, Long currentUserId);
 
     ExchangeOfferDTO proposeOffer(Long roomId, Long buyerId, CreateExchangeOfferRequest req);
+    ExchangeOfferDTO updateOffer(Long roomId, Long offerId, Long buyerId, CreateExchangeOfferRequest req);
 
     ExchangeOfferDTO respondToOffer(Long roomId, Long offerId, Long hostId, boolean accept);
 

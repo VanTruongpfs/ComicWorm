@@ -47,6 +47,41 @@ public class CartController {
         return ResponseEntity.ok(Map.of("message", "Thêm vào giỏ hàng thành công"));
     }
 
+    @GetMapping("/add")
+    public ResponseEntity<?> addToCartViaGet(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false, defaultValue = "1") Integer quantity) {
+        if (userDetails == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"));
+        }
+        if (productId == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu tham số productId"));
+        }
+        AddToCartRequest request = new AddToCartRequest();
+        request.setProductId(productId);
+        request.setQuantity(quantity != null && quantity > 0 ? quantity : 1);
+        cartService.addToCart(userDetails.getId(), request);
+        return ResponseEntity.ok(Map.of("message", "Thêm vào giỏ hàng thành công"));
+    }
+
+    @PostMapping("/buy-now")
+    public ResponseEntity<?> buyNow(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody AddToCartRequest request) {
+        if (userDetails == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Vui lòng đăng nhập để mua hàng"));
+        }
+        String checkoutCode = orderService.createDirectOrder(userDetails.getId(), request.getProductId(), request.getQuantity());
+        return ResponseEntity.ok(Map.of(
+                "message", "Khởi tạo đơn mua ngay thành công",
+                "checkoutCode", checkoutCode,
+                "redirectUrl", "/buyer/html/payment.html?checkoutCode=" + checkoutCode
+        ));
+    }
+
     @PutMapping("/items/{itemId}")
     public ResponseEntity<?> updateItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
