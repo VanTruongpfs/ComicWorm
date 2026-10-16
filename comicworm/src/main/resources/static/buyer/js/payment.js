@@ -272,6 +272,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'none';
             }
 
+            // Cập nhật button text tương ứng phương thức
+            if (btnSubmitCheckout) {
+                if (isVNPAY) {
+                    btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-lock"></i> Xác Nhận Thanh Toán & Ký Quỹ <i class="fa-solid fa-arrow-right"></i>';
+                } else {
+                    btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-truck-fast"></i> Xác Nhận Đặt Hàng COD (Đồng Kiểm) <i class="fa-solid fa-arrow-right"></i>';
+                }
+            }
+
             // Thông báo
             showToast(
                 isVNPAY
@@ -309,90 +318,147 @@ document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
     // 5. THAY ĐỔI ĐỊA CHỈ NHẬN HÀNG SƯU TẦM (MODAL POPUP)
     // --------------------------------------------------------------------------
-    const btnChangeAddress = document.querySelector('.btn-change-address, button.text-\\[\\#F97316\\]');
+    // 5. THAY ĐỔI ĐỊA CHỈ NHẬN HÀNG SƯU TẦM (MODAL CHỌN ĐỊA CHỈ TỪ SỔ ĐỊA CHỈ)
+    // --------------------------------------------------------------------------
+    const btnChangeAddress = document.querySelector('.btn-change-address, .btn-text-action, button.text-\\[\\#F97316\\]');
 
     if (btnChangeAddress) {
-        btnChangeAddress.addEventListener('click', () => {
+        btnChangeAddress.addEventListener('click', async () => {
             const recipientNameEl = document.querySelector('.recipient-name, .address-card strong');
             const recipientPhoneEl = document.querySelector('.recipient-phone, .address-card span.text-slate-500');
             const recipientAddressEl = document.querySelector('.recipient-address, .address-card div.text-sm');
             const deliveryNoteEl = document.querySelector('.collector-delivery-note span, .address-card .note-text');
+            const badgeDefaultEl = document.querySelector('.badge-address-default');
 
-            const curName = recipientNameEl?.textContent.trim() || 'Nguyễn An Vinh';
-            const curPhone = recipientPhoneEl?.textContent.trim() || '0988.123.456';
-            const curAddr = recipientAddressEl?.textContent.trim() || '124 Hoàng Hoa Thám, Phường Liễu Giai, Quận Ba Đình, Hà Nội';
+            const curName = recipientNameEl?.textContent.trim() || '';
+            const curPhone = recipientPhoneEl?.textContent.trim() || '';
+            const curAddr = recipientAddressEl?.textContent.trim() || '';
             const curNote = deliveryNoteEl?.textContent.replace('Ghi chú lưu kho: ', '').replace(/["']/g, '').trim() || 'Hàng truyện tranh sưu tầm dễ móp gáy, vui lòng nhẹ tay.';
+
+            let savedAddresses = [];
+            try {
+                const res = await fetch('/api/user/addresses');
+                if (res.ok) {
+                    savedAddresses = await res.json();
+                }
+            } catch (e) {
+                console.warn('Lỗi tải danh sách địa chỉ:', e);
+            }
+
+            const formatAddr = a => [a.addressDetail, a.ward, a.district, a.province].filter(Boolean).join(', ');
+
+            // Tìm địa chỉ đang hiển thị xem có khớp địa chỉ đã lưu nào không
+            let activeAddressId = null;
+            if (savedAddresses.length > 0) {
+                const matched = savedAddresses.find(a => formatAddr(a) === curAddr || a.phone === curPhone);
+                if (matched) {
+                    activeAddressId = matched.id;
+                } else {
+                    const def = savedAddresses.find(a => a.isDefault);
+                    activeAddressId = def ? def.id : savedAddresses[0].id;
+                }
+            }
 
             const modalBackdrop = document.createElement('div');
             modalBackdrop.id = 'address-edit-modal';
             modalBackdrop.style.cssText = `
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(4px);
-        z-index: 99999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        opacity: 0;
-        transition: opacity 0.25s ease;
-      `;
+                position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65);
+                backdrop-filter: blur(4px); z-index: 99999; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+                opacity: 0; transition: opacity 0.25s ease;
+            `;
+
+            let addressesListHtml = '';
+            if (savedAddresses.length > 0) {
+                addressesListHtml = `
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 12px; font-weight: 700; color: #475569;">DANH SÁCH ĐỊA CHỈ ĐÃ LƯU</span>
+                            <a href="../../user/html/manage_address.html" target="_blank" style="font-size: 11px; font-weight: 700; color: #f97316; text-decoration: none;">
+                                + Quản lý địa chỉ
+                            </a>
+                        </div>
+                        <div class="saved-addresses-picker" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+                            ${savedAddresses.map(a => {
+                                const full = formatAddr(a);
+                                const isChecked = a.id === activeAddressId;
+                                return `
+                                    <label style="display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1.5px solid ${isChecked ? '#f97316' : '#e2e8f0'}; background: ${isChecked ? '#fffaf5' : '#ffffff'}; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                                        <input type="radio" name="modal_addr_choice" value="${a.id}" ${isChecked ? 'checked' : ''} style="margin-top: 3px; accent-color: #f97316;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                                <strong style="font-size: 13px; color: #0f172a;">${a.recipientName}</strong>
+                                                <span style="font-size: 12px; color: #64748b;">${a.phone}</span>
+                                                ${a.isDefault ? '<span style="font-size: 10px; font-weight: 800; background: #ffedd5; color: #ea580c; padding: 1px 6px; border-radius: 999px;">Mặc định</span>' : ''}
+                                            </div>
+                                            <p style="margin: 3px 0 0; font-size: 12px; color: #475569; line-height: 1.4;">${full}</p>
+                                        </div>
+                                    </label>
+                                `;
+                            }).join('')}
+                            <label style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1.5px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; cursor: pointer;">
+                                <input type="radio" name="modal_addr_choice" value="custom" style="accent-color: #f97316;">
+                                <span style="font-size: 12px; font-weight: 700; color: #64748b;">+ Nhập địa chỉ người nhận khác</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else {
+                addressesListHtml = `
+                    <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #9a3412; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fa-solid fa-circle-info"></i> Bạn chưa có địa chỉ lưu sẵn trong tài khoản.</span>
+                        <a href="../../user/html/manage_address.html" target="_blank" style="color: #f97316; font-weight: 700; text-decoration: underline;">Thêm vào sổ</a>
+                    </div>
+                `;
+            }
 
             modalBackdrop.innerHTML = `
-        <div style="
-          background: #ffffff;
-          border-radius: 20px;
-          padding: 28px;
-          max-width: 500px;
-          width: 100%;
-          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
-          transform: translateY(20px);
-          transition: transform 0.25s ease;
-          font-family: inherit;
-        ">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: #ffedd5; color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                <i class="fa-solid fa-location-dot"></i>
-              </div>
-              <div>
-                <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">Địa Chỉ Nhận Hàng Sưu Tầm</h3>
-                <span style="font-size: 11px; color: #64748b;">Đảm bảo shipper giao tận tay an toàn</span>
-              </div>
-            </div>
-            <button class="btn-close-modal" style="border: none; background: transparent; font-size: 20px; color: #94a3b8; cursor: pointer;">&times;</button>
-          </div>
+                <div style="background: #ffffff; border-radius: 20px; padding: 24px; max-width: 520px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.25s ease; font-family: inherit;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: #ffedd5; color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">Địa Chỉ Nhận Hàng Sưu Tầm</h3>
+                                <span style="font-size: 11px; color: #64748b;">Chọn từ sổ địa chỉ đã lưu hoặc nhập mới</span>
+                            </div>
+                        </div>
+                        <button class="btn-close-modal" style="border: none; background: transparent; font-size: 20px; color: #94a3b8; cursor: pointer;">&times;</button>
+                    </div>
 
-          <form id="form-update-address" style="display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">HỌ VÀ TÊN</label>
-                <input type="text" id="input-name" value="${curName}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
-              </div>
-              <div>
-                <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">SỐ ĐIỆN THOẠI</label>
-                <input type="tel" id="input-phone" value="${curPhone}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
-              </div>
-            </div>
+                    <form id="form-update-address" style="display: flex; flex-direction: column; gap: 12px;">
+                        ${addressesListHtml}
 
-            <div>
-              <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">ĐỊA CHỈ GIAO HÀNG CHI TIẾT</label>
-              <textarea id="input-addr" rows="2" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; resize: none; font-family: inherit;">${curAddr}</textarea>
-            </div>
+                        <div id="custom-address-inputs" style="${savedAddresses.length > 0 ? 'display: none;' : 'display: block;'}">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">HỌ VÀ TÊN</label>
+                                    <input type="text" id="input-name" value="${curName}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">SỐ ĐIỆN THOẠI</label>
+                                    <input type="tel" id="input-phone" value="${curPhone}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">ĐỊA CHỈ GIAO HÀNG CHI TIẾT</label>
+                                <textarea id="input-addr" rows="2" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; resize: none; font-family: inherit;">${curAddr}</textarea>
+                            </div>
+                        </div>
 
-            <div>
-              <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">LƯU Ý ĐÓNG GÓI & SHIPPER</label>
-              <input type="text" id="input-note" value="${curNote}" placeholder="Ví dụ: Gọi trước khi giao, kẹp carton cẩn thận..." style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 12px; outline: none;">
-            </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">LƯU Ý ĐÓNG GÓI & SHIPPER</label>
+                            <input type="text" id="input-note" value="${curNote}" placeholder="Ví dụ: Gọi trước khi giao, kẹp carton cẩn thận..." style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 12px; outline: none;">
+                        </div>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px;">
-              <button type="button" class="btn-cancel" style="padding: 9px 18px; border-radius: 9999px; border: 1px solid #e2e8f0; background: #ffffff; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Hủy bỏ</button>
-              <button type="submit" style="padding: 9px 22px; border-radius: 9999px; border: none; background: #f97316; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);">Lưu Địa Chỉ Mới</button>
-            </div>
-          </form>
-        </div>
-      `;
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                            <button type="button" class="btn-cancel" style="padding: 9px 18px; border-radius: 9999px; border: 1px solid #e2e8f0; background: #ffffff; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Hủy bỏ</button>
+                            <button type="submit" id="btn-save-chosen-address" style="padding: 9px 22px; border-radius: 9999px; border: none; background: #f97316; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);">Xác Nhận Địa Chỉ</button>
+                        </div>
+                    </form>
+                </div>
+            `;
 
             document.body.appendChild(modalBackdrop);
 
@@ -413,23 +479,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target === modalBackdrop) closeModal();
             });
 
-            modalBackdrop.querySelector('#form-update-address').addEventListener('submit', (e) => {
+            const customInputsDiv = modalBackdrop.querySelector('#custom-address-inputs');
+            modalBackdrop.querySelectorAll('input[name="modal_addr_choice"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'custom') {
+                        customInputsDiv.style.display = 'block';
+                    } else {
+                        customInputsDiv.style.display = 'none';
+                    }
+                });
+            });
+
+            modalBackdrop.querySelector('#form-update-address').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const newName = modalBackdrop.querySelector('#input-name').value.trim();
-                const newPhone = modalBackdrop.querySelector('#input-phone').value.trim();
-                const newAddr = modalBackdrop.querySelector('#input-addr').value.trim();
+                const selectedRadio = modalBackdrop.querySelector('input[name="modal_addr_choice"]:checked');
+                const choice = selectedRadio ? selectedRadio.value : (savedAddresses.length > 0 ? String(savedAddresses[0].id) : 'custom');
+
+                let finalName = '';
+                let finalPhone = '';
+                let finalAddr = '';
+                let isDef = false;
                 const newNote = modalBackdrop.querySelector('#input-note').value.trim();
 
-                if (!newName || !newPhone || !newAddr) {
-                    showToast('Vui lòng điền đủ Tên, SĐT và Địa chỉ nhận hàng!', 'warning', 'fa-triangle-exclamation');
+                if (choice !== 'custom') {
+                    const picked = savedAddresses.find(a => String(a.id) === String(choice));
+                    if (picked) {
+                        finalName = picked.recipientName;
+                        finalPhone = picked.phone;
+                        finalAddr = formatAddr(picked);
+                        isDef = picked.isDefault;
+                    }
+                } else {
+                    finalName = modalBackdrop.querySelector('#input-name').value.trim();
+                    finalPhone = modalBackdrop.querySelector('#input-phone').value.trim();
+                    finalAddr = modalBackdrop.querySelector('#input-addr').value.trim();
+                }
+
+                if (!finalName || !finalPhone || !finalAddr) {
+                    showToast('Vui lòng chọn hoặc điền đủ Tên, SĐT và Địa chỉ nhận hàng!', 'warning', 'fa-triangle-exclamation');
                     return;
                 }
 
-                if (recipientNameEl) recipientNameEl.textContent = newName;
-                if (recipientPhoneEl) recipientPhoneEl.textContent = newPhone;
-                if (recipientAddressEl) recipientAddressEl.textContent = newAddr;
+                if (recipientNameEl) recipientNameEl.textContent = finalName;
+                if (recipientPhoneEl) recipientPhoneEl.textContent = finalPhone;
+                if (recipientAddressEl) recipientAddressEl.textContent = finalAddr;
+                if (badgeDefaultEl) badgeDefaultEl.style.display = isDef ? 'inline-block' : 'none';
                 if (deliveryNoteEl) {
-                    deliveryNoteEl.textContent = `Ghi chú lưu kho: "${newNote || 'Hàng truyện tranh sưu tầm dễ móp gáy, vui lòng nhẹ tay.'}"`;
+                    deliveryNoteEl.innerHTML = `<strong>Ghi chú lưu kho:</strong> "${newNote || 'Hàng truyện tranh sưu tầm dễ móp gáy, vui lòng nhẹ tay.'}"`;
+                }
+
+                // Đồng bộ địa chỉ vào backend nếu đang ở trong đợt checkout
+                if (currentCheckoutCode) {
+                    try {
+                        await fetch(`/api/checkout/${currentCheckoutCode}/address`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                recipientName: finalName,
+                                recipientPhone: finalPhone,
+                                shippingAddress: finalAddr,
+                                buyerNote: newNote
+                            })
+                        });
+                    } catch (err) {
+                        console.error('Lỗi cập nhật địa chỉ đợt checkout:', err);
+                    }
                 }
 
                 closeModal();
@@ -562,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
     const btnSubmitCheckout = document.querySelector('.btn-submit-checkout, button.btn-confirm-order');
 
-    const showOrderSuccessModal = () => {
+    const showOrderSuccessModal = (isCod = false) => {
         const successBackdrop = document.createElement('div');
         successBackdrop.id = 'order-success-modal';
         successBackdrop.style.cssText = `
@@ -578,6 +692,19 @@ document.addEventListener('DOMContentLoaded', () => {
       opacity: 0;
       transition: opacity 0.3s ease;
     `;
+
+        const titleText = isCod ? 'Đặt Hàng COD Thành Công!' : 'Đặt Hàng & Ký Quỹ Thành Công!';
+        const descText = isCod
+            ? `Mã đơn hàng: <strong style="color: #f97316; font-size: 15px;">#${orderState.orderCode}</strong><br>Đơn hàng đã được gửi tới người bán để đóng gói. Bạn sẽ thanh toán tiền mặt khi nhận hàng.`
+            : `Mã đơn hàng: <strong style="color: #f97316; font-size: 15px;">#${orderState.orderCode}</strong><br>Tiền thanh toán đã được khoá an toàn tại <strong>ComicHub Escrow Vault</strong>.`;
+
+        const badgeText = isCod
+            ? 'Đồng kiểm & Thanh toán khi nhận hàng (COD)'
+            : 'Bảo hiểm đồng kiểm 48 giờ kích hoạt';
+
+        const noteContent = isCod
+            ? 'Bưu tá sẽ giao hàng tận nơi. Bạn được kiểm tra bìa, gáy sách đúng như mô tả trước khi thanh toán tiền mặt cho shipper.'
+            : 'Khi nhận truyện, bạn có 48 giờ để mở hộp đồng kiểm góc sách, gáy truyện. Nếu không đúng tình trạng đã cam kết, ComicHub sẽ hoàn lại 100% tiền mặt ngay lập tức.';
 
         successBackdrop.innerHTML = `
       <div style="
@@ -597,19 +724,18 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <h2 style="font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
-          Đặt Hàng & Ký Quỹ Thành Công!
+          ${titleText}
         </h2>
         <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 20px;">
-          Mã đơn hàng: <strong style="color: #f97316; font-size: 15px;">#${orderState.orderCode}</strong>
-          <br>Tiền thanh toán đã được khoá an toàn tại <strong>ComicHub Escrow Vault</strong>.
+          ${descText}
         </p>
 
         <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 16px; text-align: left; font-size: 12px; line-height: 1.6; margin-bottom: 24px;">
           <div style="display: flex; align-items: center; gap: 8px; color: #16a34a; font-weight: 700; margin-bottom: 6px;">
-            <i class="fa-solid fa-circle-check"></i> Bảo hiểm đồng kiểm 48 giờ kích hoạt
+            <i class="fa-solid fa-circle-check"></i> ${badgeText}
           </div>
           <p style="color: #475569; margin: 0;">
-            Khi nhận truyện, bạn có 48 giờ để mở hộp đồng kiểm góc sách, gáy truyện. Nếu không đúng tình trạng đã cam kết, ComicHub sẽ hoàn lại 100% tiền mặt ngay lập tức.
+            ${noteContent}
           </p>
         </div>
 
@@ -661,13 +787,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Cập nhật người nhận & địa chỉ
             const nameEl = document.querySelector('.recipient-name');
-            if (nameEl && data.recipientName) nameEl.textContent = data.recipientName;
-
             const phoneEl = document.querySelector('.recipient-phone');
-            if (phoneEl && data.recipientPhone) phoneEl.textContent = data.recipientPhone;
-
             const addrEl = document.querySelector('.recipient-address');
-            if (addrEl && data.shippingAddress) addrEl.textContent = data.shippingAddress;
+            const badgeDefaultEl = document.querySelector('.badge-address-default');
+
+            if (data.recipientName && data.shippingAddress) {
+                if (nameEl) nameEl.textContent = data.recipientName;
+                if (phoneEl) phoneEl.textContent = data.recipientPhone;
+                if (addrEl) addrEl.textContent = data.shippingAddress;
+                if (badgeDefaultEl) badgeDefaultEl.style.display = 'none';
+            } else {
+                await loadInitialAddress();
+            }
 
             const noteEl = document.querySelector('.collector-delivery-note span');
             if (noteEl && data.buyerNote) {
@@ -768,21 +899,25 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const originalText = btnSubmitCheckout.innerHTML;
 
-            btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý thanh toán & ký quỹ...';
+            let selectedMethod = 'VIETQR';
+            const activeRadio = document.querySelector('input[name="payment_method"]:checked, input[name="payment_gateway"]:checked');
+            if (activeRadio) {
+                const val = activeRadio.value.toUpperCase();
+                if (val.includes('MOMO')) selectedMethod = 'MOMO';
+                else if (val.includes('VNPAY')) selectedMethod = 'VNPAY';
+                else if (val.includes('CARD') || val.includes('VISA')) selectedMethod = 'CREDIT_CARD';
+                else if (val.includes('COD')) selectedMethod = 'COD';
+            }
+            const isCod = (selectedMethod === 'COD');
+
+            btnSubmitCheckout.innerHTML = isCod
+                ? '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xác nhận đặt hàng COD...'
+                : '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý thanh toán & ký quỹ...';
             btnSubmitCheckout.disabled = true;
             btnSubmitCheckout.style.opacity = '0.8';
 
             if (currentCheckoutCode) {
                 try {
-                    let selectedMethod = 'VIETQR';
-                    const activeRadio = document.querySelector('input[name="payment_method"]:checked, input[name="payment_gateway"]:checked');
-                    if (activeRadio) {
-                        const val = activeRadio.value.toUpperCase();
-                        if (val.includes('MOMO')) selectedMethod = 'MOMO';
-                        else if (val.includes('VNPAY')) selectedMethod = 'VNPAY';
-                        else if (val.includes('CARD') || val.includes('VISA')) selectedMethod = 'CREDIT_CARD';
-                    }
-
                     const res = await fetch(`/api/checkout/${currentCheckoutCode}/pay`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -805,9 +940,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (res.ok) {
                         orderState.orderCode = data.checkoutCode || currentCheckoutCode;
-                        showOrderSuccessModal();
+                        showOrderSuccessModal(isCod);
                     } else {
-                        showToast(data.message || 'Thanh toán thất bại', 'danger', 'fa-triangle-exclamation');
+                        showToast(data.message || 'Đặt hàng thất bại', 'danger', 'fa-triangle-exclamation');
                     }
                 } catch (err) {
                     btnSubmitCheckout.innerHTML = originalText;
@@ -820,16 +955,57 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnSubmitCheckout.innerHTML = originalText;
                     btnSubmitCheckout.disabled = false;
                     btnSubmitCheckout.style.opacity = '1';
-                    showOrderSuccessModal();
+                    showOrderSuccessModal(isCod);
                 }, 1000);
             }
         });
     }
 
     // --------------------------------------------------------------------------
+    // 8.1 TỰ ĐỘNG TẢI ĐỊA CHỈ MẶC ĐỊNH NẾU CHƯA CÓ TRONG ĐỢT CHECKOUT
+    // --------------------------------------------------------------------------
+    const loadInitialAddress = async () => {
+        const nameEl = document.querySelector('.recipient-name');
+        const phoneEl = document.querySelector('.recipient-phone');
+        const addrEl = document.querySelector('.recipient-address');
+        const badgeDefaultEl = document.querySelector('.badge-address-default');
+
+        try {
+            const res = await fetch('/api/user/addresses');
+            if (res.ok) {
+                const addresses = await res.json();
+                if (addresses && addresses.length > 0) {
+                    const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+                    if (defaultAddr) {
+                        const fullAddr = [defaultAddr.addressDetail, defaultAddr.ward, defaultAddr.district, defaultAddr.province].filter(Boolean).join(', ');
+                        if (nameEl && (!nameEl.textContent || nameEl.textContent.includes('Đang tải') || nameEl.textContent.includes('Nguyễn An Vinh'))) {
+                            nameEl.textContent = defaultAddr.recipientName;
+                        }
+                        if (phoneEl && (!phoneEl.textContent || phoneEl.textContent === '---' || phoneEl.textContent.includes('0988.123.456'))) {
+                            phoneEl.textContent = defaultAddr.phone;
+                        }
+                        if (addrEl && (!addrEl.textContent || addrEl.textContent.includes('Đang tải') || addrEl.textContent.includes('124 Hoàng Hoa Thám'))) {
+                            addrEl.textContent = fullAddr;
+                        }
+                        if (badgeDefaultEl) {
+                            badgeDefaultEl.style.display = defaultAddr.isDefault ? 'inline-block' : 'none';
+                        }
+                    }
+                } else {
+                    if (nameEl && nameEl.textContent.includes('Đang tải')) nameEl.textContent = 'Chưa có thông tin';
+                    if (addrEl && addrEl.textContent.includes('Đang tải')) addrEl.textContent = 'Bạn chưa lưu địa chỉ. Bấm "Thay đổi địa chỉ" để chọn hoặc thêm.';
+                }
+            }
+        } catch (e) {
+            console.warn('Lỗi tải địa chỉ mặc định:', e);
+        }
+    };
+
+    // --------------------------------------------------------------------------
     // 9. KHỞI ĐỘNG TOÀN BỘ LOGIC CHECKOUT
     // --------------------------------------------------------------------------
     recalculateOrder();
     loadCheckoutFromDB();
+    loadInitialAddress();
     console.log('ComicWorm Checkout script loaded and connected to DB API.');
 });

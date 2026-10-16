@@ -15,6 +15,9 @@ import java.util.Optional;
 
 import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Product p where p.id = :id")
+    Optional<Product> lockForExchange(@Param("id") Long id);
     Optional<Product> findByIdAndSellerIdAndDeletedAtIsNull(Long id, Long sellerId);
 
 

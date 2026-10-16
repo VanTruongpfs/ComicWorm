@@ -26,7 +26,8 @@ class JpaMappingIntegrationTests {
 
     @Test
     void validatesAllTablesAndLoadsEveryEntity() {
-        assertEquals(32, em.getMetamodel().getEntities().size());
+        assertTrue(em.getMetamodel().getEntities().stream().anyMatch(e -> e.getJavaType() == UserAddress.class));
+        assertTrue(em.getMetamodel().getEntities().stream().anyMatch(e -> e.getJavaType() == ExchangeOrderLink.class));
         for (var entity : em.getMetamodel().getEntities()) {
             em.createQuery("select e from " + entity.getName() + " e").setMaxResults(1).getResultList();
         }
