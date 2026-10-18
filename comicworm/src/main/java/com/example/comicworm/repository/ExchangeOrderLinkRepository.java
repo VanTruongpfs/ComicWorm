@@ -8,4 +8,5 @@ public interface ExchangeOrderLinkRepository extends JpaRepository<ExchangeOrder
     List<ExchangeOrderLink> findByRoomIdOrderByIdAsc(Long roomId);
     Optional<ExchangeOrderLink> findByRoomIdAndRecipientId(Long roomId, Long recipientId);
     Optional<ExchangeOrderLink> findByOrderId(Long orderId);
+    boolean existsByOrderId(Long orderId);
 }
