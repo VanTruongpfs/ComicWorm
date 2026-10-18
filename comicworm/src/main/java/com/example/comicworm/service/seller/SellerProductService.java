@@ -182,21 +182,25 @@ public class SellerProductService {
     private void validateRequest(SellerProductRequest request) {
         if (request == null) throw badRequest("Dữ liệu yêu cầu không được rỗng.");
         if (request.title() == null || request.title().isBlank()) throw badRequest("Tên sản phẩm không được để trống.");
-        if (request.categoryId() == null) throw badRequest("Vui lòng chọn thể loại.");
+        if ((request.categoryId() == null) && (request.categoryName() == null || request.categoryName().isBlank())) throw badRequest("Vui lòng chọn hoặc nhập thể loại.");
+        if ((request.publisherId() == null) && (request.publisherName() == null || request.publisherName().isBlank())) throw badRequest("Vui lòng chọn hoặc nhập nhà xuất bản.");
     }
 
     private void validateReferences(SellerProductRequest request) {
-        if (!categories.existsById(request.categoryId())) throw badRequest("Thể loại đã chọn không tồn tại.");
+        if (request.categoryId() != null && !categories.existsById(request.categoryId())) throw badRequest("Thể loại đã chọn không tồn tại.");
+        if (request.categoryName() != null && request.categoryName().trim().length() > 100) throw badRequest("Tên thể loại tối đa 100 ký tự.");
         if (request.authorId() != null && !authors.existsById(request.authorId())) throw badRequest("Tác giả đã chọn không tồn tại.");
+        if (request.authorName() != null && request.authorName().trim().length() > 150) throw badRequest("Tên tác giả tối đa 150 ký tự.");
         if (request.publisherId() != null && !publishers.existsById(request.publisherId())) throw badRequest("Nhà xuất bản đã chọn không tồn tại.");
+        if (request.publisherName() != null && request.publisherName().trim().length() > 150) throw badRequest("Tên nhà xuất bản tối đa 150 ký tự.");
     }
 
     private void apply(Product product, SellerProductRequest request) {
         product.setTitle(request.title().trim());
         product.setDescription(request.description() != null ? request.description().trim() : "");
-        product.setCategoryId(request.categoryId());
-        product.setAuthorId(request.authorId());
-        product.setPublisherId(request.publisherId());
+        product.setCategoryId(resolveCategoryId(request));
+        product.setAuthorId(resolveAuthorId(request));
+        product.setPublisherId(resolvePublisherId(request));
         product.setVolumeNumbers(trim(request.volumeNumbers()));
         product.setEditionType(trim(request.editionType()));
         product.setPublicationYear(request.publicationYear());
@@ -210,6 +214,59 @@ public class SellerProductService {
         product.setModeratedBy(null);
         product.setModeratedAt(null);
         product.setModerationReason(null);
+    }
+
+    private Integer resolveCategoryId(SellerProductRequest request) {
+        if (request.categoryName() != null && !request.categoryName().isBlank()) {
+            String name = request.categoryName().trim();
+            return categories.findFirstByNameIgnoreCase(name)
+                    .map(com.example.comicworm.model.Category::getId)
+                    .orElseGet(() -> {
+                        var category = new com.example.comicworm.model.Category();
+                        category.setName(name);
+                        category.setSlug(uniqueSlug(name, 120));
+                        return categories.saveAndFlush(category).getId();
+                    });
+        }
+        return request.categoryId();
+    }
+
+    private Integer resolvePublisherId(SellerProductRequest request) {
+        if (request.publisherName() != null && !request.publisherName().isBlank()) {
+            String name = request.publisherName().trim();
+            return publishers.findFirstByNameIgnoreCase(name)
+                    .map(com.example.comicworm.model.Publisher::getId)
+                    .orElseGet(() -> {
+                        var publisher = new com.example.comicworm.model.Publisher();
+                        publisher.setName(name);
+                        publisher.setSlug(uniqueSlug(name, 160));
+                        return publishers.saveAndFlush(publisher).getId();
+                    });
+        }
+        return request.publisherId();
+    }
+
+    private String uniqueSlug(String value, int maxLength) {
+        String base = Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "").replace('đ', 'd')
+                .replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        if (base.isBlank()) base = "item";
+        if (base.length() > maxLength - 13) base = base.substring(0, maxLength - 13).replaceAll("-$", "");
+        return base + "-" + UUID.randomUUID().toString().substring(0, 12);
+    }
+
+    private Integer resolveAuthorId(SellerProductRequest request) {
+        if (request.authorName() != null && !request.authorName().isBlank()) {
+            String name = request.authorName().trim();
+            return authors.findFirstByNameIgnoreCase(name)
+                    .map(com.example.comicworm.model.Author::getId)
+                    .orElseGet(() -> {
+                        var author = new com.example.comicworm.model.Author();
+                        author.setName(name);
+                        return authors.saveAndFlush(author).getId();
+                    });
+        }
+        return request.authorId();
     }
 
     private String trim(String value) { return value == null || value.isBlank() ? null : value.trim(); }

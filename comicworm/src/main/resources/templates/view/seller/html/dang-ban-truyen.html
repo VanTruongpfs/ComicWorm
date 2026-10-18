@@ -133,7 +133,7 @@
             </div>
             
             <div class="upload-zone" onclick="document.getElementById('mangaImageInput').click()">
-              <input type="file" id="mangaImageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+              <input type="file" id="mangaImageInput" name="coverImage" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
               <span class="material-symbols-outlined" style="font-size: 42px; color: var(--primary); margin-bottom: 8px;">cloud_upload</span>
               <p style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">Bấm vào đây để chọn ảnh hoặc kéo thả file ảnh</p>
               <p class="form-hint" style="margin-top: 4px;">Hỗ trợ định dạng JPG, PNG, WEBP (Tối đa 5MB)</p>
@@ -172,19 +172,16 @@
             <div class="form-grid-3">
               <div class="form-group">
                 <label class="form-label" for="postAuthor">Tác giả <span class="required">*</span></label>
-                <input type="text" id="postAuthor" class="form-input" placeholder="Eiichiro Oda, Gosho Aoyama..." required>
+                <input type="text" id="postAuthor" class="form-select" list="authorOptions" maxlength="150" placeholder="Chọn hoặc nhập tên tác giả" autocomplete="off" required>
+                <datalist id="authorOptions"></datalist>
+                <small style="display:block;margin-top:5px;color:var(--text-muted);">Có thể chọn tác giả có sẵn hoặc nhập tên mới.</small>
               </div>
 
               <div class="form-group">
                 <label class="form-label" for="postCategory">Thể loại chính <span class="required">*</span></label>
-                <select id="postCategory" class="form-select" required>
-                  <option value="Manga Shounen">Manga Shounen (Hành động, Phiêu lưu)</option>
-                  <option value="Trinh thám / Mystery">Trinh thám / Phá án</option>
-                  <option value="Shoujo / Romance">Shoujo (Lãng mạn, Học đường)</option>
-                  <option value="Hài hước / Slice of Life">Hài hước / Đời thường</option>
-                  <option value="Kinh dị / Supernatural">Kinh dị / Siêu nhiên</option>
-                  <option value="Light Novel / Tiểu thuyết">Light Novel / Tiểu thuyết</option>
-                </select>
+                <input type="text" id="postCategory" class="form-input" list="categoryOptions" maxlength="100" placeholder="Chọn hoặc nhập thể loại mới" autocomplete="off" required>
+                <datalist id="categoryOptions"></datalist>
+                <small style="display:block;margin-top:5px;color:var(--text-muted);">Có thể chọn thể loại có sẵn hoặc nhập thể loại mới.</small>
               </div>
 
               <div class="form-group">
@@ -196,14 +193,9 @@
             <div class="form-grid-3">
               <div class="form-group">
                 <label class="form-label" for="postPublisher">Nhà xuất bản <span class="required">*</span></label>
-                <select id="postPublisher" class="form-select" required>
-                  <option value="NXB Kim Đồng">NXB Kim Đồng</option>
-                  <option value="NXB Trẻ">NXB Trẻ</option>
-                  <option value="IPM">IPM</option>
-                  <option value="Nhã Nam">Nhã Nam</option>
-                  <option value="Amak Books">Amak Books</option>
-                  <option value="Khác">Khác / Sách Ngoại văn</option>
-                </select>
+                <input type="text" id="postPublisher" class="form-input" list="publisherOptions" maxlength="150" placeholder="Chọn hoặc nhập nhà xuất bản mới" autocomplete="off" required>
+                <datalist id="publisherOptions"></datalist>
+                <small style="display:block;margin-top:5px;color:var(--text-muted);">Có thể chọn nhà xuất bản có sẵn hoặc nhập tên mới.</small>
               </div>
 
               <div class="form-group">
@@ -402,56 +394,96 @@
     }
 
     function saveDraft() {
-      showToast('Đã lưu bài đăng vào mục Bản Nháp của Seller', 'info');
+      showToast('Chức năng lưu bản nháp chưa được nối backend. Bài đăng chưa được lưu.', 'info');
     }
 
-    function submitPostForm() {
-      const title = document.getElementById('postTitle').value.trim();
-      const author = document.getElementById('postAuthor').value.trim();
-      const price = parseFloat(document.getElementById('postPrice').value);
-      const stock = parseInt(document.getElementById('postStock').value, 10);
+    async function loadProductOptions() {
+      const response = await fetch('/api/seller/products/options', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.Result !== 'OK') throw new Error(data.Message || 'Không tải được danh mục sản phẩm. Hãy đăng nhập bằng tài khoản người bán.');
+      const fillNames = (id, items) => {
+        const list = document.getElementById(id);
+        list.innerHTML = (items || []).map(item => `<option value="${escapeHtml(item.DisplayText)}"></option>`).join('');
+      };
+      fillNames('categoryOptions', data.categories);
+      fillNames('publisherOptions', data.publishers);
+      fillNames('authorOptions', data.authors);
+    }
 
-      if (!title || !author || isNaN(price) || isNaN(stock)) {
-        showToast('Vui lòng điền đầy đủ các trường bắt buộc (*)', 'error');
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
+
+    async function submitPostForm() {
+      const form = document.getElementById('createPostForm');
+      if (!form.reportValidity()) return;
+      const title = document.getElementById('postTitle').value.trim();
+      const cover = document.getElementById('mangaImageInput').files[0];
+      if (!cover) {
+        showToast('Vui lòng chọn ảnh bìa thực tế của truyện.', 'error');
+        document.getElementById('mangaImageInput').click();
         return;
       }
-
-      const posts = DataStore.getPosts();
-      const newId = `POST-${String(posts.length + 1).padStart(3, '0')}`;
+      const price = Number(document.getElementById('postPrice').value);
+      const stock = Number.parseInt(document.getElementById('postStock').value, 10);
+      const conditionText = document.getElementById('postCondition').value;
+      const conditionPercent = (conditionText.match(/(100|99|95|90|80)/) || [])[1];
       const isTradeable = document.querySelector('input[name="postType"]:checked').value === 'trade';
-
-      const newPost = {
-        id: newId,
-        title: title,
-        author: author,
-        category: document.getElementById('postCategory').value,
-        volume: document.getElementById('postVolume').value,
-        publisher: document.getElementById('postPublisher').value,
-        year: parseInt(document.getElementById('postYear').value, 10) || 2024,
-        condition: document.getElementById('postCondition').value,
-        price: price,
-        originalPrice: parseFloat(document.getElementById('postOriginalPrice').value) || price,
-        stock: stock,
-        views: 1,
-        isTradeable: isTradeable,
-        status: "pending", // Đăng xong tự vào "chờ duyệt"
-        hideReason: "",
-        rejectReason: "",
-        image: document.getElementById('mainPreviewImg').src,
-        description: document.getElementById('postDescription').value || "Sách đẹp, đóng gói chống sốc kỹ càng khi gửi.",
-        weight: parseFloat(document.getElementById('packWeight').value) || 250,
-        dimensions: document.getElementById('packDimensions').value,
-        createdAt: new Date().toISOString().split('T')[0]
+      const tradeWishNote = document.getElementById('tradeTarget').value.trim();
+      const payload = {
+        title,
+        description: document.getElementById('postDescription').value.trim() || `Truyện ${title}, tình trạng: ${conditionText}.`,
+        categoryId: null,
+        categoryName: document.getElementById('postCategory').value.trim(),
+        authorId: null,
+        authorName: document.getElementById('postAuthor').value.trim(),
+        publisherId: null,
+        publisherName: document.getElementById('postPublisher').value.trim(),
+        volumeNumbers: document.getElementById('postVolume').value.trim(),
+        editionType: conditionText,
+        publicationYear: Number(document.getElementById('postYear').value) || new Date().getFullYear(),
+        conditionPercent: Number(conditionPercent || 90),
+        price: String(price),
+        stockQuantity: stock,
+        listingType: isTradeable ? 'SELL_AND_TRADE' : 'SELL',
+        tradeWishNote: isTradeable ? (tradeWishNote || 'Người bán trao đổi theo thỏa thuận') : null,
+        isActive: true
       };
-
-      posts.unshift(newPost);
-      DataStore.savePosts(posts);
-
-      showToast(`Đã đăng bài thành công "${title}"! Bài đăng tự động vào trạng thái "Chờ duyệt" để kiểm duyệt.`, 'success');
-      setTimeout(() => {
-        window.location.href = 'quan-ly-bai-dang.html';
-      }, 1200);
+      if (!payload.categoryName || !payload.authorName || !payload.publisherName || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0) {
+        showToast('Vui lòng nhập tác giả, thể loại, nhà xuất bản và kiểm tra giá, tồn kho.', 'error');
+        return;
+      }
+      const button = document.querySelector('button[onclick="submitPostForm()"]');
+      if (button) { button.disabled = true; button.dataset.oldText = button.innerText; button.innerText = 'Đang lưu...'; }
+      try {
+        const csrfResponse = await fetch('/api/seller/products/csrf', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+        const csrf = await csrfResponse.json().catch(() => ({}));
+        if (!csrfResponse.ok || !csrf.token) throw new Error(csrf.Message || 'Không lấy được CSRF token. Vui lòng đăng nhập lại.');
+        const body = new FormData();
+        body.append('product', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        body.append('coverImage', cover);
+        const response = await fetch('/api/seller/products', {
+          method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', [csrf.headerName || 'X-CSRF-TOKEN']: csrf.token }, body
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.Result !== 'OK') throw new Error(result.Message || `Không đăng được bài (HTTP ${response.status}).`);
+        showToast(`Đã lưu bài "${title}" vào hệ thống. Trạng thái: Chờ duyệt.`, 'success');
+        setTimeout(() => { window.location.href = 'quan-ly-bai-dang.html'; }, 900);
+      } catch (error) {
+        console.error('Lỗi đăng sản phẩm:', error);
+        showToast(error.message || 'Có lỗi khi lưu bài đăng.', 'error');
+      } finally {
+        if (button) { button.disabled = false; button.innerText = button.dataset.oldText || 'Đăng bán ngay'; }
+      }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProductOptions().catch(error => {
+        console.error(error);
+        showToast(error.message || 'Không tải được dữ liệu danh mục.', 'error');
+      });
+    });
+
   </script>
 </body>
 </html>

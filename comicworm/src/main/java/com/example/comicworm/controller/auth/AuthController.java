@@ -3,6 +3,7 @@ package com.example.comicworm.controller.auth;
 import com.example.comicworm.dto.general.auth.UserLoginDTO;
 import com.example.comicworm.dto.general.auth.UserRegisterDTO;
 import com.example.comicworm.dto.response.AuthResponseDTO;
+import com.example.comicworm.model.enums.UserRole;
 import com.example.comicworm.service.auth.IAuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,9 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final String BUYER_HOME = "redirect:/buyer/html/home.html";
+    private static final String ADMIN_HOME = "redirect:/admin/html/postModeration.html";
+
     private final IAuthService authService;
     private final CsrfTokenRepository csrfTokens;
 
@@ -41,7 +45,7 @@ public class AuthController {
     @GetMapping("/login")
     public String showLoginForm(Model model) {
         if (isAuthenticated()) {
-            return "redirect:/buyer/html/home.html";
+            return authenticatedHome();
         }
         model.addAttribute("loginDTO", new UserLoginDTO());
         return "view/auth/html/login";
@@ -50,7 +54,7 @@ public class AuthController {
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         if (isAuthenticated()) {
-            return "redirect:/buyer/html/home.html";
+            return authenticatedHome();
         }
         model.addAttribute("registerDTO", new UserRegisterDTO());
         return "view/auth/html/register";
@@ -59,7 +63,7 @@ public class AuthController {
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm(@RequestParam(value = "email", required = false) String email, Model model) {
         if (isAuthenticated()) {
-            return "redirect:/buyer/html/home.html";
+            return authenticatedHome();
         }
         model.addAttribute("prefillEmail", email != null ? email.trim() : "");
         return "view/auth/html/forgot-password";
@@ -104,7 +108,7 @@ public class AuthController {
     @GetMapping("/reset-password")
     public String showResetPasswordForm(@RequestParam(value = "token", required = false) String token, Model model) {
         if (isAuthenticated()) {
-            return "redirect:/buyer/html/home.html";
+            return authenticatedHome();
         }
         boolean isValid = authService.validatePasswordResetToken(token);
         model.addAttribute("token", token != null ? token : "");
@@ -153,7 +157,8 @@ public class AuthController {
             // Set Refresh Token (7 ngày)
             addJwtCookie(response, "refreshToken", authResponse.getRefreshToken(), 7 * 24 * 60 * 60);
 
-            return "redirect:/buyer/html/home.html";
+            // Phan quyen: ADMIN vao khu quan tri, nguoi dung thuong ve trang chu
+            return authResponse.getRole() == UserRole.ADMIN ? ADMIN_HOME : BUYER_HOME;
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "view/auth/html/login";
@@ -297,6 +302,13 @@ public class AuthController {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private String authenticatedHome() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean admin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        return admin ? ADMIN_HOME : BUYER_HOME;
     }
 
     private boolean isAuthenticated() {

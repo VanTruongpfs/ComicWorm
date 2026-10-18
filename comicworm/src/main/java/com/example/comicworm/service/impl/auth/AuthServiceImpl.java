@@ -47,13 +47,15 @@ public class AuthServiceImpl implements IAuthService {
     private String baseUrl;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository,
-                           UserMapper userMapper,
-                           PasswordEncoder passwordEncoder,
-                           JwtUtils jwtUtils,
-                           IEmailService emailService,
-                           VerificationTokenRepository tokenRepository,
-                           PasswordResetTokenRepository passwordResetTokenRepository) {
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            UserMapper userMapper,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils,
+            IEmailService emailService,
+            VerificationTokenRepository tokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository
+    ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
