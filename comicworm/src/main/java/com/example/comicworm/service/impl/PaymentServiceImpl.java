@@ -13,8 +13,12 @@ import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.PaymentAllocationRepository;
 import com.example.comicworm.repository.PaymentRepository;
 import com.example.comicworm.service.IPaymentService;
+import com.example.comicworm.service.OrderStatusService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,6 +33,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentAllocationRepository paymentAllocationRepository;
+    private OrderStatusService orderStatusService;
 
     public PaymentServiceImpl(
             CheckoutBatchRepository checkoutBatchRepository,
@@ -41,6 +46,11 @@ public class PaymentServiceImpl implements IPaymentService {
         this.paymentAllocationRepository = paymentAllocationRepository;
     }
 
+    @Autowired
+    public void setOrderStatusService(OrderStatusService orderStatusService) {
+        this.orderStatusService = orderStatusService;
+    }
+
     @Override
     @Transactional
     public Map<String, Object> processCheckoutPayment(String checkoutCode, Long buyerId, ProcessPaymentRequest request) {
@@ -49,6 +59,12 @@ public class PaymentServiceImpl implements IPaymentService {
 
         if (!batch.getBuyerId().equals(buyerId)) {
             throw new IllegalStateException("Bạn không có quyền thanh toán đợt hàng này");
+        }
+
+        List<Order> lockedOrders = orderRepository.findByCheckoutIdForUpdate(batch.getId());
+        if (!batch.getExpiresAt().isAfter(LocalDateTime.now())
+                || lockedOrders.stream().anyMatch(order -> order.getStatus() != OrderStatus.WAITING_PAYMENT)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Đơn hàng đã hết hạn hoặc đã bị hủy");
         }
 
         List<Order> orders = orderRepository.findByCheckoutId(batch.getId());
@@ -90,6 +106,7 @@ public class PaymentServiceImpl implements IPaymentService {
             order.setStatus(OrderStatus.WAITING_CONFIRM);
             order.setPaymentStatus(isCod ? OrderPaymentStatus.PENDING : OrderPaymentStatus.PAID);
             orderRepository.save(order);
+            orderStatusService.recordHistory(order, OrderStatus.WAITING_PAYMENT, buyerId, "Thanh toán " + method);
         }
 
         Map<String, Object> res = new HashMap<>();
