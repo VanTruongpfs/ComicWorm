@@ -58,10 +58,10 @@
           <div class="kpi-card">
             <div class="kpi-content">
               <span class="kpi-label">Tổng doanh thu chờ quyết toán</span>
-              <span class="kpi-value">34.820.000 ₫</span>
+              <span class="kpi-value" id="kpiPendingPayout">34.820.000 ₫</span>
               <span class="kpi-trend positive">
                 <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
-                +18.4% tuần này
+                Đang xử lý &amp; giao hàng
               </span>
             </div>
             <div class="kpi-icon-wrapper primary">
@@ -72,7 +72,7 @@
           <div class="kpi-card">
             <div class="kpi-content">
               <span class="kpi-label">Cần đóng gói ngay</span>
-              <span class="kpi-value" style="color: #ea580c;">08 đơn</span>
+              <span class="kpi-value" style="color: #ea580c;" id="kpiPackingCount">08 đơn</span>
               <span class="kpi-trend warning">
                 <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
                 Ưu tiên trước 16:00
@@ -86,10 +86,10 @@
           <div class="kpi-card">
             <div class="kpi-content">
               <span class="kpi-label">Đang luân chuyển</span>
-              <span class="kpi-value" style="color: #2563eb;">15 kiện</span>
+              <span class="kpi-value" style="color: #2563eb;" id="kpiShippingCount">15 kiện</span>
               <span class="kpi-trend info">
                 <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
-                Qua 3 đơn vị vận chuyển
+                Đơn vị vận chuyển
               </span>
             </div>
             <div class="kpi-icon-wrapper info">
@@ -100,7 +100,7 @@
           <div class="kpi-card">
             <div class="kpi-content">
               <span class="kpi-label">Tỷ lệ hoàn thành</span>
-              <span class="kpi-value">96.8%</span>
+              <span class="kpi-value" id="kpiCompletionRate">96.8%</span>
               <span class="kpi-trend positive">
                 <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
                 Đạt chuẩn Pro Merchant
@@ -139,19 +139,19 @@
         <!-- FILTER TABS BAR -->
         <div class="filter-tabs-bar" id="orderFilterTabs">
           <button class="tab-chip active" data-filter="all">
-            Tất cả <span class="tab-count">48</span>
+            Tất cả <span class="tab-count" id="tabCountAll">0</span>
           </button>
           <button class="tab-chip" data-filter="processing">
-            Đang xử lý <span class="tab-count">8</span>
+            Đang xử lý <span class="tab-count" id="tabCountProcessing">0</span>
           </button>
           <button class="tab-chip" data-filter="shipping">
-            Đang giao <span class="tab-count">15</span>
+            Đang giao <span class="tab-count" id="tabCountShipping">0</span>
           </button>
           <button class="tab-chip" data-filter="completed">
-            Hoàn thành <span class="tab-count">23</span>
+            Hoàn thành <span class="tab-count" id="tabCountCompleted">0</span>
           </button>
           <button class="tab-chip" data-filter="cancelled">
-            Đã hủy <span class="tab-count">2</span>
+            Đã hủy <span class="tab-count" id="tabCountCancelled">0</span>
           </button>
         </div>
 
@@ -170,7 +170,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 0.82rem; color: var(--text-muted);">Sắp xếp theo:</span>
-              <select style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 0.85rem; font-weight: 500;">
+              <select id="orderSortSelect" style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 0.85rem; font-weight: 500;">
                 <option value="newest">Mới nhất trước</option>
                 <option value="oldest">Cũ nhất trước</option>
                 <option value="price-desc">Giá trị cao nhất</option>
@@ -582,21 +582,10 @@
 
           <!-- PAGINATION -->
           <div class="pagination-wrapper">
-            <div class="pagination-info">
-              Hiển thị <strong>1 - 4</strong> của <strong>48</strong> đơn hàng
+            <div class="pagination-info" id="ordersPaginationInfo">
+              Hiển thị <strong>0</strong> đơn hàng
             </div>
-            <div class="pagination-controls">
-              <button class="page-btn" disabled>
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
-              </button>
-              <button class="page-btn active">1</button>
-              <button class="page-btn">2</button>
-              <button class="page-btn">3</button>
-              <span style="padding: 0 4px; color: var(--text-muted);">...</span>
-              <button class="page-btn">12</button>
-              <button class="page-btn">
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
-              </button>
+            <div class="pagination-controls" id="ordersPaginationControls">
             </div>
           </div>
         </div>
