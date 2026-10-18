@@ -96,6 +96,7 @@ public class SecurityConfig {
                                 "/admin/**", "/auth/**", "/buyer/**", "/exchange/**",
                                 "/seller/**", "/shared/**", "/user/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel").authenticated()
                         //Auth API, mai mốt API nào cần quyền/authorize thì cứ
                         //thêm vào là xong
                         .anyRequest().permitAll()
