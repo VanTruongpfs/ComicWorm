@@ -5,16 +5,22 @@ import com.example.comicworm.model.enums.AccountStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, OAuth2User {
     private final User user;
+    private final Map<String, Object> attributes;
 
     public CustomUserDetails(User user) {
         this.user = user;
+        this.attributes = Collections.emptyMap();
+    }
+
+    public CustomUserDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes != null ? attributes : Collections.emptyMap();
     }
 
     public Long getId() {
@@ -33,6 +39,26 @@ public class CustomUserDetails implements UserDetails {
         return user.getRole().name();
     }
 
+    public String getAvatarUrl() {
+        return user.getAvatarUrl();
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    // --- OAuth2User methods ---
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public String getName() {
+        return user.getEmail();
+    }
+
+    // --- UserDetails methods ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -63,7 +89,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        // Tài khoản không bị khóa nếu trạng thái không phải là BANNED
+        // Tài khoản không bị khóa nếu trạng thái không phải là LOCKED
         return user.getAccountStatus() != AccountStatus.LOCKED;
     }
 

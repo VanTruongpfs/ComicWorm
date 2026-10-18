@@ -46,6 +46,7 @@ class CodPaymentTests {
         productRepository = mock(ProductRepository.class);
         productImageRepository = mock(ProductImageRepository.class);
         userRepository = mock(UserRepository.class);
+        UserAddressRepository userAddressRepository = mock(UserAddressRepository.class);
 
         paymentService = new PaymentServiceImpl(
                 checkoutBatchRepository,
@@ -62,7 +63,8 @@ class CodPaymentTests {
                 checkoutBatchRepository,
                 orderRepository,
                 orderItemRepository = mock(OrderItemRepository.class),
-                userRepository
+                userRepository,
+                userAddressRepository
         );
     }
 

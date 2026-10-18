@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select u from User u where u.id = :id and u.deletedAt is null")
     Optional<User> lockById(@org.springframework.data.repository.query.Param("id") Long id);
