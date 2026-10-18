@@ -258,6 +258,10 @@
             roleClass = 'seller';
         }
 
+        const avatarElement = user.avatarUrl
+            ? `<img src="${user.avatarUrl}" alt="${fullName}" class="user-avatar-img" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'user-avatar-img\\'>${initials}</div>'">`
+            : `<div class="user-avatar-img">${initials}</div>`;
+
         const sellerLink = user.isSeller
             ? '<a href="/seller/html/index.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
             : '';
@@ -268,15 +272,18 @@
 
         container.innerHTML = `
             <div class="user-avatar-trigger" id="comic-avatar-trigger" title="${fullName}">
-                <div class="user-avatar-img">${initials}</div>
+                ${avatarElement}
                 <span class="user-name-label">${fullName}</span>
                 <i class="fa-solid fa-chevron-down user-dropdown-arrow"></i>
             </div>
             <div class="user-dropdown-menu" id="comic-user-dropdown">
-                <div class="user-dropdown-header">
-                    <strong class="user-dropdown-name">${fullName}</strong>
-                    <span class="user-dropdown-email">${user.email}</span>
-                    <span class="user-dropdown-role-badge ${roleClass}">${roleBadgeText}</span>
+                <div class="user-dropdown-header" style="display: flex; flex-direction: row; align-items: center; gap: 10px;">
+                    ${avatarElement}
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <strong class="user-dropdown-name">${fullName}</strong>
+                        <span class="user-dropdown-email">${user.email}</span>
+                        <span class="user-dropdown-role-badge ${roleClass}">${roleBadgeText}</span>
+                    </div>
                 </div>
                 <div class="user-dropdown-items">
                     <a href="/user/html/profile.html" class="user-dropdown-item">

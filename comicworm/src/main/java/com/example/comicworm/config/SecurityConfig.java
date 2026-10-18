@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,7 +23,11 @@ import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
+import com.example.comicworm.config.oauth2.CustomOAuth2UserService;
+import com.example.comicworm.config.oauth2.OAuth2LoginSuccessHandler;
+
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -42,7 +47,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, CsrfTokenRepository csrfTokens) throws Exception {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CsrfTokenRepository csrfTokens,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(reportCors()))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
@@ -51,9 +60,10 @@ public class SecurityConfig {
                         .requireCsrfProtectionMatcher(request -> {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
                     return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
-                            && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/"));
+                            && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/")
+                                    || path.startsWith("/api/admin/"));
                 }))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
 
@@ -62,11 +72,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .requestMatchers("/seller/html/**").hasRole("SELLER")
-                        .requestMatchers("/admin/html/statistics.html").hasRole("ADMIN")
+                        // ---- Khu vuc ADMIN: bat buoc dang nhap + role ADMIN ----
+                        .requestMatchers("/admin/html/login.html").permitAll() // chi redirect ve /auth/login
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/html/**").hasRole("ADMIN")
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
 
                         //public API
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
@@ -89,6 +102,21 @@ public class SecurityConfig {
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+                                    .error("OAuth2 Login Failed: {}", exception.getMessage(), exception);
+                            String detail = exception.getMessage() != null ? exception.getMessage() : "Đăng nhập Google thất bại.";
+                            String errorMessage = java.net.URLEncoder.encode(
+                                    detail,
+                                    java.nio.charset.StandardCharsets.UTF_8
+                            );
+                            response.sendRedirect("/auth/login?oauthError=" + errorMessage);
+                        })
+                )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, error) -> {
                             if (isAccountPage(request.getRequestURI().substring(request.getContextPath().length()))) {
@@ -107,7 +135,7 @@ public class SecurityConfig {
     }
     private boolean isAccountPage(String path) {
         return path.startsWith("/seller/html/") || path.equals("/user/seller-upgrade")
-                || path.equals("/user/html/profile.html") || path.equals("/admin/html/statistics.html");
+                || path.equals("/user/html/profile.html") || path.startsWith("/admin/html/");
     }
     private UrlBasedCorsConfigurationSource reportCors() {
         CorsConfiguration config = new CorsConfiguration();

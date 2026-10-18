@@ -1,11 +1,14 @@
 package com.example.comicworm.repository;
 
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select u from User u where u.id = :id and u.deletedAt is null")
     Optional<User> lockById(@org.springframework.data.repository.query.Param("id") Long id);
@@ -30,4 +33,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "(u.phone IS NOT NULL AND u.phone = :identifier) OR " +
             "LOWER(u.email) LIKE LOWER(CONCAT(:identifier, '@%')))")
     java.util.List<User> findByIdentifierCandidates(@org.springframework.data.repository.query.Param("identifier") String identifier);
+
+    long countByDeletedAtIsNull();
+
+    long countByDeletedAtIsNullAndIsSellerTrue();
+
+    long countByDeletedAtIsNullAndAccountStatus(AccountStatus accountStatus);
+
+    long countByDeletedAtIsNullAndCreatedAtAfter(LocalDateTime createdAt);
 }

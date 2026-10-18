@@ -46,15 +46,15 @@
                 <div class="kpi-card">
                     <div class="kpi-content">
                         <span class="kpi-label">Tổng số tài khoản</span>
-                        <span class="kpi-value">128.940</span>
-                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +412 hôm nay</span>
+                        <span class="kpi-value" id="kpiTotalUsers">128.940</span>
+                        <span class="kpi-trend positive" id="kpiNewToday"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +412 hôm nay</span>
                     </div>
                     <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">groups</span></div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-content">
                         <span class="kpi-label">Người bán đang hoạt động</span>
-                        <span class="kpi-value" style="color:#2563eb;">4.208</span>
+                        <span class="kpi-value" style="color:#2563eb;" id="kpiActiveSellers">4.208</span>
                         <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">storefront</span> 96 chờ duyệt gian hàng</span>
                     </div>
                     <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">storefront</span></div>
@@ -62,7 +62,7 @@
                 <div class="kpi-card">
                     <div class="kpi-content">
                         <span class="kpi-label">Tài khoản bị báo cáo</span>
-                        <span class="kpi-value" style="color:#dc2626;">17</span>
+                        <span class="kpi-value" style="color:#dc2626;" id="kpiReportedUsers">17</span>
                         <span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">flag</span> 3 cần xử lý gấp</span>
                     </div>
                     <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">report</span></div>
@@ -70,7 +70,7 @@
                 <div class="kpi-card">
                     <div class="kpi-content">
                         <span class="kpi-label">Đang bị khoá</span>
-                        <span class="kpi-value">86</span>
+                        <span class="kpi-value" id="kpiLockedUsers">86</span>
                         <span class="kpi-trend neutral">Vi phạm chính sách sàn</span>
                     </div>
                     <div class="kpi-icon-wrapper danger" style="background: var(--danger-bg); color: var(--danger);"><span class="material-symbols-outlined" style="font-size:26px;">block</span></div>
@@ -134,15 +134,8 @@
                         </table>
                     </div>
                     <div class="pagination-wrapper">
-                        <div class="pagination-info">Hiển thị <strong>1 - 10</strong> của <strong>128.940</strong> tài khoản</div>
-                        <div class="pagination-controls">
-                            <button class="page-btn" disabled><span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <span style="padding:0 4px; color:var(--text-muted);">...</span>
-                            <button class="page-btn">2894</button>
-                            <button class="page-btn"><span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span></button>
+                        <div class="pagination-info" id="accountsPaginationInfo">Hiển thị <strong>0</strong> tài khoản</div>
+                        <div class="pagination-controls" id="accountsPaginationControls">
                         </div>
                     </div>
                 </div>
@@ -249,10 +242,13 @@
         <div class="form-grid" style="margin-bottom:20px;">
             <div class="field"><label>Họ và tên</label><input type="text" id="newAccName" placeholder="Nguyễn Văn A"></div>
             <div class="field"><label>Email</label><input type="email" id="newAccEmail" placeholder="email@vidu.vn"></div>
+            <div class="field"><label>Số điện thoại</label><input type="text" id="newAccPhone" placeholder="0912345678"></div>
+            <div class="field"><label>Mật khẩu khởi tạo</label><input type="password" id="newAccPassword" placeholder="Mặc định: ComicWorm@2026"></div>
             <div class="field"><label>Vai trò</label>
                 <select id="newAccRole" style="width:100%; padding:11px 12px; border:2px solid var(--neutral-light, #cbd5e1); border-radius:7px;">
                     <option value="buyer">Người mua</option>
                     <option value="seller">Người bán</option>
+                    <option value="admin">Quản trị viên</option>
                 </select>
             </div>
         </div>

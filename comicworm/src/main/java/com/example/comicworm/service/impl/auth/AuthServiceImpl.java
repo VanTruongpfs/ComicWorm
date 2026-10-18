@@ -47,13 +47,15 @@ public class AuthServiceImpl implements IAuthService {
     private String baseUrl;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository,
-                           UserMapper userMapper,
-                           PasswordEncoder passwordEncoder,
-                           JwtUtils jwtUtils,
-                           IEmailService emailService,
-                           VerificationTokenRepository tokenRepository,
-                           PasswordResetTokenRepository passwordResetTokenRepository) {
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            UserMapper userMapper,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils,
+            IEmailService emailService,
+            VerificationTokenRepository tokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository
+    ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
@@ -144,6 +146,9 @@ public class AuthServiceImpl implements IAuthService {
                         User newUser = userMapper.toEntity(googleDTO);
                         return userRepository.save(newUser);
                     });
+        } else if (googleDTO.getAvatarUrl() != null && (user.getAvatarUrl() == null || user.getAvatarUrl().isBlank())) {
+            user.setAvatarUrl(googleDTO.getAvatarUrl());
+            user = userRepository.save(user);
         }
 
         if (user.getAccountStatus() == AccountStatus.LOCKED) {

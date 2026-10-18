@@ -12,9 +12,12 @@ public record SellerProductRequest(
         @Size(max = 255, message = "Tên sản phẩm tối đa 255 ký tự.") String title,
         @NotBlank(message = "Vui lòng nhập mô tả sản phẩm.")
         @Size(max = 10000, message = "Mô tả tối đa 10.000 ký tự.") String description,
-        @NotNull(message = "Vui lòng chọn thể loại.") @Positive Integer categoryId,
+        @Positive Integer categoryId,
+        @Size(max = 100, message = "Tên thể loại tối đa 100 ký tự.") String categoryName,
         @Positive Integer authorId,
+        @Size(max = 150, message = "Tên tác giả tối đa 150 ký tự.") String authorName,
         @Positive Integer publisherId,
+        @Size(max = 150, message = "Tên nhà xuất bản tối đa 150 ký tự.") String publisherName,
         @Size(max = 100) String volumeNumbers,
         @Size(max = 50) String editionType,
         @Min(1000) @Max(9999) Integer publicationYear,
