@@ -146,6 +146,9 @@ public class AuthServiceImpl implements IAuthService {
                         User newUser = userMapper.toEntity(googleDTO);
                         return userRepository.save(newUser);
                     });
+        } else if (googleDTO.getAvatarUrl() != null && (user.getAvatarUrl() == null || user.getAvatarUrl().isBlank())) {
+            user.setAvatarUrl(googleDTO.getAvatarUrl());
+            user = userRepository.save(user);
         }
 
         if (user.getAccountStatus() == AccountStatus.LOCKED) {

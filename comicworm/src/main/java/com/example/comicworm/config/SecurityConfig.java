@@ -23,6 +23,9 @@ import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
+import com.example.comicworm.config.oauth2.CustomOAuth2UserService;
+import com.example.comicworm.config.oauth2.OAuth2LoginSuccessHandler;
+
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -44,7 +47,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, CsrfTokenRepository csrfTokens) throws Exception {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CsrfTokenRepository csrfTokens,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(reportCors()))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
@@ -56,7 +63,7 @@ public class SecurityConfig {
                             && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/")
                                     || path.startsWith("/api/admin/"));
                 }))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
 
@@ -72,7 +79,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
 
                         //public API
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
@@ -95,6 +102,21 @@ public class SecurityConfig {
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+                                    .error("OAuth2 Login Failed: {}", exception.getMessage(), exception);
+                            String detail = exception.getMessage() != null ? exception.getMessage() : "Đăng nhập Google thất bại.";
+                            String errorMessage = java.net.URLEncoder.encode(
+                                    detail,
+                                    java.nio.charset.StandardCharsets.UTF_8
+                            );
+                            response.sendRedirect("/auth/login?oauthError=" + errorMessage);
+                        })
+                )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, error) -> {
                             if (isAccountPage(request.getRequestURI().substring(request.getContextPath().length()))) {
