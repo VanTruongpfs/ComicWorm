@@ -54,4 +54,77 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             WHERE p.sellerId = :sellerId
             """)
     long countBySellerId(@Param("sellerId") Long sellerId);
+
+    @Query(value = """
+            SELECT r.id AS reviewId,
+                   r.rating AS rating,
+                   r.content AS content,
+                   r.createdAt AS createdAt,
+                   buyer.fullName AS buyerName,
+                   oi.productId AS productId,
+                   oi.productTitle AS productTitle,
+                   o.id AS orderId,
+                   o.orderCode AS orderCode,
+                   reply.id AS replyId,
+                   reply.content AS replyContent,
+                   reply.createdAt AS replyCreatedAt,
+                   reply.updatedAt AS replyUpdatedAt
+            FROM Review r
+            JOIN OrderItem oi ON oi.id = r.orderItemId
+            JOIN Order o ON o.id = oi.orderId
+            JOIN Product p ON p.id = oi.productId
+            JOIN User buyer ON buyer.id = r.buyerId
+            LEFT JOIN ReviewReply reply ON reply.reviewId = r.id
+            WHERE o.sellerId = :sellerId
+              AND p.sellerId = :sellerId
+              AND (:replied = 'all'
+                   OR (:replied = 'true' AND reply.id IS NOT NULL)
+                   OR (:replied = 'false' AND reply.id IS NULL))
+            ORDER BY r.createdAt DESC, r.id DESC
+            """,
+            countQuery = """
+            SELECT COUNT(r)
+            FROM Review r
+            JOIN OrderItem oi ON oi.id = r.orderItemId
+            JOIN Order o ON o.id = oi.orderId
+            JOIN Product p ON p.id = oi.productId
+            LEFT JOIN ReviewReply reply ON reply.reviewId = r.id
+            WHERE o.sellerId = :sellerId
+              AND p.sellerId = :sellerId
+              AND (:replied = 'all'
+                   OR (:replied = 'true' AND reply.id IS NOT NULL)
+                   OR (:replied = 'false' AND reply.id IS NULL))
+            """)
+    Page<SellerReviewRow> findSellerReviews(
+            @Param("sellerId") Long sellerId,
+            @Param("replied") String replied,
+            Pageable pageable);
+
+    interface SellerReviewRow {
+        Long getReviewId();
+
+        Integer getRating();
+
+        String getContent();
+
+        java.time.LocalDateTime getCreatedAt();
+
+        String getBuyerName();
+
+        Long getProductId();
+
+        String getProductTitle();
+
+        Long getOrderId();
+
+        String getOrderCode();
+
+        Long getReplyId();
+
+        String getReplyContent();
+
+        java.time.LocalDateTime getReplyCreatedAt();
+
+        java.time.LocalDateTime getReplyUpdatedAt();
+    }
 }
