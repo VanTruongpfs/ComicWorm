@@ -86,5 +86,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findByCategoryIdAndModerationStatusAndIsActiveTrue(Long categoryId, ModerationStatus moderationStatus);
 
     List<Product> findBySellerIdAndIsActiveTrueAndDeletedAtIsNullOrderByCreatedAtDesc(Long sellerId);
+    long countBySellerIdAndDeletedAtIsNull(Long sellerId);
 }
 
