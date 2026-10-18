@@ -2,64 +2,64 @@ package com.example.comicworm.controller;
 
 import com.example.comicworm.dto.general.auth.CustomUserDetails;
 import com.example.comicworm.model.User;
-import com.example.comicworm.repository.UserRepository;
+import com.example.comicworm.service.account.AccountProfileService;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class AccountController {
+    public record Account(Long id, String fullName, String email, String role, boolean isSeller) {}
+    public record UpdateProfileRequest(String fullName) {}
+    public record ChangePasswordRequest(String currentPassword, String newPassword, String confirmPassword) {}
 
-    private final UserRepository userRepository;
+    private final AccountProfileService profiles;
 
-    public AccountController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AccountController(AccountProfileService profiles) {
+        this.profiles = profiles;
     }
 
-    public record Account(Long id, String fullName, String email, String role, boolean isSeller, String avatarUrl) {}
-
     @GetMapping("/api/account/me")
-    public Account currentAccount(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
+    public Account currentAccount(@AuthenticationPrincipal CustomUserDetails user) {
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        return new Account(user.getId(), user.getFullName(), user.getUsername(), user.getRole(), user.isSeller());
+    }
 
-        Object principal = authentication.getPrincipal();
+    /** CSRF token cho các thao tác ghi (đổi tên, đổi mật khẩu) vì phiên đăng nhập dùng cookie. */
+    @GetMapping("/api/account/csrf")
+    public Map<String, String> csrf(@AuthenticationPrincipal CustomUserDetails user, CsrfToken token) {
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        return Map.of("headerName", token.getHeaderName(), "token", token.getToken());
+    }
 
-        // 1. Trường hợp xác thực chuẩn qua JWT (CustomUserDetails)
-        if (principal instanceof CustomUserDetails user) {
-            return new Account(user.getId(), user.getFullName(), user.getUsername(), user.getRole(), user.isSeller(), user.getAvatarUrl());
-        }
+    @PutMapping("/api/account/profile")
+    public Account updateProfile(@AuthenticationPrincipal CustomUserDetails user,
+                                 @RequestBody UpdateProfileRequest request) {
+        User saved = profiles.updateFullName(user, request == null ? null : request.fullName());
+        return new Account(saved.getId(), saved.getFullName(), saved.getEmail(),
+                saved.getRole().name(), Boolean.TRUE.equals(saved.getIsSeller()));
+    }
 
-        // 2. Trường hợp xác thực OAuth2 Google (OAuth2User) hoặc principal khác
-        String email = null;
-        if (principal instanceof OAuth2User oauth2User) {
-            email = oauth2User.getAttribute("email");
-        } else if (principal instanceof UserDetails userDetails) {
-            email = userDetails.getUsername();
-        } else if (principal instanceof String principalString) {
-            email = principalString;
-        }
+    @PostMapping("/api/account/password")
+    public Map<String, Object> changePassword(@AuthenticationPrincipal CustomUserDetails user,
+                                              @RequestBody ChangePasswordRequest request) {
+        if (request == null) request = new ChangePasswordRequest(null, null, null);
+        profiles.changePassword(user, request.currentPassword(), request.newPassword(), request.confirmPassword());
+        return Map.of("success", true, "message", "Đổi mật khẩu thành công.");
+    }
 
-        if (email != null && !email.isBlank()) {
-            User dbUser = userRepository.findByEmailAndDeletedAtIsNull(email.trim().toLowerCase())
-                    .orElse(null);
-            if (dbUser != null) {
-                return new Account(
-                        dbUser.getId(),
-                        dbUser.getFullName(),
-                        dbUser.getEmail(),
-                        dbUser.getRole().name(),
-                        Boolean.TRUE.equals(dbUser.getIsSeller()),
-                        dbUser.getAvatarUrl()
-                );
-            }
-        }
-
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    @ExceptionHandler(AccountProfileService.InvalidInputException.class)
+    public ResponseEntity<Map<String, Object>> invalidInput(AccountProfileService.InvalidInputException error) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "field", error.getField(), "message", error.getMessage()));
     }
 }
