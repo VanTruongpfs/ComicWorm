@@ -6,6 +6,7 @@ import com.example.comicworm.model.*;
 import com.example.comicworm.model.enums.*;
 import com.example.comicworm.repository.*;
 import com.example.comicworm.service.impl.OrderServiceImpl;
+import com.example.comicworm.service.OrderStatusService;
 import com.example.comicworm.service.impl.PaymentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,7 @@ class CodPaymentTests {
 
     private PaymentServiceImpl paymentService;
     private OrderServiceImpl orderService;
+    private OrderStatusService orderStatusService;
 
     @BeforeEach
     void setUp() {
@@ -47,6 +49,9 @@ class CodPaymentTests {
         productImageRepository = mock(ProductImageRepository.class);
         userRepository = mock(UserRepository.class);
         UserAddressRepository userAddressRepository = mock(UserAddressRepository.class);
+        orderStatusService = mock(OrderStatusService.class);
+        when(orderRepository.findByCheckoutIdForUpdate(anyLong())).thenAnswer(invocation ->
+                orderRepository.findByCheckoutId(invocation.getArgument(0)));
 
         paymentService = new PaymentServiceImpl(
                 checkoutBatchRepository,
@@ -54,6 +59,7 @@ class CodPaymentTests {
                 paymentRepository,
                 paymentAllocationRepository
         );
+        paymentService.setOrderStatusService(orderStatusService);
 
         orderService = new OrderServiceImpl(
                 cartRepository,
@@ -81,6 +87,7 @@ class CodPaymentTests {
         batch.setCheckoutCode(checkoutCode);
         batch.setBuyerId(buyerId);
         batch.setTotalAmount(new BigDecimal("150000.00"));
+        batch.setExpiresAt(LocalDateTime.now().plusHours(1));
 
         Order order = new Order();
         order.setId(200L);
@@ -142,6 +149,7 @@ class CodPaymentTests {
         batch.setCheckoutCode(checkoutCode);
         batch.setBuyerId(buyerId);
         batch.setTotalAmount(new BigDecimal("200000.00"));
+        batch.setExpiresAt(LocalDateTime.now().plusHours(1));
 
         Order order = new Order();
         order.setId(201L);
@@ -241,6 +249,7 @@ class CodPaymentTests {
         createdBatch.setCheckoutCode(checkoutCode);
         createdBatch.setBuyerId(buyerId);
         createdBatch.setTotalAmount(new BigDecimal("100000.00")); // 70k sách + 30k ship
+        createdBatch.setExpiresAt(LocalDateTime.now().plusHours(1));
 
         Order createdOrder = new Order();
         createdOrder.setId(600L);
