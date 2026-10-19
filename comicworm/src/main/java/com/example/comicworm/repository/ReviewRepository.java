@@ -7,6 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     /** Đánh giá của một sản phẩm (review gắn với order_item, order_item gắn với product), mới nhất trước. */
@@ -54,4 +58,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             WHERE p.sellerId = :sellerId
             """)
     long countBySellerId(@Param("sellerId") Long sellerId);
+
+    boolean existsByOrderItemId(Long orderItemId);
+
+    Optional<Review> findByOrderItemId(Long orderItemId);
+
+    List<Review> findByOrderItemIdIn(Collection<Long> orderItemIds);
 }

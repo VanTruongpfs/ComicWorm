@@ -96,35 +96,87 @@
 
   <div class="layout">
     <section class="panel review-panel">
-      <div class="panel-title"><div><h2>Đánh giá đơn hàng #ORD-8831</h2><p>Fullmetal Alchemist Kanzenban trọn bộ 1-18 Boxset</p></div><span class="completed">✓ Đã hoàn thành</span></div>
+      <div id="reviewAlertBox" style="display:none; padding:14px 18px; border-radius:8px; margin-bottom:16px; font-weight:500;"></div>
 
-      <div class="product-row">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCJZJ6k_V5R2hMAVbpWhv29djFhlWGXRjfhzZElI-tGuft3Oqr53Y9Rf5VbQjjCW1BRZyODlP4QvMBfuQ9WyinRywLTL7qh6szaWWqIgNwT2k1Xz4QKxaqXMpJJ3RgZxxV_oiI7hWOMphoxNNf-dOtpEdNZdf9Y7h1oq8reXmgcc3Cdq6EpRPup01dSxV9kO6dEXC2k8CIdrloj2C3WOoItZwbMbSkOc1WSLtPhPpehg3gJnJPXX2D8A" alt="Fullmetal Alchemist">
-        <div><h3>Fullmetal Alchemist Kanzenban</h3><p>18 tập • Collector Grade 98%</p><strong>1.850.000₫</strong></div>
+      <!-- Bộ chọn đơn hàng / sản phẩm đã mua -->
+      <div id="itemSelectorContainer" style="display:none; background:#f7fafc; padding:12px 16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:18px;">
+        <label for="itemSelectDropdown" style="display:block; font-size:13px; font-weight:700; color:#4a5568; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
+          <i class="fa-solid fa-list-check" style="margin-right:6px; color:#3182ce;"></i>Chọn sản phẩm đã mua để đánh giá:
+        </label>
+        <select id="itemSelectDropdown" style="width:100%; padding:10px 14px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px; background:#fff; font-family:inherit; color:#2d3748; cursor:pointer;">
+        </select>
       </div>
 
-      <div class="rating-block">
-        <label>Đánh giá tổng thể giao dịch</label>
-        <div class="stars" data-rating="overall" role="group" aria-label="Đánh giá từ 1 đến 5 sao">
-          <button type="button" data-value="1" aria-label="1 sao - Rất tệ" aria-pressed="false">★</button><button type="button" data-value="2" aria-label="2 sao - Không hài lòng" aria-pressed="false">★</button><button type="button" data-value="3" aria-label="3 sao - Bình thường" aria-pressed="false">★</button><button type="button" data-value="4" aria-label="4 sao - Tốt" aria-pressed="false">★</button><button type="button" data-value="5" aria-label="5 sao - Tuyệt vời" aria-pressed="false">★</button>
+      <div class="panel-title">
+        <div>
+          <h2 id="orderTitle">Đánh giá đơn hàng #ORD-8831</h2>
+          <p id="productSubTitle">Fullmetal Alchemist Kanzenban trọn bộ 1-18 Boxset</p>
         </div>
-        <span class="rating-text" id="overallText">Chọn mức đánh giá</span>
+        <span class="completed" id="orderStatusBadge">✓ Đã hoàn thành</span>
+      </div>
+
+      <div class="product-row" id="productCardRow">
+        <img id="productImg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCJZJ6k_V5R2hMAVbpWhv29djFhlWGXRjfhzZElI-tGuft3Oqr53Y9Rf5VbQjjCW1BRZyODlP4QvMBfuQ9WyinRywLTL7qh6szaWWqIgNwT2k1Xz4QKxaqXMpJJ3RgZxxV_oiI7hWOMphoxNNf-dOtpEdNZdf9Y7h1oq8reXmgcc3Cdq6EpRPup01dSxV9kO6dEXC2k8CIdrloj2C3WOoItZwbMbSkOc1WSLtPhPpehg3gJnJPXX2D8A" alt="Sản phẩm">
+        <div>
+          <h3 id="productTitle">Fullmetal Alchemist Kanzenban</h3>
+          <p id="productCondition">18 tập • Collector Grade 98%</p>
+          <strong id="productPrice">1.850.000₫</strong>
+        </div>
+      </div>
+
+      <!-- 1. Đánh giá tổng thể -->
+      <div class="rating-block">
+        <label>1. Đánh giá tổng thể giao dịch <span style="color:#e53e3e;">*</span></label>
+        <div class="stars" data-rating="overall" role="group" aria-label="Đánh giá tổng thể từ 1 đến 5 sao">
+          <button type="button" data-value="1" aria-label="1 sao - Rất tệ" aria-pressed="false">★</button>
+          <button type="button" data-value="2" aria-label="2 sao - Không hài lòng" aria-pressed="false">★</button>
+          <button type="button" data-value="3" aria-label="3 sao - Bình thường" aria-pressed="false">★</button>
+          <button type="button" data-value="4" aria-label="4 sao - Tốt" aria-pressed="false">★</button>
+          <button type="button" data-value="5" aria-label="5 sao - Tuyệt vời" aria-pressed="false">★</button>
+        </div>
+        <span class="rating-text" id="overallText">Chọn mức đánh giá tổng thể</span>
+      </div>
+
+      <!-- 2. Chất lượng sản phẩm -->
+      <div class="rating-block">
+        <label>2. Chất lượng sản phẩm &amp; Tình trạng truyện <span style="color:#e53e3e;">*</span></label>
+        <div class="stars" data-rating="quality" role="group" aria-label="Đánh giá chất lượng từ 1 đến 5 sao">
+          <button type="button" data-value="1" aria-label="1 sao - Kém, không đúng mô tả" aria-pressed="false">★</button>
+          <button type="button" data-value="2" aria-label="2 sao - Có lỗi / cũ nhiều" aria-pressed="false">★</button>
+          <button type="button" data-value="3" aria-label="3 sao - Chấp nhận được" aria-pressed="false">★</button>
+          <button type="button" data-value="4" aria-label="4 sao - Khá đẹp, đúng mô tả" aria-pressed="false">★</button>
+          <button type="button" data-value="5" aria-label="5 sao - Rất đẹp, như mới" aria-pressed="false">★</button>
+        </div>
+        <span class="rating-text" id="qualityText">Chọn mức chất lượng sản phẩm</span>
+      </div>
+
+      <!-- 3. Thái độ người bán -->
+      <div class="rating-block">
+        <label>3. Thái độ phục vụ &amp; Dịch vụ người bán <span style="color:#e53e3e;">*</span></label>
+        <div class="stars" data-rating="seller" role="group" aria-label="Đánh giá thái độ người bán từ 1 đến 5 sao">
+          <button type="button" data-value="1" aria-label="1 sao - Rất thiếu thiện chí" aria-pressed="false">★</button>
+          <button type="button" data-value="2" aria-label="2 sao - Chậm chạp, khó chịu" aria-pressed="false">★</button>
+          <button type="button" data-value="3" aria-label="3 sao - Bình thường" aria-pressed="false">★</button>
+          <button type="button" data-value="4" aria-label="4 sao - Thân thiện, hỗ trợ tốt" aria-pressed="false">★</button>
+          <button type="button" data-value="5" aria-label="5 sao - Rất nhiệt tình, chu đáo" aria-pressed="false">★</button>
+        </div>
+        <span class="rating-text" id="sellerText">Chọn mức độ hài lòng về người bán</span>
       </div>
 
       <div class="form-group">
-        <label for="reviewText">Chia sẻ cảm nhận</label>
-        <textarea id="reviewText" maxlength="500" placeholder="Ví dụ: Sách đúng mô tả, đóng gói rất kỹ, góc sách đẹp..."></textarea>
+        <label for="reviewText">Chia sẻ cảm nhận chi tiết</label>
+        <textarea id="reviewText" maxlength="500" placeholder="Ví dụ: Truyện đóng gói rất kỹ, đúng độ mới như người bán cam kết, hỗ trợ nhiệt tình..."></textarea>
         <div class="counter"><span id="counter">0</span>/500</div>
       </div>
 
       <div class="form-group">
         <label>Điểm nổi bật</label>
         <div class="tags" id="tags">
-          <button data-tag="Đúng mô tả">✓ Đúng mô tả</button>
-          <button data-tag="Đóng gói kỹ">✓ Đóng gói kỹ</button>
-          <button data-tag="Giao nhanh">✓ Giao nhanh</button>
-          <button data-tag="Sách đẹp">✓ Sách đẹp</button>
-          <button data-tag="Người bán nhiệt tình">✓ Người bán nhiệt tình</button>
+          <button type="button" data-tag="Đúng mô tả">✓ Đúng mô tả</button>
+          <button type="button" data-tag="Đóng gói kỹ">✓ Đóng gói kỹ</button>
+          <button type="button" data-tag="Giao nhanh">✓ Giao nhanh</button>
+          <button type="button" data-tag="Sách đẹp">✓ Sách đẹp</button>
+          <button type="button" data-tag="Người bán nhiệt tình">✓ Người bán nhiệt tình</button>
         </div>
       </div>
 
@@ -149,8 +201,8 @@
       </section>
 
       <section class="panel seller">
-        <div class="seller-head"><div class="avatar large">OS</div><div><h3>OtakuStoreVN</h3><span>Hà Nội • Thành viên 3 năm</span></div></div>
-        <div class="seller-score"><strong>4.98</strong><span>★★★★★</span><small>1.248 đánh giá</small></div>
+        <div class="seller-head"><div class="avatar large" id="sellerSideAvatar">OS</div><div><h3 id="sellerSideName">OtakuStoreVN</h3><span>Người bán đối tác ComicWorm</span></div></div>
+        <div class="seller-score"><strong>5.0</strong><span>★★★★★</span><small>Độ hài lòng người mua</small></div>
       </section>
 
       <section class="panel tip"><span class="material-symbols-outlined">lightbulb</span><div><h3>Mẹo đánh giá hữu ích</h3><p>Chọn một mức sao tổng thể và chia sẻ ngắn gọn trải nghiệm thực tế của bạn.</p></div></section>
