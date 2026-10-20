@@ -98,6 +98,8 @@ public class ProductMapper {
                 .soldCount(soldCount)
                 .publiclyVisible(publiclyVisible)
                 .moderationStatus(p.getModerationStatus())
+                .moderationReason(p.getModerationReason())
+                .moderatedAt(p.getModeratedAt())
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();
@@ -125,6 +127,8 @@ public class ProductMapper {
         return ReviewDTO.builder()
                 .id(review.getId())
                 .rating(review.getRating())
+                .productQualityRating(review.getProductQualityRating() != null ? review.getProductQualityRating() : review.getRating())
+                .sellerAttitudeRating(review.getSellerAttitudeRating() != null ? review.getSellerAttitudeRating() : review.getRating())
                 .content(review.getContent())
                 .buyerName(buyer != null ? buyer.getFullName() : "Người dùng ẩn danh")
                 .buyerAvatarUrl(buyer != null ? buyer.getAvatarUrl() : null)

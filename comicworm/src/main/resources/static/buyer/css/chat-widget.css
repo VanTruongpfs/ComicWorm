@@ -1,0 +1,192 @@
+/* Nút tròn nổi */
+.chat-float-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.chat-float-btn:hover {
+    transform: scale(1.08);
+    background-color: #e84118;
+}
+
+/* Khung Popup */
+.chat-popup {
+    position: fixed;
+    bottom: 92px;
+    right: 24px;
+    width: 380px;
+    height: 540px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+    transition: all 0.3s ease;
+}
+.chat-popup.hidden {
+    display: none;
+}
+
+/* Header */
+.chat-header {
+    background: #2f3542;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.chat-header-info p {
+    font-size: 11px;
+    margin: 0;
+    color: #a4b0be;
+}
+.chat-header-info strong {
+    font-size: 14px;
+}
+.bot-status-dot {
+    width: 10px;
+    height: 10px;
+    background: #2ed573;
+    border-radius: 50%;
+}
+.chat-header-actions button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+/* Messages container */
+.chat-messages {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f1f2f6;
+}
+
+/* Tin nhắn */
+.msg {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-break: break-word;
+}
+.msg-user {
+    align-self: flex-end;
+    background-color: #ff4757;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+.msg-bot {
+    align-self: flex-start;
+    background-color: #ffffff;
+    color: #2f3542;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Danh sách Card sản phẩm do AI gợi ý */
+.product-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+.product-card-mini {
+    display: flex;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #dfe4ea;
+    border-radius: 8px;
+    padding: 8px;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+}
+.product-card-mini:hover,
+.product-card-mini:focus-visible {
+    border-color: #ff4757;
+}
+.product-card-mini:focus-visible {
+    outline: 2px solid #ff4757;
+    outline-offset: 2px;
+}
+.product-card-mini img {
+    width: 48px;
+    height: 64px;
+    flex: 0 0 48px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.product-card-info {
+    flex: 1;
+}
+.product-card-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 13px;
+    color: #2f3542;
+}
+.product-card-info .price {
+    font-size: 12px;
+    color: #ff4757;
+    font-weight: bold;
+}
+.product-card-meta {
+    margin-top: 4px;
+    color: #596273;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* Input area */
+.chat-input-area {
+    display: flex;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #e4e7eb;
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ced6e0;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13.5px;
+    outline: none;
+}
+.chat-input-area button {
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    margin-left: 8px;
+    cursor: pointer;
+}

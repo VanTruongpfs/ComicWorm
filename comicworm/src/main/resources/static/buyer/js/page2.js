@@ -155,7 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".review-button").forEach(button => {
     button.addEventListener("click", event => {
       event.stopPropagation();
-      showToast("Mở biểu mẫu đánh giá đơn hàng.");
+      const card = button.closest(".order-card");
+      const orderId = card?.dataset.orderId;
+      if (orderId && (!button.getAttribute("href") || button.getAttribute("href") === "page4.html")) {
+        button.setAttribute("href", `page4.html?orderCode=${encodeURIComponent(orderId)}`);
+      }
     });
   });
 

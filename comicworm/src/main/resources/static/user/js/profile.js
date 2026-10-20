@@ -15,26 +15,21 @@ function showToast(message, type = "error") {
     window.setTimeout(() => toast.remove(), 4000);
 }
 
-async function requestPasswordResetForCurrentUser() {
-    const session = JSON.parse(localStorage.getItem("bookmooch_session") || sessionStorage.getItem("bookmooch_session") || "null");
-    const profile = JSON.parse(localStorage.getItem("bookmooch_profile") || "null");
-    const email = session?.email || profile?.email || "member@example.com";
-    return new Promise((resolve) => window.setTimeout(() => resolve({ ok: true, email }), 450));
-}
-
-const PROFILE_KEY = "bookmooch_profile";
 const accountApi = window.BookMoochAccountApi;
 const fields = { displayName: document.querySelector("#display-name"), email: document.querySelector("#email") };
 const saved = { displayName: "", email: "" };
-let accountProfileKey;
 let roleInfo = ["Đang xác thực", "U", "Đang xác thực tài khoản", null];
 let authenticated = false;
+
+function initialsOf(name) { return Array.from(name.trim()).slice(0, 2).join("").toUpperCase(); }
 
 function renderProfile() {
     fields.displayName.value = saved.displayName;
     fields.email.value = saved.email;
     document.querySelector("[data-display-name]").textContent = saved.displayName;
     document.querySelector("[data-display-email]").textContent = saved.email;
+    const avatar = document.querySelector("[data-avatar]");
+    if (avatar && !avatar.querySelector("img") && saved.displayName) avatar.textContent = initialsOf(saved.displayName);
     document.querySelector("[data-role-badge]").textContent = roleInfo[0];
     document.querySelector("[data-role-label]").textContent = roleInfo[0];
     document.querySelector("[data-role-symbol]").textContent = roleInfo[1];
@@ -43,6 +38,7 @@ function renderProfile() {
     if (roleInfo[3]) action.href = roleInfo[3]; else action.removeAttribute("href");
     action.setAttribute("aria-disabled", String(!roleInfo[3]));
     document.querySelector("#profile-form button[type='submit']").disabled = !authenticated;
+    document.querySelector("#password-form button[type='submit']").disabled = !authenticated;
 }
 renderProfile();
 
@@ -56,11 +52,6 @@ async function loadAccount() {
         } else {
             authenticated = true;
             saved.displayName = account.fullName || "Thành viên";
-            accountProfileKey = PROFILE_KEY + ":" + account.id;
-            try {
-                const preferences = JSON.parse(localStorage.getItem(accountProfileKey) || "null");
-                if (preferences?.displayName) saved.displayName = preferences.displayName;
-            } catch (_) { /* Keep the authenticated profile when local preferences are invalid. */ }
             saved.email = account.email;
             roleInfo = account.isSeller
                 ? ["Người bán", "S", "Mở kênh Người bán", accountApi.sellerUrl()]
@@ -81,6 +72,91 @@ document.querySelector("#avatar-input").addEventListener("change", (event) => { 
 const savedAvatar = localStorage.getItem("bookmooch_avatar");
 if (savedAvatar) document.querySelector("[data-avatar]").innerHTML = `<img src="${savedAvatar}" alt="Ảnh đại diện">`;
 
-document.querySelector("#profile-form").addEventListener("submit", (event) => { event.preventDefault(); if (!authenticated) return; const nameError = fields.displayName.value.trim() ? "" : "Vui lòng nhập tên hiển thị."; setFieldError(fields.displayName, document.querySelector("[data-error-for='displayName']"), nameError); if (nameError) return; const profile = { displayName: fields.displayName.value.trim(), email: fields.email.value }; localStorage.setItem(accountProfileKey, JSON.stringify(profile)); localStorage.setItem("userName", profile.displayName); saved.displayName = profile.displayName; document.querySelector("[data-display-name]").textContent = profile.displayName; showToast("Thông tin hồ sơ đã được lưu.", "success"); });
+function errorSlot(field) { return document.querySelector(`[data-error-for='${field}']`); }
 
-document.querySelector("#request-password-reset").addEventListener("click", async (event) => { const button = event.currentTarget; button.disabled = true; button.textContent = "Đang gửi..."; try { await requestPasswordResetForCurrentUser(); showToast(`Chúng tôi đã gửi link đổi mật khẩu tới email của bạn: ${fields.email.value}. Vui lòng kiểm tra hộp thư.`, "success"); } catch (error) { showToast(error.message); } finally { button.disabled = false; button.textContent = "Đổi mật khẩu"; } });
+function clearErrors(form) {
+    form.querySelectorAll("[data-error-for]").forEach((slot) => { slot.textContent = ""; });
+    form.querySelectorAll("input").forEach((input) => input.removeAttribute("aria-invalid"));
+}
+
+function showFieldError(form, field, message) {
+    const input = form.elements[field];
+    setFieldError(input, errorSlot(field), message);
+    if (input) input.focus();
+}
+
+function handleApiError(form, error) {
+    if (error.loginRequired) {
+        showToast(error.message);
+        window.setTimeout(() => { window.location.href = accountApi.loginUrl(); }, 1500);
+    } else if (error.field && form.elements[error.field]) {
+        showFieldError(form, error.field, error.message);
+    } else {
+        showToast(error.message);
+    }
+}
+
+function syncDisplayName(name) {
+    saved.displayName = name;
+    fields.displayName.value = name;
+    document.querySelector("[data-display-name]").textContent = name;
+    const avatar = document.querySelector("[data-avatar]");
+    if (avatar && !avatar.querySelector("img")) avatar.textContent = initialsOf(name);
+    const sidebarName = document.querySelector("[data-sidebar-name]");
+    if (sidebarName) sidebarName.textContent = name;
+    const sidebarAvatar = document.querySelector("[data-sidebar-avatar]");
+    if (sidebarAvatar) sidebarAvatar.textContent = initialsOf(name);
+    try { localStorage.setItem("userName", name); } catch (_) { /* Storage can be blocked; the server value is authoritative. */ }
+}
+
+document.querySelector("#profile-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!authenticated) return;
+    const form = event.currentTarget;
+    const button = form.querySelector("button[type='submit']");
+    clearErrors(form);
+    const name = fields.displayName.value.trim().replace(/\s+/g, " ");
+    if (!name) return showFieldError(form, "displayName", "Vui lòng nhập tên hiển thị.");
+    if (Array.from(name).length > 100) return showFieldError(form, "displayName", "Tên hiển thị tối đa 100 ký tự.");
+    if (name === saved.displayName) { fields.displayName.value = name; return showToast("Tên hiển thị chưa thay đổi.", "success"); }
+    button.disabled = true;
+    try {
+        const account = await accountApi.updateProfile(name);
+        syncDisplayName(account.fullName);
+        showToast("Đã cập nhật tên hiển thị.", "success");
+    } catch (error) {
+        handleApiError(form, error.field === "fullName" ? Object.assign(error, { field: "displayName" }) : error);
+    } finally {
+        button.disabled = !authenticated;
+    }
+});
+
+const passwordForm = document.querySelector("#password-form");
+const passwordInputs = ["currentPassword", "newPassword", "confirmPassword"].map((name) => passwordForm.elements[name]);
+const showPasswords = document.querySelector("#show-passwords");
+showPasswords.addEventListener("change", () => passwordInputs.forEach((input) => { input.type = showPasswords.checked ? "text" : "password"; }));
+
+passwordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!authenticated) return;
+    const button = passwordForm.querySelector("button[type='submit']");
+    clearErrors(passwordForm);
+    const { currentPassword, newPassword, confirmPassword } = passwordForm.elements;
+    if (!currentPassword.value) return showFieldError(passwordForm, "currentPassword", "Vui lòng nhập mật khẩu hiện tại.");
+    if (newPassword.value.length < 8) return showFieldError(passwordForm, "newPassword", "Mật khẩu mới phải từ 8 ký tự trở lên.");
+    if (newPassword.value === currentPassword.value) return showFieldError(passwordForm, "newPassword", "Mật khẩu mới phải khác mật khẩu hiện tại.");
+    if (confirmPassword.value !== newPassword.value) return showFieldError(passwordForm, "confirmPassword", "Mật khẩu xác nhận không khớp.");
+    button.disabled = true;
+    button.textContent = "Đang đổi...";
+    try {
+        await accountApi.changePassword(currentPassword.value, newPassword.value, confirmPassword.value);
+        passwordForm.reset();
+        passwordInputs.forEach((input) => { input.type = "password"; });
+        showToast("Đổi mật khẩu thành công. Lần đăng nhập sau hãy dùng mật khẩu mới.", "success");
+    } catch (error) {
+        handleApiError(passwordForm, error);
+    } finally {
+        button.disabled = !authenticated;
+        button.textContent = "Đổi mật khẩu";
+    }
+});

@@ -13,83 +13,19 @@
 
     /* ---------- CẤU HÌNH ---------- */
     var ORDER_PAGE = 'negotiation-order.html';   // trang "Tạo đơn hàng đàm phán"
-    var DEAL_CODE = 'NG-2298';                   // mã đơn sinh ra sau khi chốt deal
+    var DEAL_CODE = '';                   // mã đơn sinh ra sau khi chốt deal
     var MAX_MONEY = 100000000;
 
-    /* ---------- DỮ LIỆU MẪU (thay bằng dữ liệu từ backend) ---------- */
     var USERS = {
-        owner: {
-            key: 'owner', name: 'Bủ Nguyên', short: 'Bủ Nguyên', initials: 'BN',
-            roleLabel: 'Chủ sở hữu', verified: true, rating: 4.9, reviews: 218,
-            deals: 186, successRate: 98, response: '~10 phút',
-            location: 'Q.5, TP. Hồ Chí Minh', since: '03/2022'
-        },
-        proposer: {
-            key: 'proposer', name: 'Huy Dương', short: 'Huy Dương', initials: 'HD',
-            roleLabel: 'Người đề nghị', verified: true, rating: 4.7, reviews: 41,
-            deals: 32, successRate: 94, response: '~25 phút',
-            location: 'Q. Hải Châu, Đà Nẵng', since: '09/2023'
-        },
-        buyerMai: {
-            key: 'buyerMai', name: 'Mai Anh', short: 'Mai Anh', initials: 'MA',
-            roleLabel: 'Người mua', verified: true, rating: 4.8, reviews: 67,
-            deals: 45, successRate: 96, response: '~8 phút',
-            location: 'Q. Bình Thạnh, TP. Hồ Chí Minh', since: '02/2024'
-        },
-        buyerKhanh: {
-            key: 'buyerKhanh', name: 'Khánh Linh', short: 'Khánh Linh', initials: 'KL',
-            roleLabel: 'Người trao đổi', verified: true, rating: 4.6, reviews: 28,
-            deals: 19, successRate: 91, response: '~18 phút',
-            location: 'Q. Thanh Xuân, Hà Nội', since: '11/2024'
-        }
+        owner: { key: 'owner', name: 'Chủ phòng', short: 'Chủ phòng', initials: 'CP', roleLabel: 'Chủ phòng' },
+        proposer: { key: 'proposer', name: 'Bạn', short: 'Bạn', initials: 'B', roleLabel: 'Người đề xuất' }
     };
+    var ROOM_PARTICIPANTS = [];
+    var DEAL_REQUESTS = [];
+    var ITEM = { title: '', cover: '', price: 0, tags: [], specs: [], note: '', wants: [] };
+    var INVENTORY = [];
 
-    var ROOM_PARTICIPANTS = [
-        { key: 'owner', dealType: 'host', dealLabel: 'Chủ phòng', offer: 'Giá niêm yết ' + '320.000₫', status: 'Đang mở phòng' },
-        { key: 'proposer', dealType: 'trade', dealLabel: 'Cả hai', offer: 'Naruto 1–10 + bù 60.000₫', status: 'Đang thương lượng' },
-        { key: 'buyerMai', dealType: 'buy', dealLabel: 'Tiền', offer: '300.000₫', status: 'Đang quan tâm' },
-        { key: 'buyerKhanh', dealType: 'trade', dealLabel: 'Trao đổi', offer: 'Bleach 1–8 + bù 40.000₫', status: 'Đã gửi đề xuất' }
-    ];
-
-    var DEAL_REQUESTS = [
-        { id: 'RQ-2049-01', buyer: 'proposer', type: 'trade', optionType: 'both', comics: ['c1'], money: 60000, note: 'Naruto 1–10 + bù 60.000₫', status: 'pending', time: '14:07' },
-        { id: 'RQ-2049-02', buyer: 'buyerMai', type: 'buy', optionType: 'money', comics: [], money: 300000, note: '300.000₫', status: 'pending', time: '14:06' },
-        { id: 'RQ-2049-03', buyer: 'buyerKhanh', type: 'trade', optionType: 'both', comics: ['c2'], money: 40000, note: 'Bleach 1–8 + bù 40.000₫', status: 'pending', time: '14:08' }
-    ];
-
-    var DEAL_REQUESTS = [
-        { id: 'RQ-2049-01', buyer: 'proposer', type: 'trade', comics: ['c1'], money: 60000, note: 'Naruto 1–10 + bù 60.000₫', status: 'pending', time: '14:07' },
-        { id: 'RQ-2049-02', buyer: 'buyerMai', type: 'buy', comics: [], money: 300000, note: 'Mua đứt · 300.000₫', status: 'pending', time: '14:06' },
-        { id: 'RQ-2049-03', buyer: 'buyerKhanh', type: 'trade', comics: ['c2'], money: 40000, note: 'Bleach 1–8 + bù 40.000₫', status: 'pending', time: '14:08' }
-    ];
-
-    var ITEM = {
-        title: 'One Piece — Trọn bộ tập 1–10',
-        cover: 'https://placehold.co/240x320/1e293b/FDBA74?text=ONE+PIECE',
-        price: 320000,
-        tags: ['Manga', 'Bìa mềm', '10 tập'],
-        specs: [
-            ['Tình trạng', 'Đã đọc · còn ~90%'],
-            ['Nhà xuất bản', 'NXB Kim Đồng'],
-            ['Năm in', '2019'],
-            ['Ngôn ngữ', 'Tiếng Việt'],
-            ['Số tập', '10 tập (1–10)'],
-            ['Đăng lúc', '20/09/2026']
-        ],
-        note: 'Sách giữ gáy tốt, không rách bìa. Có 1 tập hơi ố nhẹ ở mép trang. Có thể gửi thêm ảnh thực tế.',
-        wants: ['Naruto', 'Bleach', 'Dragon Ball', 'Tiền mặt']
-    };
-
-    var INVENTORY = [
-        { id: 'c1', title: 'Naruto', vol: 'Tập 1–10', cond: '85%', value: 180000, series: 'Naruto', bg: 'C2410C' },
-        { id: 'c2', title: 'Bleach', vol: 'Tập 1–8', cond: '90%', value: 130000, series: 'Bleach', bg: '334155' },
-        { id: 'c3', title: 'Dragon Ball', vol: 'Tập 1–12', cond: '80%', value: 200000, series: 'Dragon Ball', bg: 'B45309' },
-        { id: 'c4', title: 'Doraemon Đại tuyển tập', vol: 'Tập 1–3', cond: '95%', value: 90000, series: 'Doraemon', bg: '0F172A' },
-        { id: 'c5', title: 'Thám Tử Conan', vol: 'Tập 40–45', cond: '88%', value: 110000, series: 'Conan', bg: '1E293B' },
-        { id: 'c6', title: 'Attack on Titan', vol: 'Tập 1–5', cond: '92%', value: 150000, series: 'Attack on Titan', bg: '64748B' }
-    ];
-
-    var STATUS_LABEL = { pending: 'Đang chờ', accepted: 'Đã đồng ý', declined: 'Đã từ chối', superseded: 'Đã thay thế' };
+    var STATUS_LABEL = { pending: 'Đang chờ', accepted: 'Đã đồng ý', declined: 'Đã từ chối', withdrawn: 'Đã rút', superseded: 'Đã thay thế' };
     var QUICK = {
         proposer: ['Cho mình xin thêm ảnh thực tế nhé', 'Bạn giữ bộ này đến khi nào?', 'Mình có thể nhận trực tiếp không?'],
         owner: ['Mình đang xem request của bạn', 'Bạn có thể gửi thêm ảnh truyện không?', 'Mình sẽ phản hồi request sớm nhé']
@@ -97,9 +33,10 @@
 
     /* ---------- TRẠNG THÁI ---------- */
     var params = new URLSearchParams(location.search);
+    var backendRoomParam = params.get('room') || params.get('id') || params.get('code');
     var state = {
-        role: params.get('role') === 'owner' ? 'owner' : 'proposer',
-        room: { code: '#PT2049', status: 'negotiating', dealType: 'mixed' },
+        role: 'proposer',
+        room: { code: '', status: 'loading', dealType: 'mixed' },
         participantFilter: 'all',
         chatFilter: 'all',
         requestFilter: 'all',
@@ -107,23 +44,13 @@
         requestSort: 'newest',
         requestSearch: '',
         confirmations: { owner: false, buyer: false },
-        selectedRequestId: 'RQ-2049-01',
+        selectedRequestId: null,
         dealBuyer: 'proposer',
         requestFormOpen: false,
         editingOfferId: null,
-        offers: [
-            { id: 1, by: 'proposer', buyerKey: 'proposer', requestId: 'RQ-2049-01', type: 'trade', optionType: 'both', comics: ['c1'], money: 60000, note: 'Mình bù thêm chút tiền nhé.', status: 'pending', edited: false, time: '14:07' }
-        ],
-        messages: [
-            { type: 'system', text: 'Phòng được tạo lúc 14:02 · Giá niêm yết 320.000₫' },
-            { type: 'text', by: 'owner', text: 'Chào bạn, bộ One Piece này còn nhé. Bạn muốn đổi bằng truyện nào?', time: '14:02' },
-            { type: 'text', by: 'proposer', text: 'Mình có Naruto 1–10, bù thêm ít tiền được không ạ?', time: '14:05' },
-            { type: 'text', by: 'buyerMai', text: 'Mình đang theo dõi phòng. Nếu không đổi được thì mình xin mua luôn bộ này nhé.', time: '14:06' },
-            { type: 'text', by: 'buyerKhanh', text: 'Mình có Bleach 1–8, bạn có muốn xem ảnh tình trạng truyện không?', time: '14:08' },
-            { type: 'offer', offerId: 1, by: 'proposer' },
-            { type: 'text', by: 'owner', text: 'Phòng này có thể trao đổi hoặc mua đứt. Mình sẽ chốt một đề xuất, sau đó hai bên cùng xác nhận hàng hóa, địa chỉ và phí giao nhận trước khi tạo đơn.', time: '14:12' }
-        ],
-        draft: { mode: 'both', comics: ['c1'], money: 100000 },
+        offers: [],
+        messages: [],
+        draft: { mode: 'both', comics: [], money: 0 },
         modal: null,
         focusKey: null
     };
@@ -141,14 +68,21 @@
     var other = function (r) { return r === 'owner' ? 'proposer' : 'owner'; };
     var comicById = function (id) { return INVENTORY.filter(function (c) { return c.id === id; })[0]; };
     var cover = function (c, w, h) {
-        var t = encodeURIComponent(c.title.split(' ').slice(0, 2).join('+'));
-        return 'https://placehold.co/' + w + 'x' + h + '/' + c.bg + '/FFF7ED?text=' + t;
+        return c.cover || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="72" height="96"%3E%3Crect width="72" height="96" fill="%23e2e8f0"/%3E%3C/svg%3E';
     };
     var who = function (r) { return r === state.role || (state.role === 'proposer' && r === state.dealBuyer) ? 'Bạn' : (USERS[r] ? USERS[r].short : 'Thành viên'); };
     var latestOffer = function () { return state.offers[state.offers.length - 1]; };
     var offerById = function (id) { return state.offers.filter(function (o) { return o.id === Number(id); })[0]; };
     var offerForRequest = function (requestId) { return state.offers.filter(function (offer) { return offer.requestId === requestId; })[0]; };
-    var selectedDealOffer = function () { return offerForRequest(state.selectedRequestId) || latestOffer(); };
+    var selectedDealOffer = function () {
+        if (state.selectedOfferId) {
+            var bySelectedId = offerById(state.selectedOfferId);
+            if (bySelectedId) return bySelectedId;
+        }
+        var accepted = state.offers.find(function (o) { return o.status === 'accepted'; });
+        if (accepted) return accepted;
+        return offerForRequest(state.selectedRequestId) || latestOffer();
+    };
     var requestById = function (id) { return DEAL_REQUESTS.filter(function (request) { return request.id === id; })[0]; };
     var activeBuyer = function () { return USERS[state.dealBuyer] || USERS.proposer; };
     var buyerName = function (key) { return state.role === 'proposer' && key === state.dealBuyer ? 'Bạn' : (USERS[key] ? USERS[key].short : 'Người mua'); };
@@ -156,6 +90,15 @@
     var optionType = function (offer) { return offer.optionType || (offer.comics.length ? (offer.money ? 'both' : 'comic') : 'money'); };
     var optionTypeLabel = function (type) { return type === 'money' ? 'Tiền' : type === 'comic' ? 'Trao đổi' : 'Cả hai'; };
     var roomClosed = function () { return state.room.status !== 'negotiating'; };
+    var isDealParty = function (offer) {
+        return !backendRoomParam || Boolean(offer && state.currentUserId &&
+            (state.currentUserId === state.hostId || state.currentUserId === offer.buyerId));
+    };
+    var canCreateOrder = function () {
+        var offer = selectedDealOffer();
+        return offer && offer.status === 'accepted' && state.room.status === 'locked' &&
+            state.confirmations.owner && state.confirmations.buyer && isDealParty(offer);
+    };
 
     function comicsValue(ids) { return ids.reduce(function (s, id) { return s + comicById(id).value; }, 0); }
     function offerValue(o) { return comicsValue(o.comics) + o.money; }
@@ -212,29 +155,16 @@
         if (!ids.length) return '<div class="dc-nocomic"><i class="fa-solid fa-ban"></i> Không đổi bằng truyện</div>';
         return '<ul class="dc-minis">' + ids.map(function (id) {
             var c = comicById(id);
-            return '<li class="dc-mini"><img src="' + cover(c, 72, 96) + '" alt=""><span><strong>' + esc(c.title) + '</strong><small>' + c.vol + ' · ' + c.cond + '</small></span><em>' + fmt(c.value) + '</em></li>';
+            return '<li class="dc-mini"><img src="' + esc(cover(c, 72, 96)) + '" alt=""><span><strong>' + esc(c.title) + '</strong><small>' + esc(c.vol) + ' · ' + esc(c.cond) + '</small></span><em>' + fmt(c.value) + '</em></li>';
         }).join('') + '</ul>';
     }
 
     /* ---------- RENDER: 2 BÊN ---------- */
-    function personCard(u) {
-        var you = u.key === state.role ? '<span class="dc-you">Bạn</span>' : '';
-        return '<article class="dc-person dc-person--' + u.key + '">' +
-            '<div class="dc-avatar">' + u.initials + '<span class="dc-avatar-dot" title="Đang online"></span></div>' +
-            '<div class="dc-person-body">' +
-            '<div class="dc-person-role">' + u.roleLabel + you + '</div>' +
-            '<h3 class="dc-person-name">' + u.name + (u.verified ? ' <i class="fa-solid fa-circle-check dc-verified" title="Đã xác minh"></i>' : '') + '</h3>' +
-            '<div class="dc-rating"><i class="fa-solid fa-star"></i> ' + u.rating + ' <span>(' + u.reviews + ' đánh giá)</span></div>' +
-            '<ul class="dc-person-stats">' +
-            '<li><strong>' + u.deals + '</strong> giao dịch</li>' +
-            '<li><strong>' + u.successRate + '%</strong> thành công</li>' +
-            '<li>Phản hồi <strong>' + u.response + '</strong></li></ul>' +
-            '<div class="dc-person-meta"><span><i class="fa-solid fa-location-dot"></i> ' + u.location + '</span><span><i class="fa-regular fa-calendar"></i> Tham gia ' + u.since + '</span></div>' +
-            '</div></article>';
-    }
-
     function statusInfo() {
         switch (state.room.status) {
+            case 'loading': return { cls: 'confirming', icon: 'fa-clock', text: 'Đang tải phòng' };
+            case 'unavailable': return { cls: 'confirming', icon: 'fa-circle-exclamation', text: 'Không tải được phòng' };
+            case 'cancelled': return { cls: 'locked', icon: 'fa-lock', text: 'Phòng đã đóng' };
             case 'agreed': return { cls: 'agreed', icon: 'fa-handshake', text: 'Hai bên đã đồng ý · chờ chốt' };
             case 'confirming': return { cls: 'confirming', icon: 'fa-clipboard-check', text: 'Đã chốt giá · chờ xác nhận giao dịch' };
             case 'locked': return { cls: 'locked', icon: 'fa-truck-fast', text: 'Đã xác nhận · sẵn sàng tạo đơn' };
@@ -244,15 +174,21 @@
 
     function renderHero() {
         var s = statusInfo();
+        var offer = selectedDealOffer();
+        var confirmationLink = '';
+        if (offer && isDealParty(offer) && (state.room.status === 'confirming' || canCreateOrder())) {
+            confirmationLink = '<a href="#sidePanel" class="dc-btn dc-btn--primary dc-btn--sm">' +
+                (canCreateOrder() ? 'Tiến hành tạo đơn' : 'Xem và xác nhận giao dịch') + ' <i class="fa-solid fa-arrow-down"></i></a>';
+        }
         var shown = ROOM_PARTICIPANTS.filter(function (p) {
             return state.participantFilter === 'all' || p.dealType === state.participantFilter || (state.participantFilter === 'closed' && state.room.status === 'locked');
         });
         $('#hero').innerHTML =
             '<section class="dc-room-summary">' +
             '<div class="dc-room-summary-main"><span class="dc-room-kicker"><i class="fa-solid fa-comments"></i> PHÒNG DEAL CỘNG ĐỒNG</span>' +
-            '<h2>Phòng ' + state.room.code + '</h2><p>Chủ phòng: <strong>' + USERS.owner.name + '</strong> · ' + ITEM.title + '</p></div>' +
+            '<h2>Phòng ' + state.room.code + '</h2><p>Chủ phòng: <strong>' + esc(USERS.owner.name) + '</strong> · ' + esc(ITEM.title) + '</p></div>' +
             '<div class="dc-room-summary-meta"><span class="dc-deal-capability">Có thể:</span><span class="dc-deal-type dc-deal-type--trade"><i class="fa-solid fa-arrows-rotate"></i> Trao đổi</span><span class="dc-deal-type dc-deal-type--buy"><i class="fa-solid fa-bag-shopping"></i> Mua đứt</span><span class="dc-status dc-status--' + s.cls + '"><i class="fa-solid ' + s.icon + '"></i> ' + s.text + '</span></div>' +
-            '<div class="dc-room-price"><small>Giá niêm yết</small><strong>' + fmt(ITEM.price) + '</strong></div></section>' +
+            '<div class="dc-room-price"><small>Giá niêm yết</small><strong>' + fmt(ITEM.price) + '</strong></div>' + confirmationLink + '</section>' +
             '<section class="dc-participants" aria-label="Thành viên và đề xuất trong phòng">' +
             '<div class="dc-participants-head"><div><h3>Thành viên & đề xuất</h3><p>' + ROOM_PARTICIPANTS.length + ' thành viên · người mua có thể theo dõi và gửi đề xuất</p></div>' +
             '<div class="dc-participant-filters"><label class="sr-only" for="participantFilter">Lọc thành viên theo loại deal</label><select id="participantFilter"><option value="all" ' + (state.participantFilter === 'all' ? 'selected' : '') + '>Tất cả đề xuất</option><option value="trade" ' + (state.participantFilter === 'trade' ? 'selected' : '') + '>Trao đổi</option><option value="buy" ' + (state.participantFilter === 'buy' ? 'selected' : '') + '>Mua đứt</option><option value="closed" ' + (state.participantFilter === 'closed' ? 'selected' : '') + '>Đã chốt</option></select></div></div>' +
@@ -261,7 +197,7 @@
                 var status = (state.room.status === 'locked' || state.room.status === 'confirming') && p.key === state.dealBuyer ? (state.room.status === 'locked' ? 'Đã chốt' : 'Đang xác nhận') : p.status;
                 var typeClass = p.dealType === 'buy' ? 'buy' : p.dealType === 'trade' ? 'trade' : 'host';
                 return '<button type="button" class="dc-participant dc-participant--' + typeClass + ' ' + (state.chatFilter === p.key ? 'is-selected' : '') + '" data-chat-participant="' + p.key + '">' +
-                    '<span class="dc-participant-avatar dc-participant-avatar--' + p.key + '">' + u.initials + '<i></i></span><span class="dc-participant-copy"><strong>' + u.name + (p.key === state.role ? ' <em>Bạn</em>' : '') + '</strong><small>' + p.dealLabel + ' · ' + p.offer + '</small></span><span class="dc-participant-state ' + (status === 'Đã chốt' ? 'is-closed' : '') + '">' + status + '</span></button>';
+                    '<span class="dc-participant-avatar dc-participant-avatar--' + p.key + '">' + esc(u.initials) + '<i></i></span><span class="dc-participant-copy"><strong>' + esc(u.name) + (p.key === state.role ? ' <em>Bạn</em>' : '') + '</strong><small>' + p.dealLabel + ' · ' + esc(p.offer) + '</small></span><span class="dc-participant-state ' + (status === 'Đã chốt' ? 'is-closed' : '') + '">' + status + '</span></button>';
             }).join('') + '</div></section>';
         $$('#participantFilter option').forEach(function (option) { option.selected = option.value === state.participantFilter; });
     }
@@ -269,13 +205,13 @@
     /* ---------- RENDER: SẢN PHẨM ---------- */
     function renderItem() {
         $('#itemCard').innerHTML =
-            '<div class="dc-item-cover"><img src="' + ITEM.cover + '" alt="' + esc(ITEM.title) + '"><span class="dc-item-flag"><i class="fa-solid fa-book-open"></i> Sản phẩm trong phòng</span></div>' +
+            '<div class="dc-item-cover"><img src="' + esc(ITEM.cover) + '" alt="' + esc(ITEM.title) + '"><span class="dc-item-flag"><i class="fa-solid fa-book-open"></i> Sản phẩm trong phòng</span></div>' +
             '<div class="dc-item-body">' +
-            '<div class="dc-item-tags">' + ITEM.tags.map(function (t) { return '<span class="dc-tag">' + t + '</span>'; }).join('') + '</div>' +
-            '<h2 class="dc-item-title">' + ITEM.title + '</h2>' +
-            '<dl class="dc-specs">' + ITEM.specs.map(function (s) { return '<div class="dc-spec"><dt>' + s[0] + '</dt><dd>' + s[1] + '</dd></div>'; }).join('') + '</dl>' +
-            '<p class="dc-item-note"><i class="fa-regular fa-note-sticky"></i> ' + ITEM.note + '</p>' +
-            '<div class="dc-wants"><span>Chủ sở hữu đang tìm:</span>' + ITEM.wants.map(function (w) { return '<b>' + w + '</b>'; }).join('') + '</div>' +
+            '<div class="dc-item-tags">' + ITEM.tags.map(function (t) { return '<span class="dc-tag">' + esc(t) + '</span>'; }).join('') + '</div>' +
+            '<h2 class="dc-item-title">' + esc(ITEM.title) + '</h2>' +
+            '<dl class="dc-specs">' + ITEM.specs.map(function (s) { return '<div class="dc-spec"><dt>' + esc(s[0]) + '</dt><dd>' + esc(s[1]) + '</dd></div>'; }).join('') + '</dl>' +
+            '<p class="dc-item-note"><i class="fa-regular fa-note-sticky"></i> ' + esc(ITEM.note) + '</p>' +
+            '<div class="dc-wants"><span>Chủ sở hữu đang tìm:</span>' + ITEM.wants.map(function (w) { return '<b>' + esc(w) + '</b>'; }).join('') + '</div>' +
             '</div>' +
             '<div class="dc-item-price">' +
             '<span class="dc-price-label">Giá niêm yết</span>' +
@@ -286,11 +222,30 @@
     }
 
     /* ---------- RENDER: CHAT ---------- */
+    function isMyMessage(m) {
+        if (!m) return false;
+        if (m.isMine === true) return true;
+        if (backendRoomParam) return Boolean(state.currentUserId && m.senderId === state.currentUserId);
+        if (state.currentUserId && m.senderId) {
+            return String(m.senderId) === String(state.currentUserId);
+        }
+        if (m.clientKey && state.myClientKeys && state.myClientKeys.has(m.clientKey)) {
+            return true;
+        }
+        if (state.isCurrentUserHost || state.role === 'owner') {
+            return !!m.isHost;
+        }
+        if (state.role === 'proposer') {
+            return !m.isHost && (m.by === 'proposer' || m.by === state.dealBuyer);
+        }
+        return false;
+    }
+
     function offerCardHTML(o, forSide) {
         var mine = o.by === state.role;
         var value = offerValue(o);
         var buyer = USERS[o.buyerKey || o.by] || USERS.proposer;
-        var head = '<div class="dc-offer-head"><span class="dc-offer-tag"><i class="fa-solid fa-tag"></i> Đề xuất #' + o.id + ' · ' + (mine ? 'Của bạn' : buyer.short) + '</span>' +
+        var head = '<div class="dc-offer-head"><span class="dc-offer-tag"><i class="fa-solid fa-tag"></i> Đề xuất #' + o.id + ' · ' + (mine ? 'Của bạn' : esc(buyer.short)) + '</span>' +
             '<span class="dc-badge dc-badge--' + o.status + '">' + STATUS_LABEL[o.status] + '</span></div>';
         var body = '<div class="dc-offer-block"><span class="dc-offer-label">Người đề nghị đưa</span>' + miniComics(o.comics) + '</div>' +
             '<div class="dc-offer-money ' + (o.money === 0 ? 'is-zero' : '') + '"><i class="fa-solid fa-coins"></i><span>' + moneyText(o.money, o.buyerKey || o.by, o.type) + '</span></div>' +
@@ -315,16 +270,32 @@
 
         $('#chatScroll').innerHTML = visibleMessages.map(function (m) {
             if (m.type === 'system') return '<span class="dc-system">' + esc(m.text) + '</span>';
-            var mine = m.by === state.role;
-            var u = USERS[m.by];
-            if (!u) return '';
+
+            var mine = isMyMessage(m);
+            var displayName = mine ? 'Bạn' : (m.senderName || (USERS[m.by] ? USERS[m.by].name : (m.isHost ? 'Chủ phòng' : 'Thành viên')));
+            if (!mine && m.isHost && displayName.indexOf('Chủ phòng') === -1) {
+                displayName += ' (Chủ phòng)';
+            }
+
+            var initials = displayName.substring(0, 2).toUpperCase();
+            var avatarClass = mine ? 'dc-msg-avatar--me' : (m.isHost ? 'dc-msg-avatar--owner' : 'dc-msg-avatar--proposer');
+            var avatarHtml = m.senderAvatar
+                ? '<img src="' + esc(m.senderAvatar) + '" alt="' + esc(displayName) + '" class="dc-msg-avatar-img">'
+                : initials;
+
             var inner = m.type === 'offer'
                 ? offerCardHTML(offerById(m.offerId), false)
                 : '<div class="dc-bubble">' + esc(m.text) + '</div>';
-            var time = m.type === 'offer' ? offerById(m.offerId).time : m.time;
-            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + ' dc-msg--' + m.by + '">' +
-                '<div class="dc-msg-avatar dc-msg-avatar--' + m.by + '">' + u.initials + '</div>' +
-                '<div class="dc-msg-body"><div class="dc-msg-name">' + (mine ? 'Bạn' : u.name) + '</div>' + inner + '<span class="dc-msg-time">' + time + '</span></div></div>';
+            var time = m.type === 'offer' ? (offerById(m.offerId) ? offerById(m.offerId).time : m.time) : (m.time || '');
+
+            return '<div class="dc-msg ' + (mine ? 'dc-msg--me' : 'dc-msg--them') + '">' +
+                '<div class="dc-msg-avatar ' + avatarClass + '">' + avatarHtml + '</div>' +
+                '<div class="dc-msg-body">' +
+                    '<div class="dc-msg-name">' + esc(displayName) + '</div>' +
+                    inner +
+                    '<span class="dc-msg-time">' + esc(time) + '</span>' +
+                '</div>' +
+            '</div>';
         }).join('');
         var sc = $('#chatScroll');
         sc.scrollTop = sc.scrollHeight;
@@ -364,13 +335,13 @@
 
         var inv = '';
         if (showComics) {
-            var sorted = INVENTORY.slice().sort(function (a, b) { return Number(isWanted(b)) - Number(isWanted(a)); });
+            var sorted = INVENTORY.filter(function (comic) { return comic.owned; }).slice().sort(function (a, b) { return Number(isWanted(b)) - Number(isWanted(a)); });
             inv = '<div class="dc-block-title">Kệ truyện của bạn <small>' + selIds.length + ' đã chọn</small></div><div class="dc-inv-list">' + sorted.map(function (c) {
                 var on = d.comics.indexOf(c.id) > -1;
                 return '<label class="dc-inv ' + (on ? 'is-selected' : '') + '">' +
                     '<input type="checkbox" data-act="pick" data-comic="' + c.id + '"' + (on ? ' checked' : '') + '>' +
-                    '<img class="dc-inv-cover" src="' + cover(c, 72, 96) + '" alt="">' +
-                    '<span class="dc-inv-info"><strong>' + esc(c.title) + '</strong><small>' + c.vol + ' · ' + c.cond + '</small>' +
+                    '<img class="dc-inv-cover" src="' + esc(cover(c, 72, 96)) + '" alt="">' +
+                    '<span class="dc-inv-info"><strong>' + esc(c.title) + '</strong><small>' + esc(c.vol) + ' · ' + esc(c.cond) + '</small>' +
                     (isWanted(c) ? '<span class="dc-wanted"><i class="fa-solid fa-heart"></i> Chủ truyện đang tìm</span>' : '') + '</span>' +
                     '<span class="dc-inv-value">' + fmt(c.value) + '</span></label>';
             }).join('') + '</div>';
@@ -410,7 +381,7 @@
             var value = comicsValue(request.comics) + request.money;
             var selectedClass = request.id === state.selectedRequestId ? ' is-selected' : '';
             return '<button type="button" class="dc-request-row dc-request-row--' + request.type + selectedClass + '" data-act="select-request" data-request-id="' + request.id + '">' +
-                '<span class="dc-request-avatar dc-request-avatar--' + request.buyer + '">' + buyer.initials + '</span><span class="dc-request-copy"><strong>' + buyer.name + '</strong><small><span class="dc-request-kind dc-request-kind--' + request.type + '">' + optionTypeLabel(request.optionType || (request.type === 'buy' ? 'money' : request.comics.length && request.money ? 'both' : 'comic')) + '</span>' + esc(request.note) + '</small></span>' +
+                '<span class="dc-request-avatar dc-request-avatar--' + request.buyer + '">' + esc(buyer.initials) + '</span><span class="dc-request-copy"><strong>' + esc(buyer.name) + '</strong><small><span class="dc-request-kind dc-request-kind--' + request.type + '">' + optionTypeLabel(request.optionType || (request.type === 'buy' ? 'money' : request.comics.length && request.money ? 'both' : 'comic')) + '</span>' + esc(request.note) + '</small></span>' +
                 '<span class="dc-request-value"><strong>' + fmt(value) + '</strong><small>' + request.time + '</small><em class="dc-request-status dc-request-status--' + request.status + '">' + (request.status === 'accepted' ? 'Đã chọn' : request.status === 'declined' ? 'Đã từ chối' : 'Chờ xem') + '</em></span></button>';
         }).join('');
         var summary = '';
@@ -418,11 +389,11 @@
             var selectedBuyer = USERS[selected.buyer];
             var proposedValue = comicsValue(selected.comics) + selected.money;
             summary = '<div class="dc-request-selected"><div class="dc-request-selected-head"><div><span class="dc-request-kind dc-request-kind--' + selected.type + '">' + optionTypeLabel(selected.optionType || (selected.type === 'buy' ? 'money' : selected.comics.length && selected.money ? 'both' : 'comic')) + '</span><span class="dc-request-id">' + selected.id + '</span></div><span class="dc-badge dc-badge--pending">Chờ chủ phòng</span></div>' +
-                '<h4>' + selectedBuyer.name + ' gửi yêu cầu</h4><p>' + esc(selected.note) + '</p>' +
+                '<h4>' + esc(selectedBuyer.name) + ' gửi yêu cầu</h4><p>' + esc(selected.note) + '</p>' +
                 '<div class="dc-request-total"><span>Giá chủ phòng muốn bán</span><strong>' + fmt(ITEM.price) + '</strong></div>' +
                 '<div class="dc-request-total"><span>Giá trị buyer đề xuất</span><strong>' + fmt(proposedValue) + '</strong></div>' +
-                '<p class="dc-request-note">Chọn xác nhận để chốt request này. Các request khác sẽ được giữ lại nhưng không thể thắng deal đã chốt.</p>' +
-                '<button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="lock"><i class="fa-solid fa-circle-check"></i> Xác nhận request này</button></div>';
+                '<p class="dc-request-note">Chọn đề xuất này, sau đó mỗi bên tự xác nhận giao dịch để tiến hành tạo đơn.</p>' +
+                (selected.status === 'pending' ? '<button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="lock"' + (state.actionPending ? ' disabled' : '') + '><i class="fa-solid fa-circle-check"></i> Chọn đề xuất này</button>' : '') + '</div>';
         }
         return '<div class="dc-side-card dc-owner-inbox"><div class="dc-listing-price-card"><span><i class="fa-solid fa-tag"></i> Giá chủ phòng muốn bán</span><strong>' + fmt(ITEM.price) + '</strong><small>Giá sản phẩm trong tin đăng</small></div>' +
             '<div class="dc-side-head"><div><h3>Request từ người mua</h3><span class="dc-side-sub">Chọn request để xem và xác nhận</span></div><span class="dc-request-count">' + filteredRequests.length + '/' + DEAL_REQUESTS.length + '</span></div>' +
@@ -444,7 +415,7 @@
             var canEdit = offer.status === 'pending' && !roomClosed();
             return '<article class="dc-my-deal dc-my-deal--' + type + '"><div class="dc-my-deal-heading"><span class="dc-my-deal-type dc-my-deal-type--' + type + '">' + optionTypeLabel(type) + '</span><span class="dc-badge dc-badge--' + offer.status + '">' + STATUS_LABEL[offer.status] + '</span></div>' +
                 '<p class="dc-my-deal-detail">' + esc(detail) + '</p><div class="dc-my-deal-footer"><span>Giá trị deal <strong>' + fmt(total) + '</strong></span>' +
-                (canEdit ? '<button type="button" class="dc-btn dc-btn--outline dc-btn--sm" data-act="edit-deal" data-offer-id="' + offer.id + '"><i class="fa-solid fa-pen"></i> Chỉnh sửa</button>' : '') + '</div></article>';
+                (canEdit ? '<button type="button" class="dc-btn dc-btn--outline dc-btn--sm" data-act="edit-deal" data-offer-id="' + offer.id + '"><i class="fa-solid fa-pen"></i> Chỉnh sửa</button><button type="button" class="dc-btn dc-btn--outline dc-btn--sm" data-act="withdraw" data-offer-id="' + offer.id + '">Rút đề xuất</button>' : '') + '</div></article>';
         }).join('');
         var available = ['money', 'comic', 'both'].filter(function (type) { return types.indexOf(type) < 0; });
         var canAdd = available.length > 0 && !roomClosed();
@@ -466,9 +437,9 @@
         $('#dealEditTitle').textContent = 'Chỉnh sửa deal #' + offer.id;
         $('#dealEditType').innerHTML = '<i class="fa-solid fa-lock"></i> Loại deal không đổi: <strong>' + optionTypeLabel(type) + '</strong> · ' + typeDescription;
 
-        var comics = type === 'money' ? '' : '<div class="dc-block-title">Truyện bạn muốn đưa</div><div class="dc-edit-comics">' + INVENTORY.map(function (comic) {
+        var comics = type === 'money' ? '' : '<div class="dc-block-title">Truyện bạn muốn đưa</div><div class="dc-edit-comics">' + INVENTORY.filter(function (comic) { return comic.owned; }).map(function (comic) {
             var checked = offer.comics.indexOf(comic.id) >= 0;
-            return '<label class="dc-edit-comic ' + (checked ? 'is-selected' : '') + '"><input type="checkbox" data-edit-comic="' + comic.id + '"' + (checked ? ' checked' : '') + '><span><strong>' + esc(comic.title) + '</strong><small>' + comic.vol + ' · ' + comic.cond + '</small></span><em>' + fmt(comic.value) + '</em></label>';
+            return '<label class="dc-edit-comic ' + (checked ? 'is-selected' : '') + '"><input type="checkbox" data-edit-comic="' + comic.id + '"' + (checked ? ' checked' : '') + '><span><strong>' + esc(comic.title) + '</strong><small>' + esc(comic.vol) + ' · ' + esc(comic.cond) + '</small></span><em>' + fmt(comic.value) + '</em></label>';
         }).join('') + '</div>';
         var moneyField = type === 'comic' ? '' : '<div class="dc-field dc-edit-money"><label for="dealEditMoney">' + (type === 'money' ? 'Giá mua đứt bạn đề xuất' : 'Số tiền bù thêm') + '</label><div class="dc-amount"><input id="dealEditMoney" type="text" inputmode="numeric" value="' + (offer.money ? offer.money.toLocaleString('vi-VN') : '') + '"><span>₫</span></div></div>';
         $('#dealEditFields').innerHTML = '<div class="dc-buyer-price-summary"><span>Giá chủ phòng muốn bán</span><strong>' + fmt(ITEM.price) + '</strong></div>' + comics + moneyField;
@@ -480,42 +451,41 @@
         if (!offer || offer.status !== 'pending') return;
         var type = optionType(offer);
         var comics = type === 'money' ? [] : $$('[data-edit-comic]:checked').map(function (input) { return input.getAttribute('data-edit-comic'); });
-        var money = type === 'comic' ? 0 : parseAmount($('#dealEditMoney').value);
+        var money = type === 'comic' ? 0 : parseAmount($('#dealEditMoney').value) * (offer.money < 0 ? -1 : 1);
         if (type !== 'money' && comics.length === 0) { toast('Chọn ít nhất một truyện cho deal.'); return; }
-        if (type !== 'comic' && money <= 0) { toast(type === 'money' ? 'Nhập giá mua đứt bạn đề xuất.' : 'Nhập số tiền bù thêm.'); return; }
+        if (type !== 'comic' && money === 0) { toast(type === 'money' ? 'Nhập giá mua đứt bạn đề xuất.' : 'Nhập số tiền bù thêm.'); return; }
 
-        offer.comics = comics;
-        offer.money = money;
-        offer.edited = true;
-        var request = requestById(offer.requestId);
-        if (request) {
-            request.comics = comics.slice();
-            request.money = money;
-            request.note = type === 'money' ? fmt(money) : comics.map(function (id) { return comicById(id).title; }).join(', ') + (money ? ' · bù ' + fmt(money) : '');
-        }
-        state.editingOfferId = null;
-        state.dealEditDraft = null;
-        closeModals();
-        renderAll();
-        toast('Đã cập nhật deal.');
+        return persistOffer({ comics: comics, money: money, note: offer.note }, offer.id);
+
     }
 
     function lockedCard() {
-        var acc = state.offers.filter(function (o) { return o.status === 'accepted'; }).pop() || latestOffer();
-        var buyer = activeBuyer();
+        var acc = selectedDealOffer();
+        var buyer = (acc && acc.buyerKey && USERS[acc.buyerKey]) ? USERS[acc.buyerKey] : activeBuyer();
         var bothConfirmed = state.confirmations.owner && state.confirmations.buyer;
         var ownConfirmation = state.role === 'owner' ? state.confirmations.owner : state.confirmations.buyer;
         var otherPartyName = state.role === 'owner' ? buyer.short : USERS.owner.short;
-        var cta = bothConfirmed
-            ? '<div class="dc-notice dc-notice--ok"><i class="fa-solid fa-circle-check"></i><span>Cả hai bên đã xác nhận thông tin. Deal có thể chuyển thành đơn vận chuyển.</span></div><button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="create-order">Tạo đơn vận chuyển <i class="fa-solid fa-arrow-right"></i></button>'
-            : '<div class="dc-confirmation-status"><span class="' + (state.confirmations.owner ? 'is-confirmed' : '') + '"><i class="fa-solid ' + (state.confirmations.owner ? 'fa-circle-check' : 'fa-clock') + '"></i> Seller: ' + (state.confirmations.owner ? 'Đã xác nhận' : 'Chờ xác nhận') + '</span><span class="' + (state.confirmations.buyer ? 'is-confirmed' : '') + '"><i class="fa-solid ' + (state.confirmations.buyer ? 'fa-circle-check' : 'fa-clock') + '"></i> ' + buyer.short + ': ' + (state.confirmations.buyer ? 'Đã xác nhận' : 'Chờ xác nhận') + '</span></div>' +
-                (ownConfirmation ? '<div class="dc-notice"><i class="fa-regular fa-clock"></i><span>Bạn đã xác nhận. Đang chờ ' + otherPartyName + ' xác nhận thông tin.</span></div>' : '<button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="confirm-details"><i class="fa-solid fa-clipboard-check"></i> Xác nhận thông tin giao dịch</button>');
+        var orderUrl = ORDER_PAGE + '?room=' + encodeURIComponent(state.backendRoomId || state.room.code) + '&deal=' + encodeURIComponent(acc ? acc.id : DEAL_CODE);
+
+        var cta;
+        if (!isDealParty(acc)) {
+            cta = '<div class="dc-notice"><i class="fa-solid fa-circle-info"></i><span>Chủ phòng đã chọn đề xuất của ' + esc(buyer.short) + '. Chỉ hai bên trong giao dịch này có thể xác nhận và tạo đơn.</span></div>';
+        } else if (bothConfirmed) {
+            if (state.role === 'proposer') {
+                cta = '<div class="dc-notice dc-notice--ok"><i class="fa-solid fa-circle-check"></i><span>Cả hai bên đã xác nhận thông tin. Deal có thể chuyển thành đơn vận chuyển.</span></div><button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="create-order">Tạo đơn vận chuyển <i class="fa-solid fa-arrow-right"></i></button>';
+            } else {
+                cta = '<div class="dc-notice dc-notice--ok"><i class="fa-solid fa-circle-check"></i><span>Hai bên đã xác nhận. Người mua đang tiến hành tạo đơn hàng vận chuyển.</span></div><a href="' + esc(orderUrl) + '" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="create-order"><i class="fa-solid fa-truck-fast"></i> Xem / Tạo đơn vận chuyển</a>';
+            }
+        } else {
+            cta = '<div class="dc-confirmation-status"><span class="' + (state.confirmations.owner ? 'is-confirmed' : '') + '"><i class="fa-solid ' + (state.confirmations.owner ? 'fa-circle-check' : 'fa-clock') + '"></i> Seller: ' + (state.confirmations.owner ? 'Đã xác nhận' : 'Chờ xác nhận') + '</span><span class="' + (state.confirmations.buyer ? 'is-confirmed' : '') + '"><i class="fa-solid ' + (state.confirmations.buyer ? 'fa-circle-check' : 'fa-clock') + '"></i> ' + esc(buyer.short) + ': ' + (state.confirmations.buyer ? 'Đã xác nhận' : 'Chờ xác nhận') + '</span></div>' +
+                (ownConfirmation ? '<div class="dc-notice"><i class="fa-regular fa-clock"></i><span>Bạn đã xác nhận. Đang chờ ' + esc(otherPartyName) + ' xác nhận thông tin.</span></div>' : '<button type="button" class="dc-btn dc-btn--primary dc-btn--block dc-btn--lg" data-act="confirm-details"' + (state.actionPending ? ' disabled' : '') + '><i class="fa-solid fa-clipboard-check"></i> ' + (state.actionPending ? 'Đang xác nhận...' : 'Xác nhận giao dịch của tôi') + '</button>');
+        }
         return '<div class="dc-side-card dc-side-card--done"><div class="dc-done-icon"><i class="fa-solid fa-lock"></i></div>' +
-            '<h3 class="dc-done-title">Deal đã được chốt</h3><p class="dc-hint">Đề xuất #' + acc.id + ' · Phòng chat đã khóa.</p>' +
-            '<div class="dc-offer-block"><span class="dc-offer-label">' + buyer.short + ' đưa</span>' + miniComics(acc.comics) + '</div>' +
-            '<div class="dc-offer-money ' + (acc.money === 0 ? 'is-zero' : '') + '"><i class="fa-solid fa-coins"></i><span>' + moneyText(acc.money, acc.buyerKey || state.dealBuyer, acc.type) + '</span></div>' +
-            '<div class="dc-offer-block"><span class="dc-offer-label">' + USERS.owner.short + ' đưa</span><ul class="dc-minis"><li class="dc-mini"><img src="' + ITEM.cover + '" alt=""><span><strong>' + ITEM.title + '</strong><small>' + ITEM.tags[1] + ' · ~90%</small></span><em>' + fmt(ITEM.price) + '</em></li></ul></div>' +
-            '<div class="dc-shipping-confirm"><strong><i class="fa-solid fa-truck-fast"></i> Thông tin cần cùng xác nhận</strong><p>Giá chủ phòng: ' + fmt(ITEM.price) + ' · địa chỉ lấy hàng theo tin đăng Seller · địa chỉ nhận hàng của ' + buyer.short + ' · phí vận chuyển và tổng tiền. Địa chỉ được chốt theo deal này, không tự đổi theo hồ sơ sau đó.</p></div>' +
+            '<h3 class="dc-done-title">' + (bothConfirmed ? 'Deal đã sẵn sàng tạo đơn' : 'Deal đã được chốt') + '</h3><p class="dc-hint">Đề xuất #' + (acc ? acc.id : '') + ' · Phòng chat đã khóa.</p>' +
+            '<div class="dc-offer-block"><span class="dc-offer-label">' + esc(buyer.short) + ' đưa</span>' + miniComics(acc ? acc.comics : []) + '</div>' +
+            '<div class="dc-offer-money ' + (acc && acc.money === 0 ? 'is-zero' : '') + '"><i class="fa-solid fa-coins"></i><span>' + (acc ? moneyText(acc.money, acc.buyerKey || state.dealBuyer, acc.type) : '') + '</span></div>' +
+            '<div class="dc-offer-block"><span class="dc-offer-label">' + esc(USERS.owner.short) + ' đưa</span><ul class="dc-minis"><li class="dc-mini"><img src="' + esc(ITEM.cover || cover({})) + '" alt=""><span><strong>' + esc(ITEM.title) + '</strong><small>' + esc(ITEM.tags.join(' · ')) + '</small></span><em>' + fmt(ITEM.price) + '</em></li></ul></div>' +
+            '<div class="dc-shipping-confirm"><strong><i class="fa-solid fa-handshake"></i> Xác nhận thỏa thuận trao đổi</strong><p>Kiểm tra truyện và khoản tiền hai bên đã thống nhất ở trên. Mỗi bên cần tự xác nhận. Địa chỉ giao nhận và phí vận chuyển được kiểm tra ở bước tạo đơn.</p></div>' +
             cta + '<p class="dc-hint dc-hint--center">Đơn vận chuyển chỉ được tạo sau khi cả Buyer và Seller xác nhận.</p></div>';
     }
 
@@ -525,7 +495,7 @@
             if (o.comics.length) parts.push(o.comics.length + ' bộ truyện');
             if (o.money) parts.push(moneyText(o.money, o.buyerKey || o.by, o.type));
             var actor = o.buyerKey ? buyerName(o.buyerKey) : who(o.by);
-            return '<li class="dc-hist"><span class="dc-hist-dot dc-hist-dot--' + o.by + '"></span><div><strong>#' + o.id + ' · ' + actor + (o.edited ? ' <em>(đã sửa)</em>' : '') + '</strong><small>' + (parts.join(' + ') || 'Không có nội dung') + ' · ' + o.time + '</small></div>' +
+            return '<li class="dc-hist"><span class="dc-hist-dot dc-hist-dot--' + o.by + '"></span><div><strong>#' + o.id + ' · ' + esc(actor) + (o.edited ? ' <em>(đã sửa)</em>' : '') + '</strong><small>' + (parts.join(' + ') || 'Không có nội dung') + ' · ' + o.time + '</small></div>' +
                 '<span class="dc-badge dc-badge--' + o.status + '">' + STATUS_LABEL[o.status] + '</span></li>';
         }).join('');
         return '<div class="dc-side-card"><div class="dc-side-head"><h3>Lịch sử đề xuất</h3><span class="dc-side-sub">' + state.offers.length + ' đề xuất</span></div><ul class="dc-hist-list">' + items + '</ul></div>';
@@ -533,11 +503,17 @@
 
     function renderSide() {
         var html = '';
+        if (state.room.status === 'loading' || state.room.status === 'unavailable' || state.room.status === 'cancelled') {
+            $('#sidePanel').innerHTML = '<div class="dc-side-card"><p role="status">' +
+                (state.room.status === 'loading' ? 'Đang tải phòng trao đổi...' : state.room.status === 'cancelled' ? 'Phòng trao đổi đã đóng.' : 'Không tải được phòng trao đổi. Vui lòng tải lại trang để thử lại.') + '</p></div>';
+            return;
+        }
         if (state.room.status === 'locked' || state.room.status === 'confirming') html += lockedCard();
         else {
             if (state.role === 'proposer') html += buyerDealsCard();
             else html += ownerRequestPanel();
         }
+        if (state.role === 'owner' && (state.room.status === 'negotiating' || state.room.status === 'confirming')) html += '<button type="button" class="dc-btn dc-btn--outline" data-act="close-room">Đóng phòng</button>';
         html += historyCard();
         $('#sidePanel').innerHTML = html;
         if (state.focusKey) {
@@ -548,15 +524,25 @@
     }
 
     function renderRole() {
-        $$('.dc-roleswitch button').forEach(function (b) {
-            var on = b.getAttribute('data-role') === state.role;
-            b.classList.toggle('is-on', on);
-            b.setAttribute('aria-selected', String(on));
-        });
+        var roleText = $('#currentRoleText');
+        if (roleText) {
+            if (state.role === 'owner') {
+                roleText.innerHTML = '<i class="fa-solid fa-crown" style="color: #f59e0b;"></i> Chủ sở hữu (Chủ phòng)';
+            } else {
+                roleText.innerHTML = '<i class="fa-solid fa-hand-holding-heart" style="color: #3b82f6;"></i> Người đề xuất';
+            }
+        }
     }
 
     function renderAll() {
-        renderRole(); renderHero(); renderItem(); renderChat(); renderSide();
+        renderRole();
+        if (state.room.status === 'loading' || state.room.status === 'unavailable') {
+            $('#hero').innerHTML = '';
+            $('#itemCard').innerHTML = '';
+        } else {
+            renderHero(); renderItem();
+        }
+        renderChat(); renderSide();
     }
 
     /* ---------- LOGIC ĐỀ XUẤT ---------- */
@@ -572,54 +558,9 @@
     }
 
     function commitOffer(p) {
+        if (!state.backendRoomId) return;
         var mine = myPending();
-        if (mine) {
-            mine.comics = p.comics; mine.money = p.money;
-            mine.optionType = state.draft.mode;
-            mine.type = state.draft.mode === 'money' ? 'buy' : 'trade';
-            if (p.note !== undefined && p.note !== '') mine.note = p.note;
-            mine.edited = true;
-            var editedRequest = requestById(mine.requestId);
-            if (editedRequest) {
-                editedRequest.comics = p.comics.slice();
-                editedRequest.money = p.money;
-                editedRequest.optionType = state.draft.mode;
-                editedRequest.type = mine.type;
-                editedRequest.note = p.note || editedRequest.note;
-            }
-            state.requestFormOpen = false;
-            state.editingOfferId = null;
-            addSystem(who(state.role) + ' đã chỉnh sửa đề xuất #' + mine.id);
-            toast('Đã cập nhật đề xuất của bạn.');
-        } else {
-            if (buyerDeals().some(function (offer) { return optionType(offer) === state.draft.mode; })) {
-                toast('Loại deal này đã được gửi. Hãy chỉnh sửa deal hiện có.');
-                return;
-            }
-            var requestId = 'RQ-' + state.room.code.replace(/\D/g, '') + '-' + String(DEAL_REQUESTS.length + 1).padStart(2, '0');
-            var requestTime = nowTime();
-            var requestType = state.draft.mode === 'money' ? 'buy' : 'trade';
-            var o = { id: state.offers.length + 1, by: state.role, buyerKey: state.dealBuyer, requestId: requestId, type: requestType, optionType: state.draft.mode, comics: p.comics, money: p.money, note: p.note || '', status: 'pending', edited: false, time: requestTime };
-            state.offers.push(o);
-            DEAL_REQUESTS.push({ id: requestId, buyer: state.dealBuyer, type: requestType, optionType: state.draft.mode, comics: p.comics.slice(), money: p.money, note: p.note || (requestType === 'buy' ? fmt(p.money) : 'Đề xuất ' + (state.draft.mode === 'comic' ? 'trao đổi truyện' : 'trao đổi truyện và tiền')), status: 'pending', time: requestTime });
-            var participant = ROOM_PARTICIPANTS.filter(function (person) { return person.key === state.dealBuyer; })[0];
-            var participantRequest = requestById(requestId);
-            if (participant) {
-                participant.dealType = participantRequest.type;
-                participant.dealLabel = optionTypeLabel(participantRequest.optionType);
-                participant.offer = participantRequest.note;
-                participant.status = 'Đang chờ phản hồi';
-            } else {
-                ROOM_PARTICIPANTS.push({ key: state.dealBuyer, dealType: participantRequest.type, dealLabel: optionTypeLabel(participantRequest.optionType), offer: participantRequest.note, status: 'Đang chờ phản hồi' });
-            }
-            state.selectedRequestId = requestId;
-            state.messages.push({ type: 'offer', offerId: o.id, by: state.dealBuyer });
-            state.requestFormOpen = false;
-            state.editingOfferId = null;
-            toast('Đã gửi đề xuất.');
-        }
-        syncDraft();
-        renderAll();
+        return persistOffer(p, mine ? mine.id : null);
     }
 
     function sendDraft() {
@@ -631,34 +572,29 @@
         }
         var needMoney = d.mode === 'both';
         if (!d.comics.length) { toast('Hãy chọn ít nhất 1 truyện cho deal này.'); return; }
-        if (needMoney && d.money <= 0) { toast('Nhập số tiền bù cho deal này.'); return; }
+        if (needMoney && d.money === 0) { toast('Nhập số tiền bù cho deal này.'); return; }
         commitOffer({ comics: d.comics.slice(), money: needMoney ? d.money : 0 });
     }
 
     function acceptOffer(id) {
-        var o = offerById(id);
-        if (!o || o.status !== 'pending' || o.by === state.role || roomClosed()) return;
-        o.status = 'accepted';
-        state.room.status = 'agreed';
-        addSystem(who(state.role) + ' đã đồng ý đề xuất #' + o.id + '. Chờ chủ sở hữu chốt giá & khóa phòng.');
-        toast('Bạn đã đồng ý đề xuất #' + o.id);
-        renderAll();
+        var offer = offerById(id);
+        if (state.role !== 'owner' || !offer || offer.status !== 'pending' || roomClosed()) return;
+        return backendOfferAction(offer, '/respond?accept=true', 'Đã chọn đề xuất. Hai bên hãy xác nhận giao dịch.');
     }
 
     function declineOffer(id) {
-        var o = offerById(id);
-        if (!o || o.status !== 'pending' || o.by === state.role || roomClosed()) return;
-        o.status = 'declined';
-        addSystem(who(state.role) + ' đã từ chối đề xuất #' + o.id);
-        toast('Đã từ chối đề xuất #' + o.id);
-        renderAll();
+        var offer = offerById(id);
+        if (state.role !== 'owner' || !offer || offer.status !== 'pending' || roomClosed()) return;
+        return backendOfferAction(offer, '/respond?accept=false', 'Đã từ chối đề xuất.');
     }
 
-    function sendMessage(text) {
+    async function sendMessage(text) {
         text = (text || '').trim();
-        if (!text || roomClosed()) return;
-        state.messages.push({ type: 'text', by: state.role, text: text, time: nowTime() });
-        renderChat();
+        if (!text || !state.backendRoomId || !state.currentUserId || roomClosed()) return;
+        try {
+            var message = await ExchangeAPI.post('/api/exchange/rooms/' + state.backendRoomId + '/messages', { content: text, clientMessageKey: crypto.randomUUID() });
+            appendIncomingMessage(message);
+        } catch (err) { $('#messageInput').value = text; toast(err.message); }
     }
 
     /* ---------- CHỐT & KHÓA PHÒNG ---------- */
@@ -668,7 +604,7 @@
         var selected = requestById(state.selectedRequestId);
         $('#lockSummary').innerHTML =
             '<div class="dc-request-total"><span>Giá chủ phòng muốn bán</span><strong>' + fmt(ITEM.price) + '</strong></div>' +
-            '<div class="dc-offer-block"><span class="dc-offer-label">' + buyer.short + ' · ' + (selected ? optionTypeLabel(selected.optionType || (selected.type === 'buy' ? 'money' : selected.comics.length && selected.money ? 'both' : 'comic')) : 'Deal') + '</span>' + miniComics(l.comics) + '</div>' +
+            '<div class="dc-offer-block"><span class="dc-offer-label">' + esc(buyer.short) + ' · ' + (selected ? optionTypeLabel(selected.optionType || (selected.type === 'buy' ? 'money' : selected.comics.length && selected.money ? 'both' : 'comic')) : 'Deal') + '</span>' + miniComics(l.comics) + '</div>' +
             '<div class="dc-offer-money ' + (l.money === 0 ? 'is-zero' : '') + '"><i class="fa-solid fa-coins"></i><span>' + moneyText(l.money, l.buyerKey || state.dealBuyer, l.type) + '</span></div>' +
             meterHTML(offerValue(l));
         $('#lockModalTitle').innerHTML = '<i class="fa-solid fa-circle-check"></i> Xác nhận request deal';
@@ -678,37 +614,77 @@
     }
 
     function lockRoom() {
-        var l = selectedDealOffer();
-        if (state.role !== 'owner' || !l) return;
-        if (l.status === 'pending' && l.by === 'proposer') l.status = 'accepted';
-        if (l.status !== 'accepted') return;
-        state.offers.forEach(function (offer) {
-            if (offer.id !== l.id && offer.status === 'pending') offer.status = 'superseded';
-        });
-        DEAL_REQUESTS.forEach(function (request) {
-            request.status = request.id === state.selectedRequestId ? 'accepted' : 'declined';
-        });
-        state.room.status = 'confirming';
-        state.confirmations = { owner: false, buyer: false };
-        addSystem(USERS.owner.short + ' đã chọn request #' + (state.selectedRequestId || l.id) + ' từ ' + activeBuyer().short + '. Phòng đóng nhận request mới; hai bên cần xác nhận thông tin giao dịch.');
-        closeModals();
-        toast('Đã chốt giá. Chờ hai bên xác nhận giao dịch.');
-        renderAll();
+        var offer = selectedDealOffer();
+        if (state.role !== 'owner' || !offer || offer.status !== 'pending') return;
+        return backendOfferAction(offer, '/respond?accept=true', 'Đã chọn đề xuất. Hai bên hãy xác nhận giao dịch.');
     }
 
     function confirmDetails() {
-        var confirmationKey = state.role === 'owner' ? 'owner' : 'buyer';
-        if (state.room.status !== 'confirming' || state.confirmations[confirmationKey]) return;
-        state.confirmations[confirmationKey] = true;
-        addSystem((state.role === 'owner' ? USERS.owner.short : activeBuyer().short) + ' đã xác nhận thông tin hàng hóa, địa chỉ và phí vận chuyển.');
-        if (state.confirmations.owner && state.confirmations.buyer) {
-            state.room.status = 'locked';
-            addSystem('Cả hai bên đã xác nhận. Deal sẵn sàng chuyển thành đơn vận chuyển.');
-            toast('Hai bên đã xác nhận giao dịch.');
-        } else {
-            toast('Đã ghi nhận xác nhận của bạn.');
+        var offer = selectedDealOffer();
+        if (state.room.status !== 'confirming' || !offer || offer.status !== 'accepted' || !isDealParty(offer)) return;
+        var key = state.role === 'owner' ? 'owner' : 'buyer';
+        if (!state.confirmations[key]) return backendOfferAction(offer, '/confirm', 'Đã ghi nhận xác nhận của bạn.');
+    }
+
+    function applyConfirmedOffer(updatedOffer, roomStatus) {
+        var offer = offerById(updatedOffer.id);
+        if (!offer) return;
+        offer.status = updatedOffer.status.toLowerCase();
+        offer.hostConfirmed = Boolean(updatedOffer.hostConfirmed);
+        offer.buyerConfirmed = Boolean(updatedOffer.buyerConfirmed);
+        if (offer.status !== 'accepted' || roomStatus === 'CANCELLED' || state.room.status === 'cancelled') return;
+        state.selectedOfferId = offer.id;
+        state.selectedRequestId = offer.requestId;
+        state.dealBuyer = offer.buyerKey;
+        state.confirmations.owner = offer.hostConfirmed;
+        state.confirmations.buyer = offer.buyerConfirmed;
+        state.room.status = offer.hostConfirmed && offer.buyerConfirmed ? 'locked' : 'confirming';
+    }
+
+    async function backendOfferAction(offer, action, successMessage) {
+        if (state.actionPending) return;
+        state.actionPending = true;
+        renderSide();
+        try {
+            var res = await fetch('/api/exchange/rooms/' + state.backendRoomId + '/offers/' + offer.id + action, { method: 'POST' });
+            if (!res.ok) {
+                var error = await res.json().catch(function () { return {}; });
+                throw new Error(error.message || error.detail || (res.status === 401 ? 'Vui lòng đăng nhập để xác nhận giao dịch.' : 'Không thể cập nhật giao dịch. Vui lòng thử lại.'));
+            }
+            var updated = await res.json().catch(function () { return null; });
+            if (updated) applyConfirmedOffer(updated);
+            closeModals();
+            toast(successMessage);
+            await refreshBackendRoom(state.backendRoomId);
+        } catch (err) {
+            toast(err.message || 'Mất kết nối. Vui lòng thử lại.');
+        } finally {
+            state.actionPending = false;
+            renderAll();
         }
-        renderAll();
+    }
+
+    async function persistOffer(proposal, offerId) {
+        if (state.actionPending || roomClosed() || !state.currentUserId) return;
+        state.actionPending = true;
+        try {
+            var items = proposal.comics.map(function (cid) {
+                var c = comicById(cid);
+                if (!c || !c.owned) throw new Error('Chỉ chọn truyện trong kệ của bạn.');
+                return { productId: c.productId, quantity: c.quantity || 1 };
+            });
+            await ExchangeAPI.request('/api/exchange/rooms/' + state.backendRoomId + '/offers' + (offerId ? '/' + offerId : ''), {
+                method: offerId ? 'PUT' : 'POST',
+                body: JSON.stringify({ items: items, cashCompensation: Math.abs(proposal.money || 0),
+                    compensationDirection: proposal.money < 0 ? 'get' : 'pay', note: proposal.note || '' })
+            });
+            state.requestFormOpen = false;
+            state.editingOfferId = null;
+            closeModals();
+            await refreshBackendRoom(state.backendRoomId);
+            toast('Đã lưu đề xuất.');
+        } catch (err) { toast(err.message); }
+        finally { state.actionPending = false; }
     }
 
     function selectRequest(requestId) {
@@ -836,14 +812,6 @@
 
     /* ---------- SỰ KIỆN ---------- */
     document.addEventListener('click', function (e) {
-        var role = e.target.closest('[data-role]');
-        if (role) {
-            state.role = role.getAttribute('data-role');
-            history.replaceState(null, '', '?role=' + state.role);
-            syncDraft(); renderAll();
-            toast('Đang xem với vai trò: ' + USERS[state.role].roleLabel);
-            return;
-        }
         if (e.target.closest('[data-close]')) { closeModals(); return; }
         var participant = e.target.closest('[data-chat-participant]');
         if (participant) {
@@ -895,6 +863,10 @@
             case 'select-request': selectRequest(btn.getAttribute('data-request-id')); break;
             case 'accept': acceptOffer(id); break;
             case 'decline': declineOffer(id); break;
+            case 'close-room':
+                if (confirm('Đóng phòng trao đổi này?')) ExchangeAPI.post('/api/exchange/rooms/' + state.backendRoomId + '/close').then(function () { refreshBackendRoom(state.backendRoomId); }).catch(function (err) { toast(err.message); });
+                break;
+            case 'withdraw': backendOfferAction(offerById(btn.getAttribute('data-offer-id')), '/withdraw', 'Đã rút đề xuất.'); break;
             case 'counter': openModal('counter'); break;
             case 'edit': openModal('edit'); break;
             case 'mode':
@@ -912,7 +884,15 @@
             case 'lock': openLockModal(); break;
             case 'confirm-details': confirmDetails(); break;
             case 'quick': sendMessage(btn.getAttribute('data-text')); break;
-            case 'create-order': location.href = ORDER_PAGE + '?deal=' + DEAL_CODE; break;
+            case 'create-order': {
+                e.preventDefault();
+                if (!canCreateOrder()) { toast('Cần cả hai bên xác nhận trước khi tạo đơn.'); break; }
+                var curOffer = selectedDealOffer();
+                var dealId = curOffer ? curOffer.id : DEAL_CODE;
+                var rCode = state.backendRoomId || params.get('room') || state.room.code;
+                location.href = ORDER_PAGE + '?room=' + encodeURIComponent(rCode) + '&deal=' + encodeURIComponent(dealId);
+                break;
+            }
         }
     });
 
@@ -969,5 +949,487 @@
 
     /* ---------- KHỞI TẠO ---------- */
     syncDraft();
+    if (backendRoomParam) {
+        state.room.status = 'loading';
+        state.offers = [];
+        state.messages = [];
+        state.selectedRequestId = null;
+        state.draft.comics = [];
+        DEAL_REQUESTS = [];
+        ROOM_PARTICIPANTS = [];
+        INVENTORY = [];
+    }
     renderAll();
+
+    /* ---------- TÍCH HỢP DỮ LIỆU BACKEND THẬT ---------- */
+    if (backendRoomParam) {
+        initBackendRoom(backendRoomParam);
+    }
+
+    function initBackendRoom(roomParam) {
+        var isNum = /^\d+$/.test(String(roomParam).trim());
+        var url = isNum ? ('/api/exchange/rooms/' + encodeURIComponent(roomParam))
+                        : ('/api/exchange/rooms/by-code/' + encodeURIComponent(roomParam));
+
+        fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            })
+            .then(function (data) {
+                state.backendRoomId = data.id;
+                applyBackendRoomData(data);
+                loadBackendInventory();
+                loadBackendMessages(data.id);
+                initExchangeWebSocket(data.id);
+            })
+            .catch(function (err) {
+                state.room.status = 'unavailable';
+                renderAll();
+                toast('Không tải được phòng trao đổi. Vui lòng tải lại trang.');
+            });
+    }
+
+    function applyBackendRoomData(data) {
+        state.room.id = data.id;
+        state.room.code = data.roomCode;
+        state.currentUserId = data.currentUserId;
+        state.isCurrentUserHost = Boolean(data.isCurrentUserHost || data.currentUserHost ||
+            (data.currentUserId && data.currentUserId === data.hostId));
+        state.hostId = data.hostId;
+
+        if (data.status === 'OPEN') state.room.status = 'negotiating';
+        else if (data.status === 'AGREED') state.room.status = 'agreed';
+        else if (data.status === 'COMPLETED') state.room.status = 'locked';
+        else state.room.status = 'locked';
+
+        ITEM.title = data.targetProductTitle || 'Truyện đã ngừng hoạt động';
+        ITEM.price = Number(data.targetProductPrice || 0);
+        ITEM.cover = data.targetProductCover || cover({});
+        ITEM.tags = [data.targetProductCategory, data.targetProductEdition, data.targetProductVolumeNumbers].filter(Boolean);
+        ITEM.wants = data.targetProductWishNote ? data.targetProductWishNote.split(',').map(s => s.trim()) : [];
+        ITEM.note = data.targetProductDescription || '';
+        if (data.targetProductWishNote) {
+            ITEM.wants = data.targetProductWishNote.split(',').map(function (s) { return s.trim(); });
+        }
+        ITEM.specs = [
+            ['Tình trạng', (data.targetProductCondition ?? 0) + '%'],
+            ['Tập truyện', data.targetProductVolumeNumbers || 'Chưa cập nhật'],
+            ['Nhà xuất bản', data.targetProductPublisher || 'Chưa cập nhật'],
+            ['Tác giả', data.targetProductAuthor || 'N/A']
+        ];
+        
+
+        if (data.hostName) {
+            USERS.owner.name = data.hostName;
+            USERS.owner.short = data.hostName;
+            USERS.owner.initials = data.hostName.substring(0, 2).toUpperCase();
+        }
+
+        if (state.isCurrentUserHost) {
+            state.role = 'owner';
+        } else {
+            state.role = 'proposer';
+        }
+
+        renderRole();
+
+        var pageTitleHeading = document.querySelector('.page-title h1');
+        if (pageTitleHeading) {
+            pageTitleHeading.innerText = 'Phòng trao đổi giá #' + data.roomCode;
+        }
+        var breadcrumbStrong = document.querySelector('.breadcrumb strong');
+        if (breadcrumbStrong) {
+            breadcrumbStrong.innerText = '#' + data.roomCode;
+        }
+
+        ROOM_PARTICIPANTS = (data.members || []).map(function (m) {
+            var memberIsHost = Boolean(m.isHost || m.host || m.userId === data.hostId);
+            var uKey = memberIsHost ? 'owner' : (m.userId === data.currentUserId ? 'proposer' : 'buyer_' + m.userId);
+            USERS[uKey] = {
+                key: uKey,
+                name: m.fullName,
+                short: m.fullName,
+                initials: m.fullName ? m.fullName.substring(0, 2).toUpperCase() : 'TV',
+                roleLabel: memberIsHost ? 'Chủ phòng' : 'Người đề xuất',
+                
+            };
+            return {
+                key: uKey,
+                dealType: memberIsHost ? 'host' : 'trade',
+                dealLabel: memberIsHost ? 'Chủ phòng' : 'Thành viên',
+                offer: memberIsHost ? ('Giá niêm yết ' + fmt(ITEM.price)) : 'Đang tham gia trao đổi',
+                status: 'Đang mở'
+            };
+        });
+
+            state.offers = (data.offers || []).map(function (o) {
+                var isMine = (o.buyerId === data.currentUserId);
+                var bKey = isMine ? 'proposer' : ('buyer_' + o.buyerId);
+                if (!USERS[bKey]) {
+                    USERS[bKey] = {
+                        key: bKey,
+                        name: o.buyerName || 'Người mua',
+                        short: o.buyerName || 'Người mua',
+                        initials: o.buyerName ? o.buyerName.substring(0, 2).toUpperCase() : 'NM',
+                        roleLabel: 'Người đề xuất',
+                        
+                    };
+                }
+                var cIds = (o.items || []).map(function (it) {
+                    var cid = 'c_' + it.productId;
+                    if (!comicById(cid)) {
+                        INVENTORY.push({
+                            id: cid,
+                            productId: it.productId,
+                            title: it.titleSnapshot,
+                            vol: 'Số lượng: ' + it.quantity,
+                            quantity: it.quantity,
+                            cover: it.coverImageUrl,
+                            cond: it.conditionSnapshot + '%',
+                            value: Number(it.price || 0),
+                            series: it.titleSnapshot,
+                            bg: '1E293B'
+                        });
+                    }
+                    return cid;
+                });
+
+                var mVal = o.compensationDirection === 'get' ? -Number(o.cashCompensation) : Number(o.cashCompensation || 0);
+                var optType = cIds.length > 0 ? (mVal !== 0 ? 'both' : 'comic') : 'money';
+
+                return {
+                    id: o.id,
+                    by: bKey,
+                    buyerKey: bKey,
+                    buyerId: o.buyerId,
+                    requestId: 'RQ-' + o.id,
+                    type: optType === 'money' ? 'buy' : 'trade',
+                    optionType: optType,
+                    comics: cIds,
+                    money: mVal,
+                    note: o.note || '',
+                    status: o.status.toLowerCase(),
+                    buyerConfirmed: Boolean(o.buyerConfirmed),
+                    hostConfirmed: Boolean(o.hostConfirmed),
+                    edited: false,
+                    time: o.createdAt ? o.createdAt.substring(11, 16) : nowTime()
+                };
+            });
+
+            DEAL_REQUESTS = state.offers.map(function (o) {
+                return {
+                    id: o.requestId,
+                    buyer: o.buyerKey,
+                    type: o.type,
+                    optionType: o.optionType,
+                    comics: o.comics.slice(),
+                    money: o.money,
+                    note: o.note || (o.type === 'buy' ? fmt(o.money) : 'Đề xuất trao đổi'),
+                    status: o.status,
+                    time: o.time
+                };
+            });
+
+        state.selectedOfferId = data.selectedOfferId || null;
+        state.confirmations = { owner: false, buyer: false };
+
+        var activeOffer = (data.selectedOfferId ? offerById(data.selectedOfferId) : null)
+                       || state.offers.find(function (o) { return o.status === 'accepted'; });
+        var selectedRequest = requestById(state.selectedRequestId);
+        if (!activeOffer) {
+            activeOffer = selectedRequest ? offerForRequest(selectedRequest.id) : state.offers[0];
+        }
+
+        if (activeOffer) {
+            state.selectedRequestId = activeOffer.requestId;
+            state.dealBuyer = activeOffer.buyerKey;
+            state.confirmations.owner = Boolean(activeOffer.hostConfirmed);
+            state.confirmations.buyer = Boolean(activeOffer.buyerConfirmed);
+        } else {
+            state.selectedRequestId = null;
+        }
+        if (state.role === 'proposer' && data.status === 'OPEN') state.dealBuyer = 'proposer';
+
+        if (data.status === 'CANCELLED') {
+            state.room.status = 'cancelled';
+        } else if (data.status === 'COMPLETED' && activeOffer && activeOffer.status === 'accepted'
+                && state.confirmations.owner && state.confirmations.buyer) {
+            state.room.status = 'locked';
+        } else if (data.status === 'AGREED' || (activeOffer && activeOffer.status === 'accepted')) {
+            state.room.status = 'confirming';
+        } else if (data.status === 'OPEN') {
+            state.room.status = 'negotiating';
+        } else {
+            state.room.status = data.status ? data.status.toLowerCase() : 'negotiating';
+        }
+
+        syncDraft();
+        renderAll();
+    }
+
+    function loadBackendInventory() {
+        fetch('/api/exchange/rooms/inventory')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (items) {
+                if (Array.isArray(items) && items.length > 0) {
+                    items.forEach(function (p) {
+                        var cid = 'c_' + p.id;
+                        var existing = comicById(cid);
+                        if (existing) { existing.owned = true; existing.cover = p.coverImageUrl; }
+                        if (!comicById(cid)) {
+                            INVENTORY.push({
+                                id: cid,
+                                productId: p.id,
+                                owned: true,
+                                cover: p.coverImageUrl,
+                                title: p.title,
+                                vol: p.volumeNumbers || '',
+                                cond: (p.conditionPercent ?? 0) + '%',
+                                value: Number(p.price || 0),
+                                series: p.title,
+                                bg: 'C2410C'
+                            });
+                        }
+                    });
+                    renderSide();
+                }
+            })
+            .catch(function () {});
+    }
+
+    function loadBackendMessages(roomId) {
+        fetch('/api/exchange/rooms/' + roomId + '/messages')
+            .then(function (res) {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then(function (msgs) {
+                if (Array.isArray(msgs) && msgs.length > 0) {
+                    state.messages = msgs.map(function (m) {
+                        var mine = isMyMessage(m);
+                        return {
+                            id: m.id,
+                            clientKey: m.clientMessageKey,
+                            senderId: m.senderId,
+                            senderName: m.senderName,
+                            senderAvatar: m.senderAvatar,
+                            isHost: !!m.isHost,
+                            isMine: mine,
+                            type: 'text',
+                            by: m.isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+                            text: m.content,
+                            time: m.createdAt ? m.createdAt.substring(11, 16) : ''
+                        };
+                    });
+                    renderChat();
+                }
+            })
+            .catch(function () {});
+    }
+
+    /* ---------- WEBSOCKET REAL-TIME TRONG PHÒNG TRAO ĐỔI ---------- */
+    var exchangeWs = null;
+    var wsReconnectTimer = null;
+    var fallbackPollingTimer = null;
+
+    function initExchangeWebSocket(roomId) {
+        if (!roomId || typeof WebSocket === 'undefined') {
+            startFallbackPolling(roomId);
+            return;
+        }
+
+        if (exchangeWs) {
+            try {
+                exchangeWs.onclose = null;
+                exchangeWs.close();
+            } catch (e) {}
+            exchangeWs = null;
+        }
+
+        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var wsUrl = protocol + '//' + location.host + '/ws/exchange/' + encodeURIComponent(roomId);
+        console.log('[WebSocket] Đang kết nối tới phòng #' + roomId + ' qua ' + wsUrl);
+
+        try {
+            exchangeWs = new WebSocket(wsUrl);
+
+            exchangeWs.onopen = function () {
+                console.log('[WebSocket] Kết nối thời gian thực thành công (Phòng #' + roomId + ')');
+                if (wsReconnectTimer) {
+                    clearTimeout(wsReconnectTimer);
+                    wsReconnectTimer = null;
+                }
+                stopFallbackPolling();
+                refreshBackendRoom(roomId);
+            };
+
+            exchangeWs.onmessage = function (event) {
+                try {
+                    var data = JSON.parse(event.data);
+                    handleWebSocketEvent(data);
+                } catch (err) {
+                    console.warn('[WebSocket] Không thể phân tích JSON tin nhắn:', event.data, err);
+                }
+            };
+
+            exchangeWs.onerror = function (err) {
+                console.warn('[WebSocket] Gặp sự cố kết nối:', err);
+            };
+
+            exchangeWs.onclose = function (evt) {
+                console.log('[WebSocket] Mất kết nối (' + evt.code + '). Sẽ tự động kết nối lại sau 3 giây...');
+                startFallbackPolling(roomId);
+                if (!wsReconnectTimer) {
+                    wsReconnectTimer = setTimeout(function () {
+                        wsReconnectTimer = null;
+                        if (state.backendRoomId) {
+                            initExchangeWebSocket(state.backendRoomId);
+                        }
+                    }, 3000);
+                }
+            };
+        } catch (e) {
+            console.error('[WebSocket] Lỗi khi tạo WebSocket, dùng fallback polling:', e);
+            startFallbackPolling(roomId);
+        }
+    }
+
+    function handleWebSocketEvent(data) {
+        if (!data) return;
+
+        // Xử lý tin nhắn chat trực tiếp hoặc sự kiện dạng CHAT_MESSAGE
+        if (data.type === 'CHAT_MESSAGE' || (!data.type && data.content)) {
+            var msg = data.message || data;
+            appendIncomingMessage(msg);
+            return;
+        }
+
+        // Xử lý các sự kiện đề xuất và chốt thỏa thuận (OFFER_PROPOSED, OFFER_ACCEPTED, OFFER_DECLINED, DEAL_CONFIRMED)
+        if (data.type === 'OFFER_PROPOSED' || data.type === 'OFFER_UPDATED' || data.type === 'OFFER_ACCEPTED' ||
+            data.type === 'OFFER_DECLINED' || data.type === 'DEAL_CONFIRMED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (data.offer) {
+                applyConfirmedOffer(data.offer, data.roomStatus);
+                renderAll();
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+
+        // Xử lý sự kiện rút đề xuất hoặc đóng phòng (OFFER_WITHDRAWN, ROOM_CLOSED)
+        if (data.type === 'OFFER_WITHDRAWN' || data.type === 'ROOM_CLOSED') {
+            if (data.message) {
+                appendIncomingMessage(data.message);
+            }
+            if (state.backendRoomId) {
+                refreshBackendRoom(state.backendRoomId);
+            }
+            return;
+        }
+    }
+
+    function appendIncomingMessage(m) {
+        if (!m || !m.content) return;
+
+        var senderName = m.senderName || 'Thành viên';
+        var isHost = !!m.isHost;
+        var formattedTime = m.createdAt ? m.createdAt.substring(11, 16) : nowTime();
+        var mine = isMyMessage(m);
+
+        // 1. Nếu tin nhắn từ server có clientMessageKey trùng với tin nhắn vừa gửi ở local -> gắn ID thật vào
+        if (m.clientMessageKey) {
+            var localMatch = state.messages.find(function (item) {
+                return (item.clientKey && item.clientKey === m.clientMessageKey) ||
+                       (m.id && item.id && item.id === m.id);
+            });
+            if (localMatch) {
+                localMatch.id = m.id;
+                localMatch.senderId = m.senderId;
+                localMatch.senderName = senderName;
+                localMatch.senderAvatar = m.senderAvatar;
+                localMatch.isMine = true;
+                return;
+            }
+        }
+
+        // 2. Kiểm tra tránh trùng lặp tin nhắn nếu đã có ID tương ứng hoặc clientKey tương ứng
+        if (m.id) {
+            var idExists = state.messages.some(function (item) {
+                return item.id && item.id === m.id;
+            });
+            if (idExists) return;
+        }
+        if (m.clientMessageKey) {
+            var keyExists = state.messages.some(function (item) {
+                return item.clientKey && item.clientKey === m.clientMessageKey;
+            });
+            if (keyExists) return;
+            if (state.myClientKeys && state.myClientKeys.has(m.clientMessageKey)) return;
+        }
+
+        // 3. Đẩy tin nhắn mới vào giao diện chat
+        state.messages.push({
+            id: m.id,
+            clientKey: m.clientMessageKey,
+            senderId: m.senderId,
+            senderName: senderName,
+            senderAvatar: m.senderAvatar,
+            isHost: isHost,
+            isMine: mine,
+            type: 'text',
+            by: isHost ? 'owner' : (mine ? 'proposer' : 'buyer_' + m.senderId),
+            text: m.content,
+            time: formattedTime
+        });
+
+        renderChat();
+    }
+
+    function refreshBackendRoom(roomId) {
+        if (!roomId) return;
+        var requestVersion = (state.refreshVersion || 0) + 1;
+        state.refreshVersion = requestVersion;
+        return fetch('/api/exchange/rooms/' + roomId)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (data && requestVersion === state.refreshVersion) {
+                    applyBackendRoomData(data);
+                }
+            })
+            .catch(function () {});
+    }
+
+    function startFallbackPolling(roomId) {
+        if (fallbackPollingTimer) return;
+        fallbackPollingTimer = setInterval(function () {
+            if (document.hidden || !roomId) return;
+            refreshBackendRoom(roomId);
+            fetch('/api/exchange/rooms/' + roomId + '/messages')
+                .then(function (res) { return res.ok ? res.json() : []; })
+                .then(function (msgs) {
+                    if (Array.isArray(msgs) && msgs.length > state.messages.length) {
+                        msgs.forEach(function (m) {
+                            appendIncomingMessage(m);
+                        });
+                    }
+                })
+                .catch(function () {});
+        }, 10000);
+    }
+
+    function stopFallbackPolling() {
+        if (fallbackPollingTimer) {
+            clearInterval(fallbackPollingTimer);
+            fallbackPollingTimer = null;
+        }
+    }
 })();
+

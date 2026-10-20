@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import com.cloudinary.Cloudinary;
@@ -87,64 +87,28 @@ class SellerProductMySqlTests {
         return client.send(HttpRequest.newBuilder(uri(path)).GET().build(), HttpResponse.BodyHandlers.ofString());
     }
 
-    @Test void browserUpgradeFormWorksWithItsRenderedCsrfTokenAndExistingJwt() throws Exception {
+    @Test void buyerCannotAccessSellerPagesOrSelfUpgrade() throws Exception {
         var buyer = login("products-buyer@example.invalid");
-        var page = get(buyer, "/user/seller-upgrade");
-        assertEquals(200, page.statusCode(), page.body());
-        var token = java.util.regex.Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"").matcher(page.body());
-        assertTrue(token.find(), "Upgrade form must render a CSRF token.");
-        assertEquals(200, get(buyer, "/buyer/html/home.html").statusCode());
-        assertEquals(200, get(buyer, "/api/account/me").statusCode());
+        var upgradePage = get(buyer, "/user/seller-upgrade");
+        assertEquals(403, upgradePage.statusCode());
+        assertEquals(403, get(buyer, "/seller/html/index.html").statusCode());
+        assertEquals(403, get(buyer, "/api/seller/products/options").statusCode());
+
         var request = HttpRequest.newBuilder(uri("/user/seller-upgrade"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Origin", "http://127.0.0.1:" + port)
                 .header("Referer", uri("/user/seller-upgrade").toString())
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(token.group(1), StandardCharsets.UTF_8)))
+                .POST(HttpRequest.BodyPublishers.ofString("dummy=1"))
                 .build();
         var upgraded = buyer.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, upgraded.statusCode(), upgraded.body());
-        assertEquals(uri("/seller/html/index.html"), uri("/").resolve(upgraded.headers().firstValue("Location").orElseThrow()));
-        assertTrue(Boolean.TRUE.equals(jdbc.queryForObject("SELECT is_seller FROM users WHERE id=92003", Boolean.class)));
-        assertEquals(200, get(buyer, "/seller/html/index.html").statusCode());
-        assertEquals(200, get(buyer, "/api/seller/products/options").statusCode());
-    }
-
-    @Test void expiredUpgradeFormDoesNotChangeAccountAndCanBeRefreshedAndConfirmed() throws Exception {
-        var original = login("products-buyer@example.invalid");
-        var page = get(original, "/user/seller-upgrade");
-        var tokenPattern = java.util.regex.Pattern.compile("name=\"_csrf\"[^>]*value=\"([^\"]+)\"");
-        var oldToken = tokenPattern.matcher(page.body()); assertTrue(oldToken.find());
-        var freshCookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-        var oldCookies = (CookieManager) original.cookieHandler().orElseThrow();
-        for (var cookie : oldCookies.getCookieStore().getCookies()) {
-            if (Set.of("accessToken", "refreshToken").contains(cookie.getName())) {
-                freshCookies.getCookieStore().add(uri("/"), (HttpCookie) cookie.clone());
-            }
-        }
-        var expired = HttpClient.newBuilder().cookieHandler(freshCookies).build();
-        var rejected = expired.send(HttpRequest.newBuilder(uri("/user/seller-upgrade"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(oldToken.group(1), StandardCharsets.UTF_8)))
-                .build(), HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, rejected.statusCode(), rejected.body());
-        assertEquals(uri("/user/seller-upgrade?csrfExpired=true"), uri("/").resolve(rejected.headers().firstValue("Location").orElseThrow()));
+        assertEquals(403, upgraded.statusCode());
         assertFalse(Boolean.TRUE.equals(jdbc.queryForObject("SELECT is_seller FROM users WHERE id=92003", Boolean.class)));
-        var refreshed = get(expired, "/user/seller-upgrade?csrfExpired=true");
-        assertEquals(200, refreshed.statusCode()); assertTrue(refreshed.body().contains("Phiên xác nhận đã hết hạn"));
-        var freshToken = tokenPattern.matcher(refreshed.body()); assertTrue(freshToken.find());
-        var confirmed = expired.send(HttpRequest.newBuilder(uri("/user/seller-upgrade"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + URLEncoder.encode(freshToken.group(1), StandardCharsets.UTF_8)))
-                .build(), HttpResponse.BodyHandlers.ofString());
-        assertEquals(302, confirmed.statusCode(), confirmed.body());
-        assertEquals(uri("/seller/html/index.html"), uri("/").resolve(confirmed.headers().firstValue("Location").orElseThrow()));
-        assertEquals(200, get(expired, "/api/seller/products/options").statusCode());
     }
     HttpResponse<String> mutate(HttpClient client, String method, String path, Object body, boolean csrf) throws Exception {
         var builder = HttpRequest.newBuilder(uri(path)).header("Content-Type", "application/json");
         if (csrf) {
             var response = get(client, "/api/seller/products/csrf"); assertEquals(200, response.statusCode(), response.body());
-            var token = json.readTree(response.body()); builder.header(token.get("headerName").asString(), token.get("token").asString());
+            var token = json.readTree(response.body()); builder.header(token.get("headerName").asText(), token.get("token").asText());
         }
         builder.method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)));
         return client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
@@ -158,7 +122,7 @@ class SellerProductMySqlTests {
     long create(HttpClient client, Map<String, Object> body) throws Exception {
         var response = mutate(client, "POST", "/api/seller/products", body, true);
         assertEquals(200, response.statusCode(), response.body());
-        assertEquals("OK", json.readTree(response.body()).get("Result").asString());
+        assertEquals("OK", json.readTree(response.body()).get("Result").asText());
         return json.readTree(response.body()).get("Record").get("id").asLong();
     }
 
@@ -175,7 +139,7 @@ class SellerProductMySqlTests {
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary);
         if (csrf) {
             var token = json.readTree(get(client, "/api/seller/products/csrf").body());
-            builder.header(token.get("headerName").asString(), token.get("token").asString());
+            builder.header(token.get("headerName").asText(), token.get("token").asText());
         }
         return client.send(builder.POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray())).build(), HttpResponse.BodyHandlers.ofString());
     }
@@ -198,7 +162,7 @@ class SellerProductMySqlTests {
         body.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
         var token = json.readTree(get(client, "/api/seller/products/csrf").body());
         return client.send(HttpRequest.newBuilder(uri(path)).header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .header(token.get("headerName").asString(), token.get("token").asString())
+                .header(token.get("headerName").asText(), token.get("token").asText())
                 .method(method, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray())).build(), HttpResponse.BodyHandlers.ofString());
     }
 
@@ -207,9 +171,9 @@ class SellerProductMySqlTests {
         var response = productMultipart(seller, "POST", "/api/seller/products", product("Cover and details", "10", 1), UploadServiceTests.PNG, 2, List.of());
         assertEquals(200, response.statusCode(), response.body());
         var record = json.readTree(response.body()).get("Record"); long id = record.get("id").asLong();
-        String originalCover = record.get("coverImageUrl").asString();
+        String originalCover = record.get("coverImageUrl").asText();
         assertEquals(3, record.get("images").size()); assertEquals(2, record.get("detailImages").size());
-        assertEquals("COVER", record.get("images").get(0).get("imageType").asString());
+        assertEquals("COVER", record.get("images").get(0).get("imageType").asText());
         assertEquals(originalCover, jdbc.queryForObject("SELECT cover_image_url FROM products WHERE id=?", String.class, id));
         new org.springframework.transaction.support.TransactionTemplate(transactions).execute(status -> {
             var entity = products.findById(id).orElseThrow();
@@ -222,16 +186,16 @@ class SellerProductMySqlTests {
         jdbc.update("INSERT INTO product_image_features(image_id,embedding,model_name) VALUES(?,'[0.1]','test')", removedId);
         response = productMultipart(seller, "PUT", "/api/seller/products/" + id, product("Edited with images", "20", 2), UploadServiceTests.PNG, 1, List.of(removedId));
         assertEquals(200, response.statusCode(), response.body()); record = json.readTree(response.body()).get("Record");
-        assertEquals("Edited with images", record.get("title").asString());
-        assertNotEquals(originalCover, record.get("coverImageUrl").asString());
+        assertEquals("Edited with images", record.get("title").asText());
+        assertNotEquals(originalCover, record.get("coverImageUrl").asText());
         assertEquals(2, record.get("detailImages").size());
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM product_images WHERE product_id=? AND image_type='COVER'", Integer.class, id));
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM product_images WHERE id=?", Integer.class, removedId));
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM product_image_features WHERE image_id=?", Integer.class, removedId));
-        String cover = record.get("coverImageUrl").asString();
+        String cover = record.get("coverImageUrl").asText();
         response = productMultipart(seller, "PUT", "/api/seller/products/" + id, product("Keep existing photos", "30", 2), null, 0, List.of());
         assertEquals(200, response.statusCode(), response.body());
-        assertEquals(cover, json.readTree(response.body()).get("Record").get("coverImageUrl").asString());
+        assertEquals(cover, json.readTree(response.body()).get("Record").get("coverImageUrl").asText());
         verify(uploader, times(5)).upload(any(), anyMap()); verify(uploader, never()).destroy(anyString(), anyMap());
     }
 
@@ -263,7 +227,7 @@ class SellerProductMySqlTests {
         var seller = login("products-seller@example.invalid");
         var created = productMultipart(seller, "POST", "/api/seller/products", product("Original", "10", 1), UploadServiceTests.PNG, 1, List.of());
         var record = json.readTree(created.body()).get("Record"); long id = record.get("id").asLong();
-        String cover = record.get("coverImageUrl").asString(); long detailId = record.get("detailImages").get(0).get("id").asLong();
+        String cover = record.get("coverImageUrl").asText(); long detailId = record.get("detailImages").get(0).get("id").asLong();
         when(uploader.upload(any(), anyMap())).thenReturn(Map.of("public_id", "test/replacement", "secure_url", "https://res.cloudinary.com/test/replacement.png"))
                 .thenThrow(new IOException("Simulated failure"));
         var response = productMultipart(seller, "PUT", "/api/seller/products/" + id, product("Uncommitted edit", "20", 2), UploadServiceTests.PNG, 1, List.of(detailId));
@@ -309,17 +273,17 @@ class SellerProductMySqlTests {
         assertEquals(200, response.statusCode(), response.body());
         var records = json.readTree(response.body()).get("Records"); assertEquals(2, records.size());
         var urls = jdbc.queryForList("SELECT image_url FROM product_images WHERE product_id=? ORDER BY display_order", String.class, id);
-        assertEquals(records.get(0).get("imageUrl").asString(), urls.get(0));
-        assertEquals(records.get(1).get("imageUrl").asString(), urls.get(1));
+        assertEquals(records.get(0).get("imageUrl").asText(), urls.get(0));
+        assertEquals(records.get(1).get("imageUrl").asText(), urls.get(1));
         assertEquals(List.of(0, 1), jdbc.queryForList("SELECT display_order FROM product_images WHERE product_id=? ORDER BY display_order", Integer.class, id));
         assertEquals("PENDING", jdbc.queryForObject("SELECT moderation_status FROM products WHERE id=?", String.class, id));
         assertEquals(2, json.readTree(get(seller, "/api/seller/products/" + id).body()).get("Record").get("images").size());
-        assertEquals(urls.getFirst(), json.readTree(get(seller, "/api/seller/products").body()).get("Records").get(0).get("images").get(0).get("imageUrl").asString());
+        assertEquals(urls.getFirst(), json.readTree(get(seller, "/api/seller/products").body()).get("Records").get(0).get("images").get(0).get("imageUrl").asText());
         long imageId = records.get(0).get("id").asLong();
         jdbc.update("INSERT INTO product_image_features(image_id,embedding,model_name) VALUES(?,'[0.1,0.2]','test')", imageId);
         var removed = mutate(seller, "DELETE", "/api/seller/products/" + id + "/images/" + imageId, null, true);
         assertEquals(200, removed.statusCode(), removed.body());
-        assertEquals(urls.get(1), json.readTree(removed.body()).get("Records").get(0).get("imageUrl").asString());
+        assertEquals(urls.get(1), json.readTree(removed.body()).get("Records").get(0).get("imageUrl").asText());
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM product_image_features WHERE image_id=?", Integer.class, imageId));
         verify(uploader, never()).destroy(anyString(), anyMap());
         mutate(seller, "DELETE", "/api/seller/products/" + id, null, true);
@@ -405,12 +369,12 @@ class SellerProductMySqlTests {
         assertNull(jdbc.queryForObject("SELECT deleted_at FROM products WHERE id=?", java.sql.Timestamp.class, id));
         assertTrue(jdbc.queryForObject("SELECT LENGTH(slug) FROM products WHERE id=?", Integer.class, id) <= 255);
         var record = json.readTree(get(seller, "/api/seller/products/" + id).body()).get("Record");
-        assertEquals("Truyện tiếng Việt — Tập 1", record.get("title").asString());
+        assertEquals("Truyện tiếng Việt — Tập 1", record.get("title").asText());
         assertEquals(new BigDecimal("65000.10"), jdbc.queryForObject("SELECT price FROM products WHERE id=?", BigDecimal.class, id));
         body.put("title", "Đã chỉnh sửa"); body.put("price", "1234.56"); body.put("stockQuantity", 0); body.put("isActive", false);
         assertEquals(200, mutate(seller, "PUT", "/api/seller/products/" + id, body, true).statusCode());
         record = json.readTree(get(seller, "/api/seller/products/" + id).body()).get("Record");
-        assertEquals("Đã chỉnh sửa", record.get("title").asString()); assertEquals(0, record.get("stockQuantity").asInt());
+        assertEquals("Đã chỉnh sửa", record.get("title").asText()); assertEquals(0, record.get("stockQuantity").asInt());
         assertFalse(record.get("isActive").asBoolean());
         assertEquals(200, mutate(seller, "DELETE", "/api/seller/products/" + id, null, true).statusCode());
         assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM products WHERE id=? AND deleted_at IS NOT NULL AND is_active=false", Integer.class, id));
@@ -427,7 +391,7 @@ class SellerProductMySqlTests {
             var response = method.equals("GET") ? get(other, "/api/seller/products/" + id)
                     : mutate(other, method, "/api/seller/products/" + id, method.equals("PUT") ? product("Stolen", "0", 0) : null, true);
             assertEquals(404, response.statusCode(), response.body());
-            assertEquals("ERROR", json.readTree(response.body()).get("Result").asString());
+            assertEquals("ERROR", json.readTree(response.body()).get("Result").asText());
         }
         var result = json.readTree(get(other, "/api/seller/products?sellerId=92001").body());
         assertEquals(0, result.get("TotalRecordCount").asInt());
@@ -443,7 +407,7 @@ class SellerProductMySqlTests {
             var body = product("Invalid", "10", 1); body.put(item.getKey(), item.getValue());
             var response = mutate(seller, "POST", "/api/seller/products", body, true);
             assertEquals(400, response.statusCode(), item.getKey() + ": " + response.body());
-            assertEquals("ERROR", json.readTree(response.body()).get("Result").asString());
+            assertEquals("ERROR", json.readTree(response.body()).get("Result").asText());
         }
         for (String field : List.of("categoryId", "authorId", "publisherId")) {
             var body = product("Bad reference", "10", 1); body.put(field, 999999);
@@ -465,9 +429,9 @@ class SellerProductMySqlTests {
         create(other, product("Foreign", "999999", 500));
         var first = json.readTree(get(seller, "/api/seller/products?jtPageSize=2&jtSorting=price%20ASC").body());
         assertEquals(3, first.get("TotalRecordCount").asInt()); assertEquals(2, first.get("Records").size());
-        assertEquals("Alpha 100%", first.get("Records").get(0).get("title").asString());
+        assertEquals("Alpha 100%", first.get("Records").get(0).get("title").asText());
         var second = json.readTree(get(seller, "/api/seller/products?jtPageSize=2&jtStartIndex=2&jtSorting=price%20ASC").body());
-        assertEquals("Gamma", second.get("Records").get(0).get("title").asString());
+        assertEquals("Gamma", second.get("Records").get(0).get("title").asText());
         var summary = first.get("Summary"); assertEquals(3, summary.get("productCount").asInt());
         assertEquals(5, summary.get("stockQuantity").asInt()); assertEquals(1, summary.get("lowStockCount").asInt());
         assertEquals(1, summary.get("outOfStockCount").asInt());

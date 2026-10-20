@@ -11,7 +11,7 @@ phone varchar(20)
 avatar_url text
 role varchar(20) [not null, default: 'USER', check: `role IN ('USER', 'ADMIN')`]
 is_seller boolean [not null, default: false]
-account_status varchar(20) [not null, default: 'ACTIVE', check: `account_status IN ('ACTIVE', 'LOCKED')`]
+account_status varchar(20) [not null, default: 'ACTIVE', check: `account_status IN ('ACTIVE', 'PENDING_VERIFY', 'LOCKED')`]
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 deleted_at datetime
@@ -180,7 +180,7 @@ table('payments', '''
 id bigint [pk, not null, increment]
 payment_code varchar(60) [not null, unique]
 checkout_id bigint [not null]
-method varchar(20) [not null, check: `method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD')`]
+method varchar(20) [not null, check: `method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD', 'COD')`]
 amount decimal(15,2) [not null, check: `amount > 0`]
 status varchar(20) [not null, default: 'PENDING', check: `status IN ('PENDING', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED')`]
 provider_transaction_id varchar(150)
@@ -379,3 +379,30 @@ created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 fk('notifications', 'user_id', 'users')
 fk('notifications', 'order_id', 'orders')
 note('notifications', 'Phục vụ thông báo hủy đơn, trạng thái và hoàn tiền. Không phải hệ thống ticket/CSKH.')
+
+# Delivery addresses and exchange-to-order links for the live exchange checkout.
+table('user_addresses', '''
+id bigint [pk, not null, increment]
+user_id bigint [not null]
+recipient_name varchar(100) [not null]
+phone varchar(20) [not null]
+province varchar(100) [not null]
+district varchar(100) [not null]
+ward varchar(100) [not null]
+address_detail varchar(500) [not null]
+default_address boolean [not null, default: false]
+''', 'tg_auth')
+fk('user_addresses', 'user_id', 'users')
+index('user_addresses', 'user_id', key='idx_user_addresses')
+
+table('exchange_order_links', '''
+id bigint [pk, not null, increment]
+room_id bigint [not null]
+offer_id bigint [not null]
+recipient_id bigint [not null]
+order_id bigint [not null, unique]
+shipping_method varchar(30) [not null]
+''', 'tg_exchange')
+index('exchange_order_links', 'room_id,recipient_id', unique=True, key='uq_exchange_recipient')
+for column, parent in [('room_id', 'exchange_rooms'), ('offer_id', 'exchange_offers'), ('recipient_id', 'users'), ('order_id', 'orders')]:
+    fk('exchange_order_links', column, parent)

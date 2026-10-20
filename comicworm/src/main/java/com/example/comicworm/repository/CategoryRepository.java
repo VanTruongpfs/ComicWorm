@@ -10,5 +10,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     Optional<Category> findBySlug(String slug);
 
+    Optional<Category> findFirstByNameIgnoreCase(String name);
+
     List<Category> findByParentId(Integer parentId);
 }

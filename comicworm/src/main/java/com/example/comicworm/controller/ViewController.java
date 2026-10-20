@@ -7,13 +7,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Render the moved templates while retaining existing navigation and fetch URLs. */
 @Controller
 public class ViewController {
 
-    @GetMapping({"/", "/index.html"})
+    // Đã xóa "/" chỉ giữ lại "/index.html"
+    @GetMapping("/index.html")
     public String home() {
         return "view/index";
+    }
+
+    // Admin dung chung trang dang nhap /auth/login (he thong phan quyen theo role).
+    @GetMapping("/admin/html/login.html")
+    public String adminLogin() {
+        return "redirect:/auth/login";
     }
 
     @GetMapping("/{area:admin|auth|buyer|exchange|seller|user}/html/{page:[A-Za-z0-9_-]+}.html")

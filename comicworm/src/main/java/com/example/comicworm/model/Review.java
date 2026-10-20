@@ -37,6 +37,16 @@ public class Review {
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
+    @Min(1)
+    @Max(5)
+    @Column(name = "product_quality_rating", nullable = true)
+    private Integer productQualityRating;
+
+    @Min(1)
+    @Max(5)
+    @Column(name = "seller_attitude_rating", nullable = true)
+    private Integer sellerAttitudeRating;
+
     @Column(name = "content", nullable = true, columnDefinition = "text")
     private String content;
 

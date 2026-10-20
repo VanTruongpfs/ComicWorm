@@ -183,6 +183,17 @@
           <!-- HÀNG 2: LỌC THEO SÁCH, THEO NGÀY & TÌM KIẾM TỪ KHÓA -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) auto; gap: 14px; align-items: flex-end;">
             
+            <div>
+              <label for="sellerReplyFilter" style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px;">
+                Lọc trạng thái phản hồi:
+              </label>
+              <select id="sellerReplyFilter" class="form-select" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem; background: #fff;">
+                <option value="all">Tất cả đánh giá</option>
+                <option value="false">Chưa phản hồi</option>
+                <option value="true">Đã phản hồi</option>
+              </select>
+            </div>
+
             <!-- 1. LỌC THEO TỰA SÁCH / TRUYỆN -->
             <div>
               <label for="reviewBookSelect" style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px;">
@@ -595,5 +606,6 @@
   <div class="toast-container" id="toastContainer"></div>
   <script src="../js/common.js"></script>
   <script src="../js/reviews.js"></script>
+  <script src="../js/seller-review-replies.js"></script>
 </body>
 </html>

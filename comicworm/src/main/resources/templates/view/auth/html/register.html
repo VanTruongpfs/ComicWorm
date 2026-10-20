@@ -19,6 +19,12 @@
         <!-- Thông báo lỗi chung từ Server -->
         <div th:if="${errorMessage}" class="field-error" style="color: #dc3545; margin-bottom: 1rem; text-align: center; font-weight: bold;" th:text="${errorMessage}">
         </div>
+        <!-- Thông báo kết quả gửi lại email -->
+        <div th:if="${message}"
+             th:class="${success} ? 'field-success' : 'field-error'"
+             th:style="${success} ? 'color: #2e7d32; margin-bottom: 1rem; text-align: center; font-weight: bold;' : 'color: #dc3545; margin-bottom: 1rem; text-align: center; font-weight: bold;'"
+             th:text="${message}">
+        </div>
 
         <form class="auth-form"
               id="register-form"
@@ -99,14 +105,23 @@
             <button class="auth-button" type="submit" data-submit>Đăng ký</button>
         </form>
 
-        <p class="auth-switch">Đã có tài khoản?
-            <a class="text-link" th:href="@{/auth/login}">Đăng nhập</a>
+        <p class="auth-switch">
+            Đã có tài khoản? <a class="text-link" th:href="@{/auth/login}">Đăng nhập</a>
+        </p>
+
+        <!-- Nút bấm dành cho User đã đăng ký nhưng chưa xác thực -->
+        <p style="text-align: center; margin-top: 10px; font-size: 0.85em;">
+            Chưa nhận được email kích hoạt?
+            <button type="button" onclick="openResendModal()" style="background: none; border: none; color: #4A90E2; font-weight: bold; cursor: pointer; text-decoration: underline; padding: 0;">
+                Gửi lại mã xác thực
+            </button>
         </p>
     </section>
 </main>
 
 <div class="toast-region" data-toast-region aria-live="polite"></div>
-<!-- Modal Thông Báo Check Email -->
+
+<!-- Modal 1: Thông báo sau khi vừa bấm Đăng Ký thành công -->
 <div th:if="${showVerifyPopup}" id="email-verify-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 9999;">
     <div style="background: white; padding: 30px; border-radius: 12px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div style="font-size: 48px; color: #4A90E2; margin-bottom: 15px;">✉️</div>
@@ -115,15 +130,114 @@
             Hệ thống đã gửi một email xác thực đến địa chỉ:<br>
             <strong th:text="${registeredEmail}" style="color: #4A90E2;">user@example.com</strong>
         </p>
-        <p style="color: #888; font-size: 0.85em; margin-bottom: 25px;">
+        <p style="color: #888; font-size: 0.85em; margin-bottom: 20px;">
             Vui lòng kiểm tra hộp thư (bao gồm cả thư mục Spam) và nhấp vào liên kết để hoàn tất đăng ký.
         </p>
-        <button onclick="document.getElementById('email-verify-modal').style.display='none'"
-                style="background-color: #4A90E2; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-            Tôi Đã Hiểu
-        </button>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <form th:action="@{/auth/resend-verification}" method="post">
+                <input type="hidden" name="email" th:value="${registeredEmail}">
+                <button type="submit" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    🔄 Gửi Lại Mail
+                </button>
+            </form>
+
+            <button onclick="document.getElementById('email-verify-modal').style.display='none'"
+                    style="background-color: #4A90E2; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Tôi Đã Hiểu
+            </button>
+        </div>
     </div>
 </div>
+<!-- Modal 2: Popup chủ động gửi lại link xác thực qua AJAX -->
+<div id="custom-resend-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 9999;">
+    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 style="margin-top: 0; color: #333;">Yêu Cầu Gửi Lại Link Xác Thực</h3>
+        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+            Nhập email bạn đã dùng để đăng ký tài khoản. Hệ thống sẽ gửi lại liên kết kích hoạt mới.
+        </p>
+
+        <!-- Thẻ hiển thị thông báo phản hồi ngay trong Modal -->
+        <div id="resend-alert-msg" style="display: none; margin-bottom: 12px; padding: 10px; border-radius: 6px; font-size: 0.85em; font-weight: bold;"></div>
+
+        <form id="ajax-resend-form" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="email" name="email" id="resend-input-email" placeholder="Nhập địa chỉ email..." required
+                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; outline: none;">
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px;">
+                <button type="button" onclick="closeResendModal()" id="btn-cancel-resend"
+                        style="background: #e0e0e0; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #333;">
+                    Hủy
+                </button>
+                <button type="submit" id="btn-submit-resend"
+                        style="background: #4A90E2; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white;">
+                    Gửi Email
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function openResendModal() {
+        const modal = document.getElementById('custom-resend-modal');
+        const alertBox = document.getElementById('resend-alert-msg');
+        alertBox.style.display = 'none';
+        modal.style.display = 'flex';
+    }
+
+    function closeResendModal() {
+        document.getElementById('custom-resend-modal').style.display = 'none';
+    }
+
+    // Xử lý gửi AJAX không reload trang
+    document.getElementById('ajax-resend-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('resend-input-email').value.trim();
+        const alertBox = document.getElementById('resend-alert-msg');
+        const btnSubmit = document.getElementById('btn-submit-resend');
+
+        // Trạng thái Loading
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = 'Đang gửi...';
+        alertBox.style.display = 'none';
+
+        try {
+            const apiUrl = /*[[@{/auth/api/resend-verification}]]*/ '/auth/api/resend-verification';
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
+
+            const data = await response.json();
+
+            // Hiển thị kết quả ngay trên Modal
+            alertBox.style.display = 'block';
+            if (response.ok && data.success) {
+                alertBox.style.backgroundColor = '#e8f5e9';
+                alertBox.style.color = '#2e7d32';
+                alertBox.innerText = '✅ ' + (data.message || 'Link kích hoạt mới đã được gửi! Vui lòng kiểm tra hộp thư.');
+            } else {
+                alertBox.style.backgroundColor = '#ffebee';
+                alertBox.style.color = '#c62828';
+                alertBox.innerText = '❌ ' + (data.message || 'Có lỗi xảy ra hoặc email chưa đủ thời gian chờ (15 phút).');
+            }
+        } catch (error) {
+            alertBox.style.display = 'block';
+            alertBox.style.backgroundColor = '#ffebee';
+            alertBox.style.color = '#c62828';
+            alertBox.innerText = '❌ Lỗi kết nối máy chủ. Vui lòng thử lại sau!';
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Gửi Email';
+        }
+    });
+</script>
+
 <script type="module" th:src="@{/auth/js/register.js}"></script>
 </body>
 </html>

@@ -35,6 +35,16 @@ out/
 
 ### VS Code ###
 .vscode/
-
+### Local & Sensitive Files ###
 **/application.properties
-/application-local.properties
+**/application-local.properties
+**/application-preview.properties
+**/application-*.local.properties
+**/application-secret*.properties
+**/application-private*.properties
+**/.env
+**/.env.*
+*.key
+*.pem
+*.jks
+*.p12

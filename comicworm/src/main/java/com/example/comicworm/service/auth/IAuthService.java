@@ -1,6 +1,5 @@
 package com.example.comicworm.service.auth;
 
-
 import com.example.comicworm.dto.general.auth.GoogleLoginDTO;
 import com.example.comicworm.dto.general.auth.UserLoginDTO;
 import com.example.comicworm.dto.general.auth.UserRegisterDTO;
@@ -16,5 +15,15 @@ public interface IAuthService {
 
     AuthResponseDTO refreshToken(String refreshToken);
 
-    boolean verifyAccount(String token);
+    String verifyAccount(String token);
+
+    void resendVerificationEmail(String email);
+
+    String getMaskedEmail(String identifier);
+
+    void requestPasswordReset(String identifier, String fullEmail);
+
+    boolean validatePasswordResetToken(String token);
+
+    void resetPassword(String token, String newPassword, String confirmPassword);
 }

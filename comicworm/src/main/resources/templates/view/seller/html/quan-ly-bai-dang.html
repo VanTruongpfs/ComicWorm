@@ -127,6 +127,9 @@
             <button class="filter-tab" onclick="setTabFilter('hidden', this)">
               Đã ẩn (<span id="tabCountHidden">0</span>)
             </button>
+            <button class="filter-tab" onclick="setTabFilter('rejected', this)">
+              Từ chối (<span id="tabCountRejected">0</span>)
+            </button>
             <button class="filter-tab" onclick="setTabFilter('out_of_stock', this)">
               Hết hàng (<span id="tabCountOutOfStock">0</span>)
             </button>
@@ -246,6 +249,27 @@
   <script src="../js/post-management.js"></script>
   <script>
     let currentTab = 'all';
+    let livePosts = [];
+    let categoryNames = {};
+    let authorNames = {};
+    let publisherNames = {};
+    const sellerApi = '/api/seller/products';
+
+    async function loadSellerPosts() {
+      const response = await fetch(sellerApi + '?jtStartIndex=0&jtPageSize=100&jtSorting=id%20DESC', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.Result !== 'OK') throw new Error(data.Message || `Không tải được bài đăng (HTTP ${response.status}).`);
+      livePosts = (data.Records || []).map(p => ({
+        id: String(p.id), title: p.title || '', author: authorNames[p.authorId] || '', category: categoryNames[p.categoryId] || String(p.categoryId ?? ''),
+        volume: p.volumeNumbers || '', publisher: publisherNames[p.publisherId] || '', year: p.publicationYear, condition: p.editionType || `${p.conditionPercent || 0}%`,
+        price: Number(p.price || 0), originalPrice: Number(p.price || 0), stock: Number(p.stockQuantity || 0), views: 0,
+        isTradeable: String(p.listingType || '').includes('TRADE'), status: p.moderationStatus === 'APPROVED' ? (p.isActive ? 'active' : 'hidden') : p.moderationStatus === 'REJECTED' ? 'rejected' : 'pending',
+        rejectReason: p.moderationReason || '', image: p.coverImageUrl || (p.images || []).find(i => i.imageType === 'COVER')?.imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300',
+        description: p.description || '', createdAt: p.createdAt || '', hideReason: ''
+      }));
+      renderPosts();
+    }
+
 
     function setTabFilter(tab, btn) {
       currentTab = tab;
@@ -255,7 +279,7 @@
     }
 
     function renderPosts() {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       
       // Update stats
       document.getElementById('statTotalPosts').innerText = posts.length;
@@ -271,13 +295,14 @@
       document.getElementById('tabCountActive').innerText = posts.filter(p => p.status === 'active').length;
       document.getElementById('tabCountPending').innerText = posts.filter(p => p.status === 'pending').length;
       document.getElementById('tabCountHidden').innerText = posts.filter(p => p.status === 'hidden').length;
+      document.getElementById('tabCountRejected').innerText = posts.filter(p => p.status === 'rejected').length;
       document.getElementById('tabCountOutOfStock').innerText = posts.filter(p => p.status === 'out_of_stock').length;
 
       applyFilters();
     }
 
     function applyFilters() {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       const category = document.getElementById('categoryFilter').value;
       const sort = document.getElementById('sortFilter').value;
@@ -320,6 +345,7 @@
         let statusBadge = '';
         if (post.status === 'active') statusBadge = '<span class="badge badge-success"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đang bán</span>';
         else if (post.status === 'pending') statusBadge = '<span class="badge badge-warning"><span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> Chờ duyệt</span>';
+        else if (post.status === 'rejected') statusBadge = `<span class="badge badge-danger" title="Lý do từ chối: ${post.rejectReason || 'Không đạt chuẩn'}"><span class="material-symbols-outlined" style="font-size: 14px;">cancel</span> Từ chối</span>${post.rejectReason ? `<div style="font-size: 0.73rem; color: #dc2626; margin-top: 3px; max-width: 140px; line-height: 1.2;">Lý do: ${post.rejectReason}</div>` : ''}`;
         else if (post.status === 'hidden') statusBadge = '<span class="badge badge-neutral"><span class="material-symbols-outlined" style="font-size: 14px;">visibility_off</span> Đã ẩn</span>';
         else if (post.status === 'out_of_stock') statusBadge = '<span class="badge badge-danger"><span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span> Hết hàng</span>';
 
@@ -393,12 +419,12 @@
     function confirmHidePost() {
       const id = document.getElementById('hideTargetId').value;
       const reason = document.getElementById('hideReasonSelect').value;
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const target = posts.find(p => p.id === id);
       if (target) {
         target.status = 'hidden';
         target.hideReason = reason;
-        DataStore.savePosts(posts);
+        
         showToast(`Đã ẩn bài đăng ${id}`, 'info');
         closeModal('hideModal');
         renderPosts();
@@ -406,12 +432,12 @@
     }
 
     function unhidePost(id) {
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       const target = posts.find(p => p.id === id);
       if (target) {
         target.status = 'active';
         target.hideReason = '';
-        DataStore.savePosts(posts);
+        
         showToast(`Đã mở hiển thị lại bài đăng ${id}`, 'success');
         renderPosts();
       }
@@ -423,20 +449,20 @@
         showToast('Vui lòng tích chọn ít nhất 1 bài đăng cần ẩn!', 'error');
         return;
       }
-      const posts = DataStore.getPosts();
+      const posts = livePosts;
       posts.forEach(p => {
         if (checked.includes(p.id)) {
           p.status = 'hidden';
           p.hideReason = 'Ẩn hàng loạt bởi Seller';
         }
       });
-      DataStore.savePosts(posts);
+      
       showToast(`Đã ẩn thành công ${checked.length} bài đăng đã chọn!`, 'success');
       renderPosts();
     }
 
     function openDetailModal(id) {
-      const post = DataStore.getPosts().find(p => p.id === id);
+      const post = livePosts.find(p => p.id === id);
       if (!post) return;
 
       document.getElementById('detailModalTitle').innerText = post.title;
@@ -445,6 +471,15 @@
       };
 
       document.getElementById('detailModalBody').innerHTML = `
+        ${post.status === 'rejected' ? `
+          <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 14px; border-radius: 8px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;">
+            <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">error</span>
+            <div>
+              <strong style="color: #991b1b;">Bài đăng bị từ chối kiểm duyệt</strong>
+              <div style="margin-top: 4px; font-size: 0.88rem; color: #b91c1c;"><strong>Lý do từ chối:</strong> ${post.rejectReason || 'Nội dung hoặc hình ảnh chưa đạt tiêu chuẩn theo quy định của sàn.'}</div>
+            </div>
+          </div>
+        ` : ''}
         <div style="display: flex; gap: 18px; margin-bottom: 16px;">
           <img src="${post.image}" style="width: 110px; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
           <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
@@ -472,16 +507,29 @@
     }
 
     function resetSampleData() {
-      if (confirm('Khôi phục lại danh sách bài đăng mẫu mặc định ban đầu?')) {
-        DataStore.resetAll();
-        showToast('Đã nạp lại dữ liệu bài đăng mẫu!', 'info');
-        renderPosts();
-      }
+      showToast('Danh sách đang lấy từ database thật; không còn nạp dữ liệu mẫu ở màn hình này.', 'info');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      renderPosts();
+      fetch('/api/seller/products/options', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' })
+        .then(r => r.json()).then(data => {
+          if (data.Result === 'OK') {
+            categoryNames = Object.fromEntries((data.categories || []).map(x => [x.Value, x.DisplayText]));
+            authorNames = Object.fromEntries((data.authors || []).map(x => [x.Value, x.DisplayText]));
+            publisherNames = Object.fromEntries((data.publishers || []).map(x => [x.Value, x.DisplayText]));
+            return loadSellerPosts();
+          }
+          throw new Error(data.Message || 'Không tải được danh mục.');
+        }).catch(error => {
+          console.error(error);
+          document.getElementById('postsTableBody').innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:#dc2626">${escapePostText(error.message || 'Không tải được bài đăng. Vui lòng đăng nhập lại bằng tài khoản người bán.')}</td></tr>`;
+          showToast(error.message || 'Không tải được bài đăng.', 'error');
+        });
     });
+
+    function escapePostText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
   </script>
 </body>
 </html>

@@ -454,30 +454,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Nút Mua Ngay
+    // Nút Mua Ngay (Chuyển thẳng đến trang thanh toán)
     const btnBuyNow = document.getElementById('btn-buy-now') || document.querySelector('.btn-buy-now');
     if (btnBuyNow) {
         btnBuyNow.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                const res = await fetch('/api/cart/add', {
+                const res = await fetch('/api/cart/buy-now', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId: currentProductId, quantity: 1 })
                 });
 
                 if (res.status === 401) {
-                    showToast('Vui lòng đăng ký tài khoản để tiếp tục mua hàng!', 'warning', 'fa-right-to-bracket');
-                    setTimeout(() => window.location.href = '/auth/register', 1200);
+                    showToast('Vui lòng đăng nhập hoặc đăng ký để tiếp tục mua hàng!', 'warning', 'fa-right-to-bracket');
+                    setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href), 1200);
                     return;
                 }
 
-                showToast('Đang chuyển đến giỏ hàng...', 'primary', 'fa-spinner fa-spin');
-                setTimeout(() => {
-                    window.location.href = 'shopping_cart.html';
-                }, 600);
+                const data = await res.json();
+                if (res.ok && data.checkoutCode) {
+                    showToast('Đang chuyển đến trang thanh toán...', 'primary', 'fa-spinner fa-spin');
+                    setTimeout(() => {
+                        window.location.href = 'payment.html?checkoutCode=' + encodeURIComponent(data.checkoutCode);
+                    }, 400);
+                } else {
+                    showToast(data.message || 'Không thể tạo đơn mua ngay', 'danger');
+                }
             } catch (err) {
-                window.location.href = 'shopping_cart.html';
+                showToast('Không thể kết nối đến máy chủ', 'danger');
             }
         });
     }
@@ -759,6 +764,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const cardTitle = card.querySelector('.card-title, h3')?.textContent.trim() || 'Truyện liên quan';
             showToast(`Đang tải trang chi tiết "${cardTitle}"...`, 'primary', 'fa-book-open');
         });
+    });
+
+    // --------------------------------------------------------------------------
+    // 12. VÀO PHÒNG TRAO ĐỔI / ĐÀM PHÁN TỪ CHI TIẾT SẢN PHẨM
+    // --------------------------------------------------------------------------
+    window.enterExchangeRoom = function (e) {
+        if (e) e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id') || params.get('productId');
+        if (!productId) {
+            window.location.href = '../../exchange/html/dealing-chat.html';
+            return;
+        }
+        fetch('/api/exchange/rooms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetProductId: Number(productId) })
+        })
+        .then(function (res) {
+            if (res.status === 401) {
+                window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href);
+                return null;
+            }
+            return res.json();
+        })
+        .then(function (room) {
+            if (room && room.id) {
+                window.location.href = '../../exchange/html/dealing-chat.html?room=' + encodeURIComponent(room.id);
+            } else {
+                window.location.href = '../../exchange/html/dealing-chat.html';
+            }
+        })
+        .catch(function () {
+            window.location.href = '../../exchange/html/dealing-chat.html';
+        });
+    };
+
+    document.querySelectorAll('.btn-match-barter, .btn-propose-exchange, .btn-chat-seller').forEach(btn => {
+        btn.addEventListener('click', window.enterExchangeRoom);
     });
 
     console.log('ComicHub Product Detail scripts (detail.js) loaded successfully.');

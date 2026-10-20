@@ -143,26 +143,91 @@
         if (proposeBtn && !p.tradable) proposeBtn.style.display = 'none';
     }
 
-    function renderBuyButton(p) {
-        const old = $('.primary-actions-row .btn-buy-now');
-        const btn = stripListeners(old);
-        if (!btn) return;
-        if (!p.purchasable) {
-            btn.removeAttribute('href');
-            btn.style.opacity = '.5';
-            btn.style.pointerEvents = 'none';
-            btn.innerHTML = '<i class="fa-solid fa-ban"></i> ' +
-                (!p.publiclyVisible ? 'Tin chưa được công khai' : (p.inStock ? 'Tin này chỉ nhận trao đổi' : 'Đã hết hàng'));
-            return;
+    function renderActionButtons(p) {
+        // 1. Xử lý nút THÊM VÀO GIỎ HÀNG
+        const oldAdd = $('.primary-actions-row .btn-add-cart, #btn-add-to-cart');
+        const btnAdd = stripListeners(oldAdd);
+        if (btnAdd) {
+            if (!p.purchasable) {
+                btnAdd.style.opacity = '.5';
+                btnAdd.style.pointerEvents = 'none';
+            } else {
+                btnAdd.addEventListener('click', async e => {
+                    e.preventDefault();
+                    btnAdd.disabled = true;
+                    await A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
+                    btnAdd.disabled = false;
+                });
+            }
         }
-        btn.addEventListener('click', async e => {
+
+        // 2. Xử lý nút MUA NGAY (Chuyển thẳng đến trang thanh toán Payment)
+        const oldBuy = $('.primary-actions-row .btn-buy-now, #btn-buy-now');
+        const btnBuy = stripListeners(oldBuy);
+        if (btnBuy) {
+            if (!p.purchasable) {
+                btnBuy.removeAttribute('href');
+                btnBuy.style.opacity = '.5';
+                btnBuy.style.pointerEvents = 'none';
+                btnBuy.innerHTML = '<i class="fa-solid fa-ban"></i> ' +
+                    (!p.publiclyVisible ? 'Tin chưa được công khai' : (p.inStock ? 'Tin này chỉ nhận trao đổi' : 'Đã hết hàng'));
+                return;
+            }
+            btnBuy.addEventListener('click', async e => {
+                e.preventDefault();
+                btnBuy.disabled = true;
+                const originalHtml = btnBuy.innerHTML;
+                btnBuy.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang khởi tạo đơn hàng...';
+
+                const checkoutCode = await A.buyNow({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
+                if (checkoutCode) {
+                    A.toast('Khởi tạo đơn mua ngay thành công! Đang chuyển đến thanh toán...', 'success', 'fa-circle-check');
+                    setTimeout(() => {
+                        window.location.href = 'payment.html?checkoutCode=' + encodeURIComponent(checkoutCode);
+                    }, 400);
+                } else {
+                    btnBuy.disabled = false;
+                    btnBuy.innerHTML = originalHtml;
+                }
+            });
+        }
+    }
+
+    function setupExchangeButtons(p) {
+        const handleExchange = async (e) => {
             e.preventDefault();
-            const ok = await A.addToLocalCart({id: p.id, title: p.title, price: p.price, sellerName: p.seller?.fullName});
-            if (!ok) return; // Nếu 401, addToLocalCart đã tự hiển thị thông báo và điều hướng sang /auth/register
-            A.toast('Đang chuyển đến giỏ hàng...', 'primary', 'fa-spinner fa-spin');
-            setTimeout(() => {
-                location.href = 'shopping_cart.html';
-            }, 600);
+            try {
+                const res = await fetch('/api/exchange/rooms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        targetProductId: p.id,
+                        initialMessage: 'Xin chào, mình quan tâm và muốn trao đổi bộ truyện này.'
+                    })
+                });
+                if (res.status === 401) {
+                    alert('Vui lòng đăng nhập để mở hoặc tham gia phòng trao đổi truyện.');
+                    window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href);
+                    return;
+                }
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    alert(err.message || 'Không thể mở phòng trao đổi.');
+                    return;
+                }
+                const room = await res.json();
+                window.location.href = '/exchange/html/dealing-chat.html?room=' + encodeURIComponent(room.id);
+            } catch (err) {
+                console.error('Lỗi khi mở phòng trao đổi:', err);
+                window.location.href = '/exchange/html/dealing-chat.html';
+            }
+        };
+
+        const exchangeBtns = document.querySelectorAll('.btn-match-barter, .btn-propose-exchange, .btn-chat-seller');
+        exchangeBtns.forEach(btn => {
+            const clean = stripListeners(btn);
+            if (clean) clean.addEventListener('click', handleExchange);
         });
     }
 
@@ -239,10 +304,12 @@
 
         const reviewItem = r =>
             '<div style="padding:16px 0;border-bottom:1px solid #f1f5f9;">' +
-            '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">' +
+            '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">' +
             '<strong style="font-size:14px;">' + A.esc(r.buyerName) + '</strong>' + stars(r.rating) +
-            '<span style="color:#94a3b8;font-size:12px;">' + A.timeAgo(r.createdAt) + '</span></div>' +
-            (r.content ? '<p style="font-size:13px;color:#475569;line-height:1.5;white-space:pre-line;">' + A.esc(r.content) + '</p>' : '') +
+            (r.productQualityRating ? '<span style="font-size:11px;background:#f0fdf4;color:#16a34a;padding:2px 8px;border-radius:12px;border:1px solid #bbf7d0;">Chất lượng: ' + r.productQualityRating + '★</span>' : '') +
+            (r.sellerAttitudeRating ? '<span style="font-size:11px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:12px;border:1px solid #bfdbfe;">Người bán: ' + r.sellerAttitudeRating + '★</span>' : '') +
+            '<span style="color:#94a3b8;font-size:12px;margin-left:auto;">' + A.timeAgo(r.createdAt) + '</span></div>' +
+            (r.content ? '<p style="font-size:13px;color:#475569;line-height:1.5;white-space:pre-line;margin-top:6px;">' + A.esc(r.content) + '</p>' : '') +
             (r.reply
                 ? '<div style="margin-top:8px;padding:10px 12px;background:#f8fafc;border-left:3px solid #f97316;border-radius:6px;font-size:13px;">' +
                 '<strong>' + A.esc(r.reply.sellerName || 'Người bán') + ' (Người bán) phản hồi:</strong> ' + A.esc(r.reply.content) + '</div>' : '') +
@@ -346,7 +413,8 @@
             renderBreadcrumb(p);
             renderGallery(p);
             renderInfo(p);
-            renderBuyButton(p);
+            renderActionButtons(p);
+            setupExchangeButtons(p);
             renderSeller(p);
             renderTabs(p);
             renderRelated(p);

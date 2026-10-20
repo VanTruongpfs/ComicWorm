@@ -20,7 +20,7 @@ CREATE TABLE `users` (
   `deleted_at` DATETIME NULL,
   CONSTRAINT `ck_user_login_identity` CHECK (password_hash IS NOT NULL OR google_sub IS NOT NULL),
   CONSTRAINT `ck_users_role` CHECK (role IN ('USER', 'ADMIN')),
-  CONSTRAINT `ck_users_account_status` CHECK (account_status IN ('ACTIVE', 'LOCKED'))
+  CONSTRAINT `ck_users_account_status` CHECK (account_status IN ('ACTIVE', 'PENDING_VERIFY', 'LOCKED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `auth_sessions` (
@@ -40,6 +40,19 @@ CREATE TABLE `password_reset_tokens` (
   `expires_at` DATETIME NOT NULL,
   `used_at` DATETIME NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_addresses` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `recipient_name` VARCHAR(100) NOT NULL,
+  `phone` VARCHAR(20) NOT NULL,
+  `province` VARCHAR(100) NOT NULL,
+  `district` VARCHAR(100) NOT NULL,
+  `ward` VARCHAR(100) NOT NULL,
+  `address_detail` VARCHAR(500) NOT NULL,
+  `default_address` BOOLEAN NOT NULL DEFAULT false,
+  KEY `idx_user_addresses` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `categories` (
@@ -205,7 +218,7 @@ CREATE TABLE `payments` (
   `paid_at` DATETIME NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `uq_payment_provider` (`method`, `provider_transaction_id`),
-  CONSTRAINT `ck_payments_method` CHECK (method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD')),
+  CONSTRAINT `ck_payments_method` CHECK (method IN ('VNPAY', 'MOMO', 'VIETQR', 'CREDIT_CARD', 'COD')),
   CONSTRAINT `ck_payments_amount` CHECK (amount > 0),
   CONSTRAINT `ck_payments_status` CHECK (status IN ('PENDING', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -250,6 +263,8 @@ CREATE TABLE `reviews` (
   `order_item_id` BIGINT NOT NULL UNIQUE,
   `buyer_id` BIGINT NOT NULL,
   `rating` INT NOT NULL,
+  `product_quality_rating` INT NULL,
+  `seller_attitude_rating` INT NULL,
   `content` TEXT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -350,6 +365,16 @@ CREATE TABLE `exchange_messages` (
   CONSTRAINT `ck_exchange_message_content` CHECK (content IS NOT NULL OR image_url IS NOT NULL)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `exchange_order_links` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `room_id` BIGINT NOT NULL,
+  `offer_id` BIGINT NOT NULL,
+  `recipient_id` BIGINT NOT NULL,
+  `order_id` BIGINT NOT NULL UNIQUE,
+  `shipping_method` VARCHAR(30) NOT NULL,
+  UNIQUE KEY `uq_exchange_recipient` (`room_id`, `recipient_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `product_image_features` (
   `image_id` BIGINT NOT NULL PRIMARY KEY,
   `embedding` JSON NOT NULL,
@@ -448,3 +473,8 @@ ALTER TABLE `consultation_sessions` ADD CONSTRAINT `fk_consultation_sessions_use
 ALTER TABLE `consultation_messages` ADD CONSTRAINT `fk_consultation_messages_session_id` FOREIGN KEY (`session_id`) REFERENCES `consultation_sessions` (`id`);
 ALTER TABLE `notifications` ADD CONSTRAINT `fk_notifications_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `notifications` ADD CONSTRAINT `fk_notifications_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+ALTER TABLE `user_addresses` ADD CONSTRAINT `fk_user_addresses_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_room_id` FOREIGN KEY (`room_id`) REFERENCES `exchange_rooms` (`id`);
+ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
+ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_recipient_id` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);
+ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
