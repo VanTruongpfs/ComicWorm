@@ -40,10 +40,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.example.comicworm.service.account.AccountProfileService;
 @WebMvcTest(controllers = {ViewController.class, SellerAccountController.class, AccountController.class,
         AnalyticsController.class, AuthController.class})
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, SellerUpgradeService.class})
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class, SellerUpgradeService.class, AccountProfileService.class})
 class SellerAccessTests {
     @Autowired MockMvc mvc;
     @Autowired SellerUpgradeService upgrades;

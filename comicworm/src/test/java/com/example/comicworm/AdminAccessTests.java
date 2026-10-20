@@ -51,6 +51,8 @@ class AdminAccessTests {
     IAuthService auth;
     @MockitoBean
     AdminModerationService moderation;
+    @MockitoBean
+    com.example.comicworm.service.account.AccountProfileService profiles;
 
     CustomUserDetails principal(long id, UserRole role, boolean seller) {
         var user = new User();

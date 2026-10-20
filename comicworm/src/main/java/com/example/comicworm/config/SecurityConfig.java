@@ -62,8 +62,9 @@ public class SecurityConfig {
                         .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
                         .requireCsrfProtectionMatcher(request -> {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
-                    return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
-                            && (path.equals("/user/seller-upgrade") || path.startsWith("/api/seller/")
+                            return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
+                                    && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
+                                    || path.startsWith("/api/seller/")
                                     || path.startsWith("/api/admin/"));
                 }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -80,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/admin/html/**").hasRole("ADMIN")
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
+                        .requestMatchers("/api/account/**").authenticated()
 
                         //public API
                         .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
@@ -161,7 +163,10 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/analytics/**", config);
-        source.registerCorsConfiguration("/api/account/**", config);
+        CorsConfiguration account = new CorsConfiguration(config);
+        account.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+        account.setAllowedHeaders(List.of("Accept", "Content-Type", "Authorization", "X-CSRF-TOKEN"));
+        source.registerCorsConfiguration("/api/account/**", account);
         CorsConfiguration products = new CorsConfiguration(config);
         products.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         products.setAllowedHeaders(List.of("Accept", "Content-Type", "Authorization", "X-CSRF-TOKEN"));

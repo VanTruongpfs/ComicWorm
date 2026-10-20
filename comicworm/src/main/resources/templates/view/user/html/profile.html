@@ -113,12 +113,32 @@
 
             <!-- BẢO MẬT TÀI KHOẢN -->
             <section class="surface-card security-card">
-                <div>
+                <div class="security-intro">
                     <p class="eyebrow">Bảo mật tài khoản</p>
-                    <h2>Đặt lại mật khẩu</h2>
-                    <p class="page-subtitle">Chúng tôi sẽ gửi đường dẫn khôi phục đến email đang dùng trong phiên đăng nhập.</p>
+                    <h2>Đổi mật khẩu</h2>
+                    <p class="page-subtitle">Nhập mật khẩu hiện tại để xác nhận, sau đó chọn mật khẩu mới từ 8 ký tự trở lên.</p>
                 </div>
-                <button class="button" id="request-password-reset" type="button">Đổi mật khẩu</button>
+                <form id="password-form" class="form-grid password-form" novalidate autocomplete="off">
+                    <div class="field">
+                        <label for="current-password">Mật khẩu hiện tại</label>
+                        <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required>
+                        <small class="field-error" data-error-for="currentPassword"></small>
+                    </div>
+                    <div class="field">
+                        <label for="new-password">Mật khẩu mới</label>
+                        <input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+                        <small class="field-error" data-error-for="newPassword"></small>
+                    </div>
+                    <div class="field">
+                        <label for="confirm-password">Xác nhận mật khẩu mới</label>
+                        <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required>
+                        <small class="field-error" data-error-for="confirmPassword"></small>
+                    </div>
+                    <label class="show-password"><input type="checkbox" id="show-passwords"> Hiện mật khẩu</label>
+                    <div class="form-actions">
+                        <button class="button" type="submit">Đổi mật khẩu</button>
+                    </div>
+                </form>
             </section>
 
         </main>
