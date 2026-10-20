@@ -304,10 +304,12 @@
 
         const reviewItem = r =>
             '<div style="padding:16px 0;border-bottom:1px solid #f1f5f9;">' +
-            '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">' +
+            '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">' +
             '<strong style="font-size:14px;">' + A.esc(r.buyerName) + '</strong>' + stars(r.rating) +
-            '<span style="color:#94a3b8;font-size:12px;">' + A.timeAgo(r.createdAt) + '</span></div>' +
-            (r.content ? '<p style="font-size:13px;color:#475569;line-height:1.5;white-space:pre-line;">' + A.esc(r.content) + '</p>' : '') +
+            (r.productQualityRating ? '<span style="font-size:11px;background:#f0fdf4;color:#16a34a;padding:2px 8px;border-radius:12px;border:1px solid #bbf7d0;">Chất lượng: ' + r.productQualityRating + '★</span>' : '') +
+            (r.sellerAttitudeRating ? '<span style="font-size:11px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:12px;border:1px solid #bfdbfe;">Người bán: ' + r.sellerAttitudeRating + '★</span>' : '') +
+            '<span style="color:#94a3b8;font-size:12px;margin-left:auto;">' + A.timeAgo(r.createdAt) + '</span></div>' +
+            (r.content ? '<p style="font-size:13px;color:#475569;line-height:1.5;white-space:pre-line;margin-top:6px;">' + A.esc(r.content) + '</p>' : '') +
             (r.reply
                 ? '<div style="margin-top:8px;padding:10px 12px;background:#f8fafc;border-left:3px solid #f97316;border-radius:6px;font-size:13px;">' +
                 '<strong>' + A.esc(r.reply.sellerName || 'Người bán') + ' (Người bán) phản hồi:</strong> ' + A.esc(r.reply.content) + '</div>' : '') +

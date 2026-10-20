@@ -4,6 +4,7 @@ import jakarta.servlet.DispatcherType;
 import java.util.List;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -50,8 +52,9 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CsrfTokenRepository csrfTokens,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-            CustomOAuth2UserService customOAuth2UserService) throws Exception {
+            @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository,
+            @Autowired(required = false) OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            @Autowired(required = false) CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(reportCors()))
                 .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens)
@@ -104,22 +107,31 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/auth/login")
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureHandler((request, response, exception) -> {
-                            org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
-                                    .error("OAuth2 Login Failed: {}", exception.getMessage(), exception);
-                            String detail = exception.getMessage() != null ? exception.getMessage() : "Đăng nhập Google thất bại.";
-                            String errorMessage = java.net.URLEncoder.encode(
-                                    detail,
-                                    java.nio.charset.StandardCharsets.UTF_8
-                            );
-                            response.sendRedirect("/auth/login?oauthError=" + errorMessage);
-                        })
-                )
+                .httpBasic(AbstractHttpConfigurer::disable);
+
+        if (clientRegistrationRepository != null) {
+            http.oauth2Login(oauth2 -> {
+                oauth2.loginPage("/auth/login");
+                if (customOAuth2UserService != null) {
+                    oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService));
+                }
+                if (oAuth2LoginSuccessHandler != null) {
+                    oauth2.successHandler(oAuth2LoginSuccessHandler);
+                }
+                oauth2.failureHandler((request, response, exception) -> {
+                    org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+                            .error("OAuth2 Login Failed: {}", exception.getMessage(), exception);
+                    String detail = exception.getMessage() != null ? exception.getMessage() : "Đăng nhập Google thất bại.";
+                    String errorMessage = java.net.URLEncoder.encode(
+                            detail,
+                            java.nio.charset.StandardCharsets.UTF_8
+                    );
+                    response.sendRedirect("/auth/login?oauthError=" + errorMessage);
+                });
+            });
+        }
+
+        http
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, error) -> {
                             if (isAccountPage(request.getRequestURI().substring(request.getContextPath().length()))) {

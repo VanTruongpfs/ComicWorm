@@ -30,6 +30,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,7 +84,7 @@ class ProductModerationControllerSecurityTests {
         mvc.perform(get("/api/admin/products"))
                 .andExpect(status().isUnauthorized());
 
-        mvc.perform(post("/api/admin/products/1/approve"))
+        mvc.perform(post("/api/admin/products/1/approve").with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -94,11 +95,11 @@ class ProductModerationControllerSecurityTests {
         mvc.perform(get("/api/admin/products").with(user(normalUser)))
                 .andExpect(status().isForbidden());
 
-        mvc.perform(post("/api/admin/products/1/approve").with(user(normalUser)))
+        mvc.perform(post("/api/admin/products/1/approve").with(user(normalUser)).with(csrf()))
                 .andExpect(status().isForbidden());
 
         mvc.perform(post("/api/admin/products/1/reject")
-                        .with(user(normalUser))
+                        .with(user(normalUser)).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"Vi pham\"}"))
                 .andExpect(status().isForbidden());
@@ -110,7 +111,7 @@ class ProductModerationControllerSecurityTests {
         when(moderationService.approve(eq(1L), eq(999L)))
                 .thenReturn(sampleRecord(1L, ModerationStatus.APPROVED, null));
 
-        mvc.perform(post("/api/admin/products/1/approve").with(user(admin)))
+        mvc.perform(post("/api/admin/products/1/approve").with(user(admin)).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.Result").value("OK"))
                 .andExpect(jsonPath("$.Record.moderationStatus").value("APPROVED"));
@@ -124,7 +125,7 @@ class ProductModerationControllerSecurityTests {
                 .thenReturn(sampleRecord(1L, ModerationStatus.REJECTED, reason));
 
         mvc.perform(post("/api/admin/products/1/reject")
-                        .with(user(admin))
+                        .with(user(admin)).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"" + reason + "\"}"))
                 .andExpect(status().isOk())
@@ -138,7 +139,7 @@ class ProductModerationControllerSecurityTests {
         CustomUserDetails admin = userPrincipal(UserRole.ADMIN);
 
         mvc.perform(post("/api/admin/products/1/reject")
-                        .with(user(admin))
+                        .with(user(admin)).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"\"}"))
                 .andExpect(status().isBadRequest())

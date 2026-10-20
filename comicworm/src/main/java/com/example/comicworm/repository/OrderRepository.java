@@ -38,6 +38,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Pageable pageable);
 
     List<Order> findByBuyerIdOrderByCreatedAtDesc(Long buyerId);
+    java.util.Optional<Order> findByOrderCode(String orderCode);
     long countByBuyerId(Long buyerId);
     long countBySellerId(Long sellerId);
 }

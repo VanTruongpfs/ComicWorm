@@ -11,6 +11,8 @@ public class ReviewDTO {
 
     private final Long id;
     private final Integer rating;
+    private final Integer productQualityRating;
+    private final Integer sellerAttitudeRating;
     private final String content;
     private final String buyerName;
     private final String buyerAvatarUrl;

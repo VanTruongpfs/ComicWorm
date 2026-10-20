@@ -70,7 +70,7 @@ class AdminAccessTests {
     @ValueSource(strings = {"postModeration", "dashboard", "accounts", "statistics", "hide_post"})
     void adminPagesNeedLoginAndAdminRole(String page) throws Exception {
         String path = "/admin/html/" + page + ".html";
-        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrl("/auth/login"));
+        mvc.perform(get(path)).andExpect(status().isFound()).andExpect(redirectedUrlPattern("**/auth/login"));
         mvc.perform(get(path).with(user(principal(7, UserRole.USER, false)))).andExpect(status().isForbidden());
         // A seller is still not an admin.
         mvc.perform(get(path).with(user(principal(8, UserRole.USER, true)))).andExpect(status().isForbidden());

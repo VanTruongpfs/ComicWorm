@@ -263,6 +263,8 @@ CREATE TABLE `reviews` (
   `order_item_id` BIGINT NOT NULL UNIQUE,
   `buyer_id` BIGINT NOT NULL,
   `rating` INT NOT NULL,
+  `product_quality_rating` INT NULL,
+  `seller_attitude_rating` INT NULL,
   `content` TEXT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
