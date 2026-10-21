@@ -18,8 +18,17 @@
         <div class="topbar-left">
           <h1 class="page-title"><span class="material-symbols-outlined">inventory_2</span> Quản lý sản phẩm</h1>
           <p class="page-desc">Thêm, cập nhật và quản lý kho truyện của gian hàng bạn.</p>
+        <div class="topbar-right" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <a class="btn btn-secondary" id="downloadTemplateButton" href="/api/seller/products/excel-template" download style="text-decoration:none; display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined">download</span> Tải file mẫu
+          </a>
+          <button class="btn btn-secondary" id="importExcelButton" type="button" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined">upload_file</span> Nhập từ Excel
+          </button>
+          <button class="btn btn-primary" id="addProductButton" type="button" disabled style="display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined">add</span> Thêm sản phẩm
+          </button>
         </div>
-        <div class="topbar-right"><button class="btn btn-primary" id="addProductButton" type="button" disabled><span class="material-symbols-outlined">add</span> Thêm sản phẩm</button></div>
       </header>
       <main class="content-body product-content">
         <section class="stats-grid" aria-label="Tổng quan kho truyện">
@@ -48,7 +57,91 @@
         </section>
       </main>
     </div>
+  <!-- MODAL IMPORT EXCEL -->
+  <div id="importExcelModal" class="custom-modal-backdrop" aria-hidden="true">
+    <div class="custom-modal-card">
+      <div class="custom-modal-header">
+        <div class="custom-modal-title-group">
+          <div class="custom-modal-icon-wrap">
+            <span class="material-symbols-outlined">table_view</span>
+          </div>
+          <div>
+            <h3>Nhập Sản Phẩm Bằng File Excel</h3>
+            <p>Thêm hàng loạt truyện vào gian hàng nhanh chóng từ file .xlsx hoặc .xls</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" id="closeImportModalBtn" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="custom-modal-body">
+        <!-- Hướng dẫn nhanh & Tải mẫu -->
+        <div class="import-quick-guide">
+          <div class="guide-text">
+            <strong><span class="material-symbols-outlined">info</span> Chưa có file mẫu chuẩn?</strong>
+            <span>Tải file Excel mẫu gồm tiêu đề chuẩn, định dạng và các dòng ví dụ minh họa.</span>
+          </div>
+          <a href="/api/seller/products/excel-template" download class="btn-download-template" id="modalDownloadTemplateBtn">
+            <span class="material-symbols-outlined">download</span> Tải file mẫu (.xlsx)
+          </a>
+        </div>
+
+        <!-- Khung Upload / Drag & Drop -->
+        <div class="excel-dropzone" id="excelDropzone">
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display:none;">
+          <div class="dropzone-inner" id="dropzonePrompt">
+            <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+            <p class="dropzone-main-text">Kéo thả file Excel vào đây hoặc <strong>Bấm để duyệt file</strong></p>
+            <span class="dropzone-sub-text">Chấp nhận file Microsoft Excel (.xlsx, .xls) tối đa 10 MB</span>
+          </div>
+          <div class="dropzone-file-selected" id="dropzoneFileSelected" style="display:none;">
+            <span class="material-symbols-outlined file-badge-icon">description</span>
+            <div class="file-info-text">
+              <strong id="selectedFileName">filename.xlsx</strong>
+              <span id="selectedFileSize">0 KB</span>
+            </div>
+            <button type="button" id="removeSelectedFileBtn" class="btn-remove-file" title="Chọn file khác">&times;</button>
+          </div>
+        </div>
+
+        <!-- Cảnh báo / Ghi chú quy tắc -->
+        <ul class="import-notes-list">
+          <li>Các cột có dấu <strong>(*)</strong> là bắt buộc: <em>Tên truyện, Thể loại, NXB, Độ mới (%), Giá bán, Tồn kho, Hình thức, Mô tả</em>.</li>
+          <li>Thể loại &amp; Nhà xuất bản nếu chưa tồn tại trong hệ thống sẽ được tự động tạo mới.</li>
+          <li>Độ mới: điền số từ <strong>0 đến 100</strong>. Giá bán: số nguyên không âm (VD: 45000).</li>
+          <li>Hình thức: điền <strong>Bán</strong>, <strong>Trao đổi</strong> hoặc <strong>Cả hai</strong>.</li>
+          <li><strong>Ảnh bìa (cột 14):</strong> Điền URL ảnh bìa hoặc để trống. Nếu để trống, hệ thống sẽ gán ảnh bìa mặc định và bạn có thể bấm nút <strong>"Ảnh"</strong> trên bảng để tải ảnh từ máy tính lên Cloudinary sau khi import.</li>
+        </ul>
+
+        <!-- Trạng thái Loading khi đang import -->
+        <div id="importLoadingState" class="import-status-box loading" style="display:none;">
+          <div class="spinner-ring"></div>
+          <div>
+            <strong>Đang đọc dữ liệu và lưu sản phẩm vào kho...</strong>
+            <p style="margin: 3px 0 0; font-size: 0.78rem; color: #64748b;">Quá trình này có thể mất vài giây tùy vào số lượng dòng sản phẩm.</p>
+          </div>
+        </div>
+
+        <!-- Báo cáo kết quả sau khi import -->
+        <div id="importResultBox" class="import-result-container" style="display:none;">
+          <div class="result-summary-row" id="resultSummaryRow">
+            <!-- Dynamic summary badges -->
+          </div>
+          <div class="result-errors-list" id="resultErrorsList" style="display:none;">
+            <h4>Chi tiết các dòng không thể nhập:</h4>
+            <ul id="errorItemsUl"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelImportModalBtn">Đóng</button>
+        <button type="button" class="btn btn-primary" id="startImportBtn" disabled style="display: inline-flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined">upload</span> Bắt đầu nhập sản phẩm
+        </button>
+      </div>
+    </div>
   </div>
+
   <script src="../../shared/vendor/jquery/jquery-3.7.1.min.js"></script>
   <script src="../../shared/vendor/jquery-ui/jquery-ui-1.14.2.min.js"></script>
   <script src="../../shared/vendor/jtable/jquery.jtable.js"></script>

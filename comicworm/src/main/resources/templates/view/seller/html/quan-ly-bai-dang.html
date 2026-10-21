@@ -263,7 +263,8 @@
         id: String(p.id), title: p.title || '', author: authorNames[p.authorId] || '', category: categoryNames[p.categoryId] || String(p.categoryId ?? ''),
         volume: p.volumeNumbers || '', publisher: publisherNames[p.publisherId] || '', year: p.publicationYear, condition: p.editionType || `${p.conditionPercent || 0}%`,
         price: Number(p.price || 0), originalPrice: Number(p.price || 0), stock: Number(p.stockQuantity || 0), views: 0,
-        isTradeable: String(p.listingType || '').includes('TRADE'), status: p.moderationStatus === 'APPROVED' ? (p.isActive ? 'active' : 'hidden') : p.moderationStatus === 'REJECTED' ? 'rejected' : 'pending',
+        isTradeable: String(p.listingType || '').includes('TRADE'),
+        status: p.moderationStatus === 'APPROVED' ? (!p.isActive ? 'hidden' : (Number(p.stockQuantity || 0) <= 0 ? 'out_of_stock' : 'active')) : p.moderationStatus === 'REJECTED' ? 'rejected' : 'pending',
         rejectReason: p.moderationReason || '', image: p.coverImageUrl || (p.images || []).find(i => i.imageType === 'COVER')?.imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300',
         description: p.description || '', createdAt: p.createdAt || '', hideReason: ''
       }));

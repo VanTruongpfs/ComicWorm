@@ -94,6 +94,7 @@ public class OrderServiceImpl implements IOrderService {
                 .collect(Collectors.groupingBy(item -> productMap.get(item.getProductId()).getSellerId()));
 
         BigDecimal totalBatchWithShipping = BigDecimal.ZERO;
+        RecipientInfo recipientInfo = resolveRecipientInfo(buyerId, request, null);
 
         for (Map.Entry<Long, List<CartItem>> entry : itemsBySeller.entrySet()) {
             Long sellerId = entry.getKey();
@@ -115,10 +116,10 @@ public class OrderServiceImpl implements IOrderService {
             order.setSubtotalAmount(subtotal);
             order.setShippingFee(shippingFee);
             order.setTotalAmount(totalOrderAmount);
-            order.setRecipientName(request.getRecipientName());
-            order.setRecipientPhone(request.getRecipientPhone());
-            order.setShippingAddress(request.getShippingAddress());
-            order.setBuyerNote(request.getBuyerNote());
+            order.setRecipientName(recipientInfo.name());
+            order.setRecipientPhone(recipientInfo.phone());
+            order.setShippingAddress(recipientInfo.address());
+            order.setBuyerNote(recipientInfo.note());
             order.setStatus(OrderStatus.WAITING_PAYMENT);
             order.setPaymentStatus(OrderPaymentStatus.PENDING);
 
@@ -176,29 +177,7 @@ public class OrderServiceImpl implements IOrderService {
             throw new IllegalStateException("Sản phẩm '" + p.getTitle() + "' không còn đủ số lượng trong kho (còn " + p.getStockQuantity() + ")");
         }
 
-        // Lấy thông tin người nhận và địa chỉ giao hàng
-        String recipientName = "Khách hàng";
-        String recipientPhone = "0900000000";
-        String shippingAddress = "Vui lòng bấm Thay đổi địa chỉ để nhập địa chỉ nhận hàng";
-
-        List<UserAddress> addresses = userAddressRepository.findByUserIdOrderByDefaultAddressDescIdDesc(buyerId);
-        if (!addresses.isEmpty()) {
-            UserAddress addr = addresses.get(0);
-            recipientName = addr.getRecipientName();
-            recipientPhone = addr.getPhone();
-            shippingAddress = String.format("%s, %s, %s, %s",
-                    addr.getAddressDetail(), addr.getWard(), addr.getDistrict(), addr.getProvince());
-        } else {
-            User user = userRepository.findById(buyerId).orElse(null);
-            if (user != null) {
-                if (user.getFullName() != null && !user.getFullName().isBlank()) {
-                    recipientName = user.getFullName();
-                }
-                if (user.getPhone() != null && !user.getPhone().isBlank()) {
-                    recipientPhone = user.getPhone();
-                }
-            }
-        }
+        RecipientInfo recipientInfo = resolveRecipientInfo(buyerId, null, "Mua ngay trực tiếp");
 
         BigDecimal subtotal = p.getPrice().multiply(BigDecimal.valueOf(quantity));
         BigDecimal shippingFee = new BigDecimal("30000"); // 30.000đ
@@ -223,10 +202,10 @@ public class OrderServiceImpl implements IOrderService {
         order.setSubtotalAmount(subtotal);
         order.setShippingFee(shippingFee);
         order.setTotalAmount(totalBatchWithShipping);
-        order.setRecipientName(recipientName);
-        order.setRecipientPhone(recipientPhone);
-        order.setShippingAddress(shippingAddress);
-        order.setBuyerNote("Mua ngay trực tiếp");
+        order.setRecipientName(recipientInfo.name());
+        order.setRecipientPhone(recipientInfo.phone());
+        order.setShippingAddress(recipientInfo.address());
+        order.setBuyerNote(recipientInfo.note());
         order.setStatus(OrderStatus.WAITING_PAYMENT);
         order.setPaymentStatus(OrderPaymentStatus.PENDING);
         order = orderRepository.save(order);
@@ -339,5 +318,47 @@ public class OrderServiceImpl implements IOrderService {
             }
             orderRepository.save(order);
         }
+    }
+
+    private record RecipientInfo(String name, String phone, String address, String note) {}
+
+    private RecipientInfo resolveRecipientInfo(Long buyerId, CreateOrderRequest request, String defaultNote) {
+        String recipientName = (request != null && request.getRecipientName() != null && !request.getRecipientName().isBlank())
+                ? request.getRecipientName().trim() : null;
+        String recipientPhone = (request != null && request.getRecipientPhone() != null && !request.getRecipientPhone().isBlank())
+                ? request.getRecipientPhone().trim() : null;
+        String shippingAddress = (request != null && request.getShippingAddress() != null && !request.getShippingAddress().isBlank())
+                ? request.getShippingAddress().trim() : null;
+        String buyerNote = (request != null && request.getBuyerNote() != null && !request.getBuyerNote().isBlank())
+                ? request.getBuyerNote().trim() : defaultNote;
+
+        if (recipientName == null || recipientPhone == null || shippingAddress == null) {
+            List<UserAddress> addresses = userAddressRepository.findByUserIdOrderByDefaultAddressDescIdDesc(buyerId);
+            if (!addresses.isEmpty()) {
+                UserAddress addr = addresses.get(0);
+                if (recipientName == null) recipientName = addr.getRecipientName();
+                if (recipientPhone == null) recipientPhone = addr.getPhone();
+                if (shippingAddress == null) {
+                    shippingAddress = String.format("%s, %s, %s, %s",
+                            addr.getAddressDetail(), addr.getWard(), addr.getDistrict(), addr.getProvince());
+                }
+            } else {
+                User user = userRepository.findById(buyerId).orElse(null);
+                if (user != null) {
+                    if (recipientName == null && user.getFullName() != null && !user.getFullName().isBlank()) {
+                        recipientName = user.getFullName();
+                    }
+                    if (recipientPhone == null && user.getPhone() != null && !user.getPhone().isBlank()) {
+                        recipientPhone = user.getPhone();
+                    }
+                }
+            }
+        }
+
+        if (recipientName == null) recipientName = "Khách hàng";
+        if (recipientPhone == null) recipientPhone = "0900000000";
+        if (shippingAddress == null) shippingAddress = "Vui lòng chọn địa chỉ nhận hàng";
+
+        return new RecipientInfo(recipientName, recipientPhone, shippingAddress, buyerNote);
     }
 }

@@ -17,6 +17,9 @@ public interface IProductService {
     /** T10: sản phẩm mới nhất cho trang chủ. */
     List<ProductCardDTO> getLatest(int limit);
 
+    /** Public cards for a ranked set of IDs; preserves input order and rechecks visibility. */
+    List<ProductCardDTO> getPublicCards(List<Long> ids);
+
     /** T09: sản phẩm bán chạy cho trang chủ. */
     List<ProductCardDTO> getBestSellers(int limit);
 

@@ -3,11 +3,79 @@ const TRACKING_CODE = "GHN-VN-98421034";
 const toastEl = document.getElementById("toast");
 
 function showToast(message) {
+  if (!toastEl) return;
   toastEl.textContent = message;
   toastEl.classList.add("show");
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toastEl.classList.remove("show"), 3000);
+  showToast.timer = setTimeout(() => toastEl.classList.remove("show"), 3500);
 }
+
+// --------------------------------------------------------------------------
+// XỬ LÝ KẾT QUẢ THANH TOÁN VNPAY THÀNH CÔNG (TỪ RETURN URL)
+// --------------------------------------------------------------------------
+const urlParams = new URLSearchParams(window.location.search);
+const isPaymentSuccess = urlParams.get('paymentSuccess');
+const checkoutCode = urlParams.get('checkoutCode');
+const vnpTxnRef = urlParams.get('vnp_TxnRef');
+
+if (isPaymentSuccess === 'true' || isPaymentSuccess === '1') {
+  setTimeout(() => {
+    showToast("Thanh toán thành công qua VNPAY! Đơn hàng của bạn đang được xử lý.");
+  }, 400);
+
+  const container = document.querySelector('.page-wrap');
+  if (container) {
+    const successBanner = document.createElement('div');
+    successBanner.className = 'vnpay-success-card';
+    successBanner.style.cssText = `
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #6ee7b7;
+      border-left: 6px solid #10b981;
+      padding: 18px 24px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+      animation: fadeIn 0.4s ease-out;
+    `;
+    const codeDisplay = checkoutCode || vnpTxnRef || 'Đơn hàng mới';
+    successBanner.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+          <h3 style="margin: 0 0 4px 0; color: #065f46; font-size: 17px; font-weight: 800;">
+            Thanh toán VNPay thành công!
+          </h3>
+          <p style="margin: 0; color: #047857; font-size: 13.5px; line-height: 1.5;">
+            Mã giao dịch: <strong>#${codeDisplay}</strong>. Đơn hàng đã được xác nhận thanh toán bảo đảm và đang chờ người bán đóng gói.
+          </p>
+        </div>
+      </div>
+      <span style="background: white; border: 1px solid #a7f3d0; color: #059669; padding: 8px 16px; border-radius: 9999px; font-size: 12px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+        <i class="fa-solid fa-shield-check" style="color: #10b981;"></i> Đã Ký Quỹ VNPay
+      </span>
+    `;
+    const breadcrumbRow = document.querySelector('.breadcrumb-row');
+    if (breadcrumbRow) {
+      breadcrumbRow.after(successBanner);
+    } else {
+      container.prepend(successBanner);
+    }
+  }
+
+  if (checkoutCode) {
+    const currentBreadcrumb = document.querySelector('.breadcrumb .current');
+    if (currentBreadcrumb) {
+      currentBreadcrumb.textContent = `Đơn hàng #${checkoutCode}`;
+    }
+  }
+}
+
 
 function openModal() {
   const modal = document.getElementById("rescheduleModal");

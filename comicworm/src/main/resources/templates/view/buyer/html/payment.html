@@ -207,7 +207,7 @@
                             <i class="fa-solid fa-location-dot"></i>
                             <h2>Địa Chỉ Nhận Hàng Sưu Tầm</h2>
                         </div>
-                        <button type="button" class="btn-text-action btn-change-address"><i class="fa-solid fa-pen-to-square"></i> Thay đổi địa chỉ</button>
+                        <button type="button" class="btn-text-action btn-change-address"><i class="fa-solid fa-pen-to-square"></i> Chọn / Thay đổi địa chỉ</button>
                     </div>
                     <div class="address-details">
                         <div class="recipient-row">
@@ -285,92 +285,17 @@
                         <span class="escrow-safe-badge"><i class="fa-solid fa-shield-check"></i> Escrow Vault 100%</span>
                     </div>
                     <div class="payment-selection-list">
-                        <!-- Lựa chọn 1: Chuyển khoản QR (Khuyên dùng) -->
+                        <!-- Lựa chọn 1: VNPAY -->
                         <div class="payment-method-item selected">
                             <label class="payment-label">
-                                <input type="radio" name="payment_method" value="vnpay" class="payment-radio" checked>
-                                <div class="payment-header-row">
-            <span class="payment-title">
-                Thanh Toán Bằng VNPAY-QR
-            </span>
-            <span class="badge-recommend">Khuyên dùng</span>
-                 </div>
-                                <span class="payment-subtitle">Quét mã QR bằng ứng dụng VNPAY để thanh toán nhanh chóng và an toàn</span>
+                                <div class="payment-header-row" style="display: flex; align-items: center; gap: 12px;">
+                                    <input type="radio" name="payment_method" value="vnpay" class="payment-radio" checked>
+                                    <img src="https://stc609766017632.cloud.edgevnpay.vn/images/logo/VNPAYCA.png?w=640&q=75" 
+                                         onerror="this.onerror=null; this.src='../images/vnpay-logo.png';" 
+                                         alt="VNPAY" 
+                                         style="height: 32px; width: auto; object-fit: contain; vertical-align: middle;">
+                                </div>
                             </label>
-                            <!-- Box hiển thị thông tin VNPAY-QR -->
-                            <div class="qr-payment-details-box">
-                                <div class="qr-code-wrapper">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=VNPAY-COMICHUB-CHUB99882-5050000" alt="Mã QR thanh toán VNPAY" class="qr-code-img">
-                                    <span class="qr-scan-instruction">
-                <i class="fa-solid fa-qrcode"></i>
-                Mở VNPAY và quét mã QR
-            </span>
-                                </div>
-                                <div class="bank-transfer-info-table">
-
-                                    <div class="info-row">
-                <span class="info-label">
-                    Đơn vị thanh toán:
-                </span>
-
-                                        <strong class="info-value">
-                                            VNPAY
-                                        </strong>
-                                    </div>
-
-                                    <div class="info-row">
-                <span class="info-label">
-                    Đơn vị chấp nhận thanh toán:
-                </span>
-
-                                        <strong class="info-value">
-                                            COMICHUB
-                                        </strong>
-                                    </div>
-
-                                    <div class="info-row">
-                <span class="info-label">
-                    Số tiền:
-                </span>
-
-                                        <strong class="info-value highlight-amount">
-                                            5.050.000₫
-                                        </strong>
-                                    </div>
-
-                                    <div class="info-row">
-                <span class="info-label">
-                    Mã đơn hàng:
-                </span>
-
-                                        <div class="copyable-value">
-
-                                            <strong class="transfer-code">
-                                                CHUB 99882
-                                            </strong>
-
-                                            <button
-                                                    type="button"
-                                                    class="btn-copy"
-                                                    aria-label="Sao chép mã đơn hàng"
-                                            >
-                                                <i class="fa-regular fa-copy"></i>
-                                            </button>
-
-                                        </div>
-                                    </div>
-
-                                    <p class="qr-security-note">
-                                        <i class="fa-solid fa-shield-halved"></i>
-
-                                        Mở ứng dụng VNPAY và quét mã QR để thanh toán.
-                                        Sau khi thanh toán thành công, hệ thống sẽ xác nhận đơn hàng.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
                         </div>
 
                         <!-- Lựa chọn 2: COD Đồng kiểm -->

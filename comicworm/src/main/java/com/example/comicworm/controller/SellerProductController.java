@@ -22,14 +22,55 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.dao.DataAccessException;
 
+import com.example.comicworm.dto.response.SellerProductImportResult;
+import com.example.comicworm.service.seller.SellerProductExcelService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ContentDisposition;
+import java.nio.charset.StandardCharsets;
+
 @RestController
 @Profile("!preview")
 @RequestMapping("/api/seller/products")
 public class SellerProductController {
     private final SellerProductService service;
     private final SellerProductImageService images;
-    public SellerProductController(SellerProductService service, SellerProductImageService images) {
-        this.service = service; this.images = images;
+    private final SellerProductExcelService excelService;
+
+    public SellerProductController(SellerProductService service, SellerProductImageService images,
+                                   SellerProductExcelService excelService) {
+        this.service = service;
+        this.images = images;
+        this.excelService = excelService;
+    }
+
+    @GetMapping("/excel-template")
+    public ResponseEntity<byte[]> downloadExcelTemplate(@AuthenticationPrincipal CustomUserDetails user) {
+        seller(user);
+        byte[] excelBytes = excelService.generateTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename("ComicHub_Mau_Nhap_San_Pham.xlsx", StandardCharsets.UTF_8)
+                .build());
+        return ResponseEntity.ok().headers(headers).body(excelBytes);
+    }
+
+    @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> importExcel(@AuthenticationPrincipal CustomUserDetails user,
+                                           @RequestParam(value = "file", required = false) MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn file Excel để tải lên.");
+        }
+        SellerProductImportResult result = excelService.importExcel(seller(user), file);
+        return Map.of(
+                "Result", "OK",
+                "totalRows", result.totalRows(),
+                "successCount", result.successCount(),
+                "errorCount", result.errorCount(),
+                "errors", result.errors(),
+                "message", result.message()
+        );
     }
 
     @GetMapping
@@ -132,7 +173,9 @@ public class SellerProductController {
     @ExceptionHandler(MissingServletRequestPartException.class)
     public ResponseEntity<Map<String, String>> missingFiles(MissingServletRequestPartException error) {
         String message = error.getRequestPartName().equals("coverImage") ? "Vui lòng chọn ảnh bìa sản phẩm."
-                : error.getRequestPartName().equals("product") ? "Thiếu thông tin sản phẩm." : "Vui lòng chọn ảnh sản phẩm.";
+                : error.getRequestPartName().equals("product") ? "Thiếu thông tin sản phẩm."
+                : error.getRequestPartName().equals("file") ? "Vui lòng chọn file Excel để tải lên."
+                : "Vui lòng chọn file cần tải lên.";
         return ResponseEntity.badRequest().body(Map.of("Result", "ERROR", "Message", message));
     }
 
@@ -144,5 +187,13 @@ public class SellerProductController {
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<Map<String, String>> databaseError(Exception error) {
         return ResponseEntity.internalServerError().body(Map.of("Result", "ERROR", "Message", "Chưa lưu được dữ liệu sản phẩm. Vui lòng thử lại."));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> generalError(Exception error) {
+        String msg = error.getMessage() != null && !error.getMessage().isBlank()
+                ? error.getMessage()
+                : "Chưa thực hiện được thao tác sản phẩm. Vui lòng thử lại.";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("Result", "ERROR", "Message", msg));
     }
 }

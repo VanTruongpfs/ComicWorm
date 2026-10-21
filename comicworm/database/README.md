@@ -16,6 +16,7 @@ và loại ảnh `COVER`/`DETAIL`, liên kết về sản phẩm.
 | [bookmooch.grouped.dbml](bookmooch.grouped.dbml) | Cùng cấu trúc, thêm 7 nhóm với tên tg_* đúng cú pháp |
 | [FUNCTION_MAP.md](FUNCTION_MAP.md) | Ánh xạ đủ 25 chức năng và lý do giữ từng bảng |
 | [example_queries.sql](example_queries.sql) | Chi tiết/lọc sản phẩm, mới nhất/bán chạy, lịch sử và biểu đồ |
+| [maintenance/soft_delete_all_products.sql](maintenance/soft_delete_all_products.sql) | Thủ tục xóa mềm toàn bộ sản phẩm, giữ lịch sử đơn hàng |
 | [schema_model.py](schema_model.py) | Nguồn định nghĩa bảng/thuộc tính theo tài liệu |
 | [schema_tools.py](schema_tools.py) | Sinh SQL/DBML và kiểm tra quan hệ/định danh |
 | [build_schema.py](build_schema.py) | Điểm chạy để sinh lại schema |
@@ -44,6 +45,34 @@ Dùng schema.sql để triển khai vì DBML chỉ giữ ON UPDATE trong note.
 python database/build_schema.py
 python database/verify_mysql.py --mysql-bin "C:\Program Files\MySQL\MySQL Server 9.0\bin"
 ```
+
+## Xóa mềm toàn bộ sản phẩm
+
+Chọn database ứng dụng trong MySQL Workbench rồi chạy file
+`maintenance/soft_delete_all_products.sql` để tạo thủ tục. File chỉ tạo thủ tục;
+để xóa mềm, gọi riêng:
+
+```sql
+USE bookmooch_db_v3;
+CALL soft_delete_all_products();
+```
+
+Kết quả `deleted_products` là số sản phẩm vừa được xóa mềm. Thủ tục đặt
+`is_active=false` và `deleted_at` theo UTC cho sản phẩm chưa xóa. Sản phẩm
+không còn xuất hiện trong danh mục hoặc tìm kiếm ảnh. Giữ nguyên đơn hàng,
+chi tiết đơn, đánh giá, giỏ hàng, ảnh, vector và dữ liệu trao đổi. Sản phẩm đã
+xóa trước đó giữ nguyên thời điểm xóa; gọi lại khi không có sản phẩm mới trả 0.
+
+Thủ tục không tự commit transaction của bên gọi. Có thể chạy thử rồi rollback:
+
+```sql
+START TRANSACTION;
+CALL soft_delete_all_products();
+SELECT COUNT(*) AS remaining_products FROM products WHERE deleted_at IS NULL;
+ROLLBACK;
+```
+
+Không có thay đổi ảnh trên Cloudinary hoặc file model khi chạy thủ tục này.
 
 ## Đã rút gọn
 

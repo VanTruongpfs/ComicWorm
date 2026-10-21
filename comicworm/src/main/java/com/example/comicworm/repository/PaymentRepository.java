@@ -12,6 +12,10 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     java.util.List<Payment> findByCheckoutId(Long checkoutId);
 
+    Optional<Payment> findByPaymentCode(String paymentCode);
+
+    Optional<Payment> findFirstByCheckoutIdOrderByIdDesc(Long checkoutId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Payment p where p.id = :id")
     Optional<Payment> findByIdForUpdate(@Param("id") Long id);
