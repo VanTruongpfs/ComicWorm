@@ -57,48 +57,15 @@
                 </div>
             </div>
 
-            <section class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-content">
-                        <span class="kpi-label">Đơn hàng phát sinh hôm nay</span>
-                        <span class="kpi-value">2.318</span>
-                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">trending_up</span> +8.4% so hôm qua</span>
-                    </div>
-                    <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">shopping_bag</span></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-content">
-                        <span class="kpi-label">GMV đơn hàng hôm nay</span>
-                        <span class="kpi-value">86.400.000 ₫</span>
-                        <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">payments</span> Trung bình 372k ₫/đơn</span>
-                    </div>
-                    <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">receipt_long</span></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-content">
-                        <span class="kpi-label">Đang tranh chấp</span>
-                        <span class="kpi-value" style="color:#dc2626;">7</span>
-                        <span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">gavel</span> Cần hoà giải sớm</span>
-                    </div>
-                    <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">report_problem</span></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-content">
-                        <span class="kpi-label">Tỷ lệ giao thành công</span>
-                        <span class="kpi-value" style="color:#16a34a;">96.2%</span>
-                        <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">local_shipping</span> Ổn định 7 ngày qua</span>
-                    </div>
-                    <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">verified</span></div>
-                </div>
-            </section>
+            
 
             <div class="filter-tabs-bar" id="orderFilterTabs">
-                <button class="tab-chip active" data-filter="all">Tất cả <span class="tab-count">10</span></button>
-                <button class="tab-chip" data-filter="processing">Đang xử lý <span class="tab-count">2</span></button>
-                <button class="tab-chip" data-filter="shipping">Đang giao <span class="tab-count">2</span></button>
-                <button class="tab-chip" data-filter="completed">Hoàn tất <span class="tab-count">3</span></button>
-                <button class="tab-chip" data-filter="disputed" id="disputedTabBtn">Tranh chấp <span class="tab-count">2</span></button>
-                <button class="tab-chip" data-filter="cancelled">Đã huỷ <span class="tab-count">1</span></button>
+                <button class="tab-chip active" data-filter="all">Tất cả <span class="tab-count">0</span></button>
+                <button class="tab-chip" data-filter="pending">Chờ thanh toán <span class="tab-count">0</span></button>
+                <button class="tab-chip" data-filter="processing">Đang xử lý <span class="tab-count">0</span></button>
+                <button class="tab-chip" data-filter="shipping">Đang giao <span class="tab-count">0</span></button>
+                <button class="tab-chip" data-filter="completed">Hoàn tất <span class="tab-count">0</span></button>
+                <button class="tab-chip" data-filter="cancelled">Đã huỷ <span class="tab-count">0</span></button>
             </div>
 
             <div class="content-card">
@@ -256,6 +223,7 @@
 
 <div class="toast-container" id="toastContainer"></div>
 <script src="../js/common.js"></script>
-<script src="../js/orders.js"></script>
+<script src="../../shared/js/orders-api.js"></script>
+<script src="../js/orders-live.js"></script>
 </body>
 </html>
