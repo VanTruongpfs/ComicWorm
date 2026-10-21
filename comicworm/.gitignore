@@ -48,3 +48,23 @@ out/
 *.pem
 *.jks
 *.p12
+
+### Python image embedding service ###
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+
+### AI models, weights and training checkpoints ###
+/models/
+/services/image-embedding/models/
+/services/image-embedding/checkpoints/
+**/.cache/huggingface/
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.h5
+*.keras
+pytorch_model*.bin
+adapter_model*.bin

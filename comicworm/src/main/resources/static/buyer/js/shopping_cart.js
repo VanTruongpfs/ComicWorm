@@ -562,181 +562,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 6. TIẾN HÀNH ĐẶT HÀNG (CHECKOUT MODAL VỚI SỔ ĐỊA CHỈ ĐÃ LƯU)
+    // 6. TIẾN HÀNH ĐẶT HÀNG (CHUYỂN THẲNG SANG TRANG THANH TOÁN PAYMENT.HTML)
     // --------------------------------------------------------------------------
     if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', () => {
+        checkoutBtn.addEventListener('click', async () => {
             const selectedItems = currentCartData ? currentCartData.items.filter(it => it.isSelected) : [];
             if (selectedItems.length === 0) {
                 showToast('Vui lòng chọn ít nhất 1 sản phẩm để đặt hàng!', 'warning', 'fa-triangle-exclamation');
                 return;
             }
-            openCheckoutModal();
-        });
-    }
 
-    const openCheckoutModal = async () => {
-        let savedAddresses = [];
-        try {
-            const res = await fetch('/api/user/addresses');
-            if (res.ok) {
-                savedAddresses = await res.json();
-            }
-        } catch (e) {
-            console.warn('Không thể tải địa chỉ đã lưu:', e);
-        }
-
-        const formatAddr = a => [a.addressDetail, a.ward, a.district, a.province].filter(Boolean).join(', ');
-        const defaultAddr = savedAddresses.find(a => a.isDefault) || savedAddresses[0] || null;
-
-        const modalBackdrop = document.createElement('div');
-        modalBackdrop.id = 'checkout-modal-backdrop';
-        modalBackdrop.style.cssText = `
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(4px); z-index: 99999; display: flex;
-            align-items: center; justify-content: center; padding: 20px;
-        `;
-
-        const addressSelectionHtml = savedAddresses.length > 0 ? `
-            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <label for="chk-saved-address-select" style="font-size: 12px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-location-dot" style="color: #f97316;"></i> Chọn từ sổ địa chỉ đã lưu
-                    </label>
-                    <a href="../../user/html/manage_address.html" target="_blank" style="font-size: 11px; color: #f97316; font-weight: 700; text-decoration: none;">
-                        + Quản lý địa chỉ
-                    </a>
-                </div>
-                <select id="chk-saved-address-select" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; background: #ffffff; outline: none; cursor: pointer; color: #1e293b;">
-                    ${savedAddresses.map(a => `
-                        <option value="${a.id}" ${defaultAddr && a.id === defaultAddr.id ? 'selected' : ''}>
-                            ${a.recipientName} • ${a.phone} • ${formatAddr(a)} ${a.isDefault ? '[Mặc định]' : ''}
-                        </option>
-                    `).join('')}
-                    <option value="manual">+ Nhập địa chỉ nhận hàng khác...</option>
-                </select>
-            </div>
-        ` : `
-            <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 10px 14px; margin-bottom: 4px; font-size: 12px; color: #9a3412; display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-solid fa-circle-info"></i> Bạn chưa có địa chỉ đã lưu.</span>
-                <a href="../../user/html/manage_address.html" target="_blank" style="color: #f97316; font-weight: 700; text-decoration: underline;">Thêm vào sổ địa chỉ</a>
-            </div>
-        `;
-
-        modalBackdrop.innerHTML = `
-            <div style="background: #ffffff; border-radius: 20px; padding: 28px; max-width: 520px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); font-family: inherit;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: #ffedd5; color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                            <i class="fa-solid fa-truck-fast"></i>
-                        </div>
-                        <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">Thông Tin Nhận Hàng</h3>
-                    </div>
-                    <button class="btn-close-checkout" style="border: none; background: transparent; font-size: 20px; color: #94a3b8; cursor: pointer;">&times;</button>
-                </div>
-                <form id="checkout-form" style="display: flex; flex-direction: column; gap: 12px;">
-                    ${addressSelectionHtml}
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div>
-                            <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px;">Họ và tên người nhận *</label>
-                            <input type="text" id="chk-recipient-name" value="${defaultAddr ? defaultAddr.recipientName : ''}" required placeholder="Ví dụ: Nguyễn Văn A" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px;">Số điện thoại liên hệ *</label>
-                            <input type="tel" id="chk-recipient-phone" value="${defaultAddr ? defaultAddr.phone : ''}" required placeholder="Ví dụ: 0912345678" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none;">
-                        </div>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px;">Địa chỉ giao hàng chi tiết *</label>
-                        <textarea id="chk-shipping-address" required rows="2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..." style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; resize: none; font-family: inherit;">${defaultAddr ? formatAddr(defaultAddr) : ''}</textarea>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px;">Ghi chú đơn hàng (nếu có)</label>
-                        <input type="text" id="chk-buyer-note" placeholder="Ví dụ: Giao giờ hành chính, bọc kỹ góc sách..." style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none;">
-                    </div>
-                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" class="btn-cancel-checkout" style="padding: 10px 18px; border-radius: 9999px; border: 1px solid #e2e8f0; background: #ffffff; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Hủy</button>
-                        <button type="submit" id="btn-submit-order" style="padding: 10px 22px; border-radius: 9999px; border: none; background: #f97316; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);">
-                            Xác Nhận Đặt Hàng <i class="fa-solid fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        `;
-
-        document.body.appendChild(modalBackdrop);
-
-        const savedSelect = modalBackdrop.querySelector('#chk-saved-address-select');
-        if (savedSelect) {
-            savedSelect.addEventListener('change', () => {
-                const val = savedSelect.value;
-                if (val === 'manual') {
-                    document.getElementById('chk-recipient-name').value = '';
-                    document.getElementById('chk-recipient-phone').value = '';
-                    document.getElementById('chk-shipping-address').value = '';
-                    document.getElementById('chk-recipient-name').focus();
-                } else {
-                    const chosen = savedAddresses.find(a => String(a.id) === String(val));
-                    if (chosen) {
-                        document.getElementById('chk-recipient-name').value = chosen.recipientName || '';
-                        document.getElementById('chk-recipient-phone').value = chosen.phone || '';
-                        document.getElementById('chk-shipping-address').value = formatAddr(chosen);
-                    }
-                }
-            });
-        }
-
-        const closeModal = () => modalBackdrop.remove();
-        modalBackdrop.querySelector('.btn-close-checkout').addEventListener('click', closeModal);
-        modalBackdrop.querySelector('.btn-cancel-checkout').addEventListener('click', closeModal);
-
-        const form = modalBackdrop.querySelector('#checkout-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = modalBackdrop.querySelector('#btn-submit-order');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo đơn hàng...';
-
-            const payload = {
-                recipientName: document.getElementById('chk-recipient-name').value.trim(),
-                recipientPhone: document.getElementById('chk-recipient-phone').value.trim(),
-                shippingAddress: document.getElementById('chk-shipping-address').value.trim(),
-                buyerNote: document.getElementById('chk-buyer-note').value.trim()
-            };
+            checkoutBtn.disabled = true;
+            const originalHtml = checkoutBtn.innerHTML;
+            checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang chuyển đến thanh toán...';
 
             try {
                 const res = await fetch('/api/cart/checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({})
                 });
 
                 if (res.status === 401) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Xác Nhận Đặt Hàng <i class="fa-solid fa-arrow-right ml-1"></i>';
-                    showToast('Vui lòng đăng ký tài khoản để tiếp tục thanh toán!', 'warning', 'fa-right-to-bracket');
-                    setTimeout(() => window.location.href = '/auth/register', 1200);
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = originalHtml;
+                    showToast('Vui lòng đăng nhập để tiếp tục thanh toán!', 'warning', 'fa-right-to-bracket');
+                    setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.href), 1200);
                     return;
                 }
 
                 const data = await res.json();
-                if (res.ok) {
-                    showToast('Tạo đơn hàng thành công! Đang chuyển đến cổng thanh toán...', 'success', 'fa-circle-check');
+                if (res.ok && data.checkoutCode) {
+                    showToast('Đang chuyển đến trang thanh toán...', 'success', 'fa-circle-check');
                     setTimeout(() => {
                         window.location.href = `payment.html?checkoutCode=${data.checkoutCode}`;
-                    }, 800);
+                    }, 400);
                 } else {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Xác Nhận Đặt Hàng <i class="fa-solid fa-arrow-right ml-1"></i>';
-                    showToast(data.message || 'Lỗi đặt hàng', 'danger', 'fa-triangle-exclamation');
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = originalHtml;
+                    showToast(data.message || 'Lỗi khi tạo đợt thanh toán', 'danger', 'fa-triangle-exclamation');
                 }
             } catch (err) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Xác Nhận Đặt Hàng <i class="fa-solid fa-arrow-right ml-1"></i>';
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalHtml;
                 showToast('Không thể kết nối đến máy chủ', 'danger');
             }
         });
-    };
+    }
 
     // --------------------------------------------------------------------------
     // 7. KHỞI TẠO

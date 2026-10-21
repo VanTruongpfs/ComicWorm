@@ -5,15 +5,21 @@ Form thêm/sửa sản phẩm có **Ảnh bìa** và **Ảnh chi tiết**. Bấm
 tải ảnh lên Cloudinary và lưu sản phẩm cùng ảnh trong một transaction.
 Xem [hướng dẫn Cloudinary](docs/cloudinary.md) để biết cấu hình và API.
 
-Project Spring Boot 4.1.1, Gradle và Java 25. Giao diện được chuyển từ `D:\hoc tap\TMDT CuoiKy\src` vào `src/main/resources/templates/view` (HTML) và `src/main/resources/static` (CSS/JS); giữ nguyên 167 file (61 HTML, 54 CSS, 52 JS) và các đường dẫn tương đối. Bản gốc vẫn được giữ tại project cũ.
+Chức năng **Tìm bằng bìa** dùng CLIP để tạo vector ảnh, lưu trong MySQL và tìm
+sản phẩm bằng cosine similarity. Xem [cách chạy tìm kiếm bằng ảnh](docs/image-search.md)
+để cài môi trường Python một lần. Sau đó Spring Boot tự khởi động CLIP local
+cùng web và tự lập chỉ mục ảnh.
 
-## Chạy giao diện ngay, chưa cần MySQL
+Project Spring Boot 3.5.6, Gradle và Java 21 theo `build.gradle`. Giao diện nằm trong `src/main/resources/templates/view` (HTML) và `src/main/resources/static` (CSS/JS).
 
-Mở terminal tại thư mục này:
+## Chạy trên máy mới
+
+Xem [hướng dẫn cài đặt trên máy mới](docs/new-machine-setup.md) để tạo MySQL,
+copy cấu hình local, cài dịch vụ Python và chạy tìm kiếm ảnh.
+Chạy lệnh sau tại thư mục backend sau khi chuẩn bị database và cấu hình:
 
 ```powershell
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-25.0.2'
-.\gradlew.bat bootRun --args='--spring.profiles.active=preview'
+.\gradlew.bat bootRun --args='--spring.profiles.active=local'
 ```
 
 Truy cập:
@@ -24,7 +30,10 @@ Truy cập:
 - Quản trị: http://localhost:8080/admin/html/dashboard.html
 - Đăng nhập: http://localhost:8080/auth/html/login.html
 
-Profile `preview` tắt kết nối database/JPA và chỉ phục vụ xem giao diện. Đăng nhập, nâng cấp seller, thống kê và CRUD sản phẩm cần chạy profile mặc định cùng MySQL theo hướng dẫn bên dưới. Các trang khác vẫn có thể dùng dữ liệu mẫu/localStorage của giao diện cũ.
+`application-local.properties`, môi trường Python, model và dữ liệu MySQL
+không được đưa vào Git. Bản clone mới cần tạo cấu hình từ
+`application-local.example.properties`; profile `local` nạp file cấu hình này.
+Profile `preview` tắt scheduling nên không dùng cho lập chỉ mục ảnh.
 
 ## Cấu trúc
 
@@ -72,17 +81,18 @@ Luồng xử lý: `request → controller → service → repository → model/d
 Import `database/schema.sql`, rồi `database/seed.sql` bằng MySQL Workbench hoặc mysql CLI. Schema tạo database `bookmooch_db_v3`, dùng MySQL 8.0.16+; seed chỉ có danh mục/tác giả/nhà xuất bản.
 
 ```powershell
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-25.0.2'
 $env:DB_USERNAME = 'root'
 $env:DB_PASSWORD = 'mat_khau_mysql_cua_ban'
 # Nếu đổi host/cổng/tên database, đặt thêm DB_URL.
-.\gradlew.bat bootRun
+.\gradlew.bat bootRun --args='--spring.profiles.active=local'
 ```
 
-`ddl-auto=validate` kiểm tra entity khớp SQL, không tự tạo/thay đổi bảng. SQL/script được đặt ở thư mục `database` của project, bên ngoài thư mục giao diện công khai. Không commit mật khẩu vào application.properties.
+Mẫu local dùng `ddl-auto=update` cho môi trường phát triển để bổ sung các
+thay đổi entity sau khi import schema. SQL/script nằm ở thư mục `database`,
+bên ngoài thư mục giao diện công khai. Không commit file chứa mật khẩu.
 
-Luồng đăng nhập, nâng cấp seller và thống kê chạy với profile mặc định.
-Cấu hình `app.base.url` và Spring Mail nằm trong `application.properties`
+Luồng đăng nhập, nâng cấp seller và thống kê có thể chạy với profile `local`.
+Cấu hình `app.base.url` và Spring Mail nằm trong `application-local.properties`
 để các bean xác thực khởi tạo đầy đủ. Khi cần gửi email xác minh đăng ký,
 đặt `MAIL_USERNAME` và `MAIL_PASSWORD` bằng tài khoản SMTP và mật khẩu ứng
 dụng của bạn. Có thể đổi `MAIL_HOST`, `MAIL_PORT`, `MAIL_SMTP_AUTH`,
@@ -107,7 +117,7 @@ dụng của bạn. Có thể đổi `MAIL_HOST`, `MAIL_PORT`, `MAIL_SMTP_AUTH`,
 Kiểm tra thường chạy profile preview, kiểm tra HTTP của 106 tài nguyên CSS/JS, 61 view HTML, trang không tồn tại và quyền truy cập. Các bài kiểm tra JPA trên MySQL chỉ chạy khi đặt `JPA_INTEGRATION_TEST=true`; có thể dùng script tạo MySQL riêng biệt, import schema, chạy test rồi dừng MySQL:
 
 ```powershell
-python tools/verify_spring_mysql.py --mysql-bin 'C:\Program Files\MySQL\MySQL Server 9.0\bin' --java-home 'C:\Program Files\Java\jdk-25.0.2'
+python tools/verify_spring_mysql.py --mysql-bin 'C:\Program Files\MySQL\MySQL Server 9.0\bin' --java-home "$env:JAVA_HOME"
 ```
 
 Kết quả nằm trong `build/reports/tests/test/index.html` và `build/reports/mysql-integration.txt`. File chạy nằm ở `build/libs/comicworm-0.0.1-SNAPSHOT.war`:

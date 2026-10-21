@@ -29,7 +29,10 @@
     }
     let data;
     try { data = await response.json(); } catch (_) { throw new Error('Máy chủ chưa trả dữ liệu sản phẩm hợp lệ.'); }
-    if (!response.ok || data.Result !== 'OK') throw new Error(data.Message || 'Chưa thực hiện được thao tác sản phẩm.');
+    if (!response.ok || data.Result !== 'OK') {
+      const msg = data.Message || data.message || data.error || (response.status ? `Lỗi máy chủ (${response.status})` : null);
+      throw new Error(msg || 'Chưa thực hiện được thao tác sản phẩm.');
+    }
     return data;
   }
   function payload(serialized) {
@@ -74,6 +77,12 @@
       Array.from(files).forEach(file => body.append('files', file));
       return request('/' + encodeURIComponent(id) + '/images', 'POST', body);
     },
-    removeImage: (id, imageId) => request('/' + encodeURIComponent(id) + '/images/' + encodeURIComponent(imageId), 'DELETE')
+    removeImage: (id, imageId) => request('/' + encodeURIComponent(id) + '/images/' + encodeURIComponent(imageId), 'DELETE'),
+    importExcel: file => {
+      const body = new root.FormData();
+      body.append('file', file);
+      return request('/import-excel', 'POST', body);
+    },
+    downloadTemplateUrl: () => base() + '/api/seller/products/excel-template'
   };
 });

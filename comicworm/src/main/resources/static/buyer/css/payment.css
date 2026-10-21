@@ -560,6 +560,30 @@ img {
     text-decoration: underline;
 }
 
+.btn-change-address {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary-soft);
+    border: 1px solid var(--primary-light);
+    color: var(--primary-hover);
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 3px rgba(249, 115, 22, 0.1);
+}
+
+.btn-change-address:hover {
+    background-color: var(--primary-light);
+    border-color: #fdba74;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);
+    text-decoration: none;
+}
+
 /* 1. ĐỊA CHỈ NHẬN HÀNG */
 .address-details {
     display: flex;

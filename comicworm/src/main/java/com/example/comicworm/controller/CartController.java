@@ -120,7 +120,7 @@ public class CartController {
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody CreateOrderRequest request) {
+            @RequestBody(required = false) CreateOrderRequest request) {
         if (userDetails == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Vui lòng đăng nhập để thanh toán"));

@@ -112,25 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Nút tìm bằng bìa ảnh (AI Image Search)
-    const btnCamera = document.querySelector('.btn-camera');
-    if (btnCamera) {
-        btnCamera.addEventListener('click', () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            fileInput.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    showToast(`Đang quét bìa ảnh "${file.name}" bằng AI...`, 'primary', 'fa-camera');
-                    setTimeout(() => {
-                        showToast('Tìm thấy 4 bộ truyện khớp 98% với bìa sách của bạn!', 'success', 'fa-check');
-                    }, 1500);
-                }
-            };
-            fileInput.click();
-        });
-    }
+    // Tìm bằng bìa ảnh được xử lý bởi image-search.js và API CLIP.
 
     // --------------------------------------------------------------------------
     // 2. CHUYỂN TABS DANH MỤC CHỢ MUA BÁN MỚI ĐĂNG

@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cập nhật button text tương ứng phương thức
             if (btnSubmitCheckout) {
                 if (isVNPAY) {
-                    btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-lock"></i> Xác Nhận Thanh Toán & Ký Quỹ <i class="fa-solid fa-arrow-right"></i>';
+                    btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-credit-card"></i> Thanh Toán Qua Cổng VNPAY <i class="fa-solid fa-arrow-right"></i>';
                 } else {
                     btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-truck-fast"></i> Xác Nhận Đặt Hàng COD (Đồng Kiểm) <i class="fa-solid fa-arrow-right"></i>';
                 }
@@ -284,11 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Thông báo
             showToast(
                 isVNPAY
-                    ? 'Thanh toán VNPAY-QR: Vui lòng quét mã QR để thanh toán'
+                    ? 'Đã chọn phương thức thanh toán VNPAY'
                     : 'Thanh toán COD: Bạn sẽ thanh toán trực tiếp khi nhận hàng & đồng kiểm',
                 'info',
                 isVNPAY
-                    ? 'fa-qrcode'
+                    ? 'fa-credit-card'
                     : 'fa-money-bill-wave'
             );
 
@@ -330,10 +330,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const deliveryNoteEl = document.querySelector('.collector-delivery-note span, .address-card .note-text');
             const badgeDefaultEl = document.querySelector('.badge-address-default');
 
-            const curName = recipientNameEl?.textContent.trim() || '';
-            const curPhone = recipientPhoneEl?.textContent.trim() || '';
-            const curAddr = recipientAddressEl?.textContent.trim() || '';
+            const rawName = recipientNameEl?.textContent.trim() || '';
+            const rawPhone = recipientPhoneEl?.textContent.trim() || '';
+            const rawAddr = recipientAddressEl?.textContent.trim() || '';
             const curNote = deliveryNoteEl?.textContent.replace('Ghi chú lưu kho: ', '').replace(/["']/g, '').trim() || 'Hàng truyện tranh sưu tầm dễ móp gáy, vui lòng nhẹ tay.';
+
+            const isPlaceholderText = (text) => !text || text.includes('Đang tải') || text.includes('Vui lòng') || text.includes('chưa có') || text.includes('Chưa có') || text.includes('---');
+            const curName = isPlaceholderText(rawName) || rawName === 'Khách hàng' ? '' : rawName;
+            const curPhone = isPlaceholderText(rawPhone) || rawPhone === '0900000000' ? '' : rawPhone;
+            const curAddr = isPlaceholderText(rawAddr) ? '' : rawAddr;
 
             let savedAddresses = [];
             try {
@@ -350,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Tìm địa chỉ đang hiển thị xem có khớp địa chỉ đã lưu nào không
             let activeAddressId = null;
             if (savedAddresses.length > 0) {
-                const matched = savedAddresses.find(a => formatAddr(a) === curAddr || a.phone === curPhone);
+                const matched = savedAddresses.find(a => (curAddr && formatAddr(a) === curAddr) || (curPhone && a.phone === curPhone));
                 if (matched) {
                     activeAddressId = matched.id;
                 } else {
@@ -383,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const full = formatAddr(a);
                                 const isChecked = a.id === activeAddressId;
                                 return `
-                                    <label style="display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1.5px solid ${isChecked ? '#f97316' : '#e2e8f0'}; background: ${isChecked ? '#fffaf5' : '#ffffff'}; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                                    <label class="saved-address-label" style="display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1.5px solid ${isChecked ? '#f97316' : '#e2e8f0'}; background: ${isChecked ? '#fffaf5' : '#ffffff'}; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
                                         <input type="radio" name="modal_addr_choice" value="${a.id}" ${isChecked ? 'checked' : ''} style="margin-top: 3px; accent-color: #f97316;">
                                         <div style="flex: 1;">
                                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -396,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </label>
                                 `;
                             }).join('')}
-                            <label style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1.5px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; cursor: pointer;">
+                            <label class="saved-address-label" style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1.5px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
                                 <input type="radio" name="modal_addr_choice" value="custom" style="accent-color: #f97316;">
                                 <span style="font-size: 12px; font-weight: 700; color: #64748b;">+ Nhập địa chỉ người nhận khác</span>
                             </label>
@@ -424,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="font-size: 11px; color: #64748b;">Chọn từ sổ địa chỉ đã lưu hoặc nhập mới</span>
                             </div>
                         </div>
-                        <button class="btn-close-modal" style="border: none; background: transparent; font-size: 20px; color: #94a3b8; cursor: pointer;">&times;</button>
+                        <button class="btn-close-modal" type="button" style="border: none; background: transparent; font-size: 20px; color: #94a3b8; cursor: pointer;">&times;</button>
                     </div>
 
                     <form id="form-update-address" style="display: flex; flex-direction: column; gap: 12px;">
@@ -434,21 +439,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                                 <div>
                                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">HỌ VÀ TÊN</label>
-                                    <input type="text" id="input-name" value="${curName}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
+                                    <input type="text" id="input-name" value="${curName}" placeholder="VD: Nguyễn Văn A" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">SỐ ĐIỆN THOẠI</label>
-                                    <input type="tel" id="input-phone" value="${curPhone}" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
+                                    <input type="tel" id="input-phone" value="${curPhone}" placeholder="VD: 0988123456" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none;">
                                 </div>
                             </div>
                             <div>
                                 <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">ĐỊA CHỈ GIAO HÀNG CHI TIẾT</label>
-                                <textarea id="input-addr" rows="2" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; resize: none; font-family: inherit;">${curAddr}</textarea>
+                                <textarea id="input-addr" rows="2" placeholder="VD: Số 12, Ngõ 45, Đường Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; resize: none; font-family: inherit;">${curAddr}</textarea>
                             </div>
                         </div>
 
                         <div>
-                            <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">LƯU Ý ĐÓNG GÓI & SHIPPER</label>
+                            <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">LƯU Ý ĐÓNG GÓI &amp; SHIPPER</label>
                             <input type="text" id="input-note" value="${curNote}" placeholder="Ví dụ: Gọi trước khi giao, kẹp carton cẩn thận..." style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 12px; outline: none;">
                         </div>
 
@@ -471,7 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalBackdrop.style.opacity = '0';
                 modalBackdrop.firstElementChild.style.transform = 'translateY(20px)';
                 setTimeout(() => modalBackdrop.remove(), 250);
+                document.removeEventListener('keydown', onKeyDown);
             };
+
+            const onKeyDown = (evt) => {
+                if (evt.key === 'Escape') closeModal();
+            };
+            document.addEventListener('keydown', onKeyDown);
 
             modalBackdrop.querySelector('.btn-close-modal').addEventListener('click', closeModal);
             modalBackdrop.querySelector('.btn-cancel').addEventListener('click', closeModal);
@@ -480,8 +491,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const customInputsDiv = modalBackdrop.querySelector('#custom-address-inputs');
+            const addressLabels = modalBackdrop.querySelectorAll('.saved-address-label');
             modalBackdrop.querySelectorAll('input[name="modal_addr_choice"]').forEach(radio => {
                 radio.addEventListener('change', () => {
+                    addressLabels.forEach(lbl => {
+                        const r = lbl.querySelector('input');
+                        if (r && r.checked) {
+                            lbl.style.borderColor = '#f97316';
+                            lbl.style.background = '#fffaf5';
+                        } else {
+                            lbl.style.borderColor = r && r.value === 'custom' ? '#cbd5e1' : '#e2e8f0';
+                            lbl.style.background = r && r.value === 'custom' ? '#f8fafc' : '#ffffff';
+                        }
+                    });
+
                     if (radio.value === 'custom') {
                         customInputsDiv.style.display = 'block';
                     } else {
@@ -791,7 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const addrEl = document.querySelector('.recipient-address');
             const badgeDefaultEl = document.querySelector('.badge-address-default');
 
-            if (data.recipientName && data.shippingAddress) {
+            if (data.recipientName && data.shippingAddress && !data.shippingAddress.includes('Vui lòng')) {
                 if (nameEl) nameEl.textContent = data.recipientName;
                 if (phoneEl) phoneEl.textContent = data.recipientPhone;
                 if (addrEl) addrEl.textContent = data.shippingAddress;
@@ -897,6 +920,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnSubmitCheckout) {
         btnSubmitCheckout.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            const curAddr = document.querySelector('.recipient-address')?.textContent.trim() || '';
+            const curName = document.querySelector('.recipient-name')?.textContent.trim() || '';
+            if (!curAddr || curAddr.includes('Vui lòng') || curAddr.includes('chưa có') || curAddr.includes('Chưa có') || curAddr.includes('Đang tải') || !curName || curName.includes('Đang tải') || curName.includes('Chưa có')) {
+                showToast('Vui lòng chọn hoặc thêm địa chỉ nhận hàng trước khi thanh toán!', 'warning', 'fa-location-dot');
+                if (btnChangeAddress) btnChangeAddress.click();
+                return;
+            }
+
             const originalText = btnSubmitCheckout.innerHTML;
 
             let selectedMethod = 'VIETQR';
@@ -939,6 +971,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnSubmitCheckout.style.opacity = '1';
 
                     if (res.ok) {
+                        if (data.paymentUrl) {
+                            btnSubmitCheckout.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang chuyển hướng sang cổng VNPAY...';
+                            btnSubmitCheckout.disabled = true;
+                            window.location.href = data.paymentUrl;
+                            return;
+                        }
                         orderState.orderCode = data.checkoutCode || currentCheckoutCode;
                         showOrderSuccessModal(isCod);
                     } else {
@@ -978,22 +1016,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
                     if (defaultAddr) {
                         const fullAddr = [defaultAddr.addressDetail, defaultAddr.ward, defaultAddr.district, defaultAddr.province].filter(Boolean).join(', ');
-                        if (nameEl && (!nameEl.textContent || nameEl.textContent.includes('Đang tải') || nameEl.textContent.includes('Nguyễn An Vinh'))) {
+                        if (nameEl && (!nameEl.textContent || nameEl.textContent.includes('Đang tải') || nameEl.textContent.includes('Nguyễn An Vinh') || nameEl.textContent.includes('Chưa có'))) {
                             nameEl.textContent = defaultAddr.recipientName;
                         }
                         if (phoneEl && (!phoneEl.textContent || phoneEl.textContent === '---' || phoneEl.textContent.includes('0988.123.456'))) {
                             phoneEl.textContent = defaultAddr.phone;
                         }
-                        if (addrEl && (!addrEl.textContent || addrEl.textContent.includes('Đang tải') || addrEl.textContent.includes('124 Hoàng Hoa Thám'))) {
+                        if (addrEl && (!addrEl.textContent || addrEl.textContent.includes('Đang tải') || addrEl.textContent.includes('124 Hoàng Hoa Thám') || addrEl.textContent.includes('Vui lòng'))) {
                             addrEl.textContent = fullAddr;
                         }
                         if (badgeDefaultEl) {
                             badgeDefaultEl.style.display = defaultAddr.isDefault ? 'inline-block' : 'none';
                         }
+
+                        if (currentCheckoutCode) {
+                            try {
+                                await fetch(`/api/checkout/${currentCheckoutCode}/address`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        recipientName: defaultAddr.recipientName,
+                                        recipientPhone: defaultAddr.phone,
+                                        shippingAddress: fullAddr
+                                    })
+                                });
+                            } catch (_) {}
+                        }
                     }
                 } else {
-                    if (nameEl && nameEl.textContent.includes('Đang tải')) nameEl.textContent = 'Chưa có thông tin';
-                    if (addrEl && addrEl.textContent.includes('Đang tải')) addrEl.textContent = 'Bạn chưa lưu địa chỉ. Bấm "Thay đổi địa chỉ" để chọn hoặc thêm.';
+                    if (nameEl && (nameEl.textContent.includes('Đang tải') || nameEl.textContent.includes('Nguyễn An Vinh'))) nameEl.textContent = 'Chưa có thông tin';
+                    if (addrEl && (addrEl.textContent.includes('Đang tải') || addrEl.textContent.includes('124 Hoàng Hoa Thám') || addrEl.textContent.includes('Vui lòng'))) {
+                        addrEl.innerHTML = '<span style="color:#ea580c; font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> Bạn chưa có địa chỉ nhận hàng. Vui lòng bấm "Chọn / Thay đổi địa chỉ" để thêm.</span>';
+                    }
                 }
             }
         } catch (e) {
@@ -1002,10 +1056,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --------------------------------------------------------------------------
+    // 8.2 KIỂM TRA TRẠNG THÁI LỖI THANH TOÁN (NẾU ĐƯỢC CHUYỂN HƯỚNG TỪ VNPAY)
+    // --------------------------------------------------------------------------
+    const checkPaymentReturnStatus = () => {
+        const paymentError = urlParams.get('paymentError');
+        if (paymentError) {
+            const errorText = decodeURIComponent(paymentError);
+            showToast(errorText, 'danger', 'fa-triangle-exclamation');
+
+            const targetContainer = document.querySelector('.payment-methods-card') || document.querySelector('.checkout-flow-column');
+            if (targetContainer) {
+                const banner = document.createElement('div');
+                banner.className = 'vnpay-error-banner';
+                banner.style.cssText = `
+                    background: #fef2f2;
+                    border: 1px solid #fecaca;
+                    border-left: 6px solid #ef4444;
+                    padding: 16px 20px;
+                    border-radius: 14px;
+                    margin-bottom: 24px;
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    color: #991b1b;
+                    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
+                `;
+                banner.innerHTML = `
+                    <div style="width: 42px; height: 42px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <strong style="display:block; font-size: 15px; margin-bottom: 3px; color: #b91c1c;">Giao dịch thanh toán VNPay chưa hoàn tất</strong>
+                        <span style="font-size: 13.5px; color: #7f1d1d; line-height: 1.4;">${errorText}. Bạn có thể chọn lại phương thức thanh toán và thực hiện lại.</span>
+                    </div>
+                `;
+                targetContainer.prepend(banner);
+            }
+        }
+    };
+
+    // --------------------------------------------------------------------------
     // 9. KHỞI ĐỘNG TOÀN BỘ LOGIC CHECKOUT
     // --------------------------------------------------------------------------
-    recalculateOrder();
-    loadCheckoutFromDB();
-    loadInitialAddress();
+    const initPage = async () => {
+        recalculateOrder();
+        checkPaymentReturnStatus();
+        if (currentCheckoutCode) {
+            await loadCheckoutFromDB();
+        } else {
+            await loadInitialAddress();
+        }
+    };
+    initPage();
     console.log('ComicWorm Checkout script loaded and connected to DB API.');
 });

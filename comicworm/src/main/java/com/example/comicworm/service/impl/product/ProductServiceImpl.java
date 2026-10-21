@@ -78,6 +78,15 @@ public class ProductServiceImpl implements IProductService {
     // ------------------------------------------------------------------ DANH SÁCH
 
     @Override
+    public List<ProductCardDTO> getPublicCards(List<Long> ids) {
+        if (ids.isEmpty()) return List.of();
+        var visible = productRepository.findAll(ProductSpecifications.visible()
+                .and((root, query, cb) -> root.get("id").in(ids)));
+        var byId = visible.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
+        return toCards(ids.stream().map(byId::get).filter(Objects::nonNull).toList());
+    }
+
+    @Override
     public PageResponseDTO<ProductCardDTO> search(ProductSearchRequest request) {
         int page = Math.max(request.getPage(), 0);
         int size = clamp(request.getSize(), 1, MAX_PAGE_SIZE);

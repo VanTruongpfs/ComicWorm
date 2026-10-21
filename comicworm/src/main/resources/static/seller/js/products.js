@@ -202,7 +202,10 @@
           id: { title: 'Mã', key: true, create: false, edit: false, width: '5%' },
           images: { title: 'Ảnh', sorting: false, create: false, edit: false, width: '10%', display: data => {
             const content = $('<div>').addClass('product-image-cell'), photos = data.record.images || [];
-            if (data.record.coverImageUrl) $('<img>').attr({ src: data.record.coverImageUrl, alt: 'Ảnh bìa ' + data.record.title, loading: 'lazy' }).appendTo(content);
+            const coverUrl = data.record.coverImageUrl || photos.find(p => p.imageType === 'COVER')?.imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80';
+            $('<img>').attr({ src: coverUrl, alt: 'Ảnh bìa ' + data.record.title, loading: 'lazy' })
+              .on('error', function () { $(this).attr('src', 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'); })
+              .appendTo(content);
             $('<button type="button">').addClass('product-detail-button').text('Ảnh (' + photos.length + ')')
               .attr('aria-label', 'Quản lý ảnh ' + data.record.title).on('click', () => manageImages(data.record.id, data.record.title)).appendTo(content);
             return content;
@@ -281,6 +284,169 @@
         recordAdded: () => changed('Đã thêm sản phẩm và lưu ảnh.'),
         recordUpdated: () => changed('Đã lưu thay đổi sản phẩm.'), recordDeleted: () => changed('Đã xóa sản phẩm khỏi gian hàng.')
       });
+
+      // ========================================================================
+      // XỬ LÝ NHẬP SẢN PHẨM TỪ FILE EXCEL
+      // ========================================================================
+      const importModal = $('#importExcelModal');
+      const dropzone = $('#excelDropzone');
+      const fileInput = $('#excelFileInput');
+      const promptBox = $('#dropzonePrompt');
+      const selectedBox = $('#dropzoneFileSelected');
+      const fileNameEl = $('#selectedFileName');
+      const fileSizeEl = $('#selectedFileSize');
+      const startImportBtn = $('#startImportBtn');
+      const loadingState = $('#importLoadingState');
+      const resultBox = $('#importResultBox');
+      const summaryRow = $('#resultSummaryRow');
+      const errorsList = $('#resultErrorsList');
+      const errorUl = $('#errorItemsUl');
+
+      let currentFile = null;
+
+      function formatBytes(bytes) {
+        if (!bytes) return '0 B';
+        const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+      }
+
+      function resetImportModal() {
+        currentFile = null;
+        fileInput.val('');
+        promptBox.show();
+        selectedBox.hide();
+        loadingState.hide();
+        resultBox.hide();
+        errorsList.hide();
+        errorUl.empty();
+        summaryRow.empty();
+        startImportBtn.prop('disabled', true).html('<span class="material-symbols-outlined">upload</span> Bắt đầu nhập sản phẩm');
+        dropzone.removeClass('dragover');
+      }
+
+      function openImportModal() {
+        resetImportModal();
+        importModal.addClass('active').attr('aria-hidden', 'false');
+      }
+
+      function closeImportModal() {
+        importModal.removeClass('active').attr('aria-hidden', 'true');
+        resetImportModal();
+      }
+
+      function handleFileChosen(file) {
+        if (!file) return;
+        const name = file.name.toLowerCase();
+        if (!name.endsWith('.xlsx') && !name.endsWith('.xls')) {
+          alert('Vui lòng chọn file Excel đúng định dạng (.xlsx hoặc .xls)!');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File quá lớn! Dung lượng tối đa cho phép là 10 MB.');
+          return;
+        }
+
+        currentFile = file;
+        fileNameEl.text(file.name);
+        fileSizeEl.text(formatBytes(file.size));
+        promptBox.hide();
+        selectedBox.show();
+        resultBox.hide();
+        startImportBtn.prop('disabled', false);
+      }
+
+      $('#importExcelButton').on('click', openImportModal);
+      $('#closeImportModalBtn, #cancelImportModalBtn').on('click', closeImportModal);
+      importModal.on('click', function(e) {
+        if (e.target === this) closeImportModal();
+      });
+      $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && importModal.hasClass('active')) {
+          closeImportModal();
+        }
+      });
+
+      dropzone.on('click', function(e) {
+        if (!$(e.target).closest('#removeSelectedFileBtn').length && !currentFile) {
+          fileInput.trigger('click');
+        }
+      });
+
+      fileInput.on('change', function() {
+        if (this.files && this.files[0]) {
+          handleFileChosen(this.files[0]);
+        }
+      });
+
+      $('#removeSelectedFileBtn').on('click', function(e) {
+        e.stopPropagation();
+        currentFile = null;
+        fileInput.val('');
+        promptBox.show();
+        selectedBox.hide();
+        startImportBtn.prop('disabled', true);
+      });
+
+      dropzone.on('dragover dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.addClass('dragover');
+      });
+
+      dropzone.on('dragleave drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.removeClass('dragover');
+      });
+
+      dropzone.on('drop', function(e) {
+        const dt = e.originalEvent.dataTransfer;
+        if (dt && dt.files && dt.files.length) {
+          handleFileChosen(dt.files[0]);
+        }
+      });
+
+      startImportBtn.on('click', async function() {
+        if (!currentFile) return;
+
+        startImportBtn.prop('disabled', true).html('<span class="material-symbols-outlined" style="animation: spin 0.8s linear infinite; display: inline-block;">sync</span> Đang nhập...');
+        loadingState.show();
+        resultBox.hide();
+
+        try {
+          const res = await api.importExcel(currentFile);
+          loadingState.hide();
+          startImportBtn.html('<span class="material-symbols-outlined">upload</span> Bắt đầu nhập sản phẩm');
+
+          resultBox.show();
+          summaryRow.empty();
+
+          summaryRow.append($('<span>').addClass('result-pill total').html(`<strong>Tổng:</strong> ${res.totalRows} dòng`));
+          summaryRow.append($('<span>').addClass('result-pill success').html(`<strong>Thành công:</strong> ${res.successCount} sản phẩm`));
+
+          if (res.errorCount > 0) {
+            summaryRow.append($('<span>').addClass('result-pill error').html(`<strong>Lỗi:</strong> ${res.errorCount} dòng`));
+            errorsList.show();
+            errorUl.empty();
+            (res.errors || []).forEach(err => {
+              $('<li>').text(err).appendTo(errorUl);
+            });
+          } else {
+            errorsList.hide();
+          }
+
+          if (res.successCount > 0) {
+            table.jtable('reload');
+            load();
+          }
+        } catch (err) {
+          loadingState.hide();
+          startImportBtn.prop('disabled', false).html('<span class="material-symbols-outlined">upload</span> Thử lại');
+          alert('Lỗi nhập Excel: ' + (err.message || 'Không thể xử lý file. Vui lòng kiểm tra lại.'));
+        }
+      });
+
       $('#addProductButton').prop('disabled', false).on('click', () => table.jtable('showCreateForm'));
       $('#refreshProductButton').on('click', () => table.jtable('reload'));
       $('#productFilterForm').on('submit', event => { event.preventDefault(); clearTimeout(searchTimer); load(); });
