@@ -1314,3 +1314,10 @@ img { display: block; max-width: 100%; }
     bottom: 12px;
   }
 }
+
+/* Trạng thái bổ sung cho dữ liệu thật */
+.status.pending { background: #fff3e0; color: #b45309; }
+.status.cancelled { background: #fde8e8; color: #b42318; }
+.orders-loading, .orders-error { padding: 28px; text-align: center; color: var(--secondary); }
+.orders-error { color: #b42318; }
+.timeline-item .timeline-note { display: block; color: var(--secondary); font-size: 11px; }
