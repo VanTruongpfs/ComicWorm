@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * B08 - xem lịch sử mua hàng (người mua, người bán: chỉ xem).
- * T03 - cập nhật trạng thái đơn: chỉ ADMIN (/api/admin/** đã yêu cầu ROLE_ADMIN + CSRF trong SecurityConfig,
- * service kiểm tra thêm một lần nữa).
+ * B08 - xem lịch sử mua hàng. Người bán xử lý đơn của mình; ADMIN quản lý toàn sàn.
  */
 @RestController
 @RequestMapping("/api")
@@ -54,8 +52,18 @@ public class OrderController {
                                          @RequestParam(defaultValue = "all") String status,
                                          @RequestParam(defaultValue = "") String q,
                                          @RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "10") int size) {
-        return service.sellerOrders(requireUser(user).getId(), status, q, page, size);
+                                         @RequestParam(defaultValue = "10") int size,
+                                         @RequestParam(defaultValue = "newest") String sort) {
+        requireSeller(user);
+        return service.sellerOrders(user.getId(), status, q, page, size, sort);
+    }
+
+    @PatchMapping("/seller/orders/{code}/status")
+    public OrderDTOs.Detail updateSellerStatus(@AuthenticationPrincipal CustomUserDetails user,
+                                               @PathVariable String code,
+                                               @RequestBody OrderDTOs.UpdateStatusRequest body) {
+        requireSeller(user);
+        return service.updateSellerStatus(code, user.getId(), body.status(), body.note());
     }
 
     // ------------------------------------------------------------------ ADMIN
@@ -98,5 +106,12 @@ public class OrderController {
         requireUser(user);
         boolean admin = user.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
         if (!admin) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ quản trị viên mới có quyền này.");
+    }
+
+    private void requireSeller(CustomUserDetails user) {
+        requireUser(user);
+        if (!user.isSeller()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn cần tài khoản người bán.");
+        }
     }
 }

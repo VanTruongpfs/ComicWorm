@@ -253,8 +253,8 @@ class VNPayPaymentTests {
     }
 
     @Test
-    @DisplayName("PaymentController: Thành công chuyển hướng đến page3.html (trạng thái đơn hàng)")
-    void testPaymentController_ReturnSuccess_RedirectsToPage3() throws Exception {
+    @DisplayName("PaymentController: Thành công chuyển hướng đến page2.html (trang đơn hàng của buyer)")
+    void testPaymentController_ReturnSuccess_RedirectsToPage2() throws Exception {
         IOrderService orderService = mock(IOrderService.class);
         PaymentController controller = new PaymentController(orderService, paymentService);
 
@@ -275,7 +275,7 @@ class VNPayPaymentTests {
         assertEquals(302, response.getStatus());
         String redirectedUrl = response.getRedirectedUrl();
         assertNotNull(redirectedUrl);
-        assertTrue(redirectedUrl.startsWith("/buyer/html/page3.html"), "Phải chuyển hướng đến page3.html");
+        assertTrue(redirectedUrl.startsWith("/buyer/html/page2.html"), "Phải chuyển hướng đến page2.html");
         assertTrue(redirectedUrl.contains("paymentSuccess=true"));
         assertTrue(redirectedUrl.contains("checkoutCode=CHUB-TEST-999"));
     }

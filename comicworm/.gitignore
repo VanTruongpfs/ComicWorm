@@ -42,6 +42,8 @@ out/
 **/application-*.local.properties
 **/application-secret*.properties
 **/application-private*.properties
+**/application-local.example.properties
+**/application*.example.properties
 **/.env
 **/.env.*
 *.key

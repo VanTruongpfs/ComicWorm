@@ -13,6 +13,7 @@ import com.example.comicworm.model.OrderStatusHistory;
 import com.example.comicworm.model.enums.OrderPaymentStatus;
 import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.repository.OrderItemRepository;
+import com.example.comicworm.repository.ExchangeOrderLinkRepository;
 import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.OrderStatusHistoryRepository;
 import com.example.comicworm.repository.UserRepository;
@@ -38,6 +39,7 @@ class OrderTrackingServiceTests {
     private UserRepository users;
     private OrderStatusService statusService;
     private OrderCompletionService completionService;
+    private ExchangeOrderLinkRepository exchangeLinks;
     private OrderTrackingService service;
 
     @BeforeEach
@@ -48,7 +50,8 @@ class OrderTrackingServiceTests {
         users = mock(UserRepository.class);
         statusService = mock(OrderStatusService.class);
         completionService = mock(OrderCompletionService.class);
-        service = new OrderTrackingService(orders, items, histories, users, statusService, completionService);
+        exchangeLinks = mock(ExchangeOrderLinkRepository.class);
+        service = new OrderTrackingService(orders, items, histories, users, statusService, completionService, exchangeLinks);
         when(items.findByOrderIdIn(any())).thenReturn(List.of());
         when(histories.findByOrderIdOrderByCreatedAtAscIdAsc(10L)).thenReturn(List.of());
         when(users.findAllById(any())).thenReturn(List.of());
@@ -157,5 +160,65 @@ class OrderTrackingServiceTests {
     void adminCanViewAnyOrderDetail() {
         given(order(OrderStatus.PACKING));
         assertThat(service.detail("ORD-1", ADMIN, true).summary().orderCode()).isEqualTo("ORD-1");
+    }
+
+    @Test
+    void sellerAdvancesOwnOrderAndPersistsActorNoteAndEachStatusInHistory() {
+        Order o = order(OrderStatus.WAITING_CONFIRM);
+        given(o);
+        var writingService = new OrderTrackingService(orders, items, histories, users,
+                new OrderStatusService(histories), completionService, exchangeLinks);
+        for (OrderStatus target : List.of(OrderStatus.PACKING, OrderStatus.SHIPPING, OrderStatus.DELIVERED)) {
+            var result = writingService.updateSellerStatus("ORD-1", SELLER, target.name(), "  Đã xử lý  ");
+            assertThat(result.summary().status()).isEqualTo(target.name());
+        }
+        var captor = ArgumentCaptor.forClass(OrderStatusHistory.class);
+        verify(histories, org.mockito.Mockito.times(3)).save(captor.capture());
+        assertThat(captor.getAllValues()).extracting(OrderStatusHistory::getPreviousStatus)
+                .containsExactly(OrderStatus.WAITING_CONFIRM, OrderStatus.PACKING, OrderStatus.SHIPPING);
+        assertThat(captor.getAllValues()).allSatisfy(h -> {
+            assertThat(h.getChangedBy()).isEqualTo(SELLER);
+            assertThat(h.getNote()).isEqualTo("Đã xử lý");
+        });
+        verify(completionService, never()).complete(any(), any());
+    }
+
+    @Test
+    void sellerCannotUpdateAnotherSellersOrderEvenWhenTheyAreTheBuyer() {
+        given(order(OrderStatus.WAITING_CONFIRM));
+        for (long actor : new long[] { BUYER, STRANGER }) {
+            assertThatThrownBy(() -> service.updateSellerStatus("ORD-1", actor, "PACKING", null))
+                    .isInstanceOf(ResponseStatusException.class).hasMessageContaining("404");
+        }
+        verify(statusService, never()).transition(any(), any(), any(), any());
+    }
+
+    @Test
+    void sellerCannotSkipRepeatCancelCompleteOrAdvanceAnUnpaidOrder() {
+        for (String[] pair : List.of(new String[] { "WAITING_CONFIRM", "SHIPPING" },
+                new String[] { "PACKING", "PACKING" }, new String[] { "PACKING", "CANCELLED" },
+                new String[] { "WAITING_PAYMENT", "PACKING" }, new String[] { "DELIVERED", "COMPLETED" },
+                new String[] { "COMPLETED", "PACKING" }, new String[] { "CANCELLED", "PACKING" })) {
+            given(order(OrderStatus.valueOf(pair[0])));
+            assertThatThrownBy(() -> service.updateSellerStatus("ORD-1", SELLER, pair[1], null))
+                    .isInstanceOf(ResponseStatusException.class).hasMessageContaining("409");
+        }
+        verify(statusService, never()).transition(any(), any(), any(), any());
+        verify(completionService, never()).complete(any(), any());
+    }
+
+    @Test
+    void nextStatusIsAvailableToTheOwningSellerButNeverForCompletionOrExchangeOrders() {
+        given(order(OrderStatus.WAITING_CONFIRM));
+        assertThat(service.detail("ORD-1", SELLER, false).summary().nextStatus()).isEqualTo("PACKING");
+        assertThat(service.detail("ORD-1", BUYER, false).summary().nextStatus()).isNull();
+        var link = new com.example.comicworm.model.ExchangeOrderLink();
+        link.setOrderId(10L);
+        when(exchangeLinks.findByOrderIdIn(any())).thenReturn(List.of(link));
+        when(exchangeLinks.existsByOrderId(10L)).thenReturn(true);
+        assertThat(service.detail("ORD-1", SELLER, false).summary().nextStatus()).isNull();
+        assertThatThrownBy(() -> service.updateSellerStatus("ORD-1", SELLER, "PACKING", null))
+                .isInstanceOf(ResponseStatusException.class).hasMessageContaining("409");
+        verify(statusService, never()).transition(any(), any(), any(), any());
     }
 }

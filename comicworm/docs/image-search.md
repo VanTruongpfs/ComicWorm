@@ -77,6 +77,31 @@ tiếp theo; không làm chậm transaction upload/sửa sản phẩm của sell
 động, lô dừng sớm và thử lại ở lượt chạy tiếp theo. Trong profile `preview`,
 scheduling của dự án đang tắt; hãy dùng profile chạy nghiệp vụ bình thường.
 
+Khi thêm sản phẩm qua trang người bán hoặc nhập Excel, ảnh được lưu vào
+`product_images`; tác vụ trên sẽ tự tạo đặc trưng, không cần bấm lập chỉ mục
+thủ công. Giữ web và dịch vụ CLIP đang chạy. Một lô tối đa 10 ảnh và nghỉ 15
+giây giữa các lô; kho ảnh còn tồn đọng sẽ cần nhiều lô để xử lý hết.
+
+Ảnh từ host chưa được cho phép sẽ bị bỏ qua và ghi log. Cấu hình local mẫu
+đã cho phép Cloudinary, Picsum, `cdn1.fahasa.com` và `images.unsplash.com`.
+Nếu nhập ảnh từ nguồn khác, thêm đúng host vào
+`app.image-search.allowed-image-hosts` trong `application-local.properties`,
+rồi khởi động lại web; các ảnh chưa có vector sẽ được thử lại ở vòng duyệt
+tiếp theo. Sản phẩm chưa có ảnh trong `product_images` sẽ chưa có đặc trưng.
+
+Để kiểm tra một sản phẩm trong MySQL, thay `123` bằng ID sản phẩm:
+
+```sql
+SELECT i.id AS image_id, i.product_id, f.model_name,
+       JSON_LENGTH(f.embedding) AS dimensions, f.updated_at
+FROM product_images i
+LEFT JOIN product_image_features f ON f.image_id = i.id
+WHERE i.product_id = 123;
+```
+
+`dimensions = 512` và `model_name` đúng với cấu hình nghĩa là ảnh đã có đặc
+trưng của mô hình hiện tại. Giá trị `NULL` nghĩa là ảnh chưa được lập chỉ mục.
+
 Seller hiện thay ảnh bằng cách xóa bản ghi ảnh cũ rồi tạo ID mới. Luồng xóa ảnh
 đã xóa vector liên quan. Nếu chỉnh URL trực tiếp bằng SQL mà vẫn giữ ID,
 cần xóa vector của ID đó để tác vụ tạo lại. Nếu chỉ có
@@ -152,7 +177,7 @@ hình trả 503. Giao diện hiển thị trạng thái chưa có dữ liệu kh
 | `app.image-search.allowed-image-hosts` | `res.cloudinary.com` |
 
 Đây là mặc định trong Java. File `application-local.example.properties` bật
-sẵn tìm kiếm ảnh và cho phép cả host Cloudinary/Picsum. Giá trị trong cấu hình
+sẵn tìm kiếm ảnh và cho phép host Cloudinary/Picsum/Fahasa/Unsplash. Giá trị trong cấu hình
 Spring đang dùng sẽ ghi đè các mặc định trên.
 
 URL ảnh chỉ chấp nhận HTTPS, cổng chuẩn và đúng host được cấu hình. Cho phép

@@ -16,8 +16,8 @@ public final class OrderDTOs {
                                String note, LocalDateTime createdAt) {}
 
     /**
-     * nextStatus: bước kế tiếp mà NGƯỜI ĐANG XEM được phép thực hiện. Chỉ ADMIN có giá trị,
-     * người mua / người bán luôn là null (chỉ xem). Do server quyết định.
+     * nextStatus: bước kế tiếp được server cho phép. Người bán xử lý đơn của mình đến DELIVERED;
+     * người mua không đổi trạng thái ở API này. ADMIN có thể hoàn tất qua luồng thanh toán sẵn có.
      */
     public record Summary(String orderCode, String status, String paymentStatus, Long sellerId,
                           String sellerName, String buyerName, String recipientName, BigDecimal subtotalAmount,

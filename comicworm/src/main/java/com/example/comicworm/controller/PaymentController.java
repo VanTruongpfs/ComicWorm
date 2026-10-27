@@ -73,7 +73,7 @@ public class PaymentController {
             HttpServletResponse response) throws IOException {
         VNPayCallbackResultDTO result = paymentService.processVNPayCallback(queryParams);
         if (result.isSuccess()) {
-            String redirectUrl = "/buyer/html/page3.html?checkoutCode="
+            String redirectUrl = "/buyer/html/page2.html?checkoutCode="
                     + (result.getCheckoutCode() != null ? URLEncoder.encode(result.getCheckoutCode(), StandardCharsets.UTF_8) : "")
                     + "&paymentSuccess=true&vnp_TxnRef="
                     + (result.getPaymentCode() != null ? URLEncoder.encode(result.getPaymentCode(), StandardCharsets.UTF_8) : "");

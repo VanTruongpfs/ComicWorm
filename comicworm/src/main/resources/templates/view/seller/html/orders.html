@@ -4,7 +4,7 @@
   <script src="../../shared/js/seller-access.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản lý đơn hàng | ComicHub Seller Portal</title>
+  <title>Quản lý đơn hàng | ComicWorm</title>
   <link rel="stylesheet" href="../css/post-management.css">
   <link rel="stylesheet" href="../css/orders.css">
 </head>
@@ -23,166 +23,69 @@
           </button>
           <div class="store-badge" title="Gian hàng chính thức của bạn">
             <span class="material-symbols-outlined store-icon">storefront</span>
-            <span class="store-name">Tiệm Truyện Vũ Trụ</span>
-            <span class="store-verified" title="Gian hàng đã xác thực">
-              <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
-            </span>
-            <span class="store-status-dot" title="Đang mở cửa hoạt động"></span>
+            <span class="store-name" id="ordersStoreName">Kênh người bán</span>
           </div>
           <div class="global-search">
             <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Tìm đơn hàng, mã truyện, buyer..." id="orderGlobalSearch">
-            <span class="search-shortcut">⌘K</span>
+            <input type="search" aria-label="Tìm đơn hàng" placeholder="Tìm mã đơn, tên truyện, người nhận..." id="orderGlobalSearch">
+
           </div>
         </div>
 
-        <div class="header-right">
-          <button class="nav-icon-btn" title="Thông báo mới">
-            <span class="material-symbols-outlined">notifications</span>
-            <span class="notification-badge-dot"></span>
-          </button>
-          <div class="user-profile-menu">
-            <div class="user-details">
-              <div class="user-name">Trần Đăng Khoa</div>
-              <div class="user-role">Pro Seller</div>
-            </div>
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA4W4fxRdEwEUti0BU4ZPunWEZMYRM5XRFFlgIpx5h5FcGigyLtFd7NM4wAKmn97UX_qn2USeyOTbIRFCnmQoBVyYsAZzk2Ommn4m96f0g8tJFlLLzGMdeLo7dnjurcqN9z0VjI4molZf84AY3b6Xl-s2jzDP8NviNKL_3XKBJ4WcGvVtQMCXF-FWLhW-6fAZmyE9-0dH2oGqFDNxunrsUeQMqf7VzQIHdjpzPSeoN1G2SHC3fTPCzWA" alt="Avatar Trần Đăng Khoa" class="user-avatar">
-          </div>
-        </div>
+        <div class="header-right"><div class="user-details"><div class="user-name" id="ordersSellerName">Người bán</div><div class="user-role">Quản lý gian hàng</div></div></div>
       </header>
 
       <!-- CONTENT BODY -->
       <main class="content-body">
-        <!-- KPI METRICS BANNER -->
-        <section class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-content">
-              <span class="kpi-label">Tổng doanh thu chờ quyết toán</span>
-              <span class="kpi-value">34.820.000 ₫</span>
-              <span class="kpi-trend positive">
-                <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
-                +18.4% tuần này
-              </span>
-            </div>
-            <div class="kpi-icon-wrapper primary">
-              <span class="material-symbols-outlined" style="font-size: 26px;">account_balance_wallet</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-content">
-              <span class="kpi-label">Cần đóng gói ngay</span>
-              <span class="kpi-value" style="color: #ea580c;">08 đơn</span>
-              <span class="kpi-trend warning">
-                <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
-                Ưu tiên trước 16:00
-              </span>
-            </div>
-            <div class="kpi-icon-wrapper warning">
-              <span class="material-symbols-outlined" style="font-size: 26px;">inventory_2</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-content">
-              <span class="kpi-label">Đang luân chuyển</span>
-              <span class="kpi-value" style="color: #2563eb;">15 kiện</span>
-              <span class="kpi-trend info">
-                <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
-                Qua 3 đơn vị vận chuyển
-              </span>
-            </div>
-            <div class="kpi-icon-wrapper info">
-              <span class="material-symbols-outlined" style="font-size: 26px;">route</span>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-content">
-              <span class="kpi-label">Tỷ lệ hoàn thành</span>
-              <span class="kpi-value">96.8%</span>
-              <span class="kpi-trend positive">
-                <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
-                Đạt chuẩn Pro Merchant
-              </span>
-            </div>
-            <div class="kpi-icon-wrapper success">
-              <span class="material-symbols-outlined" style="font-size: 26px;">verified_user</span>
-            </div>
-          </div>
+        <section class="kpi-grid" aria-label="Tổng quan đơn hàng">
+          <div class="kpi-card"><div class="kpi-content"><span class="kpi-label">Tổng đơn hàng</span><span class="kpi-value" data-order-count="all">—</span><span class="kpi-trend">Đơn hàng của gian hàng</span></div><div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined">receipt_long</span></div></div>
+          <div class="kpi-card"><div class="kpi-content"><span class="kpi-label">Đang xử lý</span><span class="kpi-value" data-order-count="processing">—</span><span class="kpi-trend">Chờ xác nhận và đóng gói</span></div><div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined">inventory_2</span></div></div>
+          <div class="kpi-card"><div class="kpi-content"><span class="kpi-label">Đang giao / Đã giao</span><span class="kpi-value" data-order-count="shipping">—</span><span class="kpi-trend">Đang vận chuyển hoặc chờ xác nhận nhận hàng</span></div><div class="kpi-icon-wrapper info"><span class="material-symbols-outlined">local_shipping</span></div></div>
+          <div class="kpi-card"><div class="kpi-content"><span class="kpi-label">Hoàn tất</span><span class="kpi-value" data-order-count="completed">—</span><span class="kpi-trend">Đã xác nhận nhận hàng</span></div><div class="kpi-icon-wrapper success"><span class="material-symbols-outlined">task_alt</span></div></div>
         </section>
 
         <!-- PAGE HEADER & ACTION CONTROLS -->
         <div class="page-header">
           <div class="breadcrumb-tag">
             <span class="material-symbols-outlined" style="font-size: 14px;">terminal</span>
-            Portal Quản Trị • Cập nhật 2 phút trước
+            <span id="ordersUpdatedAt">Kênh người bán</span>
           </div>
           <div class="page-title-row">
             <div>
               <h2 class="page-title">Quản lý đơn hàng</h2>
-              <p class="page-subtitle">Theo dõi trạng thái đóng gói, bàn giao vận chuyển và tiến trình thanh toán đơn hàng</p>
+              <p class="page-subtitle">Xác nhận đơn, đóng gói, bàn giao vận chuyển và theo dõi lịch sử xử lý.</p>
             </div>
             <div class="header-action-group">
-              <button class="btn btn-outline" id="exportOrdersBtn">
-                <span class="material-symbols-outlined">download</span>
-                Xuất danh sách
-              </button>
-              <button class="btn btn-primary" id="printBatchBtn">
-                <span class="material-symbols-outlined">print</span>
-                In vận đơn hàng loạt
-              </button>
+              <a class="btn btn-outline" href="../../exchange/html/exchange-orders.html">Đơn trao đổi</a>
+              <button class="btn btn-primary" id="refreshOrdersBtn"><span class="material-symbols-outlined">refresh</span>Làm mới</button>
             </div>
           </div>
         </div>
 
         <!-- FILTER TABS BAR -->
-        <div class="filter-tabs-bar" id="orderFilterTabs">
-          <button class="tab-chip active" data-filter="all">
-            Tất cả <span class="tab-count">48</span>
-          </button>
-          <button class="tab-chip" data-filter="processing">
-            Đang xử lý <span class="tab-count">8</span>
-          </button>
-          <button class="tab-chip" data-filter="shipping">
-            Đang giao <span class="tab-count">15</span>
-          </button>
-          <button class="tab-chip" data-filter="completed">
-            Hoàn thành <span class="tab-count">23</span>
-          </button>
-          <button class="tab-chip" data-filter="cancelled">
-            Đã hủy <span class="tab-count">2</span>
-          </button>
+        <div class="filter-tabs-bar" id="orderFilterTabs" aria-label="Lọc trạng thái đơn hàng">
+          <button class="tab-chip active" data-filter="all" aria-pressed="true">Tất cả <span class="tab-count">—</span></button>
+          <button class="tab-chip" data-filter="pending" aria-pressed="false">Chờ thanh toán <span class="tab-count">—</span></button>
+          <button class="tab-chip" data-filter="processing" aria-pressed="false">Đang xử lý <span class="tab-count">—</span></button>
+          <button class="tab-chip" data-filter="shipping" aria-pressed="false">Đang giao / Đã giao <span class="tab-count">—</span></button>
+          <button class="tab-chip" data-filter="completed" aria-pressed="false">Hoàn tất <span class="tab-count">—</span></button>
+          <button class="tab-chip" data-filter="cancelled" aria-pressed="false">Đã hủy <span class="tab-count">—</span></button>
         </div>
 
         <!-- ORDERS DATA TABLE CARD -->
         <div class="content-card">
-          <div class="content-card-header">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
-                <input type="checkbox" class="custom-checkbox" id="selectAllOrders">
-                <span>Chọn tất cả (<span id="selectedCount">0</span> đã chọn)</span>
-              </label>
-              <button class="btn btn-outline btn-sm" id="batchDispatchBtn" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 16px;">local_shipping</span>
-                Bàn giao đối tác
-              </button>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 0.82rem; color: var(--text-muted);">Sắp xếp theo:</span>
-              <select style="background: var(--surface-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 0.85rem; font-weight: 500;">
-                <option value="newest">Mới nhất trước</option>
-                <option value="oldest">Cũ nhất trước</option>
-                <option value="price-desc">Giá trị cao nhất</option>
-              </select>
-            </div>
+          <div class="content-card-header orders-list-header">
+            <strong>Đơn hàng của bạn</strong>
+            <label for="ordersSort">Sắp xếp theo:
+              <select id="ordersSort"><option value="newest">Mới nhất trước</option><option value="oldest">Cũ nhất trước</option><option value="price-desc">Giá trị cao nhất</option></select>
+            </label>
           </div>
 
           <div class="table-responsive">
             <table class="data-table" id="ordersTable">
               <thead>
                 <tr>
-                  <th style="width: 40px;"></th>
+                  <th style="width: 40px;">STT</th>
                   <th>Mã đơn & Ngày đặt</th>
                   <th>Sản phẩm truyện tranh</th>
                   <th>Khách hàng</th>
@@ -191,90 +94,45 @@
                   <th style="text-align: center;">Thao tác</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody aria-live="polite">
                 <tr id="ordersLoadingRow"><td colspan="7" style="text-align:center;padding:28px;">Đang tải đơn hàng...</td></tr>
               </tbody>
             </table>
           </div>
 
-          <!-- PAGINATION -->
           <div class="pagination-wrapper">
-            <div class="pagination-info">
-              Hiển thị <strong>1 - 4</strong> của <strong>48</strong> đơn hàng
-            </div>
-            <div class="pagination-controls">
-              <button class="page-btn" disabled>
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
-              </button>
-              <button class="page-btn active">1</button>
-              <button class="page-btn">2</button>
-              <button class="page-btn">3</button>
-              <span style="padding: 0 4px; color: var(--text-muted);">...</span>
-              <button class="page-btn">12</button>
-              <button class="page-btn">
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
-              </button>
-            </div>
+            <div class="pagination-info" id="ordersPaginationInfo" aria-live="polite">Đang tải...</div>
+            <nav class="pagination-controls" id="ordersPaginationControls" aria-label="Phân trang đơn hàng"></nav>
           </div>
         </div>
 
-        <!-- POLICY PACKAGING BANNER -->
-        <div class="policy-banner">
-          <div class="policy-banner-content">
-            <div class="policy-icon-circle">
-              <span class="material-symbols-outlined">verified</span>
-            </div>
-            <div class="policy-text">
-              <h4>Quy chuẩn bàn giao đơn ComicHub Express</h4>
-              <p>Các ấn bản truyện tranh hiếm, Boxset có giá trị &gt; 500k yêu cầu quay video niêm phong tem vỡ góc khi đóng gói để được bảo hiểm 100% khi xảy ra sự cố vận chuyển.</p>
-            </div>
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="showToast('Đang mở sổ tay quy chuẩn đóng gói ComicHub')">
-            Xem hướng dẫn đóng gói
-          </button>
-        </div>
+        <p class="orders-help">Đơn được hoàn tất khi người mua xác nhận đã nhận hàng. Đơn trao đổi được xử lý tại trang Đơn trao đổi.</p>
       </main>
     </div>
   </div>
 
-  <!-- CANCEL ORDER CONFIRM MODAL (Có animation Fade & Scale) -->
-  <div class="modal-backdrop" id="cancelOrderModal" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-icon-circle danger">
-        <span class="material-symbols-outlined" style="font-size: 32px;">warning</span>
-      </div>
-      <h3 class="modal-title">Xác nhận hủy đơn hàng</h3>
-      <p class="modal-desc" style="margin-bottom: 16px;">
-        Bạn có chắc chắn muốn hủy đơn hàng <strong id="cancelModalOrderId" style="color: var(--primary);">#ORD-90281</strong> không?
-      </p>
-      <div style="text-align: left; background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px; font-size: 0.8rem; color: #9a3412;">
-        ⚠️ <strong>Cảnh báo:</strong> Thao tác này không thể hoàn tác. Tiền thanh toán sẽ hoàn về ví người mua và tỷ lệ hủy đơn của shop sẽ bị ghi nhận.
-      </div>
-      <div style="text-align: left; margin-bottom: 20px;">
-        <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 6px; color: var(--text-main);">Lý do hủy đơn:</label>
-        <select id="cancelReasonSelect" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; background: #fff;">
-          <option value="out_of_stock">Hết truyện / Sách bị lỗi bìa, cấn móp</option>
-          <option value="buyer_request">Người mua nhắn tin xin hủy đơn</option>
-          <option value="wrong_price">Nhầm lẫn thông tin giá bán hoặc quà tặng kèm</option>
-          <option value="shipping_unreachable">Đơn vị vận chuyển quá tải không lấy hàng</option>
-        </select>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeCancelOrderModal()">Quay lại</button>
-        <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">
-          <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span>
-          Xác nhận hủy
-        </button>
-      </div>
-    </div>
-  </div>
+  <dialog class="seller-order-dialog" id="sellerOrderDetailModal" aria-labelledby="sellerOrderDetailTitle">
+    <div class="orders-dialog-header"><h2 id="sellerOrderDetailTitle">Chi tiết đơn hàng</h2><button class="btn btn-outline btn-sm" data-close-dialog aria-label="Đóng chi tiết đơn hàng">Đóng</button></div>
+    <div id="sellerOrderDetailBody" aria-live="polite"></div>
+    <div class="orders-dialog-actions" id="sellerOrderDetailActions"></div>
+  </dialog>
+
+  <dialog class="seller-order-dialog orders-status-dialog" id="sellerOrderStatusModal" aria-labelledby="sellerOrderStatusTitle">
+    <form id="sellerOrderStatusForm">
+      <h2 id="sellerOrderStatusTitle">Cập nhật trạng thái đơn hàng</h2>
+      <p id="sellerOrderStatusDescription"></p>
+      <label for="sellerOrderStatusNote">Ghi chú xử lý (không bắt buộc)</label>
+      <textarea id="sellerOrderStatusNote" maxlength="500" rows="3" placeholder="Nhập ghi chú cho lịch sử đơn hàng..."></textarea>
+      <p id="sellerOrderStatusError" class="orders-error" role="alert"></p>
+      <div class="orders-dialog-actions"><button type="button" class="btn btn-outline" data-close-dialog>Quay lại</button><button type="submit" class="btn btn-primary" id="sellerOrderStatusSubmit">Xác nhận cập nhật</button></div>
+    </form>
+  </dialog>
 
   <!-- TOAST NOTIFICATION CONTAINER -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 
   <script src="../js/common.js"></script>
   <script src="../../shared/js/orders-api.js"></script>
-  <script src="../js/orders.js"></script>
   <script src="../js/orders-live.js"></script>
 </body>
 </html>

@@ -170,7 +170,7 @@ public class SecurityConfig {
         account.setAllowedHeaders(List.of("Accept", "Content-Type", "Authorization", "X-CSRF-TOKEN"));
         source.registerCorsConfiguration("/api/account/**", account);
         CorsConfiguration products = new CorsConfiguration(config);
-        products.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        products.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         products.setAllowedHeaders(List.of("Accept", "Content-Type", "Authorization", "X-CSRF-TOKEN"));
         source.registerCorsConfiguration("/api/seller/**", products);
         source.registerCorsConfiguration("/api/admin/**", products);
