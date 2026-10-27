@@ -188,3 +188,59 @@
   background-color: #dc2626;
   color: #fff;
 }
+
+.orders-message { text-align: center; padding: 32px !important; color: var(--text-muted); }
+.orders-list-header { gap: 16px; flex-wrap: wrap; }
+.orders-list-header label { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+.orders-list-header select { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: #fff; }
+.orders-row-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 145px; }
+.orders-code-button { background: none; border: 0; padding: 0; color: var(--primary); cursor: pointer; font: inherit; font-weight: 700; text-align: left; }
+.orders-code-button:hover { text-decoration: underline; }
+.orders-help { margin-top: 18px; color: var(--text-muted); font-size: .85rem; line-height: 1.6; }
+.seller-order-dialog { width: min(720px, calc(100% - 32px)); max-height: calc(100vh - 48px); margin: auto; padding: 28px; border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-main); background: #fff; box-shadow: 0 24px 80px #0f172a33; overflow: auto; }
+.seller-order-dialog::backdrop { background: #0f172a88; }
+.seller-order-dialog h2 { margin: 0 0 16px; font-size: 1.25rem; }
+.seller-order-dialog h3 { margin: 20px 0 10px; font-size: 1rem; }
+.seller-order-dialog p { margin: 12px 0; line-height: 1.6; overflow-wrap: anywhere; }
+.orders-dialog-header, .orders-detail-summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+.orders-dialog-header h2 { margin: 0; }
+.orders-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.orders-detail-fields { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 10px 16px; font-size: .9rem; }
+.orders-detail-fields dt { color: var(--text-muted); }
+.orders-detail-fields dd { margin: 0; overflow-wrap: anywhere; }
+.orders-detail-items { list-style: none; padding: 0; }
+.orders-detail-items li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: .9rem; }
+.orders-history { padding-left: 22px; font-size: .9rem; }
+.orders-history li { padding: 0 0 16px 8px; }
+.orders-history li div, .orders-history li p { color: var(--text-muted); font-size: .82rem; margin: 6px 0 0; }
+.orders-status-dialog { max-width: 500px; }
+.orders-status-dialog label { display: block; margin: 20px 0 8px; font-size: .9rem; font-weight: 600; }
+.orders-status-dialog textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font: inherit; resize: vertical; }
+.orders-error { color: #b42318; font-size: .9rem; }
+#ordersTable { min-width: 1000px; }
+#orderFilterTabs { overflow-x: auto; }
+.app-sidebar { top: 0 !important; height: 100vh !important; }
+.kpi-trend { white-space: normal; line-height: 1.5; }
+@media (max-width: 1024px) {
+  .main-wrapper { margin-left: 0; width: 100%; }
+}
+@media (max-width: 640px) {
+  .content-body { padding: 20px 16px; gap: 18px; }
+  .top-header { height: auto; min-height: 72px; padding: 12px 16px; }
+  .header-left { width: 100%; flex-wrap: wrap; gap: 12px; }
+  .header-right { display: none; }
+  .global-search { display: block; flex-basis: 100%; width: 100%; }
+  .global-search input { width: 100%; }
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-card { padding: 16px 12px; }
+  .kpi-label { white-space: normal; padding-right: 30px; }
+  .kpi-trend { font-size: .72rem; }
+  #orderFilterTabs { flex-wrap: nowrap; padding-bottom: 6px; }
+  #orderFilterTabs .tab-chip { flex-shrink: 0; }
+  .toast-container { right: 16px; bottom: 16px; max-width: calc(100vw - 32px); }
+  .seller-order-dialog { padding: 20px; }
+  .orders-detail-fields { grid-template-columns: 1fr; gap: 4px; }
+  .orders-detail-fields dd { margin-bottom: 10px; }
+  .orders-detail-items li { flex-direction: column; gap: 6px; }
+  .orders-dialog-header, .orders-detail-summary { align-items: flex-start; }
+}

@@ -76,6 +76,7 @@ public class OrderCancellationService {
         order.setCancelledAt(LocalDateTime.now());
         order.setCancelledBy(actor == CancelActor.SYSTEM ? null : actorId);
         order.setCancelReason(cleanReason);
+        orderRepository.save(order);
 
         releaseStock(order);
         if (order.getPaymentStatus() == OrderPaymentStatus.PAID) {

@@ -98,11 +98,17 @@
       </div>
     </div>
 
-    <div class="escrow-banner">
-      <span class="material-symbols-outlined">verified_user</span>
-      <div>
-        <strong>Bảo hộ Escrow MangaTrade</strong>
-        <span>Tiền giữ an toàn tới khi bạn kiểm duyệt truyện</span>
+    <div class="header-heading-actions">
+      <button type="button" class="btn-refresh-orders" id="refresh-orders-btn" title="Cập nhật trạng thái đơn hàng mới nhất">
+        <span class="material-symbols-outlined">refresh</span>
+        <span>Làm mới</span>
+      </button>
+      <div class="escrow-banner">
+        <span class="material-symbols-outlined">verified_user</span>
+        <div>
+          <strong>Bảo hộ Escrow MangaTrade</strong>
+          <span>Tiền giữ an toàn tới khi bạn kiểm duyệt truyện</span>
+        </div>
       </div>
     </div>
   </section>
@@ -170,10 +176,6 @@
 
       <div class="pagination" id="pagination"></div>
     </div>
-
-    <aside class="detail-column">
-      <div class="detail-panel" id="detail-panel"><div class="orders-loading">Chọn một đơn hàng để xem chi tiết.</div></div>
-    </aside>
   </section>
 </main>
 
@@ -228,6 +230,89 @@
     </div>
   </div>
 </footer>
+
+  <!-- MODAL: CHI TIẾT ĐƠN HÀNG -->
+  <dialog class="buyer-order-dialog" id="orderDetailModal" aria-labelledby="detailModalTitle">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title-group">
+          <div class="dialog-icon-badge">
+            <span class="material-symbols-outlined">receipt_long</span>
+          </div>
+          <div>
+            <h2 id="detailModalTitle">Chi Tiết Đơn Hàng</h2>
+            <span class="dialog-order-code" id="detailModalCode">#ORD-...</span>
+          </div>
+        </div>
+        <button type="button" class="dialog-close-btn" data-close-detail aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="dialog-body" id="detailModalBody">
+        <div class="orders-loading">Đang tải chi tiết đơn hàng...</div>
+      </div>
+
+      <div class="dialog-footer" id="detailModalFooter">
+        <div class="dialog-footer-actions" id="detailModalFooterActions"></div>
+        <button type="button" class="btn btn-outline" data-close-detail>Đóng</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- MODAL: XÁC NHẬN HỦY ĐƠN HÀNG -->
+  <dialog class="buyer-order-dialog cancel-dialog" id="orderCancelModal" aria-labelledby="cancelModalTitle">
+    <div class="dialog-card">
+      <div class="dialog-header danger-header">
+        <div class="dialog-title-group">
+          <div class="dialog-icon-badge danger">
+            <span class="material-symbols-outlined">cancel</span>
+          </div>
+          <div>
+            <h2 id="cancelModalTitle">Hủy Đơn Hàng</h2>
+            <span class="dialog-order-code" id="cancelModalCode">#ORD-...</span>
+          </div>
+        </div>
+        <button type="button" class="dialog-close-btn" data-close-cancel aria-label="Đóng">&times;</button>
+      </div>
+
+      <form id="orderCancelForm" class="dialog-form">
+        <div class="cancel-warning-box">
+          <span class="material-symbols-outlined">warning</span>
+          <div>
+            <strong>Lưu ý quan trọng:</strong>
+            <span>Đơn hàng chỉ có thể hủy khi chưa vận chuyển. Thao tác hủy đơn không thể hoàn tác.</span>
+          </div>
+        </div>
+
+        <div class="form-field-group">
+          <label for="cancelReasonSelect">Chọn lý do hủy đơn: <span class="required">*</span></label>
+          <select id="cancelReasonSelect" class="form-input" required>
+            <option value="">-- Vui lòng chọn lý do --</option>
+            <option value="Tôi muốn cập nhật lại địa chỉ nhận hàng">Tôi muốn cập nhật lại địa chỉ nhận hàng</option>
+            <option value="Tôi muốn thêm bớt hoặc đổi sang truyện khác">Tôi muốn thêm bớt hoặc đổi sang truyện khác</option>
+            <option value="Tôi tìm thấy giá tốt hơn ở nơi khác">Tôi tìm thấy giá tốt hơn ở nơi khác</option>
+            <option value="Thời gian giao hàng dự kiến không phù hợp">Thời gian giao hàng dự kiến không phù hợp</option>
+            <option value="Tôi đổi ý, không có nhu cầu mua nữa">Tôi đổi ý, không có nhu cầu mua nữa</option>
+            <option value="other">Lý do khác...</option>
+          </select>
+        </div>
+
+        <div class="form-field-group" id="cancelReasonCustomGroup" style="display: none;">
+          <label for="cancelReasonCustom">Nhập lý do cụ thể: <span class="required">*</span></label>
+          <textarea id="cancelReasonCustom" class="form-input" rows="3" maxlength="500" placeholder="Mô tả cụ thể lý do bạn muốn hủy đơn hàng..."></textarea>
+        </div>
+
+        <div id="cancelModalError" class="cancel-error-alert" role="alert" style="display: none;"></div>
+
+        <div class="dialog-footer">
+          <button type="button" class="btn btn-outline" data-close-cancel>Quay lại</button>
+          <button type="submit" class="btn btn-danger" id="confirmCancelSubmitBtn">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Xác nhận hủy đơn</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
 
 <div id="toast" class="toast"></div>
 

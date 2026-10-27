@@ -7,6 +7,7 @@ import com.example.comicworm.model.OrderStatusHistory;
 import com.example.comicworm.model.User;
 import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.repository.OrderItemRepository;
+import com.example.comicworm.repository.ExchangeOrderLinkRepository;
 import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.OrderStatusHistoryRepository;
 import com.example.comicworm.repository.UserRepository;
@@ -35,7 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
  * T03 - Cập nhật trạng thái đơn hàng (ghi order_status_history).
  * B08 - Xem lịch sử mua hàng.
  * Quyền lấy từ người đăng nhập ở server: người mua chỉ XEM đơn của mình,
- * người bán chỉ XEM đơn của mình, ADMIN xem tất cả và là người DUY NHẤT đổi trạng thái.
+ * người bán xử lý đơn của mình đến bước đã giao; ADMIN quản lý toàn bộ đơn.
  */
 @Service
 public class OrderTrackingService {
@@ -66,16 +67,19 @@ public class OrderTrackingService {
     private final UserRepository users;
     private final OrderStatusService statusService;
     private final OrderCompletionService completionService;
+    private final ExchangeOrderLinkRepository exchangeLinks;
 
     public OrderTrackingService(OrderRepository orders, OrderItemRepository items,
                                 OrderStatusHistoryRepository histories, UserRepository users,
-                                OrderStatusService statusService, OrderCompletionService completionService) {
+                                OrderStatusService statusService, OrderCompletionService completionService,
+                                ExchangeOrderLinkRepository exchangeLinks) {
         this.orders = orders;
         this.items = items;
         this.histories = histories;
         this.users = users;
         this.statusService = statusService;
         this.completionService = completionService;
+        this.exchangeLinks = exchangeLinks;
     }
 
     // ---------------------------------------------------------------- B08
@@ -89,8 +93,8 @@ public class OrderTrackingService {
     }
 
     @Transactional(readOnly = true)
-    public OrderDTOs.PageOf sellerOrders(Long sellerId, String group, String q, int page, int size) {
-        Pageable pageable = pageable(page, size);
+    public OrderDTOs.PageOf sellerOrders(Long sellerId, String group, String q, int page, int size, String sort) {
+        Pageable pageable = sellerPageable(page, size, sort);
         Page<Order> result = orders.searchForSeller(sellerId, statuses(group), pattern(q), pageable);
         Map<String, Long> counts = counts(orders.countByStatusForSeller(sellerId));
         return toPage(result, counts, sellerId, false);
@@ -135,6 +139,23 @@ public class OrderTrackingService {
     // ---------------------------------------------------------------- T03
 
     @Transactional
+    public OrderDTOs.Detail updateSellerStatus(String orderCode, Long sellerId, String target, String note) {
+        Order order = orders.findByOrderCodeForUpdate(orderCode).orElseThrow(OrderTrackingService::notFound);
+        if (!order.getSellerId().equals(sellerId)) throw notFound();
+        if (exchangeLinks.existsByOrderId(order.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Vui lòng xử lý đơn trao đổi tại trang đơn hàng trao đổi.");
+        }
+        OrderStatus to = parse(target);
+        if (to == OrderStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Đơn hàng được hoàn tất khi người mua xác nhận đã nhận hàng.");
+        }
+        advance(order, sellerId, to, note);
+        return detail(orderCode, sellerId, false);
+    }
+
+    @Transactional
     public OrderDTOs.Detail updateStatus(String orderCode, Long actorId, boolean admin, String target, String note) {
         if (!admin) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
@@ -146,6 +167,11 @@ public class OrderTrackingService {
             throw notFound();
         }
 
+        advance(order, actorId, to, note);
+        return detail(orderCode, actorId, admin);
+    }
+
+    private void advance(Order order, Long actorId, OrderStatus to, String note) {
         OrderStatus from = order.getStatus();
         if (NEXT.get(from) != to) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -162,15 +188,17 @@ public class OrderTrackingService {
         } else {
             // Kiểm tra bảng chuyển trạng thái chung và ghi order_status_history.
             statusService.transition(order, to, actorId, cleanNote);
+            orders.save(order);
         }
-
-        return detail(orderCode, actorId, admin);
     }
 
-    /** Chỉ ADMIN có bước tiếp theo; người mua và người bán chỉ xem. */
-    private String nextFor(Order order, boolean admin) {
+    /** Người bán được xác nhận, bàn giao và ghi nhận đã giao đơn của mình. */
+    private String nextFor(Order order, Long viewerId, boolean admin, Set<Long> exchangeOrderIds) {
         OrderStatus next = NEXT.get(order.getStatus());
-        return admin && next != null ? next.name() : null;
+        if (next == null) return null;
+        if (admin) return next.name();
+        return order.getSellerId().equals(viewerId) && next != OrderStatus.COMPLETED
+                && !exchangeOrderIds.contains(order.getId()) ? next.name() : null;
     }
 
     // ---------------------------------------------------------------- helpers
@@ -186,6 +214,8 @@ public class OrderTrackingService {
 
     private List<OrderDTOs.Summary> summaries(List<Order> list, Long viewerId, boolean admin) {
         if (list.isEmpty()) return List.of();
+        Set<Long> exchangeOrderIds = exchangeLinks.findByOrderIdIn(list.stream().map(Order::getId).toList())
+                .stream().map(com.example.comicworm.model.ExchangeOrderLink::getOrderId).collect(Collectors.toSet());
         Map<Long, List<OrderItem>> byOrder = items.findByOrderIdIn(list.stream().map(Order::getId).toList())
                 .stream().collect(Collectors.groupingBy(OrderItem::getOrderId));
         Map<Long, String> sellers = userNames(list.stream()
@@ -202,7 +232,7 @@ public class OrderTrackingService {
                     sellers.getOrDefault(o.getBuyerId(), ""), o.getRecipientName(),
                     o.getSubtotalAmount(), o.getShippingFee(), o.getTotalAmount(),
                     its.stream().mapToInt(OrderDTOs.Item::quantity).sum(), its,
-                    o.getCreatedAt(), o.getCompletedAt(), nextFor(o, admin)));
+                    o.getCreatedAt(), o.getCompletedAt(), nextFor(o, viewerId, admin, exchangeOrderIds)));
         }
         return out;
     }
@@ -241,6 +271,16 @@ public class OrderTrackingService {
         int p = Math.max(page, 0);
         int s = Math.min(Math.max(size, 1), 50);
         return PageRequest.of(p, s, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
+    }
+
+    private Pageable sellerPageable(int page, int size, String sort) {
+        Sort ordering = switch (sort) {
+            case "newest" -> Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+            case "oldest" -> Sort.by(Sort.Order.asc("createdAt"), Sort.Order.asc("id"));
+            case "price-desc" -> Sort.by(Sort.Order.desc("totalAmount"), Sort.Order.desc("id"));
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cách sắp xếp không hợp lệ.");
+        };
+        return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50), ordering);
     }
 
     private OrderStatus parse(String value) {

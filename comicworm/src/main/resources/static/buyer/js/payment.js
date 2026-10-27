@@ -766,8 +766,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <a href="home.html" style="padding: 12px 24px; border-radius: 9999px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-weight: 700; font-size: 13px; text-decoration: none;">
             Về Trang Chủ
           </a>
-          <a href="page3.html" style="padding: 12px 28px; border-radius: 9999px; border: none; background: #f97316; color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);">
-            Theo Dõi Đơn Hàng
+          <a href="page2.html" style="padding: 12px 28px; border-radius: 9999px; border: none; background: #f97316; color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);">
+            Xem Đơn Hàng Của Tôi
           </a>
         </div>
       </div>
@@ -781,6 +781,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         localStorage.removeItem('comichub_cart');
+
+        setTimeout(() => {
+            if (document.body.contains(successBackdrop)) {
+                window.location.href = 'page2.html';
+            }
+        }, 3500);
     };
 
     // --------------------------------------------------------------------------
