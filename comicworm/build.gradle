@@ -38,8 +38,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
     // Spring AI - Google GenAI
-    implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
-
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
