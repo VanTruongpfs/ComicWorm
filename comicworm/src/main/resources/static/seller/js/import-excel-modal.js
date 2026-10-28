@@ -1,6 +1,7 @@
 (() => {
   const modal = document.getElementById('importExcelModal');
   if (!modal) return;
+  const fileInput = document.getElementById('excelFileInput');
 
   const openModal = () => {
     modal.classList.add('active');
@@ -18,6 +19,7 @@
 
     if (target.closest('#importExcelButton')) {
       openModal();
+      fileInput?.click();
       return;
     }
 
