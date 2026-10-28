@@ -63,7 +63,7 @@ public class SecurityConfig {
                         .requireCsrfProtectionMatcher(request -> {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
                             return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
-                                    && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
+                                    && !path.startsWith("/api/seller/tier/") && !path.startsWith("/api/admin/seller-upgrades/") && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
                                     || path.startsWith("/api/seller/")
                                     || path.startsWith("/api/admin/"));
                 }))
@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/analytics/admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
+                        .requestMatchers("/api/seller/tier/**").authenticated()
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .requestMatchers("/seller/html/**").hasRole("SELLER")
                         // ---- Khu vuc ADMIN: bat buoc dang nhap + role ADMIN ----

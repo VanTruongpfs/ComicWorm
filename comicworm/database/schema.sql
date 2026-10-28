@@ -478,3 +478,36 @@ ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_room_
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_recipient_id` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+
+
+CREATE TABLE IF NOT EXISTS seller_profiles (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL UNIQUE,
+  shop_name VARCHAR(150) NOT NULL,
+  shop_description TEXT NULL,
+  level INT NOT NULL DEFAULT 1,
+  	otal_completed_orders INT NOT NULL DEFAULT 0,
+  	otal_revenue DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS seller_upgrade_requests (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  rom_level INT NOT NULL DEFAULT 0,
+  	o_level INT NOT NULL,
+  shop_name VARCHAR(150) NULL,
+  shop_description TEXT NULL,
+  ee_amount DECIMAL(15,2) NOT NULL,
+  payment_method VARCHAR(50) NOT NULL DEFAULT 'MANUAL_TRANSFER',
+  payment_proof_url TEXT NULL,
+  	ransaction_code VARCHAR(100) NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  dmin_id BIGINT NULL,
+  ejection_reason TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  eviewed_at DATETIME NULL,
+  INDEX idx_upgrade_user (user_id, status),
+  INDEX idx_upgrade_status (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

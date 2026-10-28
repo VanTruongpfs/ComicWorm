@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duyệt nâng cấp Người bán | BookMooch Admin Console</title>
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-common.css">
+  <style>
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 0.75rem; }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-approved { background: #dcfce7; color: #15803d; }
+    .badge-rejected { background: #fee2e2; color: #b91c1c; }
+
+    .bill-thumb {
+      width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .bill-thumb:hover { transform: scale(1.08); box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+
+    .btn-act { padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-approve { background: #16a34a; color: #fff; }
+    .btn-approve:hover { background: #15803d; }
+    .btn-reject { background: #ef4444; color: #fff; }
+    .btn-reject:hover { background: #dc2626; }
+
+    .modal-box {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000;
+      justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px);
+    }
+    .modal-inner {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 500px; padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .data-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: middle; }
+    .data-table tr:hover td { background-color: #f8fafc; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- Dynamic Sidebar Component Container -->
+  <div id="sidebarContainer" data-active="seller-upgrades"></div>
+
+  <div class="main-wrapper">
+    <!-- Top Global Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Thu gọn / Mở rộng menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="store-selector">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          <span>Trung tâm Quản trị</span>
+        </div>
+        <div class="global-search">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="upgradeSearchInput" placeholder="Tìm người gửi, email, tên shop, mã GD...">
+          <span class="search-shortcut">⌘K</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="nav-icon-btn" title="Thông báo mới" onclick="showToast('Hệ thống hoạt động bình thường')">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notification-badge-dot"></span>
+        </button>
+        <div class="user-profile-menu">
+          <div class="user-details">
+            <div class="user-name" data-admin-name>Quản trị viên</div>
+            <div class="user-role" data-admin-role>Super Admin</div>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <!-- KPI Cards Summary -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Yêu cầu chờ duyệt</span>
+            <span class="kpi-value" style="color:#ea580c;" id="kpiPendingCount">0</span>
+            <span class="kpi-trend warning"><span class="material-symbols-outlined" style="font-size:16px;">hourglass_top</span> Cần đối soát biên lai</span>
+          </div>
+          <div class="kpi-icon-wrapper warning" style="background:#fff7ed; color:#ea580c;">
+            <span class="material-symbols-outlined" style="font-size:26px;">verified</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Đã phê duyệt</span>
+            <span class="kpi-value" style="color:#16a34a;" id="kpiApprovedCount">0</span>
+            <span class="kpi-trend positive"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Đã nâng cấp gian hàng</span>
+          </div>
+          <div class="kpi-icon-wrapper success" style="background:#f0fdf4; color:#16a34a;">
+            <span class="material-symbols-outlined" style="font-size:26px;">military_tech</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Đã từ chối</span>
+            <span class="kpi-value" style="color:#dc2626;" id="kpiRejectedCount">0</span>
+            <span class="kpi-trend danger"><span class="material-symbols-outlined" style="font-size:16px;">cancel</span> Không đạt tiêu chuẩn/bill sai</span>
+          </div>
+          <div class="kpi-icon-wrapper danger" style="background:#fef2f2; color:#dc2626;">
+            <span class="material-symbols-outlined" style="font-size:26px;">rule</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-content">
+            <span class="kpi-label">Tổng doanh thu nâng cấp</span>
+            <span class="kpi-value" style="color:#2563eb;" id="kpiTotalRevenue">0 ₫</span>
+            <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">payments</span> Từ đơn duyệt thành công</span>
+          </div>
+          <div class="kpi-icon-wrapper info" style="background:#eff6ff; color:#2563eb;">
+            <span class="material-symbols-outlined" style="font-size:26px;">account_balance_wallet</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Page Header Row -->
+      <div class="page-header" style="margin-top:20px;">
+        <div class="breadcrumb-tag">
+          <span class="material-symbols-outlined" style="font-size:14px;">verified</span> Quản trị hệ thống • Nâng cấp Người bán
+        </div>
+        <div class="page-title-row">
+          <div>
+            <h2 class="page-title">Duyệt nâng cấp Người bán &amp; Cấp bậc</h2>
+            <p class="page-subtitle">Kiểm tra thông tin gian hàng, biên lai chuyển khoản (Bill) và phê duyệt quyền Người bán &amp; Cấp bậc (Level 1 - 5)</p>
+          </div>
+          <div class="header-action-group">
+            <button class="btn btn-outline" id="refreshBtn" onclick="window.reloadCurrentList()">
+              <span class="material-symbols-outlined">refresh</span> Làm mới
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Segmented Control Tabs -->
+      <div class="seg-control" id="upgradesSegControl" style="margin-bottom:20px;">
+        <button class="seg-btn tab-btn active" data-status="PENDING">
+          Chờ duyệt (PENDING) <span class="nav-badge" id="tabBadgePending" style="margin-left:6px; background:#ea580c; color:#fff;">0</span>
+        </button>
+        <button class="seg-btn tab-btn" data-status="APPROVED">
+          Đã duyệt (APPROVED) <span class="nav-badge" id="tabBadgeApproved" style="margin-left:6px; background:#16a34a; color:#fff;">0</span>
+        </button>
+        <button class="seg-btn tab-btn" data-status="REJECTED">
+          Đã từ chối (REJECTED) <span class="nav-badge" id="tabBadgeRejected" style="margin-left:6px; background:#dc2626; color:#fff;">0</span>
+        </button>
+        <button class="seg-btn tab-btn" data-status="">
+          Tất cả yêu cầu
+        </button>
+      </div>
+
+      <!-- Requests Table Panel -->
+      <div class="surface-panel" style="padding:0; overflow:hidden; border-radius:12px; border:1px solid #e2e8f0; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">MÃ ĐƠN</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">NGƯỜI NỘP</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">TÊN GIAN HÀNG</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">LỘ TRÌNH</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">PHÍ NÂNG CẤP</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">BIÊN LAI (BILL)</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">MÃ GD</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">NGÀY GỬI</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b;">TRẠNG THÁI</th>
+                <th style="padding:14px 16px; font-size:0.8rem; font-weight:700; color:#64748b; text-align:right;">THAO TÁC</th>
+              </tr>
+            </thead>
+            <tbody id="reqTableBody">
+              <tr>
+                <td colspan="10" style="text-align:center; padding:30px; color:#64748b;">Đang tải danh sách yêu cầu...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Zoom Bill Image -->
+<div id="zoomModal" class="modal-box">
+  <div style="position:relative; max-width:90vw; max-height:90vh; background:#fff; padding:12px; border-radius:12px; box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+    <button id="closeZoomBtn" style="position:absolute; top:-12px; right:-12px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:16px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+    <img id="zoomImg" src="" style="max-width:85vw; max-height:80vh; object-fit:contain; border-radius:8px; display:block;" alt="Biên lai phóng to">
+  </div>
+</div>
+
+<!-- Modal Reject Request -->
+<div id="rejectModal" class="modal-box">
+  <div class="modal-inner">
+    <h3 style="margin:0 0 12px; color:#b91c1c; font-size:1.2rem; display:flex; align-items:center; gap:8px;">
+      <span class="material-symbols-outlined">cancel</span> Từ chối yêu cầu nâng cấp
+    </h3>
+    <p style="font-size:0.88rem; color:#64748b; margin-bottom:16px;">
+      Vui lòng nhập lý do từ chối để người dùng biết và khắc phục (ví dụ: bill mờ, chưa nhận được tiền, thiếu thông tin):
+    </p>
+    <textarea id="rejectReasonInput" rows="3" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-family:inherit; font-size:0.9rem; box-sizing:border-box;" placeholder="Nhập lý do cụ thể..."></textarea>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button id="closeRejectBtn" class="btn btn-outline" style="padding:8px 16px;">Hủy bỏ</button>
+      <button id="confirmRejectBtn" class="btn btn-danger" style="padding:8px 16px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Xác nhận từ chối</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shared Admin JS and Page JS -->
+<script src="../js/common.js"></script>
+<script src="../js/seller-upgrades.js"></script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nâng cấp lên Người bán (Seller) | ComicHub</title>
+  <link rel="stylesheet" href="../../buyer/css/home.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
+    .page-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    .card-box { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .header-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .header-desc { color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; }
+    
+    .tier-box {
+      border: 2px solid #ea580c; border-radius: 12px; padding: 20px; background: #fff7ed;
+      margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    }
+    .fee-badge { font-size: 1.5rem; font-weight: 900; color: #c2410c; }
+    
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
+    
+    .qr-container { background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px; border: 1px dashed #cbd5e1; }
+    .qr-container img { max-width: 220px; border-radius: 8px; }
+    
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 10px; background: #ea580c; color: #fff;
+      font-size: 1.05rem; font-weight: 700; border: none; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #c2410c; }
+    .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
+    
+    .alert-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+    .alert-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <a href="profile.html" style="text-decoration:none; color:#ea580c; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-bottom:16px;">
+      <span class="material-symbols-outlined">arrow_back</span> Quay lại Hồ sơ cá nhân
+    </a>
+
+    <div class="card-box">
+      <!-- Alerts -->
+      <div id="pendingAlert" class="alert-pending" style="display:none;">
+        <strong id="pendingTitle">Đơn nâng cấp của bạn đang chờ Admin duyệt</strong>
+        <p style="margin:6px 0 0; font-size:0.9rem;" id="pendingDesc">Vui lòng đợi Admin kiểm tra biên lai và phê duyệt trong vòng 24h.</p>
+      </div>
+
+      <div id="rejectedAlert" class="alert-rejected" style="display:none;">
+        <strong>Yêu cầu nâng cấp trước đó bị từ chối</strong>
+        <p style="margin:6px 0 0; font-size:0.9rem;" id="rejectedReason">Lý do: ...</p>
+      </div>
+
+      <div id="alreadySellerBox" style="display:none; text-align:center; padding: 20px 0;">
+        <span class="material-symbols-outlined" style="font-size: 48px; color:#10b981;">check_circle</span>
+        <h2 style="margin:12px 0 8px;">Bạn đã là Người bán (Seller)</h2>
+        <p style="color:#64748b; margin-bottom: 20px;">Bạn có thể vào Kênh người bán để xem quản lý gian hàng và nâng lên các cấp bậc cao hơn (Cấp 2 - 5).</p>
+        <a href="../../seller/html/seller-tier.html" style="display:inline-block; padding:12px 24px; background:#ea580c; color:#fff; border-radius:8px; text-decoration:none; font-weight:700;">
+          Đi đến Kênh Người Bán &amp; Cấp Bậc &rarr;
+        </a>
+      </div>
+
+      <div id="upgradeFormContainer">
+        <h1 class="header-title">Đăng Ký Trở Thành Người Bán (Cấp 1)</h1>
+        <p class="header-desc">
+          Mở gian hàng kinh doanh trên sàn ComicHub để đăng bán truyện tranh, tiếp cận hàng ngàn độc giả toàn quốc và quản lý doanh thu minh bạch.
+        </p>
+
+        <div class="tier-box">
+          <div>
+            <div style="font-weight:700; font-size:1.1rem; color:#9a3412;">Gói Kích Hoạt Gian Hàng Tập Sự (Cấp 1)</div>
+            <div style="font-size:0.85rem; color:#78350f; margin-top:4px;">
+              • Đăng tối đa 10 truyện • Phí sàn 5% • Rút tiền tối đa 2.000.000₫/ngày
+            </div>
+          </div>
+          <div class="fee-badge">100.000₫</div>
+        </div>
+
+        <div class="form-group">
+          <label>Tên gian hàng / Thương hiệu Shop của bạn <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="shopName" class="form-control" placeholder="Ví dụ: Tiệm Truyện ComicWorm Hà Nội">
+        </div>
+
+        <div class="form-group">
+          <label>Mô tả ngắn gian hàng</label>
+          <textarea id="shopDesc" class="form-control" rows="2" placeholder="Chuyên shounen, manga hiếm chất lượng 95-99%..."></textarea>
+        </div>
+
+        <!-- VietQR Chuyển khoản -->
+        <div class="qr-container">
+          <div style="font-weight:700; margin-bottom:4px;">Quét mã VietQR để thanh toán phí 100.000₫</div>
+          <img src="https://api.vietqr.io/image/970422-0393710777-compact2.png?amount=100000&addInfo=NANG_CAP_SELLER_CAP_1&accountName=COMICWORM_ADMIN" alt="VietQR Nâng cấp Seller">
+          <div style="margin-top:10px; font-size:0.9rem; color:#475569;">
+            Ngân hàng: <strong>MBBank</strong> • STK: <strong>0393710777</strong><br>
+            Chủ tài khoản: <strong>COMICWORM ADMIN</strong><br>
+            Nội dung: <strong style="color:#2563eb;">NANG_CAP_SELLER_CAP_1</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tải lên ảnh chụp biên lai chuyển khoản (Bill) <span style="color:#ef4444;">*</span></label>
+          <input type="file" id="proofInput" accept="image/*" class="form-control">
+          <div id="proofStatus" style="font-size:0.85rem; color:#10b981; margin-top:4px; display:none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Mã giao dịch ngân hàng / Mã tham chiếu</label>
+          <input type="text" id="transactionCode" class="form-control" placeholder="Ví dụ: MB123456789">
+        </div>
+
+        <button id="btnSubmit" class="btn-submit">Gửi yêu cầu nâng cấp &amp; Xác nhận chuyển khoản</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      let uploadedProofUrl = "";
+
+      const pendingAlert = document.getElementById("pendingAlert");
+      const pendingTitle = document.getElementById("pendingTitle");
+      const pendingDesc = document.getElementById("pendingDesc");
+      const rejectedAlert = document.getElementById("rejectedAlert");
+      const rejectedReason = document.getElementById("rejectedReason");
+      const alreadySellerBox = document.getElementById("alreadySellerBox");
+      const upgradeFormContainer = document.getElementById("upgradeFormContainer");
+
+      const shopName = document.getElementById("shopName");
+      const shopDesc = document.getElementById("shopDesc");
+      const proofInput = document.getElementById("proofInput");
+      const proofStatus = document.getElementById("proofStatus");
+      const transactionCode = document.getElementById("transactionCode");
+      const btnSubmit = document.getElementById("btnSubmit");
+
+      try {
+        const res = await fetch("/api/seller/tier/info", { credentials: "include" });
+        if (res.status === 401) {
+          window.location.href = "/auth/login";
+          return;
+        }
+        if (!res.ok) throw new Error("Lỗi khi tải thông tin");
+        const data = await res.json();
+
+        if (data.isSeller) {
+          alreadySellerBox.style.display = "block";
+          upgradeFormContainer.style.display = "none";
+          return;
+        }
+
+        if (data.pendingRequest) {
+          pendingAlert.style.display = "block";
+          pendingTitle.textContent = "Yêu cầu lên Người bán (Cấp 1) đang chờ Admin duyệt";
+          pendingDesc.textContent = `Số tiền phí: ${Number(data.pendingRequest.feeAmount).toLocaleString('vi-VN')}₫. Mã yêu cầu: #${data.pendingRequest.id}. Admin sẽ xử lý trong vòng 24h.`;
+          btnSubmit.disabled = true;
+          btnSubmit.textContent = "Đang có yêu cầu chờ duyệt";
+        }
+
+        if (!data.pendingRequest && data.latestRequest && data.latestRequest.status === "REJECTED") {
+          rejectedAlert.style.display = "block";
+          rejectedReason.textContent = "Lý do: " + (data.latestRequest.rejectionReason || "Không rõ") + ". Bạn vui lòng chụp lại biên lai đúng và nộp lại.";
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      proofInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        proofStatus.style.display = "block";
+        proofStatus.style.color = "#3b82f6";
+        proofStatus.textContent = "Đang tải ảnh biên lai lên máy chủ...";
+
+        try {
+          const res = await fetch("/api/seller/tier/upload-proof", {
+            method: "POST",
+            credentials: "include",
+            body: formData
+          });
+          if (!res.ok) throw new Error("Lỗi upload ảnh");
+          const ret = await res.json();
+          uploadedProofUrl = ret.url;
+          proofStatus.style.color = "#10b981";
+          proofStatus.textContent = "✓ Tải ảnh biên lai thành công!";
+        } catch (err) {
+          proofStatus.style.color = "#ef4444";
+          proofStatus.textContent = "Lỗi khi tải ảnh: " + err.message;
+        }
+      });
+
+      btnSubmit.addEventListener("click", async () => {
+        if (!shopName.value.trim()) {
+          alert("Vui lòng nhập tên gian hàng!");
+          shopName.focus();
+          return;
+        }
+        if (!uploadedProofUrl) {
+          alert("Vui lòng tải lên ảnh chụp biên lai chuyển khoản (Bill)!");
+          return;
+        }
+
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Đang gửi yêu cầu...";
+
+        try {
+          const res = await fetch("/api/seller/tier/request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              toLevel: 1,
+              shopName: shopName.value.trim(),
+              shopDescription: shopDesc.value.trim(),
+              paymentProofUrl: uploadedProofUrl,
+              transactionCode: transactionCode.value.trim()
+            })
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || "Gửi yêu cầu thất bại");
+          }
+
+          alert("✓ Gửi yêu cầu trở thành Người bán thành công! Vui lòng chờ Admin xác nhận biên lai.");
+          window.location.reload();
+        } catch (err) {
+          alert(err.message);
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = "Gửi yêu cầu nâng cấp & Xác nhận chuyển khoản";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

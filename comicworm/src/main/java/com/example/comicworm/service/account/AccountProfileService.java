@@ -86,6 +86,10 @@ public class AccountProfileService {
         users.save(user);
     }
 
+    public User getUser(CustomUserDetails principal) {
+        return activeUser(principal);
+    }
+
     private User activeUser(CustomUserDetails principal) {
         if (principal == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         User user = users.findById(principal.getId())
