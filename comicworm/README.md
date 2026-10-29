@@ -16,6 +16,7 @@ Project Spring Boot 3.5.6, Gradle và Java 21 theo `build.gradle`. Giao diện n
 
 Xem [hướng dẫn cài đặt trên máy mới](docs/new-machine-setup.md) để tạo MySQL,
 copy cấu hình local, cài dịch vụ Python và chạy tìm kiếm ảnh.
+Để cài Ollama và tạo model chatbot local, xem [hướng dẫn cấu hình chatbot](docs/chatbot-ollama-setup.md).
 Chạy lệnh sau tại thư mục backend sau khi chuẩn bị database và cấu hình:
 
 ```powershell
