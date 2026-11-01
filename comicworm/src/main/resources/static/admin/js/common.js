@@ -5,23 +5,49 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const isAdmin = await guardAdminSession();
+    if (!isAdmin) return;
     await loadSidebarComponent();
     initSidebarToggle();
     initToastSystem();
-    guardAdminSession();
 });
 
 /* ==========================================================================
-   0. GUARD PHIÊN ĐĂNG NHẬP (mock) - nếu chưa đăng nhập thì đá về login.html
+   0. GUARD PHIÊN ĐĂNG NHẬP VÀ KIỂM TRA QUYỀN ADMIN THỰC TẾ
    ========================================================================== */
-function guardAdminSession() {
-    const isLoginPage = document.body.hasAttribute('data-public-page');
-    if (isLoginPage) return;
-    const session = localStorage.getItem('bm_admin_session');
-    if (!session) {
-        // Không chặn cứng khi xem demo trực tiếp file, chỉ cảnh báo nhẹ trên UI nếu có khung banner.
-        const banner = document.getElementById('sessionWarnBanner');
-        if (banner) banner.style.display = 'flex';
+async function guardAdminSession() {
+    const isLoginPage = document.body.hasAttribute('data-public-page') || window.location.pathname.includes('login.html');
+    if (isLoginPage) return true;
+
+    try {
+        const res = await fetch('/api/account/me', {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+
+        const user = await res.json();
+        if (!user || user.role !== 'ADMIN') {
+            alert('Tài khoản của bạn (' + (user ? user.email : '') + ') không có quyền Quản trị viên (ADMIN) để truy cập trang này.');
+            window.location.href = '/buyer/html/home.html';
+            return false;
+        }
+
+        if (user.fullName) {
+            document.querySelectorAll('[data-admin-name]').forEach(el => el.textContent = user.fullName);
+            localStorage.setItem('bm_admin_name', user.fullName);
+        }
+        localStorage.setItem('bm_admin_role', 'Quản trị viên');
+        localStorage.setItem('bm_admin_session', 'active');
+        return true;
+    } catch (err) {
+        console.warn('Lỗi kiểm tra quyền admin:', err);
+        return true;
     }
 }
 

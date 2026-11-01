@@ -27,7 +27,7 @@ const commonGroups = [
 
 const roleGroups = {
     SELLER: { title: "Giao diện Người bán", items: [
-        ["◈", "Kênh Người Bán", "../../seller/html/index.html"],
+        ["◈", "Kênh Người Bán", "../../seller/html/orders.html"],
         ["+", "Đăng bán truyện", "../../seller/html/dang-ban-truyen.html"],
         ["▤", "Quản lý bài đăng", "../../seller/html/quan-ly-bai-dang.html"],
         ["▦", "Quản lý sản phẩm", "../../seller/html/quan-ly-san-pham.html"],

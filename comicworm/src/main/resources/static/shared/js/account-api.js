@@ -75,6 +75,6 @@
         baseUrl, currentUser, updateProfile, changePassword,
         loginUrl: () => baseUrl() + '/auth/login',
         upgradeUrl: () => baseUrl() + '/user/seller-upgrade',
-        sellerUrl: () => baseUrl() + '/seller/html/index.html'
+        sellerUrl: () => baseUrl() + '/seller/html/orders.html'
     };
 })(window);

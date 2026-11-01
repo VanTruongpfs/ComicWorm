@@ -2,6 +2,12 @@
 <html lang="vi">
 <head>
   <script src="../../shared/js/seller-access.js"></script>
+  <script>
+    // Tự động chuyển tiếp sang trang quản lý đơn hàng thật kết nối Database
+    if (window.location.pathname.endsWith('/seller/html/index.html') && (!window.location.hash || window.location.hash === '#view-orders')) {
+      window.location.replace('orders.html' + window.location.search);
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ComicHub / BookMooch - Seller Center Dashboard</title>

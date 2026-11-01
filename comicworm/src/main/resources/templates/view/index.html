@@ -444,7 +444,7 @@
         <a href="buyer/html/home.html" class="btn-quick btn-primary">
           <i class="fa-solid fa-store"></i> Chợ ComicHub
         </a>
-        <a href="seller/html/index.html" class="btn-quick btn-outline">
+        <a href="seller/html/orders.html" class="btn-quick btn-outline">
           <i class="fa-solid fa-shop"></i> Kênh Người Bán
         </a>
         <a href="admin/html/dashboard.html" class="btn-quick btn-outline">
@@ -1358,6 +1358,50 @@
         pill.classList.add('active');
         activeFilter = pill.dataset.filter;
         filterPages();
+      });
+    });
+
+    // --- KIỂM TRA QUYỀN ADMIN TRƯỚC KHI VÀO TRANG ADMIN ---
+    let currentUserData = null;
+    let hasCheckedUser = false;
+
+    async function fetchCurrentUser() {
+      if (hasCheckedUser) return currentUserData;
+      try {
+        const res = await fetch('/api/account/me', { credentials: 'include', headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          currentUserData = await res.json();
+        }
+      } catch (e) {
+        currentUserData = null;
+      }
+      hasCheckedUser = true;
+      return currentUserData;
+    }
+
+    document.querySelectorAll('a[href*="admin/html/"]').forEach(link => {
+      link.addEventListener('click', async (e) => {
+        const href = link.getAttribute('href');
+        if (href.includes('login.html')) return; // Bỏ qua trang login
+
+        e.preventDefault();
+        const user = await fetchCurrentUser();
+
+        if (!user || !user.email) {
+          if (confirm('Khu vực này yêu cầu quyền Quản trị viên (ADMIN).\n\nBạn chưa đăng nhập. Bạn có muốn chuyển đến trang Đăng nhập để đăng nhập tài khoản quản trị không?')) {
+            window.location.href = '/auth/login?redirect=' + encodeURIComponent(href);
+          }
+          return;
+        }
+
+        if (user.role !== 'ADMIN') {
+          const roleName = user.role === 'SELLER' ? 'Người bán' : 'Khách hàng';
+          alert(`Tài khoản hiện tại: ${user.email} (${roleName})\n\nBạn KHÔNG có quyền Quản trị viên (ADMIN) để truy cập trang này.\nVui lòng đăng xuất và đăng nhập bằng tài khoản Quản trị viên.`);
+          return;
+        }
+
+        // Đã xác thực quyền ADMIN -> Cho phép truy cập
+        window.location.href = href;
       });
     });
   </script>

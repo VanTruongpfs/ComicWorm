@@ -263,7 +263,7 @@
             : `<div class="user-avatar-img">${initials}</div>`;
 
         const sellerLink = user.isSeller
-            ? '<a href="/seller/html/index.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
+            ? '<a href="/seller/html/orders.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
             : '';
 
         const adminLink = role === 'ADMIN'

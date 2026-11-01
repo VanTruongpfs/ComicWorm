@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/comicworm.iml" filepath="$PROJECT_DIR$/.idea/modules/comicworm.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/comicworm.main.iml" filepath="$PROJECT_DIR$/.idea/modules/comicworm.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/comicworm.test.iml" filepath="$PROJECT_DIR$/.idea/modules/comicworm.test.iml" />
     </modules>
   </component>
 </project>

@@ -106,7 +106,7 @@ public class ProductModerationServiceImpl implements IProductModerationService {
     @Override
     @Transactional
     public AdminProductRecord approve(Long id, Long adminId) {
-        Product product = findActive(id);
+        Product product = lockPending(id);
 
         product.setModerationStatus(ModerationStatus.APPROVED);
         product.setModeratedBy(adminId);
@@ -114,7 +114,10 @@ public class ProductModerationServiceImpl implements IProductModerationService {
         product.setModerationReason(null);
 
         Product saved = productRepository.saveAndFlush(product);
-        List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
+
+        List<ProductImage> images =
+                productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
+
         return AdminProductRecord.from(saved, images);
     }
 
@@ -122,10 +125,20 @@ public class ProductModerationServiceImpl implements IProductModerationService {
     @Transactional
     public AdminProductRecord reject(Long id, Long adminId, String reason) {
         if (reason == null || reason.trim().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập lý do từ chối kiểm duyệt.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Vui lòng nhập lý do từ chối kiểm duyệt."
+            );
         }
 
-        Product product = findActive(id);
+        if (reason.trim().length() > 1000) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Lý do từ chối tối đa 1000 ký tự."
+            );
+        }
+
+        Product product = lockPending(id);
 
         product.setModerationStatus(ModerationStatus.REJECTED);
         product.setModerationReason(reason.trim());
@@ -133,7 +146,10 @@ public class ProductModerationServiceImpl implements IProductModerationService {
         product.setModeratedAt(LocalDateTime.now(ZoneOffset.UTC));
 
         Product saved = productRepository.saveAndFlush(product);
-        List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
+
+        List<ProductImage> images =
+                productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
+
         return AdminProductRecord.from(saved, images);
     }
 
@@ -154,4 +170,22 @@ public class ProductModerationServiceImpl implements IProductModerationService {
                 .filter(p -> p.getDeletedAt() == null)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm có mã: " + id));
     }
+
+    private Product lockPending(Long id) {
+        Product product = productRepository.lockForModeration(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sản phẩm."
+                ));
+
+        if (product.getModerationStatus() != ModerationStatus.PENDING) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Sản phẩm này đã được kiểm duyệt trước đó."
+            );
+        }
+
+        return product;
+    }
+
 }
