@@ -72,8 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Nạp thông tin người dùng vào SecurityContext
-        if (emailToAuthenticate != null && (SecurityContextHolder.getContext().getAuthentication() == null
-                || !(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof com.example.comicworm.dto.general.auth.CustomUserDetails))) {
+        if (emailToAuthenticate != null) {
             try {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(emailToAuthenticate);
 
