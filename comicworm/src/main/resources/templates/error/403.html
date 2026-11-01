@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Không có quyền truy cập | ComicWorm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #F8FAFC;
+            color: #0F172A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .error-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 48px 36px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.1);
+        }
+        .error-icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #FEF2F2;
+            color: #EF4444;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+        }
+        .error-code {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #EF4444;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .error-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 14px;
+        }
+        .error-desc {
+            font-size: 0.95rem;
+            color: #64748B;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 44px;
+            padding: 0 22px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-primary {
+            background: #F97316;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        .btn-primary:hover {
+            background: #EA580C;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: #F1F5F9;
+            color: #475569;
+            border: 1px solid #CBD5E1;
+        }
+        .btn-outline:hover {
+            background: #E2E8F0;
+            color: #0F172A;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-icon-box">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="error-code">Lỗi 403 • Quyền truy cập bị từ chối</div>
+        <h1 class="error-title">Yêu cầu quyền Quản trị viên (ADMIN)</h1>
+        <p class="error-desc">
+            Tài khoản bạn đang đăng nhập không có quyền truy cập vào khu vực Quản trị hệ thống (Admin Console). Vui lòng đăng nhập bằng tài khoản có vai trò Quản trị viên để tiếp tục.
+        </p>
+        <div class="error-actions">
+            <a href="/buyer/html/home.html" class="btn btn-primary">
+                <i class="fa-solid fa-house"></i> Về trang chủ
+            </a>
+            <a href="/auth/logout" class="btn btn-outline">
+                <i class="fa-solid fa-right-from-bracket"></i> Đổi tài khoản khác
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

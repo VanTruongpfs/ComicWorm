@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kiểm duyệt bài đăng</title>
+  <title>Danh sách kiểm duyệt bài đăng | BookMooch Admin Console</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,8 +44,8 @@
             <line x1="15" y1="15" x2="21" y2="21" />
             <line x1="4" y1="4" x2="9" y2="9" />
           </svg>
-          <span>Duyệt bài</span>
-          <span class="nav-badge">18</span>
+          <span>Duyệt bài đăng</span>
+          <span class="nav-badge" id="sidebarBadge">0</span>
         </a>
         <a href="report_resolution.html" class="nav-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -109,299 +109,346 @@
       <!-- Top Header -->
       <header class="top-bar">
         <div>
-          <h1 class="page-title">Kiểm duyệt bài đăng</h1>
+          <h1 class="page-title">Kiểm duyệt bài đăng sản phẩm</h1>
           <div class="status-indicator">
             <span class="status-dot"></span>
-            <span>Trực tuyến • Đang có 18 bài cần xử lý</span>
+            <span id="statusIndicatorText">Đang tải trạng thái kiểm duyệt...</span>
           </div>
         </div>
 
         <div class="header-actions">
           <div class="search-input-wrap">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <input type="text" placeholder="Tìm kiếm từ khóa, ID..." class="search-input">
+            <input type="text" id="topSearchInput" placeholder="Tìm theo tên truyện, ID, người bán..." class="search-input">
           </div>
-          <button class="icon-btn notification-btn" aria-label="Thông báo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          <button class="icon-btn notification-btn" id="refreshBtn" title="Làm mới danh sách">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
             </svg>
-            <span class="badge-dot"></span>
           </button>
           <div class="user-profile">
             <img class="avatar avatar-sm"
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-              alt="Moderator">
+              alt="Admin Moderator">
           </div>
         </div>
       </header>
 
       <!-- Main Content -->
       <main class="main-content">
-        <!-- Post Type Filter -->
-        <div class="post-type-filter">
-          <div class="filter-label">
-            <span>Loại bài viết</span>
-          </div>
-
-          <div class="filter-tabs">
-            <button class="post-type-tab active" data-type="product">
-              <span class="tab-icon">🛒</span>
-              <span>
-                <strong>Bài đăng sản phẩm bán mới</strong>
-                <small>Đăng sản phẩm để bán</small>
-              </span>
-            </button>
-
-            <button class="post-type-tab" data-type="article">
-              <span class="tab-icon">📝</span>
-              <span>
-                <strong>Bài viết cộng đồng</strong>
-                <small>Bài viết, chia sẻ, thảo luận</small>
-              </span>
-            </button>
-          </div>
-        </div>
-        <!-- Metrics -->
+        <!-- Metrics (KPIs) -->
         <section class="metrics-grid">
-          <div class="metric-card">
-            <span class="metric-label">Cần xử lý gấp</span>
+          <div class="metric-card" style="border-left: 4px solid #f59e0b;">
+            <span class="metric-label">Cần xử lý (Chờ duyệt)</span>
             <div class="metric-value-wrap">
-              <span class="metric-num text-danger">05</span>
+              <span class="metric-num text-danger" id="kpiPendingCount">0</span>
               <span class="metric-sub">bài đăng</span>
             </div>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" style="border-left: 4px solid #10b981;">
             <span class="metric-label">Đã phê duyệt</span>
             <div class="metric-value-wrap">
-              <span class="metric-num text-primary">08</span>
+              <span class="metric-num text-primary" id="kpiApprovedCount" style="color:#059669;">0</span>
               <span class="metric-sub">bài đăng</span>
             </div>
           </div>
-          <div class="metric-card">
+          <div class="metric-card" style="border-left: 4px solid #ef4444;">
             <span class="metric-label">Đã từ chối</span>
             <div class="metric-value-wrap">
-              <span class="metric-num text-neutral">05</span>
+              <span class="metric-num text-neutral" id="kpiRejectedCount" style="color:#dc2626;">0</span>
               <span class="metric-sub">bài đăng</span>
+            </div>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid #6366f1;">
+            <span class="metric-label">Tổng bài đăng</span>
+            <div class="metric-value-wrap">
+              <span class="metric-num" id="kpiTotalCount" style="color:#4f46e5;">0</span>
+              <span class="metric-sub">tất cả</span>
             </div>
           </div>
         </section>
 
-        <!-- Dashboard Layout: 2 Columns on Desktop -->
-        <div class="dashboard-grid">
-
-          <!-- Column 1: Active Moderation Task -->
-          <div class="primary-col">
-            <div class="section-header">
-              <h2 class="section-title">Đang kiểm duyệt</h2>
-              <button class="btn-text">Bỏ qua bài này</button>
-            </div>
-
-            <article class="mod-card">
-              <!-- Post Header -->
-              <div class="post-type-badge" id="currentPostType">
-                📝 BÀI VIẾT CỘNG ĐỒNG
-              </div>
-              <div class="product-demo" id="productDemo" style="display:none;" data-product-id="">
-                <div class="product-image">
-                  <img id="productCoverImg" src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400" alt="Ảnh sản phẩm">
-                </div>
-
-                <div class="product-info">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span id="productStatusBadge" class="badge" style="background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px;">Chờ duyệt</span>
-                    <small id="productSellerInfo" style="color:#64748b; font-size:12px;">Người bán: Đang tải...</small>
-                  </div>
-                  <h3 id="productTitle">One Piece tập 105 – Bản tiếng Việt</h3>
-
-                  <div class="product-price" id="productPrice">
-                    35.000đ
-                  </div>
-
-                  <div class="product-details" id="productMetaDetails">
-                    <span id="productCategory">📚 Truyện tranh</span>
-                    <span id="productCondition">✨ Mới 95%</span>
-                    <span id="productStock">📦 Còn 1 sản phẩm</span>
-                  </div>
-
-                  <p class="product-description" id="productDescription">
-                    Bán lại truyện One Piece tập 105 bản tiếng Việt.
-                    Sách còn đẹp, không rách, không viết lên sách.
-                  </p>
-
-                  <div id="productRejectReasonAlert" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:8px; margin-top:12px; font-size:13px;">
-                    <strong>Lý do từ chối:</strong> <span id="productRejectReasonText"></span>
-                  </div>
-                </div>
-                <!-- Product Action Buttons -->
-                <div class="product-action-bar">
-                  <div class="action-group-left">
-                    <button type="button" class="btn btn-danger" id="productRejectBtn">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                      Từ chối duyệt
-                    </button>
-                  </div>
-
-                  <div class="action-group-right">
-                    <button type="button" class="btn btn-outline" id="productApproveBtn" style="border-color:#10b981; color:#059669; font-weight:700;">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Phê duyệt sản phẩm
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="community-post" id="communityPost">
-                <div class="card-header">
-                  <div class="author-info">
-                    <img class="avatar avatar-md"
-                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
-                      alt="hoangnam_tech">
-                    <div>
-                      <div class="author-name-row">
-                        <span class="author-name">@maymeomeo</span>
-                        <span class="badge badge-info">Người mới</span>
-                      </div>
-                      <div class="post-meta">
-                        12 phút trước trong <strong>Cộng Đồng Công Nghệ</strong>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="ai-badge-risk">
-                    <div class="ai-risk-score">AI Đánh giá: 87% Rủi ro</div>
-                    <span class="ai-tag">Phân loại: Spam / Lừa đảo</span>
-                  </div>
-                </div>
-
-                <!-- Warning Banner -->
-                <div class="warning-banner">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path
-                      d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                  <div class="warning-text">
-                    <strong>Bị báo cáo 7 lần:</strong> "Spam link độc hại, dụ dỗ đầu tư tiền ảo trái phép cam kết lãi
-                    suất khủng".
-                  </div>
-                </div>
-
-                <!-- Post Content -->
-                <div class="post-body">
-                  <p>
-                    Chào mọi người, mình là maymeomeo, một người chơi hệ yêu mèo chính hiệu. Dù bình thường rất vui vẻ
-                    dễ tính nhưng dạo này mình đang cực kỳ "cọc" và ghét cay ghét đắng cái skin khỉ vừa mới ra mắt! </p>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-bar">
-                  <div class="action-group-left">
-                    <button class="btn btn-danger" onclick="window.location.href='hide_post.html?action=ban'">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                      Xóa & Cấm tài khoản
-                    </button>
-                    <button class="btn btn-warning" onclick="window.location.href='hide_post.html?action=warn'">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path
-                          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                        <line x1="12" y1="9" x2="12" y2="13" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                      Xóa & Cảnh cáo
-                    </button>
-                  </div>
-                  <div class="action-group-right">
-                    <button class="btn btn-outline" onclick="alert('Đã phê duyệt bài đăng thành công!')">
-                      Phê duyệt bài
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
+        <!-- Status Filter Tabs & Toolbar -->
+        <div class="mod-toolbar-card">
+          <div class="mod-status-tabs">
+            <button type="button" class="mod-tab-btn active" data-status="PENDING">
+              <span>⏳ Chờ duyệt</span>
+              <span class="mod-tab-count" id="tabPendingBadge">0</span>
+            </button>
+            <button type="button" class="mod-tab-btn" data-status="APPROVED">
+              <span>✅ Đã duyệt</span>
+              <span class="mod-tab-count" id="tabApprovedBadge">0</span>
+            </button>
+            <button type="button" class="mod-tab-btn" data-status="REJECTED">
+              <span>❌ Đã từ chối</span>
+              <span class="mod-tab-count" id="tabRejectedBadge">0</span>
+            </button>
+            <button type="button" class="mod-tab-btn" data-status="ALL">
+              <span>📑 Tất cả</span>
+              <span class="mod-tab-count" id="tabAllBadge">0</span>
+            </button>
           </div>
 
-          <!-- Column 2: Next in Queue -->
-          <div class="secondary-col">
-            <div class="section-header">
-              <h2 class="section-title">Hàng đợi tiếp theo</h2>
-              <span class="queue-count">17 bài</span>
+          <div class="mod-filter-controls">
+            <div class="mod-search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input type="text" id="inlineSearchInput" placeholder="Tìm theo tên truyện, ID, người bán...">
+              <button type="button" id="clearSearchBtn" style="display:none;" title="Xóa tìm kiếm">&times;</button>
             </div>
-
-            <div class="queue-list">
-              <!-- Queue Item 1 -->
-              <div class="queue-item" style="cursor:pointer;" onclick="window.location.href='report_resolution.html'">
-                <div class="queue-item-header">
-                  <div class="queue-author">
-                    <img class="avatar avatar-sm"
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80"
-                      alt="linhdan">
-                    <div>
-                      <span class="author-name">@linhdan_review</span>
-                      <div class="post-meta">25 phút trước</div>
-                    </div>
-                  </div>
-                  <span class="badge badge-warning-subtle">Nghi vấn</span>
-                </div>
-                <p class="queue-snippet">"Quán ăn này phục vụ quá tệ, nhân viên cư xử như dân vô học..."</p>
-                <div class="queue-footer">
-                  <span class="violation-tag">Ngôn từ kích động &rarr; Xử lý báo cáo</span>
-                </div>
-              </div>
-
-              <!-- Queue Item 2 -->
-              <div class="queue-item" style="cursor:pointer;" onclick="window.location.href='appeal-resolution.html'">
-                <div class="queue-item-header">
-                  <div class="queue-author">
-                    <img class="avatar avatar-sm"
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                      alt="khoa">
-                    <div>
-                      <span class="author-name">@khoa_camera</span>
-                      <div class="post-meta">40 phút trước</div>
-                    </div>
-                  </div>
-                  <span class="badge badge-neutral-subtle">Kháng nghị</span>
-                </div>
-                <p class="queue-snippet">"Pass lại lens Sony FE 50mm F1.8 fullbox ngoại hình đẹp keng..."</p>
-                <div class="queue-footer">
-                  <span class="violation-tag text-neutral">Bán hàng sai quy định &rarr; Xem kháng nghị</span>
-                </div>
-              </div>
+            <div class="mod-select-wrap">
+              <label for="pageSizeSelect">Hiển thị:</label>
+              <select id="pageSizeSelect">
+                <option value="10">10 bài</option>
+                <option value="25">25 bài</option>
+                <option value="50">50 bài</option>
+                <option value="100">100 bài</option>
+              </select>
             </div>
           </div>
+        </div>
 
+        <!-- Table Container -->
+        <div class="mod-table-card">
+          <div class="mod-table-header-info">
+            <span id="tableSummaryText">Đang tải danh sách bài chờ duyệt...</span>
+          </div>
+
+          <div class="mod-table-responsive">
+            <table class="mod-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Ảnh bìa</th>
+                  <th style="min-width: 250px;">Thông tin sản phẩm</th>
+                  <th style="min-width: 180px;">Người bán</th>
+                  <th style="width: 140px;">Giá & Kho</th>
+                  <th style="width: 130px;">Tình trạng</th>
+                  <th style="width: 140px;">Ngày gửi</th>
+                  <th style="width: 110px;">Trạng thái</th>
+                  <th style="width: 180px; text-align: center;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <!-- Rows injected dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div id="tableEmptyState" style="display:none;" class="mod-empty-state">
+            <div class="empty-icon">📭</div>
+            <h3 id="emptyStateTitle">Không có bài đăng nào cần duyệt</h3>
+            <p id="emptyStateDesc">Tất cả bài đăng sản phẩm đã được kiểm duyệt hoàn tất.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div id="tableLoadingState" class="mod-loading-state">
+            <div class="mod-spinner"></div>
+            <span>Đang tải danh sách sản phẩm từ máy chủ...</span>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="mod-pagination-bar" id="paginationBar" style="display:none;">
+            <div class="pagination-info" id="paginationInfo">
+              Đang hiển thị 1 - 10 / 88 bài
+            </div>
+            <div class="pagination-buttons" id="paginationControls">
+              <!-- Page buttons injected via JS -->
+            </div>
+          </div>
         </div>
       </main>
     </div>
   </div>
-  <!-- Modal Nhập Lý Do Từ Chối Duyệt Sản Phẩm -->
-  <div id="rejectProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99999; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; width:90%; max-width:480px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
-      <h3 style="margin-top:0; color:#dc2626; display:flex; align-items:center; gap:8px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        Từ chối duyệt sản phẩm
-      </h3>
-      <p style="color:#64748b; font-size:14px; margin-bottom:12px;">Vui lòng nhập lý do từ chối để thông báo cho người bán:</p>
-      <textarea id="rejectReasonInput" maxlength="1000" rows="4" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical;" placeholder="Ví dụ: Hình ảnh bìa mờ, thông tin tác giả và năm xuất bản chưa chính xác, hoặc vi phạm bản quyền..."></textarea>
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
-        <button type="button" class="btn btn-outline" id="cancelRejectBtn">Hủy bỏ</button>
-        <button type="button" class="btn btn-danger" id="confirmRejectBtn">Xác nhận từ chối</button>
+
+  <!-- MODAL: XEM CHI TIẾT SẢN PHẨM -->
+  <div id="productDetailModal" class="mod-modal-overlay" style="display:none;">
+    <div class="mod-modal-dialog mod-detail-dialog">
+      <div class="mod-modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="mod-modal-tag" id="detailModalIdTag">#0000</span>
+          <h2 class="mod-modal-title" id="detailModalTitle">Chi tiết sản phẩm</h2>
+        </div>
+        <button type="button" class="mod-modal-close" id="closeDetailModalBtn">&times;</button>
       </div>
+
+      <div class="mod-modal-body">
+        <div class="detail-grid">
+          <!-- Cột Trái: Ảnh và Tình trạng -->
+          <div class="detail-col-media">
+            <div class="detail-main-img-wrap" id="detailMainImgWrap">
+              <img id="detailMainImg" src="" alt="Ảnh sản phẩm">
+            </div>
+            <!-- Thumbnails Gallery -->
+            <div class="detail-gallery-row" id="detailGalleryRow">
+              <!-- Thumbnail elements injected dynamically -->
+            </div>
+            <!-- Quick Tags -->
+            <div class="detail-quick-tags">
+              <div class="detail-quick-tag">
+                <span class="tag-label">Tình trạng sách:</span>
+                <strong id="detailConditionPercent">100%</strong>
+              </div>
+              <div class="detail-quick-tag">
+                <span class="tag-label">Hình thức đăng:</span>
+                <strong id="detailListingType">Bán</strong>
+              </div>
+              <div class="detail-quick-tag">
+                <span class="tag-label">Số lượng kho:</span>
+                <strong id="detailStockQuantity">0 cuốn</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cột Phải: Thông tin chi tiết -->
+          <div class="detail-col-info">
+            <div class="detail-price-box">
+              <div>
+                <span class="price-label">Giá niêm yết:</span>
+                <span class="price-val" id="detailPrice">0 ₫</span>
+              </div>
+              <span class="status-pill" id="detailStatusBadge">Chờ duyệt</span>
+            </div>
+
+            <!-- Bảng thuộc tính sản phẩm -->
+            <div class="detail-specs-grid">
+              <div class="spec-item">
+                <span class="spec-label">Thể loại truyện</span>
+                <span class="spec-value" id="detailCategory">—</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Tác giả</span>
+                <span class="spec-value" id="detailAuthor">—</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Nhà xuất bản</span>
+                <span class="spec-value" id="detailPublisher">—</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Năm xuất bản</span>
+                <span class="spec-value" id="detailPublicationYear">—</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Số tập / Bộ</span>
+                <span class="spec-value" id="detailVolumeNumbers">—</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Phiên bản</span>
+                <span class="spec-value" id="detailEditionType">—</span>
+              </div>
+            </div>
+
+            <!-- Thông tin Người bán -->
+            <div class="detail-seller-card">
+              <div class="seller-avatar-ph">👤</div>
+              <div class="seller-details">
+                <div class="seller-name" id="detailSellerName">Tên người bán</div>
+                <div class="seller-email" id="detailSellerEmail">email@example.com</div>
+                <div class="seller-id" id="detailSellerId">Mã người bán: #0</div>
+              </div>
+            </div>
+
+            <!-- Ghi chú Trao đổi (nếu có) -->
+            <div class="detail-trade-note" id="detailTradeNoteBox" style="display:none;">
+              <strong>🔄 Ghi chú mong muốn trao đổi:</strong>
+              <p id="detailTradeNoteText"></p>
+            </div>
+
+            <!-- Mô tả sản phẩm -->
+            <div class="detail-desc-box">
+              <div class="desc-heading">Mô tả chi tiết từ người bán:</div>
+              <div class="desc-content" id="detailDescriptionText">
+                Chưa có mô tả.
+              </div>
+            </div>
+
+            <!-- Nhật ký kiểm duyệt (nếu đã từng duyệt hoặc từ chối) -->
+            <div class="detail-history-box" id="detailHistoryBox" style="display:none;">
+              <div class="history-heading" id="detailHistoryHeading">Nhật ký xử lý:</div>
+              <div id="detailHistoryContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-modal-footer">
+        <button type="button" class="btn-modal-cancel" id="detailModalCloseBtn">Đóng</button>
+        <div class="modal-action-buttons">
+          <button type="button" class="btn-modal-reject" id="detailModalRejectBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Từ chối duyệt
+          </button>
+          <button type="button" class="btn-modal-approve" id="detailModalApproveBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Phê duyệt sản phẩm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TỪ CHỐI DUYỆT SẢN PHẨM -->
+  <div id="rejectProductModal" class="mod-modal-overlay" style="display:none;">
+    <div class="mod-modal-dialog mod-reject-dialog">
+      <div class="mod-modal-header">
+        <h3 style="margin:0; color:#dc2626; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+          Từ chối duyệt sản phẩm
+        </h3>
+        <button type="button" class="mod-modal-close" id="cancelRejectModalBtn">&times;</button>
+      </div>
+
+      <div class="mod-modal-body" style="padding: 20px 24px;">
+        <p style="color:#475569; font-size:14px; margin-bottom:12px;">
+          Đang từ chối sản phẩm: <strong id="rejectModalProductTitle" style="color:#0f172a;">—</strong>
+        </p>
+
+        <!-- Quick Reason Chips -->
+        <label style="display:block; font-size:13px; font-weight:600; color:#64748b; margin-bottom:6px;">Lý do gợi ý nhanh:</label>
+        <div class="reject-quick-chips">
+          <button type="button" class="chip-btn" data-reason="Ảnh bìa mờ, không rõ hình hoặc bị che khuất.">📷 Ảnh mờ / thiếu</button>
+          <button type="button" class="chip-btn" data-reason="Thông tin tác giả, NXB hoặc năm xuất bản chưa chính xác.">📚 Sai thông tin sách</button>
+          <button type="button" class="chip-btn" data-reason="Sản phẩm vi phạm bản quyền hoặc danh mục cấm giao dịch.">⚠️ Vi phạm chính sách</button>
+          <button type="button" class="chip-btn" data-reason="Mức giá không hợp lệ hoặc thông tin mô tả sai lệch nghiêm trọng.">💰 Giá / Mô tả sai</button>
+        </div>
+
+        <label for="rejectReasonInput" style="display:block; font-size:13px; font-weight:600; color:#334155; margin-top:14px; margin-bottom:6px;">
+          Lý do từ chối chi tiết (sẽ gửi thông báo đến người bán): <span style="color:#dc2626;">*</span>
+        </label>
+        <textarea id="rejectReasonInput" maxlength="1000" rows="4" class="mod-input"
+          placeholder="Nhập lý do từ chối cụ thể để người bán có thể chỉnh sửa lại bài đăng..."></textarea>
+        <div style="text-align:right; font-size:12px; color:#94a3b8; margin-top:4px;">
+          <span id="rejectCharCount">0</span>/1000 ký tự
+        </div>
+      </div>
+
+      <div class="mod-modal-footer">
+        <button type="button" class="btn-modal-cancel" id="cancelRejectBtn">Hủy bỏ</button>
+        <button type="button" class="btn-modal-danger" id="confirmRejectBtn">Xác nhận từ chối</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal Xem Ảnh Lớn -->
+  <div id="imgLightboxModal" class="mod-modal-overlay" style="display:none; z-index:100000; cursor:zoom-out;">
+    <div style="position:relative; max-width:90vw; max-height:90vh;">
+      <img id="lightboxImg" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 25px 50px rgba(0,0,0,0.5);">
     </div>
   </div>
 
