@@ -63,7 +63,7 @@ public class SecurityConfig {
                         .requireCsrfProtectionMatcher(request -> {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
                             return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
-                                    && !path.startsWith("/api/seller/tier/") && !path.startsWith("/api/admin/seller-upgrades/") && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
+                                    && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
                                     || path.startsWith("/api/seller/")
                                     || path.startsWith("/api/admin/"));
                 }))
@@ -71,44 +71,45 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
 
+                        // ---- Static Assets: Cho phép tải CSS, JS, hình ảnh ----
+                        .requestMatchers(
+                                "/", "/index.html", "/favicon.ico",
+                                "/css/**", "/js/**", "/images/**",
+                                "/admin/css/**", "/admin/js/**", "/admin/images/**",
+                                "/seller/css/**", "/seller/js/**", "/seller/images/**",
+                                "/buyer/css/**", "/buyer/js/**", "/buyer/images/**",
+                                "/shared/**"
+                        ).permitAll()
+
+                        // ---- Khu vuc ADMIN: Bat buoc dang nhap + role ADMIN ----
+                        .requestMatchers("/admin/html/login.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/analytics/admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
-                        .requestMatchers("/api/seller/tier/**").authenticated()
-                        .requestMatchers("/api/seller/**").hasRole("SELLER")
-                        .requestMatchers("/seller/html/**").hasRole("SELLER")
-                        // ---- Khu vuc ADMIN: bat buoc dang nhap + role ADMIN ----
-                        .requestMatchers("/admin/html/login.html").permitAll() // chi redirect ve /auth/login
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/html/**").hasRole("ADMIN")
-                        .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
-                        .requestMatchers("/api/account/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        //public API
+                        // ---- Khu vuc SELLER: role SELLER hoac ADMIN ----
+                        .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasAnyRole("SELLER", "ADMIN")
+                        .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")
+                        .requestMatchers("/seller/**").hasAnyRole("SELLER", "ADMIN")
+
+                        // ---- Khu vuc Nguoi dung can dang nhap ----
+                        .requestMatchers("/user/seller-upgrade", "/user/html/profile.html", "/user/**").authenticated()
+                        .requestMatchers("/api/account/**", "/api/loyalty/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/orders/*/confirm-received").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel").authenticated()
+
+                        // ---- Public API & Public Pages ----
                         .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
-                        // API xem sản phẩm: công khai, chỉ đọc
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/products/image-search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
                                 "/api/exchange/rooms/by-code/**", "/api/exchange/rooms/{id:[0-9]+}/messages").permitAll()
                         .requestMatchers("/api/cart/**", "/api/checkout/**").permitAll()
                         .requestMatchers("/ws/**", "/ws/exchange/**").permitAll()
-                        .requestMatchers(
-                                "/", "/index.html", "/favicon.ico",
-                                "/css/**", "/js/**", "/images/**",
-                                "/buyer/css/**", "/buyer/js/**", "/buyer/images/**",
-                                "/buyer/**", "/seller/**", "/admin/**", "/auth/**", "/exchange/**", "/shared/**", "/user/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.HEAD, "/", "/index.html", "/index.js", "/favicon.ico",
-                                "/admin/**", "/auth/**", "/buyer/**", "/exchange/**",
-                                "/seller/**", "/shared/**", "/user/**").permitAll()
+                        .requestMatchers("/buyer/**", "/exchange/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
-                        .requestMatchers("/api/loyalty/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/orders/*/confirm-received").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel").authenticated()
-                        //Auth API, mai mốt API nào cần quyền/authorize thì cứ
-                        //thêm vào là xong
+
                         .anyRequest().permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -146,7 +147,14 @@ public class SecurityConfig {
                             }
                         })
                         .accessDeniedHandler((request, response, error) -> {
-                            response.sendError(HttpStatus.FORBIDDEN.value(), "Tài khoản của bạn không có quyền truy cập Kênh Người bán.");
+                            String uri = request.getRequestURI();
+                            String msg = "Bạn không có quyền truy cập trang này (403 Forbidden).";
+                            if (uri.contains("/admin/")) {
+                                msg = "Tài khoản của bạn không có quyền Quản trị viên (ADMIN) để truy cập trang này.";
+                            } else if (uri.contains("/seller/")) {
+                                msg = "Tài khoản của bạn không có quyền Người bán (SELLER).";
+                            }
+                            response.sendError(HttpStatus.FORBIDDEN.value(), msg);
                         })
                 )
                  .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -154,8 +162,8 @@ public class SecurityConfig {
         return http.build();
     }
     private boolean isAccountPage(String path) {
-        return path.startsWith("/seller/html/") || path.equals("/user/seller-upgrade")
-                || path.equals("/user/html/profile.html") || path.startsWith("/admin/html/");
+        return path.startsWith("/seller/") || path.equals("/user/seller-upgrade")
+                || path.equals("/user/html/profile.html") || path.startsWith("/admin/");
     }
     private UrlBasedCorsConfigurationSource reportCors() {
         CorsConfiguration config = new CorsConfiguration();

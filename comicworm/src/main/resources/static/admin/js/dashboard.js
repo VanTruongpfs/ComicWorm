@@ -4,7 +4,11 @@
  * Bộ lọc Audit Trail, Command Palette (Ctrl+K), Dropdown Thông báo.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof guardAdminSession === 'function') {
+    const ok = await guardAdminSession();
+    if (!ok) return;
+  }
   initGreeting();
   initKpiCounters('today');
   initTimeFilter();

@@ -74,7 +74,7 @@
     root.BookMoochAccountApi = {
         baseUrl, currentUser, updateProfile, changePassword,
         loginUrl: () => baseUrl() + '/auth/login',
-        upgradeUrl: () => baseUrl() + '/user/html/upgrade-seller.html',
-        sellerUrl: () => baseUrl() + '/seller/html/index.html'
+        upgradeUrl: () => baseUrl() + '/user/seller-upgrade',
+        sellerUrl: () => baseUrl() + '/seller/html/orders.html'
     };
 })(window);
