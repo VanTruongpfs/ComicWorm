@@ -64,8 +64,8 @@ public class SecurityConfig {
                     String path = request.getRequestURI().substring(request.getContextPath().length());
                             return List.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod())
                                     && (path.equals("/user/seller-upgrade") || path.startsWith("/api/account/")
-                                    || path.startsWith("/api/seller/")
-                                    || path.startsWith("/api/admin/"));
+                                    || (path.startsWith("/api/seller/") && !path.startsWith("/api/seller/tier/"))
+                                    || (path.startsWith("/api/admin/") && !path.startsWith("/api/admin/seller-upgrades/")));
                 }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(authorize -> authorize
@@ -78,7 +78,7 @@ public class SecurityConfig {
                                 "/admin/css/**", "/admin/js/**", "/admin/images/**",
                                 "/seller/css/**", "/seller/js/**", "/seller/images/**",
                                 "/buyer/css/**", "/buyer/js/**", "/buyer/images/**",
-                                "/shared/**"
+                                "/shared/**", "/uploads/**"
                         ).permitAll()
 
                         // ---- Khu vuc ADMIN: Bat buoc dang nhap + role ADMIN ----
@@ -88,10 +88,12 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // ---- Khu vuc SELLER: role SELLER hoac ADMIN ----
-                        .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasAnyRole("SELLER", "ADMIN")
-                        .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")
-                        .requestMatchers("/seller/**").hasAnyRole("SELLER", "ADMIN")
+                        // ---- API Nang cap Nguoi ban: Cho phep moi User da dang nhap ----
+                        .requestMatchers("/api/seller/tier/**").authenticated()
 
+                        .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
+                        .requestMatchers("/api/seller/**").hasRole("SELLER")
+                        .requestMatchers("/seller/**").hasRole("SELLER")
                         // ---- Khu vuc Nguoi dung can dang nhap ----
                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html", "/user/**").authenticated()
                         .requestMatchers("/api/account/**", "/api/loyalty/**").authenticated()

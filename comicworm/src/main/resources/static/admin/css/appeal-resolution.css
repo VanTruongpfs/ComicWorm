@@ -71,7 +71,7 @@ body {
 }
 
 /* Sidebar */
-.sidebar {
+.legacy-sidebar {
   width: 260px;
   background-color: #ffffff;
   border-right: 1px solid var(--neutral-200);
@@ -108,13 +108,13 @@ body {
   font-weight: 700;
 }
 
-.nav-links {
+.legacy-nav-links {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.nav-item {
+.legacy-nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -127,8 +127,8 @@ body {
   transition: all 0.2s;
 }
 
-.nav-item:hover { background: var(--neutral-50); color: var(--secondary); }
-.nav-item-active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.legacy-nav-item:hover { background: var(--neutral-50); color: var(--secondary); }
+.legacy-nav-item-active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
 .icon-active-ring { display: flex; align-items: center; justify-content: center; }
 
 /* Main Workspace */

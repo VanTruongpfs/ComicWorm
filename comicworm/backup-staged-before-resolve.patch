@@ -1,0 +1,3160 @@
+diff --git a/comicworm/README.md b/comicworm/README.md
+index 1c08464..83b6895 100644
+--- a/comicworm/README.md
++++ b/comicworm/README.md
+@@ -16,6 +16,7 @@ Project Spring Boot 3.5.6, Gradle và Java 21 theo `build.gradle`. Giao diện n
+ 
+ Xem [hướng dẫn cài đặt trên máy mới](docs/new-machine-setup.md) để tạo MySQL,
+ copy cấu hình local, cài dịch vụ Python và chạy tìm kiếm ảnh.
++Để cài Ollama và tạo model chatbot local, xem [hướng dẫn cấu hình chatbot](docs/chatbot-ollama-setup.md).
+ Chạy lệnh sau tại thư mục backend sau khi chuẩn bị database và cấu hình:
+ 
+ ```powershell
+diff --git a/comicworm/application-local.example.properties b/comicworm/application-local.example.properties
+index fc822b5..f79e00f 100644
+--- a/comicworm/application-local.example.properties
++++ b/comicworm/application-local.example.properties
+@@ -48,12 +48,11 @@ cloudinary.api-secret=${CLOUDINARY_API_SECRET:}
+ spring.servlet.multipart.max-file-size=5MB
+ spring.servlet.multipart.max-request-size=42MB
+ 
+-# Gemini chatbot: optional. Set CHAT_MODEL=google-genai and GEMINI_API_KEY to enable.
+-# Local CLIP image search does not use this API key.
+-spring.ai.model.chat=${CHAT_MODEL:none}
+-spring.ai.google.genai.api-key=${GEMINI_API_KEY:}
+-spring.ai.google.genai.chat.options.model=${GEMINI_MODEL:gemini-2.5-flash}
+-spring.ai.google.genai.chat.options.temperature=0.7
++# Chatbot AI (Spring AI OpenAI / Ollama Qwen)
++spring.ai.openai.base-url=${OPENAI_BASE_URL:http://localhost:11434}
++spring.ai.openai.api-key=${OPENAI_API_KEY:ollama}
++spring.ai.openai.chat.options.model=${OPENAI_CHAT_MODEL:qwen-comicworm}
++spring.ai.openai.chat.options.temperature=0.0
+ 
+ # Optional Google login; fill these properties or set matching environment variables.
+ GOOGLE_CLIENT_ID=
+diff --git a/comicworm/docs/chatbot-ollama-setup.md b/comicworm/docs/chatbot-ollama-setup.md
+new file mode 100644
+index 0000000..e962631
+--- /dev/null
++++ b/comicworm/docs/chatbot-ollama-setup.md
+@@ -0,0 +1,95 @@
++# Cấu hình chatbot với Ollama trên Windows
++
++Hướng dẫn này cài Ollama, tạo model `qwen-comicworm` từ các file được chia sẻ
++và chạy chatbot ComicWorm trên máy local.
++
++## 1. Cài Ollama
++
++Mở **PowerShell** trên Windows và chạy lệnh cài đặt:
++
++```powershell
++irm https://ollama.com/install.ps1 | iex
++```
++
++Sau khi cài xong, mở một cửa sổ PowerShell mới và kiểm tra:
++
++```powershell
++ollama --version
++```
++
++## 2. Tải các file model
++
++Mở [thư mục chia sẻ trên Google Drive](https://drive.google.com/drive/folders/1CB4vgtY6bf2G3o69JiuWchQyigZMYgTA?usp=sharing)
++và tải về cả hai file:
++
++- `Modelfile`
++- File model có đuôi `.gguf` (GGUF)
++
++> Đảm bảo tải đủ cả hai file. Nếu tên file `.gguf` khác tên được tham chiếu
++> trong `Modelfile`, cập nhật dòng `FROM` trong `Modelfile` để trỏ đúng tên
++> file, ví dụ `FROM ./ten-model.gguf`.
++
++Tạo một thư mục trên máy, ví dụ `C:\ollama-models\qwen-comicworm`, rồi đặt
++cả `Modelfile` và file `.gguf` vào trong thư mục đó.
++
++## 3. Tạo model Ollama
++
++Mở PowerShell tại thư mục chứa hai file. Có thể mở thư mục trong File Explorer,
++nhấn vào thanh địa chỉ, nhập `powershell`, rồi nhấn Enter.
++
++Kiểm tra các file đã có:
++
++```powershell
++Get-ChildItem
++```
++
++Tạo model với tên mà ứng dụng đang cấu hình:
++
++```powershell
++ollama create qwen-comicworm -f Modelfile
++```
++
++Chờ lệnh hoàn tất thành công, sau đó kiểm tra model:
++
++```powershell
++ollama list
++```
++
++Có thể chạy thử model trước khi mở ứng dụng:
++
++```powershell
++ollama run qwen-comicworm
++```
++
++Nhập một câu hỏi để xác nhận model phản hồi; nhập `/bye` để thoát. Trên
++Windows, Ollama thường tiếp tục chạy nền sau khi cài đặt. Chatbot cần Ollama
++đang hoạt động và API local có thể truy cập tại `http://localhost:11434`.
++
++## 4. Kiểm tra cấu hình Spring Boot
++
++Mở `src/main/resources/application.properties` và đảm bảo có các dòng:
++
++```properties
++spring.ai.openai.base-url=http://localhost:11434
++spring.ai.openai.api-key=ollama
++spring.ai.openai.chat.options.model=qwen-comicworm
++spring.ai.openai.chat.options.temperature=0.0
++```
++
++Các giá trị này khiến Spring AI gửi yêu cầu theo API tương thích OpenAI của
++Ollama local, dùng model `qwen-comicworm`. Không cần thay `api-key` bằng khóa
++của dịch vụ đám mây.
++
++## 5. Chạy ComicWorm
++
++Đảm bảo MySQL và các cấu hình local cần thiết của dự án đã sẵn sàng. Tại thư
++mục `comicworm`, chạy:
++
++```powershell
++.\gradlew.bat bootRun --args='--spring.profiles.active=local'
++```
++
++Mở giao diện ComicWorm và sử dụng chatbot. Nếu chatbot không phản hồi, hãy
++kiểm tra Ollama có đang chạy hay không, model `qwen-comicworm` có trong kết
++quả `ollama list` hay không, và địa chỉ `http://localhost:11434` có truy cập
++được trên máy.
+* Unmerged path comicworm/src/main/java/com/example/comicworm/config/SecurityConfig.java
+* Unmerged path comicworm/src/main/java/com/example/comicworm/config/filters/JwtAuthenticationFilter.java
+diff --git a/comicworm/src/main/java/com/example/comicworm/controller/SellerAccountController.java b/comicworm/src/main/java/com/example/comicworm/controller/SellerAccountController.java
+index ea81cf1..2c3f00e 100644
+--- a/comicworm/src/main/java/com/example/comicworm/controller/SellerAccountController.java
++++ b/comicworm/src/main/java/com/example/comicworm/controller/SellerAccountController.java
+@@ -23,14 +23,14 @@ public class SellerAccountController {
+     public String upgradePage(@AuthenticationPrincipal CustomUserDetails user,
+             @RequestParam(defaultValue = "false") boolean csrfExpired, Model model) {
+         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+-        if (user.isSeller()) return "redirect:/seller/html/index.html";
++        if (user.isSeller()) return "redirect:/seller/html/orders.html";
+         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản Người mua không có quyền tự nâng cấp thành Người bán.");
+     }
+ 
+     @PostMapping("/user/seller-upgrade")
+     public String upgrade(@AuthenticationPrincipal CustomUserDetails user) {
+         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+-        if (user.isSeller()) return "redirect:/seller/html/index.html";
++        if (user.isSeller()) return "redirect:/seller/html/orders.html";
+         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chức năng tự nâng cấp Người bán đã bị vô hiệu hóa.");
+     }
+ }
+diff --git a/comicworm/src/main/java/com/example/comicworm/service/admin/impl/ProductModerationServiceImpl.java b/comicworm/src/main/java/com/example/comicworm/service/admin/impl/ProductModerationServiceImpl.java
+index 3a7973e..78f8981 100644
+--- a/comicworm/src/main/java/com/example/comicworm/service/admin/impl/ProductModerationServiceImpl.java
++++ b/comicworm/src/main/java/com/example/comicworm/service/admin/impl/ProductModerationServiceImpl.java
+@@ -106,7 +106,7 @@ public class ProductModerationServiceImpl implements IProductModerationService {
+     @Override
+     @Transactional
+     public AdminProductRecord approve(Long id, Long adminId) {
+-        Product product = findActive(id);
++        Product product = lockPending(id);
+ 
+         product.setModerationStatus(ModerationStatus.APPROVED);
+         product.setModeratedBy(adminId);
+@@ -114,7 +114,10 @@ public class ProductModerationServiceImpl implements IProductModerationService {
+         product.setModerationReason(null);
+ 
+         Product saved = productRepository.saveAndFlush(product);
+-        List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
++
++        List<ProductImage> images =
++                productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
++
+         return AdminProductRecord.from(saved, images);
+     }
+ 
+@@ -122,10 +125,20 @@ public class ProductModerationServiceImpl implements IProductModerationService {
+     @Transactional
+     public AdminProductRecord reject(Long id, Long adminId, String reason) {
+         if (reason == null || reason.trim().isBlank()) {
+-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập lý do từ chối kiểm duyệt.");
++            throw new ResponseStatusException(
++                    HttpStatus.BAD_REQUEST,
++                    "Vui lòng nhập lý do từ chối kiểm duyệt."
++            );
+         }
+ 
+-        Product product = findActive(id);
++        if (reason.trim().length() > 1000) {
++            throw new ResponseStatusException(
++                    HttpStatus.BAD_REQUEST,
++                    "Lý do từ chối tối đa 1000 ký tự."
++            );
++        }
++
++        Product product = lockPending(id);
+ 
+         product.setModerationStatus(ModerationStatus.REJECTED);
+         product.setModerationReason(reason.trim());
+@@ -133,7 +146,10 @@ public class ProductModerationServiceImpl implements IProductModerationService {
+         product.setModeratedAt(LocalDateTime.now(ZoneOffset.UTC));
+ 
+         Product saved = productRepository.saveAndFlush(product);
+-        List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
++
++        List<ProductImage> images =
++                productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
++
+         return AdminProductRecord.from(saved, images);
+     }
+ 
+@@ -154,4 +170,22 @@ public class ProductModerationServiceImpl implements IProductModerationService {
+                 .filter(p -> p.getDeletedAt() == null)
+                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm có mã: " + id));
+     }
++
++    private Product lockPending(Long id) {
++        Product product = productRepository.lockForModeration(id)
++                .orElseThrow(() -> new ResponseStatusException(
++                        HttpStatus.NOT_FOUND,
++                        "Không tìm thấy sản phẩm."
++                ));
++
++        if (product.getModerationStatus() != ModerationStatus.PENDING) {
++            throw new ResponseStatusException(
++                    HttpStatus.CONFLICT,
++                    "Sản phẩm này đã được kiểm duyệt trước đó."
++            );
++        }
++
++        return product;
++    }
++
+ }
+diff --git a/comicworm/src/main/resources/static/admin/css/postModeration.css b/comicworm/src/main/resources/static/admin/css/postModeration.css
+index 45966ab..35f2ca9 100644
+--- a/comicworm/src/main/resources/static/admin/css/postModeration.css
++++ b/comicworm/src/main/resources/static/admin/css/postModeration.css
+@@ -771,3 +771,936 @@ textarea.mod-input { resize: vertical; }
+ .mod-toast.error { background: #B91C1C; }
+ 
+ @media (max-width: 960px) { .mod-layout { grid-template-columns: 1fr; } .mod-list-col .queue-list { max-height: 360px; } }
++
++
++/* ==========================================================================
++   ENHANCED MODERATION LIST & DETAIL MODAL DESIGN SYSTEM
++   ========================================================================== */
++
++/* Toolbar & Filter Tabs */
++.mod-toolbar-card {
++  background: #ffffff;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-lg);
++  padding: 16px 20px;
++  margin-bottom: 24px;
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  flex-wrap: wrap;
++  gap: 16px;
++  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
++}
++
++.mod-status-tabs {
++  display: flex;
++  gap: 8px;
++  flex-wrap: wrap;
++}
++
++.mod-tab-btn {
++  padding: 8px 16px;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  font-weight: 600;
++  border: 1px solid #E2E8F0;
++  background: #F8FAFC;
++  color: #475569;
++  cursor: pointer;
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  transition: all 0.2s ease;
++}
++
++.mod-tab-btn:hover {
++  background: #EDF2F7;
++  color: #1E293B;
++  border-color: #CBD5E1;
++}
++
++.mod-tab-btn.active {
++  background: var(--color-primary);
++  color: #FFFFFF;
++  border-color: var(--color-primary);
++  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.25);
++}
++
++.mod-tab-count {
++  background: rgba(0, 0, 0, 0.08);
++  color: inherit;
++  padding: 2px 8px;
++  border-radius: 9999px;
++  font-size: 0.75rem;
++  font-weight: 700;
++}
++
++.mod-tab-btn.active .mod-tab-count {
++  background: rgba(255, 255, 255, 0.28);
++  color: #FFFFFF;
++}
++
++.mod-filter-controls {
++  display: flex;
++  align-items: center;
++  gap: 14px;
++  flex-wrap: wrap;
++}
++
++.mod-search-box {
++  position: relative;
++  display: flex;
++  align-items: center;
++}
++
++.mod-search-box svg {
++  position: absolute;
++  left: 12px;
++  color: #94A3B8;
++  pointer-events: none;
++}
++
++.mod-search-box input {
++  padding: 9px 34px 9px 36px;
++  border: 1px solid #CBD5E1;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  width: 270px;
++  color: #0F172A;
++  background: #FFFFFF;
++  transition: all 0.2s;
++}
++
++.mod-search-box input:focus {
++  outline: none;
++  border-color: var(--color-primary);
++  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
++}
++
++.mod-search-box button {
++  position: absolute;
++  right: 10px;
++  background: none;
++  border: none;
++  color: #94A3B8;
++  font-size: 16px;
++  cursor: pointer;
++}
++
++.mod-select-wrap {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  font-size: 0.85rem;
++  color: #64748B;
++  font-weight: 500;
++}
++
++.mod-select-wrap select {
++  padding: 8px 12px;
++  border: 1px solid #CBD5E1;
++  border-radius: var(--radius-md);
++  background: #FFFFFF;
++  font-family: inherit;
++  font-size: 0.85rem;
++  color: #1E293B;
++  cursor: pointer;
++}
++
++.mod-select-wrap select:focus {
++  outline: none;
++  border-color: var(--color-primary);
++}
++
++/* Modern Data Table Card */
++.mod-table-card {
++  background: #FFFFFF;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-lg);
++  box-shadow: var(--shadow-sm);
++  overflow: hidden;
++}
++
++.mod-table-header-info {
++  padding: 14px 20px;
++  background: #F8FAFC;
++  border-bottom: 1px solid var(--color-border);
++  font-size: 0.85rem;
++  font-weight: 600;
++  color: #64748B;
++}
++
++.mod-table-responsive {
++  width: 100%;
++  overflow-x: auto;
++}
++
++.mod-table {
++  width: 100%;
++  border-collapse: collapse;
++  text-align: left;
++  font-size: 0.88rem;
++}
++
++.mod-table th {
++  background: #F8FAFC;
++  padding: 14px 16px;
++  font-weight: 700;
++  font-size: 0.74rem;
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  color: #64748B;
++  border-bottom: 1px solid var(--color-border);
++  white-space: nowrap;
++}
++
++.mod-table td {
++  padding: 14px 16px;
++  border-bottom: 1px solid #F1F5F9;
++  vertical-align: middle;
++  color: var(--color-text-main);
++}
++
++.mod-table tbody tr {
++  transition: background-color 0.15s ease;
++}
++
++.mod-table tbody tr:hover td {
++  background-color: #F8FAFC;
++}
++
++/* Product Info Cell */
++.mod-product-cell {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++}
++
++.mod-thumb {
++  width: 52px;
++  height: 68px;
++  border-radius: var(--radius-sm);
++  border: 1px solid var(--color-border);
++  object-fit: cover;
++  background: #E2E8F0;
++  cursor: zoom-in;
++  flex-shrink: 0;
++  transition: transform 0.2s;
++}
++
++.mod-thumb:hover {
++  transform: scale(1.05);
++}
++
++.mod-product-title {
++  font-weight: 700;
++  color: #0F172A;
++  font-size: 0.92rem;
++  cursor: pointer;
++  line-height: 1.35;
++  display: -webkit-box;
++  -webkit-line-clamp: 2;
++  -webkit-box-orient: vertical;
++  overflow: hidden;
++  margin-bottom: 4px;
++}
++
++.mod-product-title:hover {
++  color: var(--color-primary);
++}
++
++.mod-product-sub {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  flex-wrap: wrap;
++}
++
++.mod-id-chip {
++  background: #F1F5F9;
++  color: #475569;
++  font-size: 0.74rem;
++  font-weight: 700;
++  padding: 2px 6px;
++  border-radius: 4px;
++}
++
++.mod-meta-chip {
++  background: #EFF6FF;
++  color: #2563EB;
++  font-size: 0.74rem;
++  font-weight: 600;
++  padding: 2px 7px;
++  border-radius: 4px;
++}
++
++.mod-price-text {
++  font-weight: 800;
++  color: #EA580C;
++  font-size: 0.96rem;
++}
++
++.mod-condition-badge {
++  background: #FEF3C7;
++  color: #B45309;
++  font-weight: 700;
++  font-size: 0.75rem;
++  padding: 3px 8px;
++  border-radius: 6px;
++  display: inline-block;
++}
++
++/* Status Badges */
++.mod-badge {
++  display: inline-flex;
++  align-items: center;
++  gap: 4px;
++  padding: 4px 10px;
++  border-radius: 9999px;
++  font-size: 0.76rem;
++  font-weight: 700;
++  white-space: nowrap;
++}
++
++.mod-badge-pending {
++  background: #FEF3C7;
++  color: #B45309;
++  border: 1px solid #FDE68A;
++}
++
++.mod-badge-approved {
++  background: #DEF7EC;
++  color: #03543F;
++  border: 1px solid #BCF0DA;
++}
++
++.mod-badge-rejected {
++  background: #FDE8E8;
++  color: #9B1C1C;
++  border: 1px solid #FBD5D5;
++}
++
++/* Action Buttons */
++.mod-actions-cell {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++}
++
++.mod-btn-action {
++  height: 32px;
++  padding: 0 10px;
++  border-radius: var(--radius-sm);
++  font-family: inherit;
++  font-size: 0.78rem;
++  font-weight: 700;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  gap: 4px;
++  transition: all 0.2s;
++  white-space: nowrap;
++}
++
++.mod-btn-view {
++  background: #EEF2FF;
++  color: #4338CA;
++  border: 1px solid #C7D2FE;
++}
++
++.mod-btn-view:hover {
++  background: #E0E7FF;
++  color: #3730A3;
++  border-color: #A5B4FC;
++}
++
++.mod-btn-approve {
++  background: #ECFDF5;
++  color: #047857;
++  border: 1px solid #A7F3D0;
++}
++
++.mod-btn-approve:hover {
++  background: #D1FAE5;
++  color: #065F46;
++  border-color: #6EE7B7;
++}
++
++.mod-btn-reject {
++  background: #FEF2F2;
++  color: #B91C1C;
++  border: 1px solid #FECACA;
++}
++
++.mod-btn-reject:hover {
++  background: #FEE2E2;
++  color: #991B1B;
++  border-color: #FCA5A5;
++}
++
++/* States & Pagination */
++.mod-empty-state {
++  text-align: center;
++  padding: 48px 20px;
++  color: #64748B;
++}
++
++.mod-empty-state .empty-icon {
++  font-size: 40px;
++  margin-bottom: 12px;
++}
++
++.mod-empty-state h3 {
++  font-size: 1.15rem;
++  color: #0F172A;
++  margin-bottom: 6px;
++}
++
++.mod-loading-state {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  gap: 12px;
++  padding: 48px 20px;
++  color: #64748B;
++  font-weight: 500;
++}
++
++.mod-spinner {
++  width: 24px;
++  height: 24px;
++  border: 3px solid #E2E8F0;
++  border-top-color: var(--color-primary);
++  border-radius: 50%;
++  animation: mod-spin 0.8s linear infinite;
++}
++
++@keyframes mod-spin {
++  to { transform: rotate(360deg); }
++}
++
++.mod-pagination-bar {
++  padding: 14px 20px;
++  background: #FFFFFF;
++  border-top: 1px solid var(--color-border);
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  flex-wrap: wrap;
++  gap: 12px;
++}
++
++.mod-page-btn {
++  height: 32px;
++  min-width: 32px;
++  padding: 0 8px;
++  border: 1px solid #CBD5E1;
++  background: #FFFFFF;
++  color: #475569;
++  border-radius: var(--radius-sm);
++  font-family: inherit;
++  font-size: 0.82rem;
++  font-weight: 600;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  transition: all 0.15s;
++}
++
++.mod-page-btn:hover:not(:disabled) {
++  background: #F1F5F9;
++  color: #0F172A;
++}
++
++.mod-page-btn.active {
++  background: var(--color-primary);
++  color: #FFFFFF;
++  border-color: var(--color-primary);
++}
++
++.mod-page-btn:disabled {
++  opacity: 0.4;
++  cursor: not-allowed;
++}
++
++/* ==========================================================================
++   PRODUCT DETAIL MODAL & LIGHTBOX
++   ========================================================================== */
++
++.mod-modal-overlay {
++  position: fixed;
++  inset: 0;
++  z-index: 99999;
++  background: rgba(15, 23, 42, 0.65);
++  backdrop-filter: blur(4px);
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  padding: 20px;
++  animation: modFadeIn 0.2s ease;
++}
++
++@keyframes modFadeIn {
++  from { opacity: 0; }
++  to { opacity: 1; }
++}
++
++.mod-modal-dialog {
++  background: #FFFFFF;
++  border-radius: var(--radius-lg);
++  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
++  display: flex;
++  flex-direction: column;
++  overflow: hidden;
++  animation: modSlideUp 0.25s ease;
++}
++
++@keyframes modSlideUp {
++  from { transform: translateY(20px); opacity: 0; }
++  to { transform: translateY(0); opacity: 1; }
++}
++
++.mod-detail-dialog {
++  width: min(940px, 95vw);
++  max-height: 90vh;
++}
++
++.mod-reject-dialog {
++  width: min(520px, 95vw);
++}
++
++.mod-modal-header {
++  padding: 16px 24px;
++  background: #FFFFFF;
++  border-bottom: 1px solid var(--color-border);
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 12px;
++}
++
++.mod-modal-tag {
++  background: #EFF6FF;
++  color: #2563EB;
++  font-size: 0.8rem;
++  font-weight: 800;
++  padding: 3px 8px;
++  border-radius: 6px;
++}
++
++.mod-modal-title {
++  font-size: 1.15rem;
++  font-weight: 700;
++  color: #0F172A;
++  margin: 0;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.mod-modal-close {
++  background: none;
++  border: none;
++  font-size: 26px;
++  color: #94A3B8;
++  cursor: pointer;
++  line-height: 1;
++  padding: 0;
++  transition: color 0.2s;
++}
++
++.mod-modal-close:hover {
++  color: #0F172A;
++}
++
++.mod-modal-body {
++  padding: 24px;
++  overflow-y: auto;
++}
++
++/* Detail Grid Layout */
++.detail-grid {
++  display: grid;
++  grid-template-columns: 290px 1fr;
++  gap: 28px;
++}
++
++.detail-main-img-wrap {
++  width: 100%;
++  height: 380px;
++  border-radius: var(--radius-md);
++  border: 1px solid var(--color-border);
++  background: #F8FAFC;
++  overflow: hidden;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++}
++
++.detail-main-img-wrap img {
++  width: 100%;
++  height: 100%;
++  object-fit: cover;
++  cursor: zoom-in;
++  transition: transform 0.2s;
++}
++
++.detail-main-img-wrap img:hover {
++  transform: scale(1.02);
++}
++
++.detail-gallery-row {
++  display: flex;
++  gap: 8px;
++  flex-wrap: wrap;
++  margin-top: 10px;
++}
++
++.detail-gallery-thumb {
++  width: 58px;
++  height: 74px;
++  object-fit: cover;
++  border-radius: var(--radius-sm);
++  border: 2px solid var(--color-border);
++  background: #E2E8F0;
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.detail-gallery-thumb:hover,
++.detail-gallery-thumb.active {
++  border-color: var(--color-primary);
++  transform: translateY(-2px);
++}
++
++.detail-quick-tags {
++  margin-top: 14px;
++  background: #F8FAFC;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-md);
++  padding: 12px;
++  display: flex;
++  flex-direction: column;
++  gap: 6px;
++  font-size: 0.85rem;
++}
++
++.detail-quick-tag {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++}
++
++.detail-quick-tag .tag-label {
++  color: #64748B;
++}
++
++/* Detail Right Column Info */
++.detail-price-box {
++  background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
++  border: 1px solid #FED7AA;
++  border-radius: var(--radius-md);
++  padding: 14px 20px;
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  margin-bottom: 20px;
++}
++
++.price-label {
++  font-size: 0.82rem;
++  color: #9A3412;
++  font-weight: 600;
++  text-transform: uppercase;
++  margin-right: 8px;
++}
++
++.price-val {
++  font-size: 1.4rem;
++  font-weight: 800;
++  color: #C2410C;
++}
++
++.status-pill {
++  padding: 4px 12px;
++  border-radius: 9999px;
++  font-size: 0.78rem;
++  font-weight: 700;
++}
++
++.status-pill-pending { background: #FEF3C7; color: #B45309; }
++.status-pill-approved { background: #DEF7EC; color: #03543F; }
++.status-pill-rejected { background: #FDE8E8; color: #9B1C1C; }
++
++/* Specs Grid */
++.detail-specs-grid {
++  display: grid;
++  grid-template-columns: repeat(2, 1fr);
++  gap: 12px 20px;
++  margin-bottom: 20px;
++  background: #FFFFFF;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-md);
++  padding: 16px;
++}
++
++.spec-item {
++  display: flex;
++  flex-direction: column;
++  gap: 2px;
++}
++
++.spec-label {
++  font-size: 0.74rem;
++  text-transform: uppercase;
++  color: #64748B;
++  font-weight: 600;
++  letter-spacing: 0.04em;
++}
++
++.spec-value {
++  font-size: 0.92rem;
++  font-weight: 700;
++  color: #0F172A;
++}
++
++/* Seller Card */
++.detail-seller-card {
++  display: flex;
++  align-items: center;
++  gap: 14px;
++  background: #F8FAFC;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-md);
++  padding: 12px 16px;
++  margin-bottom: 18px;
++}
++
++.seller-avatar-ph {
++  width: 44px;
++  height: 44px;
++  border-radius: 50%;
++  background: #E2E8F0;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  font-size: 20px;
++  flex-shrink: 0;
++}
++
++.seller-details .seller-name {
++  font-weight: 700;
++  color: #0F172A;
++  font-size: 0.92rem;
++}
++
++.seller-details .seller-email {
++  font-size: 0.82rem;
++  color: #64748B;
++}
++
++.seller-details .seller-id {
++  font-size: 0.74rem;
++  color: #94A3B8;
++}
++
++/* Trade Note & Description */
++.detail-trade-note {
++  background: #F0FDF4;
++  border: 1px solid #BBF7D0;
++  border-radius: var(--radius-md);
++  padding: 12px 16px;
++  font-size: 0.88rem;
++  color: #166534;
++  margin-bottom: 18px;
++}
++
++.detail-trade-note p {
++  margin: 4px 0 0;
++}
++
++.detail-desc-box {
++  background: #F8FAFC;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-md);
++  padding: 14px 18px;
++  margin-bottom: 18px;
++}
++
++.desc-heading {
++  font-size: 0.78rem;
++  font-weight: 700;
++  text-transform: uppercase;
++  color: #64748B;
++  margin-bottom: 6px;
++}
++
++.desc-content {
++  font-size: 0.9rem;
++  line-height: 1.6;
++  color: #334155;
++  white-space: pre-wrap;
++  max-height: 180px;
++  overflow-y: auto;
++}
++
++.detail-history-box {
++  border-radius: var(--radius-md);
++  padding: 14px 18px;
++  margin-bottom: 12px;
++}
++
++.detail-history-box.history-rejected {
++  background: #FEF2F2;
++  border: 1px solid #FECACA;
++}
++
++.detail-history-box.history-approved {
++  background: #F0FDF4;
++  border: 1px solid #BBF7D0;
++}
++
++.history-heading {
++  font-size: 0.82rem;
++  font-weight: 700;
++  margin-bottom: 4px;
++}
++
++/* Modal Footer & Buttons */
++.mod-modal-footer {
++  padding: 16px 24px;
++  background: #FFFFFF;
++  border-top: 1px solid var(--color-border);
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 12px;
++}
++
++.modal-action-buttons {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++}
++
++.btn-modal-cancel {
++  height: 38px;
++  padding: 0 18px;
++  background: #F1F5F9;
++  color: #475569;
++  border: 1px solid #CBD5E1;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  font-weight: 600;
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.btn-modal-cancel:hover {
++  background: #E2E8F0;
++  color: #0F172A;
++}
++
++.btn-modal-approve {
++  height: 38px;
++  padding: 0 20px;
++  background: #10B981;
++  color: #FFFFFF;
++  border: 1px solid #059669;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  font-weight: 700;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  gap: 6px;
++  transition: all 0.2s;
++  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
++}
++
++.btn-modal-approve:hover {
++  background: #059669;
++}
++
++.btn-modal-reject {
++  height: 38px;
++  padding: 0 18px;
++  background: #EF4444;
++  color: #FFFFFF;
++  border: 1px solid #DC2626;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  font-weight: 700;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  gap: 6px;
++  transition: all 0.2s;
++  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
++}
++
++.btn-modal-reject:hover {
++  background: #DC2626;
++}
++
++.btn-modal-danger {
++  height: 38px;
++  padding: 0 20px;
++  background: #EF4444;
++  color: #FFFFFF;
++  border: none;
++  border-radius: var(--radius-md);
++  font-family: inherit;
++  font-size: 0.88rem;
++  font-weight: 700;
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.btn-modal-danger:hover {
++  background: #DC2626;
++}
++
++/* Reject Reason Quick Chips */
++.reject-quick-chips {
++  display: flex;
++  gap: 6px;
++  flex-wrap: wrap;
++  margin-bottom: 12px;
++}
++
++.chip-btn {
++  background: #F1F5F9;
++  border: 1px solid #E2E8F0;
++  border-radius: 9999px;
++  padding: 5px 12px;
++  font-family: inherit;
++  font-size: 0.78rem;
++  font-weight: 600;
++  color: #475569;
++  cursor: pointer;
++  transition: all 0.15s;
++}
++
++.chip-btn:hover {
++  background: #E2E8F0;
++  color: #0F172A;
++  border-color: #CBD5E1;
++}
++
++/* Responsive Overrides */
++@media (max-width: 900px) {
++  .detail-grid {
++    grid-template-columns: 1fr;
++  }
++
++  .detail-main-img-wrap {
++    height: 280px;
++  }
++}
+* Unmerged path comicworm/src/main/resources/static/admin/js/common.js
+diff --git a/comicworm/src/main/resources/static/admin/js/dashboard.js b/comicworm/src/main/resources/static/admin/js/dashboard.js
+index 9aea992..80b025e 100644
+--- a/comicworm/src/main/resources/static/admin/js/dashboard.js
++++ b/comicworm/src/main/resources/static/admin/js/dashboard.js
+@@ -4,7 +4,11 @@
+  * Bộ lọc Audit Trail, Command Palette (Ctrl+K), Dropdown Thông báo.
+  */
+ 
+-document.addEventListener('DOMContentLoaded', () => {
++document.addEventListener('DOMContentLoaded', async () => {
++  if (typeof guardAdminSession === 'function') {
++    const ok = await guardAdminSession();
++    if (!ok) return;
++  }
+   initGreeting();
+   initKpiCounters('today');
+   initTimeFilter();
+diff --git a/comicworm/src/main/resources/static/admin/js/postModeration.js b/comicworm/src/main/resources/static/admin/js/postModeration.js
+index 5a0f72e..e250a45 100644
+--- a/comicworm/src/main/resources/static/admin/js/postModeration.js
++++ b/comicworm/src/main/resources/static/admin/js/postModeration.js
+@@ -1,306 +1,786 @@
+ document.addEventListener("DOMContentLoaded", () => {
+-    const $ = (selector) => document.querySelector(selector);
+-    const productDemo = $("#productDemo");
+-    const communityPost = $("#communityPost");
+-    const queueList = $(".queue-list");
+-    const queueCount = $(".queue-count");
+-    const searchInput = $(".search-input");
+-    const rejectModal = $("#rejectProductModal");
+-    const rejectReasonInput = $("#rejectReasonInput");
+-    const approveButton = $("#productApproveBtn");
+-    const rejectButton = $("#productRejectBtn");
+-    const confirmRejectButton = $("#confirmRejectBtn");
+-    const cancelRejectButton = $("#cancelRejectBtn");
+-    const skipButton = $(".btn-text");
+-    const statusText = $(".status-indicator span:last-child");
+-    const navBadge = $(".nav-badge");
+-
+-    let pendingProducts = [];
+-    let visibleProducts = [];
+-    let currentProductId = null;
+-    let csrfInfo = null;
+-    let busy = false;
++    // --- State Management ---
++    const state = {
++        status: "PENDING",
++        keyword: "",
++        page: 0,
++        size: 10,
++        totalElements: 0,
++        totalPages: 0,
++        products: [],
++        currentDetailProduct: null,
++        currentRejectProductId: null,
++        csrfInfo: null,
++        isBusy: false
++    };
+ 
++    // --- DOM Elements ---
++    const topSearchInput = document.getElementById("topSearchInput");
++    const inlineSearchInput = document.getElementById("inlineSearchInput");
++    const clearSearchBtn = document.getElementById("clearSearchBtn");
++    const refreshBtn = document.getElementById("refreshBtn");
++    const pageSizeSelect = document.getElementById("pageSizeSelect");
++    const statusTabs = document.querySelectorAll(".mod-tab-btn");
++    const productTableBody = document.getElementById("productTableBody");
++    const tableLoadingState = document.getElementById("tableLoadingState");
++    const tableEmptyState = document.getElementById("tableEmptyState");
++    const tableSummaryText = document.getElementById("tableSummaryText");
++    const paginationBar = document.getElementById("paginationBar");
++    const paginationInfo = document.getElementById("paginationInfo");
++    const paginationControls = document.getElementById("paginationControls");
++
++    // KPI Counters
++    const kpiPendingCount = document.getElementById("kpiPendingCount");
++    const kpiApprovedCount = document.getElementById("kpiApprovedCount");
++    const kpiRejectedCount = document.getElementById("kpiRejectedCount");
++    const kpiTotalCount = document.getElementById("kpiTotalCount");
++    const tabPendingBadge = document.getElementById("tabPendingBadge");
++    const tabApprovedBadge = document.getElementById("tabApprovedBadge");
++    const tabRejectedBadge = document.getElementById("tabRejectedBadge");
++    const tabAllBadge = document.getElementById("tabAllBadge");
++    const sidebarBadge = document.getElementById("sidebarBadge");
++    const statusIndicatorText = document.getElementById("statusIndicatorText");
++
++    // Detail Modal Elements
++    const detailModal = document.getElementById("productDetailModal");
++    const detailModalCloseBtn = document.getElementById("detailModalCloseBtn");
++    const closeDetailModalBtn = document.getElementById("closeDetailModalBtn");
++    const detailModalIdTag = document.getElementById("detailModalIdTag");
++    const detailModalTitle = document.getElementById("detailModalTitle");
++    const detailMainImg = document.getElementById("detailMainImg");
++    const detailGalleryRow = document.getElementById("detailGalleryRow");
++    const detailConditionPercent = document.getElementById("detailConditionPercent");
++    const detailListingType = document.getElementById("detailListingType");
++    const detailStockQuantity = document.getElementById("detailStockQuantity");
++    const detailPrice = document.getElementById("detailPrice");
++    const detailStatusBadge = document.getElementById("detailStatusBadge");
++    const detailCategory = document.getElementById("detailCategory");
++    const detailAuthor = document.getElementById("detailAuthor");
++    const detailPublisher = document.getElementById("detailPublisher");
++    const detailPublicationYear = document.getElementById("detailPublicationYear");
++    const detailVolumeNumbers = document.getElementById("detailVolumeNumbers");
++    const detailEditionType = document.getElementById("detailEditionType");
++    const detailSellerName = document.getElementById("detailSellerName");
++    const detailSellerEmail = document.getElementById("detailSellerEmail");
++    const detailSellerId = document.getElementById("detailSellerId");
++    const detailTradeNoteBox = document.getElementById("detailTradeNoteBox");
++    const detailTradeNoteText = document.getElementById("detailTradeNoteText");
++    const detailDescriptionText = document.getElementById("detailDescriptionText");
++    const detailHistoryBox = document.getElementById("detailHistoryBox");
++    const detailHistoryHeading = document.getElementById("detailHistoryHeading");
++    const detailHistoryContent = document.getElementById("detailHistoryContent");
++    const detailModalRejectBtn = document.getElementById("detailModalRejectBtn");
++    const detailModalApproveBtn = document.getElementById("detailModalApproveBtn");
++
++    // Reject Modal Elements
++    const rejectModal = document.getElementById("rejectProductModal");
++    const cancelRejectBtn = document.getElementById("cancelRejectBtn");
++    const cancelRejectModalBtn = document.getElementById("cancelRejectModalBtn");
++    const confirmRejectBtn = document.getElementById("confirmRejectBtn");
++    const rejectReasonInput = document.getElementById("rejectReasonInput");
++    const rejectModalProductTitle = document.getElementById("rejectModalProductTitle");
++    const rejectCharCount = document.getElementById("rejectCharCount");
++    const rejectChips = document.querySelectorAll(".reject-quick-chips .chip-btn");
++
++    // Lightbox Modal
++    const lightboxModal = document.getElementById("imgLightboxModal");
++    const lightboxImg = document.getElementById("lightboxImg");
++
++    // --- Helper Functions ---
+     function toast(message, type = "normal") {
+         document.querySelector(".moderation-toast")?.remove();
+         const el = document.createElement("div");
+         el.className = "moderation-toast";
+         el.textContent = message;
+         Object.assign(el.style, {
+-            position: "fixed", right: "24px", bottom: "24px", zIndex: "99999",
+-            padding: "12px 18px", borderRadius: "8px", fontSize: "14px", fontWeight: "600",
+-            boxShadow: "0 8px 20px rgba(15,23,42,.15)", background: "#fff", color: "#0f172a",
+-            border: `1px solid ${type === "success" ? "#10b981" : type === "danger" ? "#ef4444" : type === "warning" ? "#f59e0b" : "#e2e8f0"}`
++            position: "fixed", right: "24px", bottom: "24px", zIndex: "999999",
++            padding: "12px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: "600",
++            boxShadow: "0 10px 25px rgba(15,23,42,.2)", background: "#fff", color: "#0f172a",
++            border: `2px solid ${type === "success" ? "#10b981" : type === "danger" ? "#ef4444" : type === "warning" ? "#f59e0b" : "#cbd5e1"}`
+         });
+         document.body.appendChild(el);
+-        window.setTimeout(() => el.remove(), 3000);
++        window.setTimeout(() => el.remove(), 3500);
++    }
++
++    function formatPrice(price) {
++        if (price === null || price === undefined || price === "") return "Chưa cập nhật giá";
++        return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(Number(price));
++    }
++
++    function formatDate(value) {
++        if (!value) return "Chưa rõ thời gian";
++        const date = new Date(value);
++        if (Number.isNaN(date.getTime())) return String(value);
++        const day = String(date.getDate()).padStart(2, "0");
++        const month = String(date.getMonth() + 1).padStart(2, "0");
++        const year = date.getFullYear();
++        const hours = String(date.getHours()).padStart(2, "0");
++        const minutes = String(date.getMinutes()).padStart(2, "0");
++        return `${day}/${month}/${year} ${hours}:${minutes}`;
++    }
++
++    function escapeHtml(val) {
++        if (val === null || val === undefined) return "";
++        return String(val).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+     }
+ 
+     async function api(url, options = {}) {
+         const headers = { Accept: "application/json", ...(options.headers || {}) };
+         if (options.method && options.method !== "GET") {
+-            if (!csrfInfo) {
+-                const csrfResponse = await fetch("/api/admin/products/csrf", { credentials: "same-origin", headers: { Accept: "application/json" } });
+-                const csrfData = await csrfResponse.json().catch(() => ({}));
+-                if (!csrfResponse.ok) throw new Error(csrfData.Message || "Không lấy được CSRF token. Vui lòng đăng nhập lại.");
+-                csrfInfo = csrfData;
++            if (!state.csrfInfo) {
++                const csrfRes = await fetch("/api/admin/products/csrf", { credentials: "same-origin", headers: { Accept: "application/json" } });
++                const csrfData = await csrfRes.json().catch(() => ({}));
++                if (!csrfRes.ok) throw new Error(csrfData.Message || "Không lấy được CSRF token. Vui lòng đăng nhập lại.");
++                state.csrfInfo = csrfData;
+             }
+-            headers[csrfInfo.headerName || "X-CSRF-TOKEN"] = csrfInfo.token;
++            headers[state.csrfInfo.headerName || "X-CSRF-TOKEN"] = state.csrfInfo.token;
+         }
+         if (options.body) headers["Content-Type"] = "application/json";
+-        const response = await fetch(url, { ...options, headers, credentials: "same-origin" });
+-        const data = await response.json().catch(() => ({}));
+-        if (response.status === 401) throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại tài khoản quản trị.");
+-        if (response.status === 403) throw new Error(data.Message || "Bạn không có quyền thực hiện thao tác này hoặc CSRF token hết hạn.");
+-        if (!response.ok || data.Result === "ERROR") throw new Error(data.Message || "Có lỗi xảy ra khi gọi máy chủ.");
++        const res = await fetch(url, { ...options, headers, credentials: "same-origin" });
++        const data = await res.json().catch(() => ({}));
++        if (res.status === 401) throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
++        if (res.status === 403) throw new Error(data.Message || "Bạn không có quyền thực hiện thao tác này.");
++        if (!res.ok || data.Result === "ERROR") throw new Error(data.Message || "Thao tác trên máy chủ thất bại.");
+         return data;
+     }
+ 
+-    function formatPrice(price) {
+-        if (price === null || price === undefined || price === "") return "Chưa cập nhật giá";
+-        return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(Number(price));
+-    }
++    // --- Stats & KPI Counters ---
++    async function loadStats() {
++        try {
++            const data = await api("/api/admin/products/stats");
++            const stats = data.Stats || {};
++            const pending = Number(stats.pending || 0);
++            const approved = Number(stats.approved || 0);
++            const rejected = Number(stats.rejected || 0);
++            const total = pending + approved + rejected;
+ 
+-    function formatDate(value) {
+-        if (!value) return "Chưa rõ thời gian đăng";
+-        const date = new Date(value);
+-        return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("vi-VN");
+-    }
++            if (kpiPendingCount) kpiPendingCount.textContent = pending;
++            if (kpiApprovedCount) kpiApprovedCount.textContent = approved;
++            if (kpiRejectedCount) kpiRejectedCount.textContent = rejected;
++            if (kpiTotalCount) kpiTotalCount.textContent = total;
+ 
+-    function setBusy(value) {
+-        busy = value;
+-        [approveButton, rejectButton, confirmRejectButton, skipButton].filter(Boolean).forEach(button => {
+-            button.disabled = value;
+-            button.style.opacity = value ? ".6" : "1";
+-            button.style.cursor = value ? "wait" : "pointer";
+-        });
++            if (tabPendingBadge) tabPendingBadge.textContent = pending;
++            if (tabApprovedBadge) tabApprovedBadge.textContent = approved;
++            if (tabRejectedBadge) tabRejectedBadge.textContent = rejected;
++            if (tabAllBadge) tabAllBadge.textContent = total;
++
++            if (sidebarBadge) sidebarBadge.textContent = pending;
++            if (statusIndicatorText) {
++                statusIndicatorText.textContent = `Trực tuyến • Đang có ${pending} bài chờ xử lý`;
++            }
++        } catch (err) {
++            console.warn("Không tải được thống kê:", err.message);
++        }
+     }
+ 
+-    function updateCounters(stats) {
+-        const pending = Number(stats?.pending ?? pendingProducts.length);
+-        if (navBadge) navBadge.textContent = String(pending);
+-        if (statusText) statusText.textContent = `Trực tuyến • Đang có ${pending} bài cần xử lý`;
+-        const pendingNumber = document.querySelector(".metric-card:nth-child(1) .metric-num");
+-        const approvedNumber = document.querySelector(".metric-card:nth-child(2) .metric-num");
+-        const rejectedNumber = document.querySelector(".metric-card:nth-child(3) .metric-num");
+-        if (pendingNumber) pendingNumber.textContent = String(pending).padStart(2, "0");
+-        if (approvedNumber) approvedNumber.textContent = String(stats?.approved ?? 0).padStart(2, "0");
+-        if (rejectedNumber) rejectedNumber.textContent = String(stats?.rejected ?? 0).padStart(2, "0");
+-        if (queueCount) queueCount.textContent = `${visibleProducts.length} bài`;
++    // --- Load and Render Product List ---
++    async function loadProducts() {
++        if (state.isBusy) return;
++        state.isBusy = true;
++
++        if (tableLoadingState) tableLoadingState.style.display = "flex";
++        if (tableEmptyState) tableEmptyState.style.display = "none";
++        if (productTableBody) productTableBody.innerHTML = "";
++        if (paginationBar) paginationBar.style.display = "none";
++
++        try {
++            const url = `/api/admin/products?status=${state.status}&keyword=${encodeURIComponent(state.keyword)}&page=${state.page}&size=${state.size}`;
++            const data = await api(url);
++
++            state.products = Array.isArray(data.Records) ? data.Records : [];
++            state.totalElements = Number(data.TotalRecordCount || 0);
++            state.totalPages = Number(data.TotalPages || 0);
++
++            if (tableLoadingState) tableLoadingState.style.display = "none";
++
++            if (state.products.length === 0) {
++                if (tableEmptyState) {
++                    tableEmptyState.style.display = "block";
++                    const title = document.getElementById("emptyStateTitle");
++                    const desc = document.getElementById("emptyStateDesc");
++                    if (state.keyword) {
++                        if (title) title.textContent = "Không tìm thấy sản phẩm nào";
++                        if (desc) desc.textContent = `Không có kết quả nào khớp với từ khóa "${state.keyword}". Thử tìm kiếm khác.`;
++                    } else if (state.status === "PENDING") {
++                        if (title) title.textContent = "Không có bài đăng nào cần duyệt";
++                        if (desc) desc.textContent = "Tuyệt vời! Tất cả sản phẩm chờ duyệt đã được kiểm duyệt hoàn tất.";
++                    } else {
++                        if (title) title.textContent = "Danh sách trống";
++                        if (desc) desc.textContent = "Hiện chưa có sản phẩm nào trong mục này.";
++                    }
++                }
++                if (tableSummaryText) tableSummaryText.textContent = "Không tìm thấy dữ liệu.";
++                return;
++            }
++
++            // Render Table Rows
++            renderTableRows(state.products);
++
++            // Update Summary Text
++            const startIdx = state.page * state.size + 1;
++            const endIdx = Math.min((state.page + 1) * state.size, state.totalElements);
++            if (tableSummaryText) {
++                tableSummaryText.textContent = `Hiển thị ${startIdx} - ${endIdx} trong tổng số ${state.totalElements} sản phẩm.`;
++            }
++
++            // Render Pagination
++            renderPagination();
++        } catch (err) {
++            if (tableLoadingState) tableLoadingState.style.display = "none";
++            if (productTableBody) {
++                productTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#dc2626; font-weight:600;">Lỗi tải dữ liệu: ${escapeHtml(err.message)}</td></tr>`;
++            }
++            toast(err.message, "danger");
++        } finally {
++            state.isBusy = false;
++        }
+     }
+ 
+-    function renderProduct(product) {
+-        if (!product) {
+-            currentProductId = null;
+-            if (productDemo) productDemo.style.display = "none";
+-            if (communityPost) communityPost.style.display = "none";
+-            const typeBadge = $("#currentPostType");
+-            if (typeBadge) typeBadge.textContent = "📭 KHÔNG CÓ BÀI ĐĂNG CHỜ DUYỆT";
+-            let empty = $("#moderationEmptyState");
+-            if (!empty) {
+-                empty = document.createElement("div");
+-                empty.id = "moderationEmptyState";
+-                empty.style.cssText = "padding:48px 20px;text-align:center;color:#64748b;background:#fff;border:1px solid #e2e8f0;border-radius:12px;";
+-                productDemo?.parentElement?.appendChild(empty);
++    function renderTableRows(products) {
++        if (!productTableBody) return;
++        productTableBody.innerHTML = "";
++
++        products.forEach(p => {
++            const tr = document.createElement("tr");
++
++            // Status Badge Config
++            let statusHtml = "";
++            if (p.moderationStatus === "PENDING") {
++                statusHtml = `<span class="mod-badge mod-badge-pending">⏳ Chờ duyệt</span>`;
++            } else if (p.moderationStatus === "APPROVED") {
++                statusHtml = `<span class="mod-badge mod-badge-approved">✅ Đã duyệt</span>`;
++            } else if (p.moderationStatus === "REJECTED") {
++                statusHtml = `<span class="mod-badge mod-badge-rejected">❌ Bị từ chối</span>`;
++            } else {
++                statusHtml = `<span class="mod-badge">${escapeHtml(p.moderationStatus)}</span>`;
+             }
+-            empty.textContent = searchInput?.value.trim() ? "Không tìm thấy sản phẩm phù hợp." : "Tuyệt vời! Hiện không còn sản phẩm nào đang chờ duyệt.";
+-            if (approveButton) approveButton.disabled = true;
+-            if (rejectButton) rejectButton.disabled = true;
+-            if (skipButton) skipButton.disabled = true;
++
++            // Listing Type Config
++            let listingTypeLabel = "Bán";
++            if (p.listingType === "EXCHANGE") listingTypeLabel = "Trao đổi";
++            else if (p.listingType === "BOTH") listingTypeLabel = "Bán & Đổi";
++
++            const coverImg = p.coverImageUrl || "https://placehold.co/100x130/e2e8f0/64748b?text=Comic";
++
++            tr.innerHTML = `
++                <td>
++                    <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(p.title)}" class="mod-thumb" title="Click để phóng to ảnh bìa">
++                </td>
++                <td>
++                    <div class="mod-product-cell">
++                        <div style="min-width:0;">
++                            <div class="mod-product-title" title="${escapeHtml(p.title)}">
++                                ${escapeHtml(p.title || "Chưa có tiêu đề")}
++                            </div>
++                            <div class="mod-product-sub">
++                                <span class="mod-id-chip">#${p.id}</span>
++                                <span class="mod-meta-chip">📚 ${escapeHtml(p.categoryName || "Chưa phân loại")}</span>
++                                ${p.editionType ? `<span class="mod-meta-chip">${escapeHtml(p.editionType)}</span>` : ""}
++                            </div>
++                        </div>
++                    </div>
++                </td>
++                <td>
++                    <div style="font-weight:600; color:#0f172a; font-size:13.5px;">${escapeHtml(p.sellerName || "Người bán")}</div>
++                    <div style="color:#64748b; font-size:12px;">${escapeHtml(p.sellerEmail || "Chưa có email")}</div>
++                    <div style="color:#94a3b8; font-size:11px;">Mã người bán: #${p.sellerId || "—"}</div>
++                </td>
++                <td>
++                    <div class="mod-price-text">${formatPrice(p.price)}</div>
++                    <div style="font-size:12px; color:#64748b; margin-top:2px;">Kho: <strong>${p.stockQuantity ?? 0}</strong> cuốn</div>
++                </td>
++                <td>
++                    <span class="mod-condition-badge">✨ Mới ${p.conditionPercent ?? 100}%</span>
++                    <div style="font-size:12px; color:#475569; margin-top:4px;">Hình thức: <strong>${listingTypeLabel}</strong></div>
++                </td>
++                <td>
++                    <div style="font-size:12.5px; color:#334155; font-weight:500;">${formatDate(p.createdAt)}</div>
++                </td>
++                <td>
++                    ${statusHtml}
++                </td>
++                <td style="text-align:center;">
++                    <div class="mod-actions-cell" style="justify-content:center;">
++                        <button type="button" class="mod-btn-action mod-btn-view" data-action="view" data-id="${p.id}" title="Xem toàn bộ thông tin chi tiết">
++                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
++                                <circle cx="12" cy="12" r="3"></circle>
++                            </svg>
++                            Chi tiết
++                        </button>
++                        ${p.moderationStatus === "PENDING" ? `
++                            <button type="button" class="mod-btn-action mod-btn-approve" data-action="approve" data-id="${p.id}" title="Phê duyệt sản phẩm ngay">
++                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
++                                    <polyline points="20 6 9 17 4 12"></polyline>
++                                </svg>
++                                Duyệt
++                            </button>
++                            <button type="button" class="mod-btn-action mod-btn-reject" data-action="reject" data-id="${p.id}" title="Từ chối bài đăng này">
++                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
++                                    <line x1="18" y1="6" x2="6" y2="18"></line>
++                                    <line x1="6" y1="6" x2="18" y2="18"></line>
++                                </svg>
++                                Từ chối
++                            </button>
++                        ` : ""}
++                    </div>
++                </td>
++            `;
++
++            // Thumb click -> Lightbox
++            const thumbImg = tr.querySelector(".mod-thumb");
++            thumbImg?.addEventListener("click", () => openLightbox(coverImg));
++
++            // Title click -> View Detail
++            const titleEl = tr.querySelector(".mod-product-title");
++            titleEl?.addEventListener("click", () => openProductDetail(p.id));
++
++            // Action Buttons
++            tr.querySelectorAll(".mod-btn-action").forEach(btn => {
++                btn.addEventListener("click", (e) => {
++                    e.stopPropagation();
++                    const action = btn.dataset.action;
++                    const id = Number(btn.dataset.id);
++                    if (action === "view") openProductDetail(id);
++                    else if (action === "approve") confirmApprove(id, p.title);
++                    else if (action === "reject") openRejectModal(id, p.title);
++                });
++            });
++
++            productTableBody.appendChild(tr);
++        });
++    }
++
++    // --- Pagination Logic ---
++    function renderPagination() {
++        if (!paginationBar || !paginationControls) return;
++        if (state.totalPages <= 1) {
++            paginationBar.style.display = "none";
+             return;
+         }
+-        $("#moderationEmptyState")?.remove();
+-        currentProductId = product.id;
+-        if (productDemo) {
+-            productDemo.style.display = "flex";
+-            productDemo.setAttribute("data-product-id", product.id);
+-        }
+-        if (communityPost) communityPost.style.display = "none";
+-        const typeBadge = $("#currentPostType");
+-        if (typeBadge) typeBadge.textContent = "🛒 BÀI ĐĂNG SẢN PHẨM CHỜ DUYỆT";
+-        const setText = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
+-        setText("#productTitle", product.title || "Sản phẩm chưa có tiêu đề");
+-        setText("#productPrice", formatPrice(product.price));
+-        setText("#productDescription", product.description || "Người bán chưa cung cấp mô tả.");
+-        setText("#productSellerInfo", `Người bán: ${product.sellerName || "ID " + (product.sellerId ?? "không rõ")} · ${product.sellerEmail || ""}`);
+-        setText("#productCategory", `📚 ${product.categoryName || "Chưa phân loại"}`);
+-        setText("#productCondition", `✨ Tình trạng ${product.conditionPercent ?? "—"}%`);
+-        setText("#productStock", `📦 Còn ${product.stockQuantity ?? 0} sản phẩm`);
+-        const cover = $("#productCoverImg");
+-        if (cover) {
+-            cover.src = product.coverImageUrl || "https://placehold.co/400x500?text=No+Image";
+-            cover.alt = product.title || "Ảnh bìa sản phẩm";
+-            cover.onerror = () => { cover.onerror = null; cover.src = "https://placehold.co/400x500?text=No+Image"; };
++
++        paginationBar.style.display = "flex";
++        const start = state.page * state.size + 1;
++        const end = Math.min((state.page + 1) * state.size, state.totalElements);
++        if (paginationInfo) {
++            paginationInfo.textContent = `Đang hiển thị ${start} - ${end} / ${state.totalElements} sản phẩm (Trang ${state.page + 1}/${state.totalPages})`;
+         }
+-        const badge = $("#productStatusBadge");
+-        if (badge) {
+-            badge.textContent = product.moderationStatus === "REJECTED" ? "Đã từ chối" : product.moderationStatus === "APPROVED" ? "Đã duyệt" : "Chờ duyệt";
+-            badge.style.background = "#fef3c7";
+-            badge.style.color = "#92400e";
++
++        paginationControls.innerHTML = "";
++
++        // Prev Button
++        const prevBtn = document.createElement("button");
++        prevBtn.type = "button";
++        prevBtn.className = "mod-page-btn";
++        prevBtn.disabled = state.page === 0;
++        prevBtn.innerHTML = "&laquo; Trước";
++        prevBtn.addEventListener("click", () => {
++            if (state.page > 0) {
++                state.page--;
++                loadProducts();
++            }
++        });
++        paginationControls.appendChild(prevBtn);
++
++        // Page Number Buttons (Show around current)
++        const maxVisiblePages = 5;
++        let startPage = Math.max(0, state.page - Math.floor(maxVisiblePages / 2));
++        let endPage = Math.min(state.totalPages - 1, startPage + maxVisiblePages - 1);
++        if (endPage - startPage + 1 < maxVisiblePages) {
++            startPage = Math.max(0, endPage - maxVisiblePages + 1);
+         }
+-        const reasonAlert = $("#productRejectReasonAlert");
+-        const reasonText = $("#productRejectReasonText");
+-        if (reasonAlert && reasonText) {
+-            reasonAlert.style.display = product.moderationReason ? "block" : "none";
+-            reasonText.textContent = product.moderationReason || "";
++
++        for (let i = startPage; i <= endPage; i++) {
++            const pageBtn = document.createElement("button");
++            pageBtn.type = "button";
++            pageBtn.className = `mod-page-btn ${i === state.page ? "active" : ""}`;
++            pageBtn.textContent = i + 1;
++            pageBtn.addEventListener("click", () => {
++                if (state.page !== i) {
++                    state.page = i;
++                    loadProducts();
++                }
++            });
++            paginationControls.appendChild(pageBtn);
+         }
+-        setText(".primary-col .section-title", `Đang kiểm duyệt · #${product.id}`);
+-        if (approveButton) approveButton.disabled = false;
+-        if (rejectButton) rejectButton.disabled = false;
+-        if (skipButton) skipButton.disabled = false;
+-        renderQueue();
+-    }
+ 
+-    function renderQueue() {
+-        if (!queueList) return;
+-        queueList.replaceChildren();
+-        visibleProducts.forEach(product => {
+-            if (product.id === currentProductId) return;
+-            const item = document.createElement("button");
+-            item.type = "button";
+-            item.className = "queue-item";
+-            item.style.cssText = "display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #e2e8f0;background:#fff;font:inherit;";
+-            const header = document.createElement("div");
+-            header.className = "queue-item-header";
+-            const author = document.createElement("div");
+-            author.className = "queue-author";
+-            const avatar = document.createElement("img");
+-            avatar.className = "avatar avatar-sm";
+-            avatar.src = product.coverImageUrl || "https://placehold.co/80x80?text=Comic";
+-            avatar.alt = "Ảnh sản phẩm";
+-            const authorText = document.createElement("div");
+-            const title = document.createElement("span");
+-            title.className = "author-name";
+-            title.textContent = product.title || `Sản phẩm #${product.id}`;
+-            const meta = document.createElement("div");
+-            meta.className = "post-meta";
+-            meta.textContent = `#${product.id} · ${formatDate(product.createdAt)}`;
+-            authorText.append(title, meta);
+-            author.append(avatar, authorText);
+-            const badge = document.createElement("span");
+-            badge.className = "badge badge-warning-subtle";
+-            badge.textContent = "Chờ duyệt";
+-            header.append(author, badge);
+-            const snippet = document.createElement("p");
+-            snippet.className = "queue-snippet";
+-            snippet.textContent = product.description || "Sản phẩm chưa có mô tả.";
+-            const footer = document.createElement("div");
+-            footer.className = "queue-footer";
+-            const price = document.createElement("span");
+-            price.className = "violation-tag";
+-            price.textContent = formatPrice(product.price);
+-            footer.append(price);
+-            item.append(header, snippet, footer);
+-            item.addEventListener("click", () => renderProduct(product));
+-            queueList.appendChild(item);
++        // Next Button
++        const nextBtn = document.createElement("button");
++        nextBtn.type = "button";
++        nextBtn.className = "mod-page-btn";
++        nextBtn.disabled = state.page >= state.totalPages - 1;
++        nextBtn.innerHTML = "Sau &raquo;";
++        nextBtn.addEventListener("click", () => {
++            if (state.page < state.totalPages - 1) {
++                state.page++;
++                loadProducts();
++            }
+         });
+-        if (!queueList.children.length) {
+-            const empty = document.createElement("p");
+-            empty.style.cssText = "padding:16px;color:#64748b;text-align:center;";
+-            empty.textContent = "Không còn bài nào khác trong hàng đợi.";
+-            queueList.appendChild(empty);
+-        }
+-        if (queueCount) queueCount.textContent = `${visibleProducts.length} bài`;
++        paginationControls.appendChild(nextBtn);
+     }
+ 
+-    async function loadStats() {
++    // --- Product Detail Modal ---
++    async function openProductDetail(productId) {
+         try {
+-            const data = await api("/api/admin/products/stats");
+-            updateCounters(data.Stats);
+-        } catch (error) {
+-            console.warn("Không tải được thống kê kiểm duyệt:", error.message);
++            toast("Đang tải thông tin chi tiết sản phẩm...", "normal");
++            const data = await api(`/api/admin/products/${productId}`);
++            const p = data.Record;
++            if (!p) throw new Error("Không tìm thấy dữ liệu chi tiết của sản phẩm.");
++
++            state.currentDetailProduct = p;
++
++            // Fill IDs & Header
++            if (detailModalIdTag) detailModalIdTag.textContent = `#${p.id}`;
++            if (detailModalTitle) detailModalTitle.textContent = p.title || "Chi tiết sản phẩm";
++
++            // Main Image
++            const coverUrl = p.coverImageUrl || "https://placehold.co/400x520/e2e8f0/64748b?text=Comic";
++            if (detailMainImg) {
++                detailMainImg.src = coverUrl;
++                detailMainImg.onclick = () => openLightbox(detailMainImg.src);
++            }
++
++            // Gallery Thumbnails
++            if (detailGalleryRow) {
++                detailGalleryRow.innerHTML = "";
++                const allImages = [];
++                if (p.coverImageUrl) allImages.push(p.coverImageUrl);
++                if (Array.isArray(p.detailImageUrls)) {
++                    p.detailImageUrls.forEach(url => {
++                        if (url && !allImages.includes(url)) allImages.push(url);
++                    });
++                }
++
++                allImages.forEach((imgUrl, idx) => {
++                    const thumb = document.createElement("img");
++                    thumb.src = imgUrl;
++                    thumb.className = `detail-gallery-thumb ${idx === 0 ? "active" : ""}`;
++                    thumb.alt = "Ảnh thu nhỏ";
++                    thumb.addEventListener("click", () => {
++                        detailGalleryRow.querySelectorAll(".detail-gallery-thumb").forEach(t => t.classList.remove("active"));
++                        thumb.classList.add("active");
++                        if (detailMainImg) detailMainImg.src = imgUrl;
++                    });
++                    detailGalleryRow.appendChild(thumb);
++                });
++            }
++
++            // Quick Tags
++            if (detailConditionPercent) detailConditionPercent.textContent = `${p.conditionPercent ?? 100}%`;
++            let typeLabel = "Bán thông thường";
++            if (p.listingType === "EXCHANGE") typeLabel = "Trao đổi truyện";
++            else if (p.listingType === "BOTH") typeLabel = "Vừa bán vừa đổi";
++            if (detailListingType) detailListingType.textContent = typeLabel;
++            if (detailStockQuantity) detailStockQuantity.textContent = `${p.stockQuantity ?? 0} cuốn`;
++
++            // Price & Status Badge
++            if (detailPrice) detailPrice.textContent = formatPrice(p.price);
++            if (detailStatusBadge) {
++                if (p.moderationStatus === "PENDING") {
++                    detailStatusBadge.textContent = "Chờ duyệt";
++                    detailStatusBadge.className = "status-pill status-pill-pending";
++                } else if (p.moderationStatus === "APPROVED") {
++                    detailStatusBadge.textContent = "Đã duyệt";
++                    detailStatusBadge.className = "status-pill status-pill-approved";
++                } else if (p.moderationStatus === "REJECTED") {
++                    detailStatusBadge.textContent = "Bị từ chối";
++                    detailStatusBadge.className = "status-pill status-pill-rejected";
++                }
++            }
++
++            // Specs
++            if (detailCategory) detailCategory.textContent = p.categoryName || "Chưa phân loại";
++            if (detailAuthor) detailAuthor.textContent = p.authorName || "Đang cập nhật";
++            if (detailPublisher) detailPublisher.textContent = p.publisherName || "Đang cập nhật";
++            if (detailPublicationYear) detailPublicationYear.textContent = p.publicationYear || "Chưa rõ";
++            if (detailVolumeNumbers) detailVolumeNumbers.textContent = p.volumeNumbers || "Không";
++            if (detailEditionType) detailEditionType.textContent = p.editionType || "Bản thường";
++
++            // Seller Card
++            if (detailSellerName) detailSellerName.textContent = p.sellerName || "Người bán";
++            if (detailSellerEmail) detailSellerEmail.textContent = p.sellerEmail || "Chưa có email";
++            if (detailSellerId) detailSellerId.textContent = `Mã người bán: #${p.sellerId || "—"}`;
++
++            // Trade Wish Note
++            if (detailTradeNoteBox) {
++                if (p.tradeWishNote && p.tradeWishNote.trim()) {
++                    detailTradeNoteBox.style.display = "block";
++                    if (detailTradeNoteText) detailTradeNoteText.textContent = p.tradeWishNote.trim();
++                } else {
++                    detailTradeNoteBox.style.display = "none";
++                }
++            }
++
++            // Description
++            if (detailDescriptionText) {
++                detailDescriptionText.textContent = p.description || "Người bán không cung cấp mô tả thêm.";
++            }
++
++            // Moderation History
++            if (detailHistoryBox && detailHistoryContent) {
++                if (p.moderationStatus === "REJECTED") {
++                    detailHistoryBox.style.display = "block";
++                    detailHistoryBox.className = "detail-history-box history-rejected";
++                    if (detailHistoryHeading) detailHistoryHeading.textContent = "⚠️ Lý do từ chối kiểm duyệt:";
++                    detailHistoryContent.innerHTML = `
++                        <p style="margin:0 0 6px; font-weight:600; color:#991b1b;">${escapeHtml(p.moderationReason || "Không rõ lý do.")}</p>
++                        <small style="color:#64748b;">Xử lý bởi: <strong>${escapeHtml(p.moderatedByName || "Admin")}</strong> · ${formatDate(p.moderatedAt)}</small>
++                    `;
++                } else if (p.moderationStatus === "APPROVED") {
++                    detailHistoryBox.style.display = "block";
++                    detailHistoryBox.className = "detail-history-box history-approved";
++                    if (detailHistoryHeading) detailHistoryHeading.textContent = "✅ Nhật ký phê duyệt:";
++                    detailHistoryContent.innerHTML = `
++                        <p style="margin:0 0 6px; font-weight:600; color:#166534;">Sản phẩm đã được phê duyệt và hiển thị trên chợ sách.</p>
++                        <small style="color:#64748b;">Người phê duyệt: <strong>${escapeHtml(p.moderatedByName || "Admin")}</strong> · ${formatDate(p.moderatedAt)}</small>
++                    `;
++                } else {
++                    detailHistoryBox.style.display = "none";
++                }
++            }
++
++            // Action Buttons Visibility in Modal
++            if (detailModalApproveBtn && detailModalRejectBtn) {
++                if (p.moderationStatus === "PENDING") {
++                    detailModalApproveBtn.style.display = "inline-flex";
++                    detailModalRejectBtn.style.display = "inline-flex";
++                } else if (p.moderationStatus === "APPROVED") {
++                    detailModalApproveBtn.style.display = "none";
++                    detailModalRejectBtn.style.display = "inline-flex"; // Có thể từ chối hủy duyệt
++                } else if (p.moderationStatus === "REJECTED") {
++                    detailModalApproveBtn.style.display = "inline-flex"; // Có thể duyệt lại
++                    detailModalRejectBtn.style.display = "none";
++                }
++            }
++
++            if (detailModal) detailModal.style.display = "flex";
++        } catch (err) {
++            toast(err.message, "danger");
+         }
+     }
+ 
+-    async function loadPendingProducts(keepCurrent = false) {
++    function closeDetailModal() {
++        if (detailModal) detailModal.style.display = "none";
++        state.currentDetailProduct = null;
++    }
++
++    detailModalCloseBtn?.addEventListener("click", closeDetailModal);
++    closeDetailModalBtn?.addEventListener("click", closeDetailModal);
++    detailModal?.addEventListener("click", (e) => {
++        if (e.target === detailModal) closeDetailModal();
++    });
++
++    // --- Modal Approve & Reject Actions ---
++    detailModalApproveBtn?.addEventListener("click", () => {
++        if (!state.currentDetailProduct) return;
++        confirmApprove(state.currentDetailProduct.id, state.currentDetailProduct.title);
++    });
++
++    detailModalRejectBtn?.addEventListener("click", () => {
++        if (!state.currentDetailProduct) return;
++        openRejectModal(state.currentDetailProduct.id, state.currentDetailProduct.title);
++    });
++
++    // --- Quick Approve Logic ---
++    async function confirmApprove(productId, productTitle) {
++        if (!confirm(`Xác nhận PHÊ DUYỆT sản phẩm #${productId}?\n\n"${productTitle}"\n\nSản phẩm sẽ được hiển thị công khai trên chợ cho người mua.`)) {
++            return;
++        }
++
+         try {
+-            const previousId = keepCurrent ? currentProductId : null;
+-            const data = await api("/api/admin/products?status=PENDING&page=0&size=100");
+-            pendingProducts = Array.isArray(data.Records) ? data.Records : [];
+-            const keyword = (searchInput?.value || "").trim().toLocaleLowerCase("vi-VN");
+-            visibleProducts = pendingProducts.filter(p => !keyword || String(p.id).includes(keyword) || (p.title || "").toLocaleLowerCase("vi-VN").includes(keyword) || (p.sellerName || "").toLocaleLowerCase("vi-VN").includes(keyword));
+-            const selected = visibleProducts.find(p => p.id === previousId) || visibleProducts[0];
+-            updateCounters(data.Stats);
+-            renderProduct(selected);
+-            renderQueue();
+-            if (!pendingProducts.length) toast("Không có sản phẩm nào đang chờ duyệt.", "success");
+-        } catch (error) {
+-            if (productDemo) productDemo.style.display = "none";
+-            if (communityPost) communityPost.style.display = "none";
+-            if (queueList) queueList.innerHTML = "<p style='padding:16px;color:#dc2626'>Không tải được danh sách. " + escapeHtml(error.message) + "</p>";
+-            toast(error.message, "danger");
++            toast("Đang tiến hành phê duyệt...", "normal");
++            const res = await api(`/api/admin/products/${productId}/approve`, {
++                method: "POST"
++            });
++            toast(res.Message || "Đã phê duyệt sản phẩm thành công!", "success");
++            closeDetailModal();
++            await loadProducts();
++            await loadStats();
++        } catch (err) {
++            toast(err.message, "danger");
+         }
+     }
+ 
+-    function escapeHtml(value) {
+-        return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
++    // --- Reject Modal Logic ---
++    function openRejectModal(productId, productTitle) {
++        state.currentRejectProductId = productId;
++        if (rejectModalProductTitle) {
++            rejectModalProductTitle.textContent = `#${productId} - ${productTitle || "Sản phẩm"}`;
++        }
++        if (rejectReasonInput) rejectReasonInput.value = "";
++        if (rejectCharCount) rejectCharCount.textContent = "0";
++        if (rejectModal) rejectModal.style.display = "flex";
++        rejectReasonInput?.focus();
+     }
+ 
+-    async function moderate(action, reason) {
+-        if (!currentProductId || busy) return;
+-        const productId = currentProductId;
+-        setBusy(true);
++    function closeRejectModal() {
++        if (rejectModal) rejectModal.style.display = "none";
++        state.currentRejectProductId = null;
++    }
++
++    cancelRejectBtn?.addEventListener("click", closeRejectModal);
++    cancelRejectModalBtn?.addEventListener("click", closeRejectModal);
++    rejectModal?.addEventListener("click", (e) => {
++        if (e.target === rejectModal) closeRejectModal();
++    });
++
++    // Quick Chips for Rejection Reasons
++    rejectChips.forEach(chip => {
++        chip.addEventListener("click", () => {
++            const reason = chip.dataset.reason;
++            if (rejectReasonInput) {
++                if (rejectReasonInput.value.trim()) {
++                    rejectReasonInput.value = rejectReasonInput.value.trim() + " " + reason;
++                } else {
++                    rejectReasonInput.value = reason;
++                }
++                if (rejectCharCount) rejectCharCount.textContent = rejectReasonInput.value.length;
++                rejectReasonInput.focus();
++            }
++        });
++    });
++
++    rejectReasonInput?.addEventListener("input", () => {
++        if (rejectCharCount) rejectCharCount.textContent = rejectReasonInput.value.length;
++    });
++
++    confirmRejectBtn?.addEventListener("click", async () => {
++        const reason = (rejectReasonInput?.value || "").trim();
++        if (!reason) {
++            toast("Vui lòng nhập lý do từ chối để thông báo cho người bán.", "warning");
++            rejectReasonInput?.focus();
++            return;
++        }
++        if (reason.length > 1000) {
++            toast("Lý do từ chối không được vượt quá 1000 ký tự.", "warning");
++            return;
++        }
++
+         try {
+-            const options = { method: "POST", headers: { Accept: "application/json" } };
+-            if (action === "reject") options.body = JSON.stringify({ reason });
+-            const result = await api(`/api/admin/products/${productId}/${action}`, options);
+-            pendingProducts = pendingProducts.filter(p => p.id !== productId);
+-            visibleProducts = visibleProducts.filter(p => p.id !== productId);
+-            if (rejectModal) rejectModal.style.display = "none";
+-            toast(result.Message || (action === "approve" ? "Đã duyệt sản phẩm." : "Đã từ chối sản phẩm."), action === "approve" ? "success" : "warning");
+-            currentProductId = null;
+-            await loadPendingProducts();
++            toast("Đang gửi kết quả từ chối...", "normal");
++            const res = await api(`/api/admin/products/${state.currentRejectProductId}/reject`, {
++                method: "POST",
++                body: JSON.stringify({ reason })
++            });
++            toast(res.Message || "Đã từ chối kiểm duyệt sản phẩm.", "warning");
++            closeRejectModal();
++            closeDetailModal();
++            await loadProducts();
+             await loadStats();
+-        } catch (error) {
+-            toast(error.message, "danger");
+-        } finally {
+-            setBusy(false);
++        } catch (err) {
++            toast(err.message, "danger");
+         }
++    });
++
++    // --- Lightbox Image Preview ---
++    function openLightbox(src) {
++        if (!lightboxModal || !lightboxImg) return;
++        lightboxImg.src = src;
++        lightboxModal.style.display = "flex";
+     }
+ 
+-    approveButton?.addEventListener("click", () => {
+-        if (!currentProductId || busy) return;
+-        if (confirm("Xác nhận phê duyệt sản phẩm này? Sản phẩm sẽ được chuyển sang trạng thái Đã duyệt.")) moderate("approve");
++    lightboxModal?.addEventListener("click", () => {
++        lightboxModal.style.display = "none";
+     });
+ 
+-    rejectButton?.addEventListener("click", () => {
+-        if (!currentProductId || busy) return;
+-        if (rejectReasonInput) rejectReasonInput.value = "";
+-        if (rejectModal) rejectModal.style.display = "flex";
+-        rejectReasonInput?.focus();
++    // --- Search & Filter Controls ---
++    let searchDebounceTimer = null;
++    function handleSearch(keyword) {
++        clearTimeout(searchDebounceTimer);
++        searchDebounceTimer = setTimeout(() => {
++            state.keyword = keyword.trim();
++            state.page = 0;
++            if (clearSearchBtn) {
++                clearSearchBtn.style.display = state.keyword ? "inline-block" : "none";
++            }
++            loadProducts();
++        }, 350);
++    }
++
++    inlineSearchInput?.addEventListener("input", (e) => {
++        handleSearch(e.target.value);
++        if (topSearchInput) topSearchInput.value = e.target.value;
+     });
+ 
+-    cancelRejectButton?.addEventListener("click", () => { if (rejectModal) rejectModal.style.display = "none"; });
+-    rejectModal?.addEventListener("click", event => { if (event.target === rejectModal) rejectModal.style.display = "none"; });
+-    confirmRejectButton?.addEventListener("click", () => {
+-        const reason = (rejectReasonInput?.value || "").trim();
+-        if (!reason) { toast("Vui lòng nhập lý do từ chối.", "warning"); rejectReasonInput?.focus(); return; }
+-        if (reason.length > 1000) { toast("Lý do từ chối tối đa 1000 ký tự.", "warning"); return; }
+-        moderate("reject", reason);
++    topSearchInput?.addEventListener("input", (e) => {
++        handleSearch(e.target.value);
++        if (inlineSearchInput) inlineSearchInput.value = e.target.value;
++    });
++
++    clearSearchBtn?.addEventListener("click", () => {
++        if (inlineSearchInput) inlineSearchInput.value = "";
++        if (topSearchInput) topSearchInput.value = "";
++        clearSearchBtn.style.display = "none";
++        state.keyword = "";
++        state.page = 0;
++        loadProducts();
++    });
++
++    pageSizeSelect?.addEventListener("change", (e) => {
++        state.size = Number(e.target.value) || 10;
++        state.page = 0;
++        loadProducts();
++    });
++
++    refreshBtn?.addEventListener("click", () => {
++        refreshBtn.style.transform = "rotate(180deg)";
++        refreshBtn.style.transition = "transform .4s ease";
++        setTimeout(() => {
++            refreshBtn.style.transform = "none";
++            refreshBtn.style.transition = "none";
++        }, 400);
++        loadStats();
++        loadProducts();
+     });
+ 
+-    skipButton?.addEventListener("click", () => {
+-        if (!visibleProducts.length) return;
+-        const next = visibleProducts.find(p => p.id !== currentProductId);
+-        if (next) renderProduct(next);
+-        else toast("Không còn sản phẩm khác trong hàng đợi.", "warning");
++    // Filter Tabs
++    statusTabs.forEach(tab => {
++        tab.addEventListener("click", () => {
++            statusTabs.forEach(t => t.classList.remove("active"));
++            tab.classList.add("active");
++            state.status = tab.dataset.status || "PENDING";
++            state.page = 0;
++            loadProducts();
++        });
+     });
+ 
+-    searchInput?.addEventListener("input", () => {
+-        const keyword = searchInput.value.trim().toLocaleLowerCase("vi-VN");
+-        visibleProducts = pendingProducts.filter(p => !keyword || String(p.id).includes(keyword) || (p.title || "").toLocaleLowerCase("vi-VN").includes(keyword) || (p.sellerName || "").toLocaleLowerCase("vi-VN").includes(keyword));
+-        const selected = visibleProducts.find(p => p.id === currentProductId) || visibleProducts[0];
+-        renderProduct(selected);
+-        renderQueue();
++    // --- Keyboard Shortcuts ---
++    document.addEventListener("keydown", (e) => {
++        if (e.key === "Escape") {
++            if (lightboxModal && lightboxModal.style.display !== "none") {
++                lightboxModal.style.display = "none";
++            } else if (rejectModal && rejectModal.style.display !== "none") {
++                closeRejectModal();
++            } else if (detailModal && detailModal.style.display !== "none") {
++                closeDetailModal();
++            }
++        }
+     });
+ 
+-    // Trang này hiện chỉ kiểm duyệt sản phẩm; ẩn tab cộng đồng demo để không gây hiểu nhầm.
+-    document.querySelectorAll(".post-type-tab").forEach(tab => {
+-        if (tab.dataset.type === "article") tab.style.display = "none";
+-        else tab.addEventListener("click", () => tab.classList.add("active"));
++    // --- Admin Role Guard ---
++    async function verifyAdminRole() {
++        try {
++            const res = await fetch('/api/account/me', { credentials: 'include', headers: { Accept: 'application/json' } });
++            if (!res.ok) {
++                window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
++                return false;
++            }
++            const user = await res.json();
++            if (!user || user.role !== 'ADMIN') {
++                alert('Tài khoản của bạn (' + (user ? user.email : '') + ') không có quyền Quản trị viên (ADMIN) để truy cập trang này.');
++                window.location.href = '/buyer/html/home.html';
++                return false;
++            }
++            return true;
++        } catch (e) {
++            return true;
++        }
++    }
++
++    // --- Initial Boot ---
++    verifyAdminRole().then(isAdmin => {
++        if (!isAdmin) return;
++        loadStats();
++        loadProducts();
+     });
+-    if (communityPost) communityPost.style.display = "none";
+-    if (productDemo) productDemo.style.display = "flex";
+-    loadPendingProducts();
+-    loadStats();
+ });
+diff --git a/comicworm/src/main/resources/static/seller/css/products.css b/comicworm/src/main/resources/static/seller/css/products.css
+index 438c244..71f299d 100644
+--- a/comicworm/src/main/resources/static/seller/css/products.css
++++ b/comicworm/src/main/resources/static/seller/css/products.css
+@@ -87,13 +87,16 @@
+   align-items: center;
+   justify-content: center;
+   padding: 20px;
++  visibility: hidden;
+   opacity: 0;
+   pointer-events: none;
+-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
++  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.25s;
+ }
+ .custom-modal-backdrop.active {
++  visibility: visible;
+   opacity: 1;
+   pointer-events: auto;
++  transition-delay: 0s;
+ }
+ .custom-modal-card {
+   background: #ffffff;
+diff --git a/comicworm/src/main/resources/static/seller/js/import-excel-modal.js b/comicworm/src/main/resources/static/seller/js/import-excel-modal.js
+new file mode 100644
+index 0000000..56acb2e
+--- /dev/null
++++ b/comicworm/src/main/resources/static/seller/js/import-excel-modal.js
+@@ -0,0 +1,36 @@
++(() => {
++  const modal = document.getElementById('importExcelModal');
++  if (!modal) return;
++  const fileInput = document.getElementById('excelFileInput');
++
++  const openModal = () => {
++    modal.classList.add('active');
++    modal.setAttribute('aria-hidden', 'false');
++  };
++
++  const closeModal = () => {
++    modal.classList.remove('active');
++    modal.setAttribute('aria-hidden', 'true');
++  };
++
++  document.addEventListener('click', event => {
++    const target = event.target;
++    if (!(target instanceof Element)) return;
++
++    if (target.closest('#importExcelButton')) {
++      openModal();
++      fileInput?.click();
++      return;
++    }
++
++    if (target.closest('#closeImportModalBtn, #cancelImportModalBtn') || target === modal) {
++      closeModal();
++    }
++  });
++
++  document.addEventListener('keydown', event => {
++    if (event.key === 'Escape' && modal.classList.contains('active')) {
++      closeModal();
++    }
++  });
++})();
+* Unmerged path comicworm/src/main/resources/static/shared/js/account-api.js
+diff --git a/comicworm/src/main/resources/static/shared/js/header-auth.js b/comicworm/src/main/resources/static/shared/js/header-auth.js
+index 5fde674..6032193 100644
+--- a/comicworm/src/main/resources/static/shared/js/header-auth.js
++++ b/comicworm/src/main/resources/static/shared/js/header-auth.js
+@@ -263,7 +263,7 @@
+             : `<div class="user-avatar-img">${initials}</div>`;
+ 
+         const sellerLink = user.isSeller
+-            ? '<a href="/seller/html/index.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
++            ? '<a href="/seller/html/orders.html" class="user-dropdown-item"><i class="fa-solid fa-store"></i> <span>Kênh Người bán</span></a>'
+             : '';
+ 
+         const adminLink = role === 'ADMIN'
+* Unmerged path comicworm/src/main/resources/static/shared/sidebar/sidebar.js
+diff --git a/comicworm/src/main/resources/templates/error/403.html b/comicworm/src/main/resources/templates/error/403.html
+new file mode 100644
+index 0000000..f7acced
+--- /dev/null
++++ b/comicworm/src/main/resources/templates/error/403.html
+@@ -0,0 +1,129 @@
++<!DOCTYPE html>
++<html lang="vi">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>403 - Không có quyền truy cập | ComicWorm</title>
++    <link rel="preconnect" href="https://fonts.googleapis.com">
++    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
++    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
++    <style>
++        * { box-sizing: border-box; margin: 0; padding: 0; }
++        body {
++            font-family: 'Plus Jakarta Sans', sans-serif;
++            background: #F8FAFC;
++            color: #0F172A;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            min-height: 100vh;
++            padding: 24px;
++        }
++        .error-card {
++            background: #FFFFFF;
++            border: 1px solid #E2E8F0;
++            border-radius: 20px;
++            padding: 48px 36px;
++            max-width: 520px;
++            width: 100%;
++            text-align: center;
++            box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.1);
++        }
++        .error-icon-box {
++            width: 80px;
++            height: 80px;
++            border-radius: 50%;
++            background: #FEF2F2;
++            color: #EF4444;
++            display: inline-flex;
++            align-items: center;
++            justify-content: center;
++            font-size: 36px;
++            margin-bottom: 24px;
++        }
++        .error-code {
++            font-family: 'Space Grotesk', sans-serif;
++            font-size: 1.1rem;
++            font-weight: 700;
++            color: #EF4444;
++            letter-spacing: 0.08em;
++            text-transform: uppercase;
++            margin-bottom: 8px;
++        }
++        .error-title {
++            font-family: 'Space Grotesk', sans-serif;
++            font-size: 1.6rem;
++            font-weight: 700;
++            color: #0F172A;
++            margin-bottom: 14px;
++        }
++        .error-desc {
++            font-size: 0.95rem;
++            color: #64748B;
++            line-height: 1.6;
++            margin-bottom: 28px;
++        }
++        .error-actions {
++            display: flex;
++            gap: 12px;
++            justify-content: center;
++            flex-wrap: wrap;
++        }
++        .btn {
++            display: inline-flex;
++            align-items: center;
++            gap: 8px;
++            height: 44px;
++            padding: 0 22px;
++            border-radius: 10px;
++            font-family: inherit;
++            font-size: 0.92rem;
++            font-weight: 600;
++            text-decoration: none;
++            cursor: pointer;
++            transition: all 0.2s;
++            border: none;
++        }
++        .btn-primary {
++            background: #F97316;
++            color: #FFFFFF;
++            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
++        }
++        .btn-primary:hover {
++            background: #EA580C;
++            transform: translateY(-1px);
++        }
++        .btn-outline {
++            background: #F1F5F9;
++            color: #475569;
++            border: 1px solid #CBD5E1;
++        }
++        .btn-outline:hover {
++            background: #E2E8F0;
++            color: #0F172A;
++        }
++    </style>
++</head>
++<body>
++    <div class="error-card">
++        <div class="error-icon-box">
++            <i class="fa-solid fa-shield-halved"></i>
++        </div>
++        <div class="error-code">Lỗi 403 • Quyền truy cập bị từ chối</div>
++        <h1 class="error-title">Yêu cầu quyền Quản trị viên (ADMIN)</h1>
++        <p class="error-desc">
++            Tài khoản bạn đang đăng nhập không có quyền truy cập vào khu vực Quản trị hệ thống (Admin Console). Vui lòng đăng nhập bằng tài khoản có vai trò Quản trị viên để tiếp tục.
++        </p>
++        <div class="error-actions">
++            <a href="/buyer/html/home.html" class="btn btn-primary">
++                <i class="fa-solid fa-house"></i> Về trang chủ
++            </a>
++            <a href="/auth/logout" class="btn btn-outline">
++                <i class="fa-solid fa-right-from-bracket"></i> Đổi tài khoản khác
++            </a>
++        </div>
++    </div>
++</body>
++</html>
++
+diff --git a/comicworm/src/main/resources/templates/view/admin/html/postModeration.html b/comicworm/src/main/resources/templates/view/admin/html/postModeration.html
+index 62cfa5e..3516270 100644
+--- a/comicworm/src/main/resources/templates/view/admin/html/postModeration.html
++++ b/comicworm/src/main/resources/templates/view/admin/html/postModeration.html
+@@ -4,7 +4,7 @@
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-  <title>Kiểm duyệt bài đăng</title>
++  <title>Danh sách kiểm duyệt bài đăng | BookMooch Admin Console</title>
+ 
+   <!-- Google Fonts -->
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+@@ -44,8 +44,8 @@
+             <line x1="15" y1="15" x2="21" y2="21" />
+             <line x1="4" y1="4" x2="9" y2="9" />
+           </svg>
+-          <span>Duyệt bài</span>
+-          <span class="nav-badge">18</span>
++          <span>Duyệt bài đăng</span>
++          <span class="nav-badge" id="sidebarBadge">0</span>
+         </a>
+         <a href="report_resolution.html" class="nav-item">
+           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+@@ -109,303 +109,350 @@
+       <!-- Top Header -->
+       <header class="top-bar">
+         <div>
+-          <h1 class="page-title">Kiểm duyệt bài đăng</h1>
++          <h1 class="page-title">Kiểm duyệt bài đăng sản phẩm</h1>
+           <div class="status-indicator">
+             <span class="status-dot"></span>
+-            <span>Trực tuyến • Đang có 18 bài cần xử lý</span>
++            <span id="statusIndicatorText">Đang tải trạng thái kiểm duyệt...</span>
+           </div>
+         </div>
+ 
+         <div class="header-actions">
+           <div class="search-input-wrap">
+-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+-              stroke-width="2">
++            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <circle cx="11" cy="11" r="8" />
+               <line x1="21" y1="21" x2="16.65" y2="16.65" />
+             </svg>
+-            <input type="text" placeholder="Tìm kiếm từ khóa, ID..." class="search-input">
++            <input type="text" id="topSearchInput" placeholder="Tìm theo tên truyện, ID, người bán..." class="search-input">
+           </div>
+-          <button class="icon-btn notification-btn" aria-label="Thông báo">
+-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
++          <button class="icon-btn notification-btn" id="refreshBtn" title="Làm mới danh sách">
++            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++              <polyline points="23 4 23 10 17 10" />
++              <polyline points="1 20 1 14 7 14" />
++              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+             </svg>
+-            <span class="badge-dot"></span>
+           </button>
+           <div class="user-profile">
+             <img class="avatar avatar-sm"
+               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+-              alt="Moderator">
++              alt="Admin Moderator">
+           </div>
+         </div>
+       </header>
+ 
+       <!-- Main Content -->
+       <main class="main-content">
+-        <!-- Post Type Filter -->
+-        <div class="post-type-filter">
+-          <div class="filter-label">
+-            <span>Loại bài viết</span>
+-          </div>
+-
+-          <div class="filter-tabs">
+-            <button class="post-type-tab active" data-type="product">
+-              <span class="tab-icon">🛒</span>
+-              <span>
+-                <strong>Bài đăng sản phẩm bán mới</strong>
+-                <small>Đăng sản phẩm để bán</small>
+-              </span>
+-            </button>
+-
+-            <button class="post-type-tab" data-type="article">
+-              <span class="tab-icon">📝</span>
+-              <span>
+-                <strong>Bài viết cộng đồng</strong>
+-                <small>Bài viết, chia sẻ, thảo luận</small>
+-              </span>
+-            </button>
+-          </div>
+-        </div>
+-        <!-- Metrics -->
++        <!-- Metrics (KPIs) -->
+         <section class="metrics-grid">
+-          <div class="metric-card">
+-            <span class="metric-label">Cần xử lý gấp</span>
++          <div class="metric-card" style="border-left: 4px solid #f59e0b;">
++            <span class="metric-label">Cần xử lý (Chờ duyệt)</span>
+             <div class="metric-value-wrap">
+-              <span class="metric-num text-danger">05</span>
++              <span class="metric-num text-danger" id="kpiPendingCount">0</span>
+               <span class="metric-sub">bài đăng</span>
+             </div>
+           </div>
+-          <div class="metric-card">
++          <div class="metric-card" style="border-left: 4px solid #10b981;">
+             <span class="metric-label">Đã phê duyệt</span>
+             <div class="metric-value-wrap">
+-              <span class="metric-num text-primary">08</span>
++              <span class="metric-num text-primary" id="kpiApprovedCount" style="color:#059669;">0</span>
+               <span class="metric-sub">bài đăng</span>
+             </div>
+           </div>
+-          <div class="metric-card">
++          <div class="metric-card" style="border-left: 4px solid #ef4444;">
+             <span class="metric-label">Đã từ chối</span>
+             <div class="metric-value-wrap">
+-              <span class="metric-num text-neutral">05</span>
++              <span class="metric-num text-neutral" id="kpiRejectedCount" style="color:#dc2626;">0</span>
+               <span class="metric-sub">bài đăng</span>
+             </div>
+           </div>
++          <div class="metric-card" style="border-left: 4px solid #6366f1;">
++            <span class="metric-label">Tổng bài đăng</span>
++            <div class="metric-value-wrap">
++              <span class="metric-num" id="kpiTotalCount" style="color:#4f46e5;">0</span>
++              <span class="metric-sub">tất cả</span>
++            </div>
++          </div>
+         </section>
+ 
+-        <!-- Dashboard Layout: 2 Columns on Desktop -->
+-        <div class="dashboard-grid">
++        <!-- Status Filter Tabs & Toolbar -->
++        <div class="mod-toolbar-card">
++          <div class="mod-status-tabs">
++            <button type="button" class="mod-tab-btn active" data-status="PENDING">
++              <span>⏳ Chờ duyệt</span>
++              <span class="mod-tab-count" id="tabPendingBadge">0</span>
++            </button>
++            <button type="button" class="mod-tab-btn" data-status="APPROVED">
++              <span>✅ Đã duyệt</span>
++              <span class="mod-tab-count" id="tabApprovedBadge">0</span>
++            </button>
++            <button type="button" class="mod-tab-btn" data-status="REJECTED">
++              <span>❌ Đã từ chối</span>
++              <span class="mod-tab-count" id="tabRejectedBadge">0</span>
++            </button>
++            <button type="button" class="mod-tab-btn" data-status="ALL">
++              <span>📑 Tất cả</span>
++              <span class="mod-tab-count" id="tabAllBadge">0</span>
++            </button>
++          </div>
+ 
+-          <!-- Column 1: Active Moderation Task -->
+-          <div class="primary-col">
+-            <div class="section-header">
+-              <h2 class="section-title">Đang kiểm duyệt</h2>
+-              <button class="btn-text">Bỏ qua bài này</button>
++          <div class="mod-filter-controls">
++            <div class="mod-search-box">
++              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++                <circle cx="11" cy="11" r="8" />
++                <line x1="21" y1="21" x2="16.65" y2="16.65" />
++              </svg>
++              <input type="text" id="inlineSearchInput" placeholder="Tìm theo tên truyện, ID, người bán...">
++              <button type="button" id="clearSearchBtn" style="display:none;" title="Xóa tìm kiếm">&times;</button>
++            </div>
++            <div class="mod-select-wrap">
++              <label for="pageSizeSelect">Hiển thị:</label>
++              <select id="pageSizeSelect">
++                <option value="10">10 bài</option>
++                <option value="25">25 bài</option>
++                <option value="50">50 bài</option>
++                <option value="100">100 bài</option>
++              </select>
+             </div>
++          </div>
++        </div>
+ 
+-            <article class="mod-card">
+-              <!-- Post Header -->
+-              <div class="post-type-badge" id="currentPostType">
+-                📝 BÀI VIẾT CỘNG ĐỒNG
++        <!-- Table Container -->
++        <div class="mod-table-card">
++          <div class="mod-table-header-info">
++            <span id="tableSummaryText">Đang tải danh sách bài chờ duyệt...</span>
++          </div>
++
++          <div class="mod-table-responsive">
++            <table class="mod-table">
++              <thead>
++                <tr>
++                  <th style="width: 80px;">Ảnh bìa</th>
++                  <th style="min-width: 250px;">Thông tin sản phẩm</th>
++                  <th style="min-width: 180px;">Người bán</th>
++                  <th style="width: 140px;">Giá & Kho</th>
++                  <th style="width: 130px;">Tình trạng</th>
++                  <th style="width: 140px;">Ngày gửi</th>
++                  <th style="width: 110px;">Trạng thái</th>
++                  <th style="width: 180px; text-align: center;">Thao tác</th>
++                </tr>
++              </thead>
++              <tbody id="productTableBody">
++                <!-- Rows injected dynamically via JS -->
++              </tbody>
++            </table>
++          </div>
++
++          <!-- Empty State -->
++          <div id="tableEmptyState" style="display:none;" class="mod-empty-state">
++            <div class="empty-icon">📭</div>
++            <h3 id="emptyStateTitle">Không có bài đăng nào cần duyệt</h3>
++            <p id="emptyStateDesc">Tất cả bài đăng sản phẩm đã được kiểm duyệt hoàn tất.</p>
++          </div>
++
++          <!-- Loading State -->
++          <div id="tableLoadingState" class="mod-loading-state">
++            <div class="mod-spinner"></div>
++            <span>Đang tải danh sách sản phẩm từ máy chủ...</span>
++          </div>
++
++          <!-- Pagination Bar -->
++          <div class="mod-pagination-bar" id="paginationBar" style="display:none;">
++            <div class="pagination-info" id="paginationInfo">
++              Đang hiển thị 1 - 10 / 88 bài
++            </div>
++            <div class="pagination-buttons" id="paginationControls">
++              <!-- Page buttons injected via JS -->
++            </div>
++          </div>
++        </div>
++      </main>
++    </div>
++  </div>
++
++  <!-- MODAL: XEM CHI TIẾT SẢN PHẨM -->
++  <div id="productDetailModal" class="mod-modal-overlay" style="display:none;">
++    <div class="mod-modal-dialog mod-detail-dialog">
++      <div class="mod-modal-header">
++        <div style="display:flex; align-items:center; gap:10px;">
++          <span class="mod-modal-tag" id="detailModalIdTag">#0000</span>
++          <h2 class="mod-modal-title" id="detailModalTitle">Chi tiết sản phẩm</h2>
++        </div>
++        <button type="button" class="mod-modal-close" id="closeDetailModalBtn">&times;</button>
++      </div>
++
++      <div class="mod-modal-body">
++        <div class="detail-grid">
++          <!-- Cột Trái: Ảnh và Tình trạng -->
++          <div class="detail-col-media">
++            <div class="detail-main-img-wrap" id="detailMainImgWrap">
++              <img id="detailMainImg" src="" alt="Ảnh sản phẩm">
++            </div>
++            <!-- Thumbnails Gallery -->
++            <div class="detail-gallery-row" id="detailGalleryRow">
++              <!-- Thumbnail elements injected dynamically -->
++            </div>
++            <!-- Quick Tags -->
++            <div class="detail-quick-tags">
++              <div class="detail-quick-tag">
++                <span class="tag-label">Tình trạng sách:</span>
++                <strong id="detailConditionPercent">100%</strong>
+               </div>
+-              <div class="product-demo" id="productDemo" style="display:none;" data-product-id="">
+-                <div class="product-image">
+-                  <img id="productCoverImg" src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400" alt="Ảnh sản phẩm">
+-                </div>
+-
+-                <div class="product-info">
+-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+-                    <span id="productStatusBadge" class="badge" style="background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px;">Chờ duyệt</span>
+-                    <small id="productSellerInfo" style="color:#64748b; font-size:12px;">Người bán: Đang tải...</small>
+-                  </div>
+-                  <h3 id="productTitle">One Piece tập 105 – Bản tiếng Việt</h3>
+-
+-                  <div class="product-price" id="productPrice">
+-                    35.000đ
+-                  </div>
+-
+-                  <div class="product-details" id="productMetaDetails">
+-                    <span id="productCategory">📚 Truyện tranh</span>
+-                    <span id="productCondition">✨ Mới 95%</span>
+-                    <span id="productStock">📦 Còn 1 sản phẩm</span>
+-                  </div>
+-
+-                  <p class="product-description" id="productDescription">
+-                    Bán lại truyện One Piece tập 105 bản tiếng Việt.
+-                    Sách còn đẹp, không rách, không viết lên sách.
+-                  </p>
+-
+-                  <div id="productRejectReasonAlert" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:8px; margin-top:12px; font-size:13px;">
+-                    <strong>Lý do từ chối:</strong> <span id="productRejectReasonText"></span>
+-                  </div>
+-                </div>
+-                <!-- Product Action Buttons -->
+-                <div class="product-action-bar">
+-                  <div class="action-group-left">
+-                    <button type="button" class="btn btn-danger" id="productRejectBtn">
+-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+-                        <line x1="18" y1="6" x2="6" y2="18" />
+-                        <line x1="6" y1="6" x2="18" y2="18" />
+-                      </svg>
+-                      Từ chối duyệt
+-                    </button>
+-                  </div>
+-
+-                  <div class="action-group-right">
+-                    <button type="button" class="btn btn-outline" id="productApproveBtn" style="border-color:#10b981; color:#059669; font-weight:700;">
+-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+-                        <polyline points="20 6 9 17 4 12" />
+-                      </svg>
+-                      Phê duyệt sản phẩm
+-                    </button>
+-                  </div>
+-                </div>
++              <div class="detail-quick-tag">
++                <span class="tag-label">Hình thức đăng:</span>
++                <strong id="detailListingType">Bán</strong>
+               </div>
+-
+-              <div class="community-post" id="communityPost">
+-                <div class="card-header">
+-                  <div class="author-info">
+-                    <img class="avatar avatar-md"
+-                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
+-                      alt="hoangnam_tech">
+-                    <div>
+-                      <div class="author-name-row">
+-                        <span class="author-name">@maymeomeo</span>
+-                        <span class="badge badge-info">Người mới</span>
+-                      </div>
+-                      <div class="post-meta">
+-                        12 phút trước trong <strong>Cộng Đồng Công Nghệ</strong>
+-                      </div>
+-                    </div>
+-                  </div>
+-                  <div class="ai-badge-risk">
+-                    <div class="ai-risk-score">AI Đánh giá: 87% Rủi ro</div>
+-                    <span class="ai-tag">Phân loại: Spam / Lừa đảo</span>
+-                  </div>
+-                </div>
+-
+-                <!-- Warning Banner -->
+-                <div class="warning-banner">
+-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+-                    <path
+-                      d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+-                    <line x1="12" y1="9" x2="12" y2="13" />
+-                    <line x1="12" y1="17" x2="12.01" y2="17" />
+-                  </svg>
+-                  <div class="warning-text">
+-                    <strong>Bị báo cáo 7 lần:</strong> "Spam link độc hại, dụ dỗ đầu tư tiền ảo trái phép cam kết lãi
+-                    suất khủng".
+-                  </div>
+-                </div>
+-
+-                <!-- Post Content -->
+-                <div class="post-body">
+-                  <p>
+-                    Chào mọi người, mình là maymeomeo, một người chơi hệ yêu mèo chính hiệu. Dù bình thường rất vui vẻ
+-                    dễ tính nhưng dạo này mình đang cực kỳ "cọc" và ghét cay ghét đắng cái skin khỉ vừa mới ra mắt! </p>
+-                </div>
+-
+-                <!-- Action Buttons -->
+-                <div class="action-bar">
+-                  <div class="action-group-left">
+-                    <button class="btn btn-danger" onclick="window.location.href='hide_post.html?action=ban'">
+-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+-                        stroke-width="2">
+-                        <polyline points="3 6 5 6 21 6" />
+-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+-                      </svg>
+-                      Xóa & Cấm tài khoản
+-                    </button>
+-                    <button class="btn btn-warning" onclick="window.location.href='hide_post.html?action=warn'">
+-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+-                        stroke-width="2">
+-                        <path
+-                          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+-                        <line x1="12" y1="9" x2="12" y2="13" />
+-                        <line x1="12" y1="17" x2="12.01" y2="17" />
+-                      </svg>
+-                      Xóa & Cảnh cáo
+-                    </button>
+-                  </div>
+-                  <div class="action-group-right">
+-                    <button class="btn btn-outline" onclick="alert('Đã phê duyệt bài đăng thành công!')">
+-                      Phê duyệt bài
+-                    </button>
+-                  </div>
+-                </div>
++              <div class="detail-quick-tag">
++                <span class="tag-label">Số lượng kho:</span>
++                <strong id="detailStockQuantity">0 cuốn</strong>
+               </div>
+-            </article>
++            </div>
+           </div>
+ 
+-          <!-- Column 2: Next in Queue -->
+-          <div class="secondary-col">
+-            <div class="section-header">
+-              <h2 class="section-title">Hàng đợi tiếp theo</h2>
+-              <span class="queue-count">17 bài</span>
++          <!-- Cột Phải: Thông tin chi tiết -->
++          <div class="detail-col-info">
++            <div class="detail-price-box">
++              <div>
++                <span class="price-label">Giá niêm yết:</span>
++                <span class="price-val" id="detailPrice">0 ₫</span>
++              </div>
++              <span class="status-pill" id="detailStatusBadge">Chờ duyệt</span>
++            </div>
++
++            <!-- Bảng thuộc tính sản phẩm -->
++            <div class="detail-specs-grid">
++              <div class="spec-item">
++                <span class="spec-label">Thể loại truyện</span>
++                <span class="spec-value" id="detailCategory">—</span>
++              </div>
++              <div class="spec-item">
++                <span class="spec-label">Tác giả</span>
++                <span class="spec-value" id="detailAuthor">—</span>
++              </div>
++              <div class="spec-item">
++                <span class="spec-label">Nhà xuất bản</span>
++                <span class="spec-value" id="detailPublisher">—</span>
++              </div>
++              <div class="spec-item">
++                <span class="spec-label">Năm xuất bản</span>
++                <span class="spec-value" id="detailPublicationYear">—</span>
++              </div>
++              <div class="spec-item">
++                <span class="spec-label">Số tập / Bộ</span>
++                <span class="spec-value" id="detailVolumeNumbers">—</span>
++              </div>
++              <div class="spec-item">
++                <span class="spec-label">Phiên bản</span>
++                <span class="spec-value" id="detailEditionType">—</span>
++              </div>
+             </div>
+ 
+-            <div class="queue-list">
+-              <!-- Queue Item 1 -->
+-              <div class="queue-item" style="cursor:pointer;" onclick="window.location.href='report_resolution.html'">
+-                <div class="queue-item-header">
+-                  <div class="queue-author">
+-                    <img class="avatar avatar-sm"
+-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80"
+-                      alt="linhdan">
+-                    <div>
+-                      <span class="author-name">@linhdan_review</span>
+-                      <div class="post-meta">25 phút trước</div>
+-                    </div>
+-                  </div>
+-                  <span class="badge badge-warning-subtle">Nghi vấn</span>
+-                </div>
+-                <p class="queue-snippet">"Quán ăn này phục vụ quá tệ, nhân viên cư xử như dân vô học..."</p>
+-                <div class="queue-footer">
+-                  <span class="violation-tag">Ngôn từ kích động &rarr; Xử lý báo cáo</span>
+-                </div>
++            <!-- Thông tin Người bán -->
++            <div class="detail-seller-card">
++              <div class="seller-avatar-ph">👤</div>
++              <div class="seller-details">
++                <div class="seller-name" id="detailSellerName">Tên người bán</div>
++                <div class="seller-email" id="detailSellerEmail">email@example.com</div>
++                <div class="seller-id" id="detailSellerId">Mã người bán: #0</div>
+               </div>
++            </div>
++
++            <!-- Ghi chú Trao đổi (nếu có) -->
++            <div class="detail-trade-note" id="detailTradeNoteBox" style="display:none;">
++              <strong>🔄 Ghi chú mong muốn trao đổi:</strong>
++              <p id="detailTradeNoteText"></p>
++            </div>
+ 
+-              <!-- Queue Item 2 -->
+-              <div class="queue-item" style="cursor:pointer;" onclick="window.location.href='appeal-resolution.html'">
+-                <div class="queue-item-header">
+-                  <div class="queue-author">
+-                    <img class="avatar avatar-sm"
+-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+-                      alt="khoa">
+-                    <div>
+-                      <span class="author-name">@khoa_camera</span>
+-                      <div class="post-meta">40 phút trước</div>
+-                    </div>
+-                  </div>
+-                  <span class="badge badge-neutral-subtle">Kháng nghị</span>
+-                </div>
+-                <p class="queue-snippet">"Pass lại lens Sony FE 50mm F1.8 fullbox ngoại hình đẹp keng..."</p>
+-                <div class="queue-footer">
+-                  <span class="violation-tag text-neutral">Bán hàng sai quy định &rarr; Xem kháng nghị</span>
+-                </div>
++            <!-- Mô tả sản phẩm -->
++            <div class="detail-desc-box">
++              <div class="desc-heading">Mô tả chi tiết từ người bán:</div>
++              <div class="desc-content" id="detailDescriptionText">
++                Chưa có mô tả.
+               </div>
+             </div>
++
++            <!-- Nhật ký kiểm duyệt (nếu đã từng duyệt hoặc từ chối) -->
++            <div class="detail-history-box" id="detailHistoryBox" style="display:none;">
++              <div class="history-heading" id="detailHistoryHeading">Nhật ký xử lý:</div>
++              <div id="detailHistoryContent"></div>
++            </div>
+           </div>
++        </div>
++      </div>
+ 
++      <div class="mod-modal-footer">
++        <button type="button" class="btn-modal-cancel" id="detailModalCloseBtn">Đóng</button>
++        <div class="modal-action-buttons">
++          <button type="button" class="btn-modal-reject" id="detailModalRejectBtn">
++            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++              <line x1="18" y1="6" x2="6" y2="18" />
++              <line x1="6" y1="6" x2="18" y2="18" />
++            </svg>
++            Từ chối duyệt
++          </button>
++          <button type="button" class="btn-modal-approve" id="detailModalApproveBtn">
++            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++              <polyline points="20 6 9 17 4 12" />
++            </svg>
++            Phê duyệt sản phẩm
++          </button>
+         </div>
+-      </main>
++      </div>
+     </div>
+   </div>
+-  <!-- Modal Nhập Lý Do Từ Chối Duyệt Sản Phẩm -->
+-  <div id="rejectProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99999; align-items:center; justify-content:center;">
+-    <div style="background:#fff; border-radius:12px; width:90%; max-width:480px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+-      <h3 style="margin-top:0; color:#dc2626; display:flex; align-items:center; gap:8px;">
+-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+-        Từ chối duyệt sản phẩm
+-      </h3>
+-      <p style="color:#64748b; font-size:14px; margin-bottom:12px;">Vui lòng nhập lý do từ chối để thông báo cho người bán:</p>
+-      <textarea id="rejectReasonInput" maxlength="1000" rows="4" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-family:inherit; font-size:14px; box-sizing:border-box; resize:vertical;" placeholder="Ví dụ: Hình ảnh bìa mờ, thông tin tác giả và năm xuất bản chưa chính xác, hoặc vi phạm bản quyền..."></textarea>
+-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+-        <button type="button" class="btn btn-outline" id="cancelRejectBtn">Hủy bỏ</button>
+-        <button type="button" class="btn btn-danger" id="confirmRejectBtn">Xác nhận từ chối</button>
++
++  <!-- MODAL: TỪ CHỐI DUYỆT SẢN PHẨM -->
++  <div id="rejectProductModal" class="mod-modal-overlay" style="display:none;">
++    <div class="mod-modal-dialog mod-reject-dialog">
++      <div class="mod-modal-header">
++        <h3 style="margin:0; color:#dc2626; display:flex; align-items:center; gap:8px;">
++          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
++            <circle cx="12" cy="12" r="10" />
++            <line x1="15" y1="9" x2="9" y2="15" />
++            <line x1="9" y1="9" x2="15" y2="15" />
++          </svg>
++          Từ chối duyệt sản phẩm
++        </h3>
++        <button type="button" class="mod-modal-close" id="cancelRejectModalBtn">&times;</button>
+       </div>
++
++      <div class="mod-modal-body" style="padding: 20px 24px;">
++        <p style="color:#475569; font-size:14px; margin-bottom:12px;">
++          Đang từ chối sản phẩm: <strong id="rejectModalProductTitle" style="color:#0f172a;">—</strong>
++        </p>
++
++        <!-- Quick Reason Chips -->
++        <label style="display:block; font-size:13px; font-weight:600; color:#64748b; margin-bottom:6px;">Lý do gợi ý nhanh:</label>
++        <div class="reject-quick-chips">
++          <button type="button" class="chip-btn" data-reason="Ảnh bìa mờ, không rõ hình hoặc bị che khuất.">📷 Ảnh mờ / thiếu</button>
++          <button type="button" class="chip-btn" data-reason="Thông tin tác giả, NXB hoặc năm xuất bản chưa chính xác.">📚 Sai thông tin sách</button>
++          <button type="button" class="chip-btn" data-reason="Sản phẩm vi phạm bản quyền hoặc danh mục cấm giao dịch.">⚠️ Vi phạm chính sách</button>
++          <button type="button" class="chip-btn" data-reason="Mức giá không hợp lệ hoặc thông tin mô tả sai lệch nghiêm trọng.">💰 Giá / Mô tả sai</button>
++        </div>
++
++        <label for="rejectReasonInput" style="display:block; font-size:13px; font-weight:600; color:#334155; margin-top:14px; margin-bottom:6px;">
++          Lý do từ chối chi tiết (sẽ gửi thông báo đến người bán): <span style="color:#dc2626;">*</span>
++        </label>
++        <textarea id="rejectReasonInput" maxlength="1000" rows="4" class="mod-input"
++          placeholder="Nhập lý do từ chối cụ thể để người bán có thể chỉnh sửa lại bài đăng..."></textarea>
++        <div style="text-align:right; font-size:12px; color:#94a3b8; margin-top:4px;">
++          <span id="rejectCharCount">0</span>/1000 ký tự
++        </div>
++      </div>
++
++      <div class="mod-modal-footer">
++        <button type="button" class="btn-modal-cancel" id="cancelRejectBtn">Hủy bỏ</button>
++        <button type="button" class="btn-modal-danger" id="confirmRejectBtn">Xác nhận từ chối</button>
++      </div>
++    </div>
++  </div>
++
++  <!-- Lightbox Modal Xem Ảnh Lớn -->
++  <div id="imgLightboxModal" class="mod-modal-overlay" style="display:none; z-index:100000; cursor:zoom-out;">
++    <div style="position:relative; max-width:90vw; max-height:90vh;">
++      <img id="lightboxImg" src="" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+     </div>
+   </div>
+ 
+   <script src="../js/postModeration.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff --git a/comicworm/src/main/resources/templates/view/index.html b/comicworm/src/main/resources/templates/view/index.html
+index fc535d1..db62569 100644
+--- a/comicworm/src/main/resources/templates/view/index.html
++++ b/comicworm/src/main/resources/templates/view/index.html
+@@ -444,7 +444,7 @@
+         <a href="buyer/html/home.html" class="btn-quick btn-primary">
+           <i class="fa-solid fa-store"></i> Chợ ComicHub
+         </a>
+-        <a href="seller/html/index.html" class="btn-quick btn-outline">
++        <a href="seller/html/orders.html" class="btn-quick btn-outline">
+           <i class="fa-solid fa-shop"></i> Kênh Người Bán
+         </a>
+         <a href="admin/html/dashboard.html" class="btn-quick btn-outline">
+@@ -1360,6 +1360,50 @@
+         filterPages();
+       });
+     });
++
++    // --- KIỂM TRA QUYỀN ADMIN TRƯỚC KHI VÀO TRANG ADMIN ---
++    let currentUserData = null;
++    let hasCheckedUser = false;
++
++    async function fetchCurrentUser() {
++      if (hasCheckedUser) return currentUserData;
++      try {
++        const res = await fetch('/api/account/me', { credentials: 'include', headers: { 'Accept': 'application/json' } });
++        if (res.ok) {
++          currentUserData = await res.json();
++        }
++      } catch (e) {
++        currentUserData = null;
++      }
++      hasCheckedUser = true;
++      return currentUserData;
++    }
++
++    document.querySelectorAll('a[href*="admin/html/"]').forEach(link => {
++      link.addEventListener('click', async (e) => {
++        const href = link.getAttribute('href');
++        if (href.includes('login.html')) return; // Bỏ qua trang login
++
++        e.preventDefault();
++        const user = await fetchCurrentUser();
++
++        if (!user || !user.email) {
++          if (confirm('Khu vực này yêu cầu quyền Quản trị viên (ADMIN).\n\nBạn chưa đăng nhập. Bạn có muốn chuyển đến trang Đăng nhập để đăng nhập tài khoản quản trị không?')) {
++            window.location.href = '/auth/login?redirect=' + encodeURIComponent(href);
++          }
++          return;
++        }
++
++        if (user.role !== 'ADMIN') {
++          const roleName = user.role === 'SELLER' ? 'Người bán' : 'Khách hàng';
++          alert(`Tài khoản hiện tại: ${user.email} (${roleName})\n\nBạn KHÔNG có quyền Quản trị viên (ADMIN) để truy cập trang này.\nVui lòng đăng xuất và đăng nhập bằng tài khoản Quản trị viên.`);
++          return;
++        }
++
++        // Đã xác thực quyền ADMIN -> Cho phép truy cập
++        window.location.href = href;
++      });
++    });
+   </script>
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/comicworm/src/main/resources/templates/view/seller/html/index.html b/comicworm/src/main/resources/templates/view/seller/html/index.html
+index 12d9941..00e7c86 100644
+--- a/comicworm/src/main/resources/templates/view/seller/html/index.html
++++ b/comicworm/src/main/resources/templates/view/seller/html/index.html
+@@ -2,6 +2,12 @@
+ <html lang="vi">
+ <head>
+   <script src="../../shared/js/seller-access.js"></script>
++  <script>
++    // Tự động chuyển tiếp sang trang quản lý đơn hàng thật kết nối Database
++    if (window.location.pathname.endsWith('/seller/html/index.html') && (!window.location.hash || window.location.hash === '#view-orders')) {
++      window.location.replace('orders.html' + window.location.search);
++    }
++  </script>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>ComicHub / BookMooch - Seller Center Dashboard</title>
+diff --git a/comicworm/src/main/resources/templates/view/seller/html/quan-ly-san-pham.html b/comicworm/src/main/resources/templates/view/seller/html/quan-ly-san-pham.html
+index 76d420c..464cdb7 100644
+--- a/comicworm/src/main/resources/templates/view/seller/html/quan-ly-san-pham.html
++++ b/comicworm/src/main/resources/templates/view/seller/html/quan-ly-san-pham.html
+@@ -18,6 +18,7 @@
+         <div class="topbar-left">
+           <h1 class="page-title"><span class="material-symbols-outlined">inventory_2</span> Quản lý sản phẩm</h1>
+           <p class="page-desc">Thêm, cập nhật và quản lý kho truyện của gian hàng bạn.</p>
++        </div>
+         <div class="topbar-right" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+           <a class="btn btn-secondary" id="downloadTemplateButton" href="/api/seller/products/excel-template" download style="text-decoration:none; display: inline-flex; align-items: center; gap: 6px;">
+             <span class="material-symbols-outlined">download</span> Tải file mẫu
+@@ -142,6 +143,7 @@
+     </div>
+   </div>
+ 
++  <script src="../js/import-excel-modal.js"></script>
+   <script src="../../shared/vendor/jquery/jquery-3.7.1.min.js"></script>
+   <script src="../../shared/vendor/jquery-ui/jquery-ui-1.14.2.min.js"></script>
+   <script src="../../shared/vendor/jtable/jquery.jtable.js"></script>

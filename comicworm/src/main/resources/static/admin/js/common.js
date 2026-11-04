@@ -58,7 +58,7 @@ async function loadSidebarComponent() {
     const container = document.getElementById('sidebarContainer');
     if (!container) return;
 
-    const activePage = container.getAttribute('data-active') || '';
+    const activePage = (container.getAttribute('data-active') || '').toLowerCase();
     let htmlContent = '';
 
     try {
@@ -74,10 +74,24 @@ async function loadSidebarComponent() {
 
     container.outerHTML = htmlContent;
 
+    const currentPath = window.location.pathname.toLowerCase().replace(/\\/g, '/');
+    const currentFile = currentPath.split('/').pop().replace(/\.html$/, '');
+
     const navItems = document.querySelectorAll('.app-sidebar .nav-item');
     navItems.forEach((item) => {
-        const pageKey = item.getAttribute('data-page');
-        item.classList.toggle('active', pageKey === activePage);
+        const pageKey = (item.getAttribute('data-page') || '').toLowerCase();
+        const href = (item.getAttribute('href') || '').toLowerCase();
+        const hrefFile = href.split('/').pop().replace(/\.html$/, '');
+
+        let isMatch = false;
+        if (pageKey && activePage && (pageKey === activePage || activePage.includes(pageKey) || pageKey.includes(activePage))) {
+            isMatch = true;
+        } else if (hrefFile && currentFile && (hrefFile === currentFile)) {
+            isMatch = true;
+        } else if (pageKey === 'postmoderation' && (currentFile.includes('report') || currentFile.includes('appeal') || currentFile.includes('support') || currentFile.includes('moderation') || currentFile.includes('post'))) {
+            isMatch = true;
+        }
+        item.classList.toggle('active', Boolean(isMatch));
     });
 
     const adminName = localStorage.getItem('bm_admin_name') || 'Quản trị viên';
@@ -107,6 +121,11 @@ function getFallbackSidebarTemplate() {
       <div class="nav-section-title">Quản trị hệ thống</div>
       <a href="accounts.html" class="nav-item" data-page="accounts">
         <div class="nav-item-content"><span class="material-symbols-outlined">manage_accounts</span><span>Quản lý tài khoản</span></div>
+        <span class="nav-badge">3</span>
+      </a>
+      <a href="seller-upgrades.html" class="nav-item" data-page="seller-upgrades">
+        <div class="nav-item-content"><span class="material-symbols-outlined">verified</span><span>Duyệt nâng cấp Người bán</span></div>
+        <span class="nav-badge" id="sidebarUpgradeBadge" style="background:#ea580c; color:#fff;">Mới</span>
       </a>
       <a href="staff.html" class="nav-item" data-page="staff">
         <div class="nav-item-content"><span class="material-symbols-outlined">badge</span><span>Nhân sự &amp; phân quyền</span></div>
@@ -118,11 +137,19 @@ function getFallbackSidebarTemplate() {
         <div class="nav-item-content"><span class="material-symbols-outlined">local_activity</span><span>Voucher toàn hệ thống</span></div>
       </a>
       <div class="nav-section-title">Tài chính &amp; vận hành</div>
+      <a href="statistics.html" class="nav-item" data-page="statistics">
+        <div class="nav-item-content"><span class="material-symbols-outlined">bar_chart</span><span>Thống kê biểu đồ</span></div>
+      </a>
       <a href="finance.html" class="nav-item" data-page="finance">
-        <div class="nav-item-content"><span class="material-symbols-outlined">finance</span><span>Doanh thu &amp; dòng tiền</span></div>
+        <div class="nav-item-content"><span class="material-symbols-outlined">monitoring</span><span>Doanh thu &amp; dòng tiền</span></div>
+        <span class="nav-badge">5</span>
       </a>
       <a href="orders.html" class="nav-item" data-page="orders">
         <div class="nav-item-content"><span class="material-symbols-outlined">package_2</span><span>Quản lý đơn hàng</span></div>
+      </a>
+      <div class="nav-section-title">Quản trị nội dung</div>
+      <a href="postModeration.html" class="nav-item" data-page="postModeration">
+        <div class="nav-item-content"><span class="material-symbols-outlined">gavel</span><span>Quản trị phê duyệt</span></div>
       </a>
     </nav>
     <div class="sidebar-footer">
