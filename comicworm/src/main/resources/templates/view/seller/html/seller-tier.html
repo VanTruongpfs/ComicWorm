@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="../../shared/js/seller-access.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cấp bậc gian hàng & Nâng cấp sàn | ComicHub Seller Portal</title>
   <link rel="stylesheet" href="../css/post-management.css">
   <link rel="stylesheet" href="../css/orders.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <style>
     .tier-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .tier-hero {
@@ -21,10 +24,10 @@
       padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 0.9rem;
       background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
     }
-    .tier-stats-row { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
-    .tier-stat-item { background: rgba(255,255,255,0.06); padding: 12px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-    .tier-stat-val { font-size: 1.35rem; font-weight: 800; color: #f59e0b; }
-    .tier-stat-lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+    .tier-stats-row { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+    .tier-stat-item { background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+    .tier-stat-val { font-size: 1.25rem; font-weight: 800; color: #f59e0b; }
+    .tier-stat-lbl { font-size: 0.78rem; color: #94a3b8; margin-top: 2px; }
 
     .alert-banner {
       padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 500;
@@ -46,14 +49,26 @@
       background: #3b82f6; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 2px 10px; border-radius: 9999px;
     }
     .tier-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
-    .tier-fee { font-size: 1.45rem; font-weight: 900; color: #ea580c; margin: 12px 0 16px; }
-    .tier-perks { list-style: none; padding: 0; margin: 0 0 20px; font-size: 0.85rem; color: #475569; display: flex; flex-direction: column; gap: 8px; }
+    .tier-fee { font-size: 1.4rem; font-weight: 900; color: #ea580c; margin: 8px 0 12px; }
+
+    /* Khối điều kiện đạt chuẩn */
+    .tier-criteria-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 10px 12px; margin-bottom: 14px; font-size: 0.8rem;
+    }
+    .criteria-title { font-weight: 700; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+    .criteria-item { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 0.78rem; }
+    .criteria-item.met { color: #16a34a; }
+    .criteria-item.unmet { color: #dc2626; font-weight: 600; }
+    .criteria-item span { font-size: 14px; }
+
+    .tier-perks { list-style: none; padding: 0; margin: 0 0 16px; font-size: 0.82rem; color: #475569; display: flex; flex-direction: column; gap: 6px; }
     .tier-perks li { display: flex; align-items: center; gap: 6px; }
     .tier-perks li span { color: #10b981; font-size: 16px; }
 
     .btn-upgrade-select {
       width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: 700;
-      cursor: pointer; transition: background 0.2s; text-align: center; font-size: 0.9rem;
+      cursor: pointer; transition: background 0.2s; text-align: center; font-size: 0.88rem;
     }
     .btn-upgrade-select.primary { background: #ea580c; color: #fff; }
     .btn-upgrade-select.primary:hover { background: #c2410c; }
@@ -122,7 +137,15 @@
             </div>
             <div class="tier-stat-item">
               <div class="tier-stat-val" id="statOrders">0</div>
-              <div class="tier-stat-lbl">Đơn hoàn thành</div>
+              <div class="tier-stat-lbl">Đơn hoàn tất</div>
+            </div>
+            <div class="tier-stat-item">
+              <div class="tier-stat-val" id="statReviews">0</div>
+              <div class="tier-stat-lbl">Đánh giá nhận được</div>
+            </div>
+            <div class="tier-stat-item">
+              <div class="tier-stat-val" id="statRating">0.0★</div>
+              <div class="tier-stat-lbl">Điểm sao trung bình</div>
             </div>
           </div>
         </section>
@@ -148,67 +171,64 @@
 
         <!-- Danh sách 5 Cấp bậc sàn -->
         <h2 style="font-size: 1.35rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
-          Lộ trình Cấp bậc Người bán (Cấp 1 - 5)
+          Lộ trình Cấp bậc &amp; Điều kiện Nâng Cấp
         </h2>
         <div class="tiers-grid" id="tiersGrid">
-          <!-- Render động từ API -->
+          <!-- Render dynamically qua seller-tier.js -->
         </div>
       </main>
     </div>
   </div>
 
-  <!-- Modal Thanh Toán & Upload Bill -->
+  <!-- Modal Chuyển khoản & Nộp minh chứng (Bill) -->
   <div class="modal-overlay" id="checkoutModal">
     <div class="modal-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="margin:0; font-size:1.25rem; font-weight:800;" id="modalTitle">Nâng cấp gian hàng</h3>
-        <button id="closeModalBtn" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:1.3rem; font-weight:800;" id="modalTitle">Nâng cấp gian hàng</h3>
+        <button id="closeModalBtn" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b;">✕</button>
       </div>
 
       <div class="form-group">
-        <label>Tên gian hàng / Thương hiệu Shop</label>
-        <input type="text" id="modalShopName" class="form-control" placeholder="Ví dụ: Tiệm Truyện Manga VIP">
+        <label>Tên gian hàng / Shop Name</label>
+        <input type="text" id="modalShopName" class="form-control" placeholder="Tên gian hàng của bạn">
       </div>
 
       <div class="form-group">
-        <label>Mô tả ngắn về gian hàng</label>
-        <textarea id="modalShopDesc" class="form-control" rows="2" placeholder="Chuyên truyện tranh hiếm, shounen, tankobon..."></textarea>
+        <label>Mô tả ngắn gian hàng</label>
+        <textarea id="modalShopDesc" class="form-control" rows="2" placeholder="Ví dụ: Chuyên manga hiếm, giao nhanh..."></textarea>
       </div>
 
-      <!-- Khu vực chuyển khoản VietQR -->
+      <!-- VietQR Chuyển khoản -->
       <div class="qr-box">
-        <div style="font-weight:700; color:#1e293b; margin-bottom:4px;">Chuyển khoản thanh toán phí nâng cấp</div>
-        <div style="font-size:1.35rem; font-weight:900; color:#ea580c; margin-bottom:10px;" id="qrFeeAmount">100.000₫</div>
-        <img id="qrImage" src="" alt="Mã VietQR Thanh Toán">
-        <div style="font-size:0.85rem; color:#64748b; margin-top:10px;">
+        <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">Quét mã VietQR để thanh toán</div>
+        <div style="font-size:1.3rem; font-weight:900; color:#ea580c; margin-bottom:10px;" id="qrFeeAmount">100.000₫</div>
+        <img id="qrImage" src="" alt="VietQR Thanh toán">
+        <div style="margin-top:12px; font-size:0.85rem; color:#475569; line-height:1.6;">
           Ngân hàng: <strong>MBBank</strong> • STK: <strong>0393710777</strong><br>
           Chủ TK: <strong>COMICWORM ADMIN</strong><br>
-          Nội dung: <strong id="qrContentCode" style="color:#2563eb;">NANG_CAP_SELLER</strong>
+          Nội dung CK: <strong style="color:#2563eb;" id="qrContentCode">NANG_CAP_SELLER</strong>
         </div>
       </div>
 
+      <!-- Upload Bill Chuyển Khoản -->
       <div class="form-group">
         <label>Tải lên ảnh chụp biên lai chuyển khoản (Bill) <span style="color:#ef4444;">*</span></label>
         <input type="file" id="proofFileInput" accept="image/*" class="form-control">
-        <div id="proofUploadStatus" style="font-size:0.85rem; color:#10b981; margin-top:4px; display:none;">
-          ✓ Đã tải ảnh lên máy chủ thành công
-        </div>
+        <div id="proofUploadStatus" style="font-size:0.85rem; margin-top:6px; display:none;"></div>
       </div>
 
       <div class="form-group">
-        <label>Mã giao dịch ngân hàng / Mã tham chiếu (nếu có)</label>
+        <label>Mã giao dịch ngân hàng (Tùy chọn)</label>
         <input type="text" id="modalTransactionCode" class="form-control" placeholder="Ví dụ: FT24102812345678">
       </div>
 
       <button id="btnSubmitUpgrade" class="btn-upgrade-select primary" style="padding:12px; font-size:1rem; margin-top:10px;">
-        Gửi yêu cầu & Xác nhận đã chuyển khoản
+        Gửi xác nhận &amp; Biên lai
       </button>
     </div>
   </div>
 
-  <script src="../../shared/js/account-api.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/seller-tier.js"></script>
 </body>
 </html>
-

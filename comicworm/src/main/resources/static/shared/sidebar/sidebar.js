@@ -35,21 +35,29 @@ const roleGroups = {
         ["◇", "Voucher shop", "../../seller/html/quan-ly-voucher.html"],
         ["▥", "Thống kê doanh thu", "../../seller/html/revenue.html"]
     ] },
-    ADMIN: { title: "Quản trị / Kiểm duyệt", items: [
-        ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
-        ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
-        ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
-        ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
-        ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
-        ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
+    ADMIN: { title: "Quản trị hệ thống", items: [
+        ["◆", "Admin Dashboard", "../../admin/html/dashboard.html"],
+        ["♙", "Quản lý tài khoản", "../../admin/html/accounts.html"],
+        ["★", "Duyệt nâng cấp Người bán", "../../admin/html/seller-upgrades.html"],
+        ["🪪", "Nhân sự & phân quyền", "../../admin/html/staff.html"],
+        ["₫", "Biểu phí & chính sách", "../../admin/html/fees.html"],
+        ["🏷", "Voucher toàn hệ thống", "../../admin/html/vouchers.html"],
+        ["📊", "Thống kê biểu đồ", "../../admin/html/statistics.html"],
+        ["📈", "Doanh thu & dòng tiền", "../../admin/html/finance.html"],
+        ["📦", "Quản lý đơn hàng", "../../admin/html/orders.html"],
+        ["✓", "Quản trị phê duyệt", "../../admin/html/postModeration.html"]
     ] },
-    MANAGER: { title: "Quản trị / Kiểm duyệt", items: [
-        ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
-        ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
-        ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
-        ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
-        ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
-        ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
+    MANAGER: { title: "Quản trị hệ thống", items: [
+        ["◆", "Admin Dashboard", "../../admin/html/dashboard.html"],
+        ["♙", "Quản lý tài khoản", "../../admin/html/accounts.html"],
+        ["★", "Duyệt nâng cấp Người bán", "../../admin/html/seller-upgrades.html"],
+        ["🪪", "Nhân sự & phân quyền", "../../admin/html/staff.html"],
+        ["₫", "Biểu phí & chính sách", "../../admin/html/fees.html"],
+        ["🏷", "Voucher toàn hệ thống", "../../admin/html/vouchers.html"],
+        ["📊", "Thống kê biểu đồ", "../../admin/html/statistics.html"],
+        ["📈", "Doanh thu & dòng tiền", "../../admin/html/finance.html"],
+        ["📦", "Quản lý đơn hàng", "../../admin/html/orders.html"],
+        ["✓", "Quản trị phê duyệt", "../../admin/html/postModeration.html"]
     ] }
 };
 

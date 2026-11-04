@@ -23,14 +23,14 @@ public class SellerAccountController {
     public String upgradePage(@AuthenticationPrincipal CustomUserDetails user,
             @RequestParam(defaultValue = "false") boolean csrfExpired, Model model) {
         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        if (user.isSeller()) return "redirect:/seller/html/orders.html";
+        if (user.isSeller()) return "redirect:/seller/html/index.html";
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản Người mua không có quyền tự nâng cấp thành Người bán.");
     }
 
     @PostMapping("/user/seller-upgrade")
     public String upgrade(@AuthenticationPrincipal CustomUserDetails user) {
         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        if (user.isSeller()) return "redirect:/seller/html/orders.html";
+        if (user.isSeller()) return "redirect:/seller/html/index.html";
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chức năng tự nâng cấp Người bán đã bị vô hiệu hóa.");
     }
 }

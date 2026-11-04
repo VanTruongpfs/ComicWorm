@@ -229,6 +229,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  let csrfInfo = null;
+  async function getCsrfHeaders() {
+    if (!csrfInfo) {
+      try {
+        const res = await fetch("/api/admin/products/csrf", { credentials: "include" });
+        if (res.ok) {
+          csrfInfo = await res.json();
+        }
+      } catch (_) {}
+    }
+    return csrfInfo ? { [csrfInfo.headerName || "X-CSRF-TOKEN"]: csrfInfo.token } : {};
+  }
+
   // Approve Upgrade
   window.approveUpgrade = async function (id) {
     if (!confirm(`Bạn có chắc chắn muốn DUYỆT yêu cầu #${id}? Người dùng sẽ được thăng cấp gian hàng ngay lập tức.`)) {
@@ -236,8 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      const csrfHeaders = await getCsrfHeaders();
       const res = await fetch(`/api/admin/seller-upgrades/${id}/approve`, {
         method: "POST",
+        headers: { ...csrfHeaders },
         credentials: "include"
       });
 
@@ -280,9 +295,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
+        const csrfHeaders = await getCsrfHeaders();
         const res = await fetch(`/api/admin/seller-upgrades/${rejectingRequestId}/reject`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders },
           credentials: "include",
           body: JSON.stringify({ reason: reason })
         });

@@ -184,7 +184,10 @@
             credentials: "include",
             body: formData
           });
-          if (!res.ok) throw new Error("Lỗi upload ảnh");
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.message || ("Lỗi upload ảnh (HTTP " + res.status + ")"));
+          }
           const ret = await res.json();
           uploadedProofUrl = ret.url;
           proofStatus.style.color = "#10b981";

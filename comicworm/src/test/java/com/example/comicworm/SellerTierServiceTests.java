@@ -6,8 +6,11 @@ import com.example.comicworm.dto.response.SellerUpgradeRequestDTO;
 import com.example.comicworm.model.SellerProfile;
 import com.example.comicworm.model.SellerUpgradeRequest;
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.model.enums.UpgradeRequestStatus;
+import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.ProductRepository;
+import com.example.comicworm.repository.ReviewRepository;
 import com.example.comicworm.repository.SellerProfileRepository;
 import com.example.comicworm.repository.SellerUpgradeRequestRepository;
 import com.example.comicworm.repository.UserRepository;
@@ -32,6 +35,8 @@ class SellerTierServiceTests {
     private UserRepository userRepository = mock(UserRepository.class);
     private ProductRepository productRepository = mock(ProductRepository.class);
     private UploadService uploadService = mock(UploadService.class);
+    private OrderRepository orderRepository = mock(OrderRepository.class);
+    private ReviewRepository reviewRepository = mock(ReviewRepository.class);
 
     private SellerTierServiceImpl service;
 
@@ -42,7 +47,9 @@ class SellerTierServiceTests {
                 requestRepository,
                 userRepository,
                 productRepository,
-                uploadService
+                uploadService,
+                orderRepository,
+                reviewRepository
         );
     }
 
@@ -82,6 +89,9 @@ class SellerTierServiceTests {
         profile.setLevel(2);
         when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
         when(productRepository.countBySellerIdAndDeletedAtIsNull(userId)).thenReturn(5L);
+        when(orderRepository.countBySellerIdAndStatus(userId, OrderStatus.COMPLETED)).thenReturn(10L);
+        when(reviewRepository.countBySellerId(userId)).thenReturn(8L);
+        when(reviewRepository.averageRatingBySellerId(userId)).thenReturn(4.8);
 
         SellerTierInfoDTO info = service.getTierInfo(userId);
 
@@ -91,6 +101,9 @@ class SellerTierServiceTests {
         assertEquals("Manga World", info.getShopName());
         assertEquals(30, info.getMaxPostLimit());
         assertEquals(4.5, info.getCommissionRate());
+        assertEquals(10, info.getTotalCompletedOrders());
+        assertEquals(8, info.getTotalReviews());
+        assertEquals(4.8, info.getAverageRating());
     }
 
     @Test
@@ -118,6 +131,66 @@ class SellerTierServiceTests {
         assertEquals("PENDING", result.getStatus());
         assertEquals(1, result.getToLevel());
         assertEquals(new BigDecimal("100000"), result.getFeeAmount());
+        verify(requestRepository).save(any(SellerUpgradeRequest.class));
+    }
+
+    @Test
+    void requestUpgrade_fails_whenCriteriaNotMetForTier2() {
+        Long userId = 20L;
+        createTestUser(userId, true);
+
+        SellerProfile profile = new SellerProfile();
+        profile.setLevel(1);
+        when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+        when(requestRepository.existsByUserIdAndStatus(userId, UpgradeRequestStatus.PENDING)).thenReturn(false);
+
+        // Chỉ có 2 đơn (cần tối thiểu 5 đơn)
+        when(orderRepository.countBySellerIdAndStatus(userId, OrderStatus.COMPLETED)).thenReturn(2L);
+        when(reviewRepository.countBySellerId(userId)).thenReturn(1L);
+        when(reviewRepository.averageRatingBySellerId(userId)).thenReturn(5.0);
+
+        CreateUpgradeRequestDTO req = new CreateUpgradeRequestDTO();
+        req.setToLevel(2);
+        req.setPaymentProofUrl("https://example.com/proof.jpg");
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                service.requestUpgrade(userId, req)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("chưa đủ điều kiện"));
+        assertTrue(ex.getReason().contains("5 đơn hoàn tất"));
+        verify(requestRepository, never()).save(any());
+    }
+
+    @Test
+    void requestUpgrade_succeeds_whenCriteriaMetForTier2() {
+        Long userId = 20L;
+        createTestUser(userId, true);
+
+        SellerProfile profile = new SellerProfile();
+        profile.setLevel(1);
+        when(profileRepository.findByUserId(userId)).thenReturn(Optional.of(profile));
+        when(requestRepository.existsByUserIdAndStatus(userId, UpgradeRequestStatus.PENDING)).thenReturn(false);
+
+        // Đạt 6 đơn (> 5), 4 đánh giá (> 3), 4.5 sao (> 4.0)
+        when(orderRepository.countBySellerIdAndStatus(userId, OrderStatus.COMPLETED)).thenReturn(6L);
+        when(reviewRepository.countBySellerId(userId)).thenReturn(4L);
+        when(reviewRepository.averageRatingBySellerId(userId)).thenReturn(4.5);
+
+        when(requestRepository.save(any(SellerUpgradeRequest.class))).thenAnswer(inv -> {
+            SellerUpgradeRequest r = inv.getArgument(0);
+            r.setId(888L);
+            return r;
+        });
+
+        CreateUpgradeRequestDTO req = new CreateUpgradeRequestDTO();
+        req.setToLevel(2);
+        req.setPaymentProofUrl("https://example.com/proof2.jpg");
+
+        SellerUpgradeRequestDTO result = service.requestUpgrade(userId, req);
+        assertNotNull(result);
+        assertEquals(888L, result.getId());
+        assertEquals(2, result.getToLevel());
         verify(requestRepository).save(any(SellerUpgradeRequest.class));
     }
 
@@ -203,4 +276,3 @@ class SellerTierServiceTests {
         verify(requestRepository).save(req);
     }
 }
-

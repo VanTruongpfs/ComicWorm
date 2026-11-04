@@ -18,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 /** Spring adaptation of the supplied UploadService: upload bytes and use secure_url. */
 @Service
 public class UploadService {
-    public static final long MAX_FILE_BYTES = 5 * 1024 * 1024;
+    public static final long MAX_FILE_BYTES = 20 * 1024 * 1024;
     private static final Set<String> TYPES = Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
     private static final Logger log = LoggerFactory.getLogger(UploadService.class);
     private final Cloudinary cloudinary;
@@ -37,7 +37,7 @@ public class UploadService {
         if (files == null || files.isEmpty()) throw badRequest("Vui lòng chọn ít nhất một ảnh.");
         for (MultipartFile file : files) {
             if (file == null || file.isEmpty()) throw badRequest("Tệp ảnh không được rỗng.");
-            if (file.getSize() > MAX_FILE_BYTES) throw badRequest("Mỗi ảnh tối đa 5 MB.");
+            if (file.getSize() > MAX_FILE_BYTES) throw badRequest("Mỗi ảnh tối đa 20 MB.");
             if (file.getContentType() == null || !TYPES.contains(file.getContentType())) throw badRequest("Chỉ nhận ảnh JPG, PNG, WEBP hoặc GIF.");
             try (var stream = file.getInputStream()) {
                 if (!matchesType(stream.readNBytes(12), file.getContentType()))

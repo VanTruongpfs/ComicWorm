@@ -24,6 +24,10 @@ public class SellerTierInfoDTO {
     private int totalCompletedOrders;
     private BigDecimal totalRevenue;
 
+    // Thống kê đánh giá phục vụ điều kiện nâng cấp
+    private long totalReviews;
+    private double averageRating;
+
     private List<TierDetail> tiers;
     private SellerUpgradeRequestDTO pendingRequest;
     private SellerUpgradeRequestDTO latestRequest;
@@ -42,6 +46,12 @@ public class SellerTierInfoDTO {
         private String dailyWithdrawLimit;
         private String withdrawSpeed;
         private List<String> benefits;
+
+        // Điều kiện nâng cấp
+        private int minCompletedOrders;
+        private int minReviews;
+        private double minRating;
+        private boolean eligible;
+        private String ineligibilityReason;
     }
 }
-

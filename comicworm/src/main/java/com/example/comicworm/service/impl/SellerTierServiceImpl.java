@@ -6,8 +6,11 @@ import com.example.comicworm.dto.response.SellerUpgradeRequestDTO;
 import com.example.comicworm.model.SellerProfile;
 import com.example.comicworm.model.SellerUpgradeRequest;
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.model.enums.UpgradeRequestStatus;
+import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.ProductRepository;
+import com.example.comicworm.repository.ReviewRepository;
 import com.example.comicworm.repository.SellerProfileRepository;
 import com.example.comicworm.repository.SellerUpgradeRequestRepository;
 import com.example.comicworm.repository.UserRepository;
@@ -25,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -46,6 +48,10 @@ public class SellerTierServiceImpl implements ISellerTierService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final UploadService uploadService;
+    private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
+
+    public record TierCriteria(int minOrders, int minReviews, double minRating) {}
 
     public static final Map<Integer, BigDecimal> TIER_FEES = Map.of(
             1, new BigDecimal("100000"),
@@ -55,36 +61,49 @@ public class SellerTierServiceImpl implements ISellerTierService {
             5, new BigDecimal("2500000")
     );
 
-    private static final List<SellerTierInfoDTO.TierDetail> TIERS_CONFIG = List.of(
+    public static final Map<Integer, TierCriteria> TIER_CRITERIA = Map.of(
+            1, new TierCriteria(0, 0, 0.0),
+            2, new TierCriteria(5, 3, 4.0),
+            3, new TierCriteria(20, 10, 4.2),
+            4, new TierCriteria(50, 30, 4.5),
+            5, new TierCriteria(100, 70, 4.8)
+    );
+
+    private static final List<SellerTierInfoDTO.TierDetail> TIERS_BASE_CONFIG = List.of(
             SellerTierInfoDTO.TierDetail.builder()
                     .level(1).name("Tập sự (Cấp 1)").badgeTitle("Novice Seller").badgeColor("#718096")
                     .fee(TIER_FEES.get(1)).postLimit(10).commissionRate(5.0)
                     .dailyWithdrawLimit("2.000.000₫/ngày").withdrawSpeed("Duyệt trong 48h")
                     .benefits(List.of("Đăng tối đa 10 truyện", "Phí sàn 5.0%", "Rút tiền tối đa 2.000.000₫/ngày"))
+                    .minCompletedOrders(0).minReviews(0).minRating(0.0)
                     .build(),
             SellerTierInfoDTO.TierDetail.builder()
                     .level(2).name("Người bán Đồng (Cấp 2)").badgeTitle("Bronze Seller").badgeColor("#cd7f32")
                     .fee(TIER_FEES.get(2)).postLimit(30).commissionRate(4.5)
                     .dailyWithdrawLimit("5.000.000₫/ngày").withdrawSpeed("Duyệt trong 24h")
                     .benefits(List.of("Đăng tối đa 30 truyện", "Phí sàn giảm còn 4.5%", "Rút tiền tối đa 5.000.000₫/ngày"))
+                    .minCompletedOrders(5).minReviews(3).minRating(4.0)
                     .build(),
             SellerTierInfoDTO.TierDetail.builder()
                     .level(3).name("Người bán Bạc (Cấp 3)").badgeTitle("Silver Seller").badgeColor("#a0aec0")
                     .fee(TIER_FEES.get(3)).postLimit(100).commissionRate(4.0)
                     .dailyWithdrawLimit("20.000.000₫/ngày").withdrawSpeed("Duyệt trong 12h")
                     .benefits(List.of("Đăng tối đa 100 truyện", "Tạo Voucher Shop riêng", "Phí sàn giảm còn 4.0%", "Rút tiền tối đa 20.000.000₫/ngày"))
+                    .minCompletedOrders(20).minReviews(10).minRating(4.2)
                     .build(),
             SellerTierInfoDTO.TierDetail.builder()
                     .level(4).name("Người bán Vàng (Cấp 4)").badgeTitle("Gold Seller").badgeColor("#d69e2e")
                     .fee(TIER_FEES.get(4)).postLimit(300).commissionRate(3.0)
                     .dailyWithdrawLimit("50.000.000₫/ngày").withdrawSpeed("Duyệt nhanh trong 4h")
                     .benefits(List.of("Đăng tối đa 300 truyện", "Ưu tiên hiển thị top tìm kiếm", "Phí sàn giảm còn 3.0%", "Rút tiền tối đa 50.000.000₫/ngày"))
+                    .minCompletedOrders(50).minReviews(30).minRating(4.5)
                     .build(),
             SellerTierInfoDTO.TierDetail.builder()
                     .level(5).name("Đối tác Kim Cương (Cấp 5)").badgeTitle("Diamond Partner").badgeColor("#3182ce")
                     .fee(TIER_FEES.get(5)).postLimit(-1).commissionRate(2.0)
                     .dailyWithdrawLimit("200.000.000₫/ngày").withdrawSpeed("Rút tức thì (Instant)")
                     .benefits(List.of("Không giới hạn bài đăng", "Phí sàn thấp nhất: 2.0%", "Huy hiệu Kim Cương danh giá", "Hỗ trợ kỹ thuật 24/7 riêng"))
+                    .minCompletedOrders(100).minReviews(70).minRating(4.8)
                     .build()
     );
 
@@ -102,10 +121,16 @@ public class SellerTierServiceImpl implements ISellerTierService {
         int currentLevel = (profile != null && isSeller) ? profile.getLevel() : 0;
         String shopName = profile != null ? profile.getShopName() : user.getFullName();
         String shopDesc = profile != null ? profile.getShopDescription() : "";
-        int completedOrders = profile != null ? profile.getTotalCompletedOrders() : 0;
+
+        long actualOrders = (orderRepository != null) ? orderRepository.countBySellerIdAndStatus(userId, OrderStatus.COMPLETED) : 0L;
+        int completedOrders = profile != null ? Math.max((int) actualOrders, profile.getTotalCompletedOrders()) : (int) actualOrders;
         BigDecimal revenue = profile != null ? profile.getTotalRevenue() : BigDecimal.ZERO;
 
-        SellerTierInfoDTO.TierDetail currentConfig = TIERS_CONFIG.stream()
+        long reviewCount = (reviewRepository != null) ? reviewRepository.countBySellerId(userId) : 0L;
+        Double avgRatingVal = (reviewRepository != null) ? reviewRepository.averageRatingBySellerId(userId) : null;
+        double avgRating = avgRatingVal != null ? Math.round(avgRatingVal * 10.0) / 10.0 : 0.0;
+
+        SellerTierInfoDTO.TierDetail currentConfig = TIERS_BASE_CONFIG.stream()
                 .filter(t -> t.getLevel() == currentLevel)
                 .findFirst()
                 .orElse(null);
@@ -117,6 +142,47 @@ public class SellerTierServiceImpl implements ISellerTierService {
         double commission = currentConfig != null ? currentConfig.getCommissionRate() : 5.0;
 
         long postCount = isSeller ? productRepository.countBySellerIdAndDeletedAtIsNull(userId) : 0;
+
+        // Tính toán tính hợp lệ (eligible) của từng cấp đối với Seller này
+        List<SellerTierInfoDTO.TierDetail> dynamicTiers = TIERS_BASE_CONFIG.stream().map(base -> {
+            TierCriteria crit = TIER_CRITERIA.getOrDefault(base.getLevel(), new TierCriteria(0, 0, 0.0));
+            boolean eligible = completedOrders >= crit.minOrders()
+                    && reviewCount >= crit.minReviews()
+                    && (crit.minRating() <= 0.0 || avgRating >= crit.minRating());
+
+            String reason = null;
+            if (!eligible) {
+                List<String> missing = new ArrayList<>();
+                if (completedOrders < crit.minOrders()) {
+                    missing.add(String.format("Cần tối thiểu %d đơn hoàn tất (hiện có: %d)", crit.minOrders(), completedOrders));
+                }
+                if (reviewCount < crit.minReviews()) {
+                    missing.add(String.format("Cần tối thiểu %d đánh giá (hiện có: %d)", crit.minReviews(), reviewCount));
+                }
+                if (crit.minRating() > 0.0 && avgRating < crit.minRating()) {
+                    missing.add(String.format("Điểm sao cần đạt %.1f★ (hiện tại: %.1f★)", crit.minRating(), avgRating));
+                }
+                reason = String.join(" • ", missing);
+            }
+
+            return SellerTierInfoDTO.TierDetail.builder()
+                    .level(base.getLevel())
+                    .name(base.getName())
+                    .badgeTitle(base.getBadgeTitle())
+                    .badgeColor(base.getBadgeColor())
+                    .fee(base.getFee())
+                    .postLimit(base.getPostLimit())
+                    .commissionRate(base.getCommissionRate())
+                    .dailyWithdrawLimit(base.getDailyWithdrawLimit())
+                    .withdrawSpeed(base.getWithdrawSpeed())
+                    .benefits(base.getBenefits())
+                    .minCompletedOrders(crit.minOrders())
+                    .minReviews(crit.minReviews())
+                    .minRating(crit.minRating())
+                    .eligible(eligible)
+                    .ineligibilityReason(reason)
+                    .build();
+        }).toList();
 
         // Tìm đơn PENDING nếu có
         Optional<SellerUpgradeRequest> pending = requestRepository.findFirstByUserIdAndStatus(userId, UpgradeRequestStatus.PENDING);
@@ -136,7 +202,9 @@ public class SellerTierServiceImpl implements ISellerTierService {
                 .commissionRate(commission)
                 .totalCompletedOrders(completedOrders)
                 .totalRevenue(revenue)
-                .tiers(TIERS_CONFIG)
+                .totalReviews(reviewCount)
+                .averageRating(avgRating)
+                .tiers(dynamicTiers)
                 .pendingRequest(pending.map(this::toDTO).orElse(null))
                 .latestRequest(latest != null ? toDTO(latest) : null)
                 .build();
@@ -161,6 +229,32 @@ public class SellerTierServiceImpl implements ISellerTierService {
 
         if (targetLevel <= currentLevel) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cấp độ mục tiêu phải lớn hơn cấp độ hiện tại (" + currentLevel + ")");
+        }
+
+        // 2. Kiểm tra điều kiện số đơn hàng, số đánh giá và số sao đối với cấp độ mục tiêu
+        TierCriteria criteria = TIER_CRITERIA.get(targetLevel);
+        if (criteria != null && targetLevel > 1) {
+            long actualOrders = (orderRepository != null) ? orderRepository.countBySellerIdAndStatus(userId, OrderStatus.COMPLETED) : 0L;
+            int completedOrders = profile != null ? Math.max((int) actualOrders, profile.getTotalCompletedOrders()) : (int) actualOrders;
+            long reviewCount = (reviewRepository != null) ? reviewRepository.countBySellerId(userId) : 0L;
+            Double avgRatingVal = (reviewRepository != null) ? reviewRepository.averageRatingBySellerId(userId) : null;
+            double avgRating = avgRatingVal != null ? Math.round(avgRatingVal * 10.0) / 10.0 : 0.0;
+
+            if (completedOrders < criteria.minOrders()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("Bạn chưa đủ điều kiện nâng lên Cấp %d: Yêu cầu tối thiểu %d đơn hoàn tất (hiện có: %d đơn).",
+                                targetLevel, criteria.minOrders(), completedOrders));
+            }
+            if (reviewCount < criteria.minReviews()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("Bạn chưa đủ điều kiện nâng lên Cấp %d: Yêu cầu tối thiểu %d lượt đánh giá (hiện có: %d lượt).",
+                                targetLevel, criteria.minReviews(), reviewCount));
+            }
+            if (criteria.minRating() > 0.0 && avgRating < criteria.minRating()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        String.format("Bạn chưa đủ điều kiện nâng lên Cấp %d: Điểm đánh giá trung bình tối thiểu %.1f★ (hiện tại: %.1f★).",
+                                targetLevel, criteria.minRating(), avgRating));
+            }
         }
 
         BigDecimal fee = TIER_FEES.getOrDefault(targetLevel, new BigDecimal("100000"));
@@ -347,4 +441,3 @@ public class SellerTierServiceImpl implements ISellerTierService {
                 .build();
     }
 }
-

@@ -1,0 +1,1351 @@
+diff --cc comicworm/src/main/java/com/example/comicworm/config/SecurityConfig.java
+index 517bb84,a3f73f9..0000000
+--- a/comicworm/src/main/java/com/example/comicworm/config/SecurityConfig.java
++++ b/comicworm/src/main/java/com/example/comicworm/config/SecurityConfig.java
+@@@ -71,22 -71,36 +71,49 @@@ public class SecurityConfig 
+                  .authorizeHttpRequests(authorize -> authorize
+                          .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
+  
++                         // ---- Static Assets: Cho phép tải CSS, JS, hình ảnh ----
++                         .requestMatchers(
++                                 "/", "/index.html", "/favicon.ico",
++                                 "/css/**", "/js/**", "/images/**",
++                                 "/admin/css/**", "/admin/js/**", "/admin/images/**",
++                                 "/seller/css/**", "/seller/js/**", "/seller/images/**",
++                                 "/buyer/css/**", "/buyer/js/**", "/buyer/images/**",
++                                 "/shared/**"
++                         ).permitAll()
++ 
++                         // ---- Khu vuc ADMIN: Bat buoc dang nhap + role ADMIN ----
++                         .requestMatchers("/admin/html/login.html").permitAll()
+                          .requestMatchers(HttpMethod.GET, "/api/analytics/admin").hasRole("ADMIN")
+                          .requestMatchers("/api/admin/**").hasRole("ADMIN")
+++<<<<<<< HEAD
+ +                        .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasRole("SELLER")
+ +                        .requestMatchers("/api/seller/tier/**").authenticated()
+ +                        .requestMatchers("/api/seller/**").hasRole("SELLER")
+ +                        .requestMatchers("/seller/html/**").hasRole("SELLER")
+ +                        // ---- Khu vuc ADMIN: bat buoc dang nhap + role ADMIN ----
+ +                        .requestMatchers("/admin/html/login.html").permitAll() // chi redirect ve /auth/login
+ +                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+ +                        .requestMatchers("/admin/html/**").hasRole("ADMIN")
+ +                        .requestMatchers("/user/seller-upgrade", "/user/html/profile.html").authenticated()
+ +                        .requestMatchers("/api/account/**").authenticated()
+++=======
++                         .requestMatchers("/admin/**").hasRole("ADMIN")
+++>>>>>>> 8c359a750eff0108b9f1b43e703cb04d7d1bd344
++ 
++                         // ---- Khu vuc SELLER: role SELLER hoac ADMIN ----
++                         .requestMatchers(HttpMethod.GET, "/api/analytics/seller").hasAnyRole("SELLER", "ADMIN")
++                         .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")
++                         .requestMatchers("/seller/**").hasAnyRole("SELLER", "ADMIN")
++ 
++                         // ---- Khu vuc Nguoi dung can dang nhap ----
++                         .requestMatchers("/user/seller-upgrade", "/user/html/profile.html", "/user/**").authenticated()
++                         .requestMatchers("/api/account/**", "/api/loyalty/**").authenticated()
++                         .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
++                         .requestMatchers(HttpMethod.POST, "/api/orders/*/confirm-received").authenticated()
++                         .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel").authenticated()
+  
+-                         //public API
++                         // ---- Public API & Public Pages ----
+                          .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+-                         // API xem sản phẩm: công khai, chỉ đọc
+                          .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                          .requestMatchers(HttpMethod.POST, "/api/products/image-search").permitAll()
+                          .requestMatchers(HttpMethod.GET, "/api/exchange/rooms", "/api/exchange/rooms/{id:[0-9]+}",
+diff --cc comicworm/src/main/java/com/example/comicworm/config/filters/JwtAuthenticationFilter.java
+index 5d52a6f,0ac0688..0000000
+--- a/comicworm/src/main/java/com/example/comicworm/config/filters/JwtAuthenticationFilter.java
++++ b/comicworm/src/main/java/com/example/comicworm/config/filters/JwtAuthenticationFilter.java
+@@@ -1,132 -1,132 +1,266 @@@
+++<<<<<<< HEAD
+ +package com.example.comicworm.config.filters;
+ +
+ +import com.example.comicworm.utils.JwtUtils;
+ +import jakarta.servlet.FilterChain;
+ +import jakarta.servlet.ServletException;
+ +import jakarta.servlet.http.Cookie;
+ +import jakarta.servlet.http.HttpServletRequest;
+ +import jakarta.servlet.http.HttpServletResponse;
+ +import org.springframework.beans.factory.annotation.Autowired;
+ +import org.springframework.http.ResponseCookie;
+ +import org.springframework.lang.NonNull;
+ +import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+ +import org.springframework.security.core.context.SecurityContextHolder;
+ +import org.springframework.security.core.userdetails.UserDetails;
+ +import org.springframework.security.core.userdetails.UserDetailsService;
+ +import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+ +import org.springframework.stereotype.Component;
+ +import org.springframework.web.filter.OncePerRequestFilter;
+ +
+ +import java.io.IOException;
+ +
+ +@Component
+ +public class JwtAuthenticationFilter extends OncePerRequestFilter {
+ +
+ +    private final JwtUtils jwtUtils;
+ +    private final UserDetailsService userDetailsService;
+ +
+ +    @Autowired
+ +    public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+ +        this.jwtUtils = jwtUtils;
+ +        this.userDetailsService = userDetailsService;
+ +    }
+ +
+ +    @Override
+ +    protected void doFilterInternal(
+ +            @NonNull HttpServletRequest request,
+ +            @NonNull HttpServletResponse response,
+ +            @NonNull FilterChain filterChain
+ +    ) throws ServletException, IOException {
+ +
+ +        String accessToken = getCookieValue(request, "accessToken");
+ +        String refreshToken = getCookieValue(request, "refreshToken");
+ +
+ +        String emailToAuthenticate = null;
+ +
+ +        //Kiểm tra AccessToken
+ +        if (accessToken != null && jwtUtils.validateToken(accessToken)) {
+ +            emailToAuthenticate = jwtUtils.getEmailFromToken(accessToken);
+ +        }
+ +        //Nếu AccessToken hết hạn/không hợp lệ -> Thử dùng RefreshToken để tự gia hạn
+ +        else if (refreshToken != null && jwtUtils.validateToken(refreshToken)) {
+ +            emailToAuthenticate = jwtUtils.getEmailFromToken(refreshToken);
+ +
+ +            if (emailToAuthenticate != null) {
+ +                // Sinh AccessToken mới
+ +                String newAccessToken = jwtUtils.generateAccessToken(emailToAuthenticate);
+ +
+ +                // Cập nhật lại Cookie AccessToken mới gửi về cho Browser
+ +                ResponseCookie newAccessCookie = ResponseCookie.from("accessToken", newAccessToken)
+ +                        .httpOnly(true)
+ +                        .secure(false)
+ +                        .path("/")
+ +                        .maxAge(15 * 60)
+ +                        .sameSite("Lax")
+ +                        .build();
+ +
+ +                response.addHeader("Set-Cookie", newAccessCookie.toString());
+ +            }
+ +        }else if (accessToken != null || refreshToken != null) {
+ +            // Xóa Cookie phía Browser bằng cách set maxAge(0)
+ +            deleteAuthCookies(response);
+ +        }
+ +
+ +        // Nạp thông tin người dùng vào SecurityContext (luôn đồng bộ UserDetails mới nhất từ DB)
+ +        if (emailToAuthenticate != null) {
+ +            try {
+ +                UserDetails userDetails = userDetailsService.loadUserByUsername(emailToAuthenticate);
+ +
+ +                if (userDetails.isEnabled() && userDetails.isAccountNonLocked()) {
+ +                    UsernamePasswordAuthenticationToken authentication =
+ +                            new UsernamePasswordAuthenticationToken(
+ +                                    userDetails,
+ +                                    null,
+ +                                    userDetails.getAuthorities()
+ +                            );
+ +                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+ +                    SecurityContextHolder.getContext().setAuthentication(authentication);
+ +                }
+ +            } catch (Exception e) {
+ +                SecurityContextHolder.clearContext();
+ +            }
+ +        }
+ +
+ +        filterChain.doFilter(request, response);
+ +    }
+ +
+ +    /**
+ +     * Trích xuất giá trị Cookie theo tên
+ +     */
+ +    private String getCookieValue(HttpServletRequest request, String name) {
+ +        if (request.getCookies() != null) {
+ +            for (Cookie cookie : request.getCookies()) {
+ +                if (name.equals(cookie.getName())) {
+ +                    return cookie.getValue();
+ +                }
+ +            }
+ +        }
+ +        return null;
+ +    }
+ +
+ +    /**
+ +     * Xóa các Cookie xác thực phía Browser khi Token không còn hợp lệ
+ +     */
+ +    private void deleteAuthCookies(HttpServletResponse response) {
+ +        ResponseCookie cleanAccess = ResponseCookie.from("accessToken", "")
+ +                .httpOnly(true)
+ +                .path("/")
+ +                .maxAge(0) // Xóa ngay lập tức
+ +                .sameSite("Lax")
+ +                .build();
+ +
+ +        ResponseCookie cleanRefresh = ResponseCookie.from("refreshToken", "")
+ +                .httpOnly(true)
+ +                .path("/")
+ +                .maxAge(0) // Xóa ngay lập tức
+ +                .sameSite("Lax")
+ +                .build();
+ +
+ +        response.addHeader("Set-Cookie", cleanAccess.toString());
+ +        response.addHeader("Set-Cookie", cleanRefresh.toString());
+ +    }
+++=======
++ package com.example.comicworm.config.filters;
++ 
++ import com.example.comicworm.utils.JwtUtils;
++ import jakarta.servlet.FilterChain;
++ import jakarta.servlet.ServletException;
++ import jakarta.servlet.http.Cookie;
++ import jakarta.servlet.http.HttpServletRequest;
++ import jakarta.servlet.http.HttpServletResponse;
++ import org.springframework.beans.factory.annotation.Autowired;
++ import org.springframework.http.ResponseCookie;
++ import org.springframework.lang.NonNull;
++ import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
++ import org.springframework.security.core.context.SecurityContextHolder;
++ import org.springframework.security.core.userdetails.UserDetails;
++ import org.springframework.security.core.userdetails.UserDetailsService;
++ import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
++ import org.springframework.stereotype.Component;
++ import org.springframework.web.filter.OncePerRequestFilter;
++ 
++ import java.io.IOException;
++ 
++ @Component
++ public class JwtAuthenticationFilter extends OncePerRequestFilter {
++ 
++     private final JwtUtils jwtUtils;
++     private final UserDetailsService userDetailsService;
++ 
++     @Autowired
++     public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
++         this.jwtUtils = jwtUtils;
++         this.userDetailsService = userDetailsService;
++     }
++ 
++     @Override
++     protected void doFilterInternal(
++             @NonNull HttpServletRequest request,
++             @NonNull HttpServletResponse response,
++             @NonNull FilterChain filterChain
++     ) throws ServletException, IOException {
++ 
++         String accessToken = getCookieValue(request, "accessToken");
++         String refreshToken = getCookieValue(request, "refreshToken");
++ 
++         String emailToAuthenticate = null;
++ 
++         //Kiểm tra AccessToken
++         if (accessToken != null && jwtUtils.validateToken(accessToken)) {
++             emailToAuthenticate = jwtUtils.getEmailFromToken(accessToken);
++         }
++         //Nếu AccessToken hết hạn/không hợp lệ -> Thử dùng RefreshToken để tự gia hạn
++         else if (refreshToken != null && jwtUtils.validateToken(refreshToken)) {
++             emailToAuthenticate = jwtUtils.getEmailFromToken(refreshToken);
++ 
++             if (emailToAuthenticate != null) {
++                 // Sinh AccessToken mới
++                 String newAccessToken = jwtUtils.generateAccessToken(emailToAuthenticate);
++ 
++                 // Cập nhật lại Cookie AccessToken mới gửi về cho Browser
++                 ResponseCookie newAccessCookie = ResponseCookie.from("accessToken", newAccessToken)
++                         .httpOnly(true)
++                         .secure(false)
++                         .path("/")
++                         .maxAge(15 * 60)
++                         .sameSite("Lax")
++                         .build();
++ 
++                 response.addHeader("Set-Cookie", newAccessCookie.toString());
++             }
++         }else if (accessToken != null || refreshToken != null) {
++             // Xóa Cookie phía Browser bằng cách set maxAge(0)
++             deleteAuthCookies(response);
++         }
++ 
++         // Nạp thông tin người dùng vào SecurityContext
++         if (emailToAuthenticate != null) {
++             try {
++                 UserDetails userDetails = userDetailsService.loadUserByUsername(emailToAuthenticate);
++ 
++                 if (userDetails.isEnabled() && userDetails.isAccountNonLocked()) {
++                     UsernamePasswordAuthenticationToken authentication =
++                             new UsernamePasswordAuthenticationToken(
++                                     userDetails,
++                                     null,
++                                     userDetails.getAuthorities()
++                             );
++                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
++                     SecurityContextHolder.getContext().setAuthentication(authentication);
++                 }
++             } catch (Exception e) {
++                 SecurityContextHolder.clearContext();
++             }
++         }
++ 
++         filterChain.doFilter(request, response);
++     }
++ 
++     /**
++      * Trích xuất giá trị Cookie theo tên
++      */
++     private String getCookieValue(HttpServletRequest request, String name) {
++         if (request.getCookies() != null) {
++             for (Cookie cookie : request.getCookies()) {
++                 if (name.equals(cookie.getName())) {
++                     return cookie.getValue();
++                 }
++             }
++         }
++         return null;
++     }
++ 
++     /**
++      * Xóa các Cookie xác thực phía Browser khi Token không còn hợp lệ
++      */
++     private void deleteAuthCookies(HttpServletResponse response) {
++         ResponseCookie cleanAccess = ResponseCookie.from("accessToken", "")
++                 .httpOnly(true)
++                 .path("/")
++                 .maxAge(0) // Xóa ngay lập tức
++                 .sameSite("Lax")
++                 .build();
++ 
++         ResponseCookie cleanRefresh = ResponseCookie.from("refreshToken", "")
++                 .httpOnly(true)
++                 .path("/")
++                 .maxAge(0) // Xóa ngay lập tức
++                 .sameSite("Lax")
++                 .build();
++ 
++         response.addHeader("Set-Cookie", cleanAccess.toString());
++         response.addHeader("Set-Cookie", cleanRefresh.toString());
++     }
+++>>>>>>> 8c359a750eff0108b9f1b43e703cb04d7d1bd344
+  }
+diff --cc comicworm/src/main/resources/static/admin/js/common.js
+index 3f991b9,8b9f99c..0000000
+--- a/comicworm/src/main/resources/static/admin/js/common.js
++++ b/comicworm/src/main/resources/static/admin/js/common.js
+@@@ -1,352 -1,367 +1,721 @@@
+++<<<<<<< HEAD
+ +/**
+ + * BookMooch Admin Console - Shared Utilities & Common Logic
+ + * Dùng chung cho tất cả các trang Quản trị (Admin/Manager):
+ + * Nạp Sidebar, Toggle Mobile Menu, Toast Notification, Format Số, Clipboard, Sliding Tabs.
+ + */
+ +
+ +document.addEventListener('DOMContentLoaded', async () => {
+ +    await loadSidebarComponent();
+ +    initSidebarToggle();
+ +    initToastSystem();
+ +    guardAdminSession();
+ +});
+ +
+ +/* ==========================================================================
+ +   0. GUARD PHIÊN ĐĂNG NHẬP (mock) - nếu chưa đăng nhập thì đá về login.html
+ +   ========================================================================== */
+ +function guardAdminSession() {
+ +    const isLoginPage = document.body.hasAttribute('data-public-page');
+ +    if (isLoginPage) return;
+ +    const session = localStorage.getItem('bm_admin_session');
+ +    if (!session) {
+ +        // Không chặn cứng khi xem demo trực tiếp file, chỉ cảnh báo nhẹ trên UI nếu có khung banner.
+ +        const banner = document.getElementById('sessionWarnBanner');
+ +        if (banner) banner.style.display = 'flex';
+ +    }
+ +}
+ +
+ +/* ==========================================================================
+ +   1. SIDEBAR COMPONENT LOADER (Tách sidebar thành file riêng)
+ +   ========================================================================== */
+ +async function loadSidebarComponent() {
+ +    const container = document.getElementById('sidebarContainer');
+ +    if (!container) return;
+ +
+ +    const activePage = container.getAttribute('data-active') || '';
+ +    let htmlContent = '';
+ +
+ +    try {
+ +        const response = await fetch('sidebar.html');
+ +        if (response.ok) {
+ +            htmlContent = await response.text();
+ +        } else {
+ +            throw new Error('Fallback inline sidebar');
+ +        }
+ +    } catch (err) {
+ +        htmlContent = getFallbackSidebarTemplate();
+ +    }
+ +
+ +    container.outerHTML = htmlContent;
+ +
+ +    const navItems = document.querySelectorAll('.app-sidebar .nav-item');
+ +    navItems.forEach((item) => {
+ +        const pageKey = item.getAttribute('data-page');
+ +        item.classList.toggle('active', pageKey === activePage);
+ +    });
+ +
+ +    const adminName = localStorage.getItem('bm_admin_name') || 'Quản trị viên';
+ +    const adminRole = localStorage.getItem('bm_admin_role') || 'Super Admin';
+ +    const nameEl = document.querySelector('[data-admin-name]');
+ +    const roleEl = document.querySelector('[data-admin-role]');
+ +    if (nameEl) nameEl.textContent = adminName;
+ +    if (roleEl) roleEl.textContent = adminRole;
+ +
+ +    initSidebarToggle();
+ +}
+ +
+ +function getFallbackSidebarTemplate() {
+ +    return `
+ +  <aside class="app-sidebar" id="appSidebar">
+ +    <div class="sidebar-header">
+ +      <div class="sidebar-brand">
+ +        <div class="brand-icon"><span class="material-symbols-outlined">shield_person</span></div>
+ +        <div class="brand-info"><h1>BookMooch</h1><span>Admin Console</span></div>
+ +      </div>
+ +    </div>
+ +    <nav class="sidebar-nav">
+ +      <div class="nav-section-title">Tổng quan</div>
+ +      <a href="dashboard.html" class="nav-item" data-page="dashboard">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">space_dashboard</span><span>Admin Dashboard</span></div>
+ +      </a>
+ +      <div class="nav-section-title">Quản trị hệ thống</div>
+ +      <a href="accounts.html" class="nav-item" data-page="accounts">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">manage_accounts</span><span>Quản lý tài khoản</span></div>
+ +      </a>
+ +      <a href="seller-upgrades.html" class="nav-item" data-page="seller-upgrades">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">verified</span><span>Duyệt nâng cấp Người bán</span></div>
+ +        <span class="nav-badge" style="background:#ea580c; color:#fff;">Mới</span>
+ +      </a>
+ +      <a href="staff.html" class="nav-item" data-page="staff">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">badge</span><span>Nhân sự &amp; phân quyền</span></div>
+ +      </a>
+ +      <a href="fees.html" class="nav-item" data-page="fees">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">request_quote</span><span>Biểu phí &amp; chính sách</span></div>
+ +      </a>
+ +      <a href="vouchers.html" class="nav-item" data-page="vouchers">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">local_activity</span><span>Voucher toàn hệ thống</span></div>
+ +      </a>
+ +      <div class="nav-section-title">Tài chính &amp; vận hành</div>
+ +      <a href="statistics.html" class="nav-item" data-page="statistics">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">bar_chart</span><span>Thống kê biểu đồ</span></div>
+ +      </a>
+ +      <a href="finance.html" class="nav-item" data-page="finance">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">finance</span><span>Doanh thu &amp; dòng tiền</span></div>
+ +      </a>
+ +      <a href="orders.html" class="nav-item" data-page="orders">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">package_2</span><span>Quản lý đơn hàng</span></div>
+ +      </a>
+ +      <div class="nav-section-title">Quản trị nội dung</div>
+ +      <a href="postModeration.html" class="nav-item" data-page="appeal-resolution">
+ +        <div class="nav-item-content"><span class="material-symbols-outlined">gavel</span><span>Quản trị phê duyệt</span></div>
+ +      </a>
+ +    </nav>
+ +    <div class="sidebar-footer">
+ +      <div class="store-status-pill">
+ +        <div class="status-indicator"><span class="pulse-dot"></span><span>Hệ thống: Hoạt động ổn định</span></div>
+ +        <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">dns</span>
+ +      </div>
+ +      <div class="sidebar-actions">
+ +        <a href="#" class="sidebar-action-btn" onclick="showToast('Mở cài đặt tài khoản quản trị')">
+ +          <span class="material-symbols-outlined" style="font-size: 18px;">settings</span><span>Cài đặt</span>
+ +        </a>
+ +        <a href="/auth/logout" class="sidebar-action-btn logout" onclick="localStorage.removeItem('bm_admin_session')">
+ +          <span class="material-symbols-outlined" style="font-size: 18px;">logout</span><span>Đăng xuất</span>
+ +        </a>
+ +      </div>
+ +    </div>
+ +  </aside>`;
+ +}
+ +
+ +/* ==========================================================================
+ +   2. SIDEBAR RESPONSIVE TOGGLE (Mobile / Tablet)
+ +   ========================================================================== */
+ +function initSidebarToggle() {
+ +    const toggleBtn = document.getElementById('sidebarToggle');
+ +    const sidebar = document.getElementById('appSidebar');
+ +
+ +    if (toggleBtn && sidebar) {
+ +        toggleBtn.onclick = (e) => {
+ +            e.stopPropagation();
+ +            sidebar.classList.toggle('open');
+ +        };
+ +        document.onclick = (e) => {
+ +            if (window.innerWidth <= 1024 && sidebar.classList.contains('open')) {
+ +                if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
+ +                    sidebar.classList.remove('open');
+ +                }
+ +            }
+ +        };
+ +    }
+ +}
+ +
+ +/* ==========================================================================
+ +   3. TOAST NOTIFICATION SYSTEM
+ +   ========================================================================== */
+ +function initToastSystem() {
+ +    if (!document.getElementById('toastContainer')) {
+ +        const container = document.createElement('div');
+ +        container.id = 'toastContainer';
+ +        container.className = 'toast-container';
+ +        document.body.appendChild(container);
+ +    }
+ +}
+ +
+ +function showToast(message, type = 'info') {
+ +    let container = document.getElementById('toastContainer');
+ +    if (!container) {
+ +        container = document.createElement('div');
+ +        container.id = 'toastContainer';
+ +        container.className = 'toast-container';
+ +        document.body.appendChild(container);
+ +    }
+ +
+ +    const toast = document.createElement('div');
+ +    toast.className = `toast toast-${type}`;
+ +
+ +    let icon = 'info';
+ +    let iconColor = 'var(--primary-container)';
+ +    if (type === 'success' || message.includes('thành công') || message.includes('✅')) {
+ +        icon = 'check_circle';
+ +        iconColor = 'var(--success)';
+ +    } else if (type === 'danger' || message.includes('thất bại') || message.includes('lỗi') || message.includes('từ chối')) {
+ +        icon = 'error';
+ +        iconColor = 'var(--danger)';
+ +    } else if (type === 'warning' || message.includes('Lưu ý') || message.includes('Cảnh báo')) {
+ +        icon = 'warning';
+ +        iconColor = 'var(--warning)';
+ +    }
+ +
+ +    toast.innerHTML = `
+ +    <span class="material-symbols-outlined" style="color: ${iconColor}; font-size: 20px;">${icon}</span>
+ +    <span style="font-size: 0.88rem; font-weight: 500;">${message}</span>
+ +  `;
+ +
+ +    container.appendChild(toast);
+ +    setTimeout(() => {
+ +        toast.style.opacity = '0';
+ +        toast.style.transform = 'translateX(100%)';
+ +        toast.style.transition = 'all 0.3s ease';
+ +        setTimeout(() => toast.parentNode && toast.parentNode.removeChild(toast), 300);
+ +    }, 3400);
+ +}
+ +
+ +/* ==========================================================================
+ +   4. CLIPBOARD COPY UTILITY
+ +   ========================================================================== */
+ +function copyText(text) {
+ +    const done = () => showToast(`Đã sao chép: ${text}`, 'success');
+ +    if (navigator.clipboard && navigator.clipboard.writeText) {
+ +        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text));
+ +    } else {
+ +        fallbackCopy(text);
+ +    }
+ +}
+ +
+ +function fallbackCopy(text) {
+ +    const temp = document.createElement('textarea');
+ +    temp.value = text;
+ +    document.body.appendChild(temp);
+ +    temp.select();
+ +    document.execCommand('copy');
+ +    document.body.removeChild(temp);
+ +    showToast(`Đã sao chép: ${text}`, 'success');
+ +}
+ +
+ +/* ==========================================================================
+ +   5. NUMBER FORMATTERS & COUNT-UP ANIMATION
+ +   ========================================================================== */
+ +function formatNumber(num) {
+ +    if (isNaN(num)) return '0';
+ +    return new Intl.NumberFormat('vi-VN').format(num);
+ +}
+ +
+ +function parseFormattedNumber(str) {
+ +    if (!str) return 0;
+ +    return parseInt(str.toString().replace(/\D/g, ''), 10) || 0;
+ +}
+ +
+ +function animateCountUp(element, targetValue, duration = 1200, isCurrency = true, decimals = 0, suffix = '') {
+ +    if (!element) return;
+ +    const start = 0;
+ +    const startTime = performance.now();
+ +    function update(currentTime) {
+ +        const elapsed = currentTime - startTime;
+ +        const progress = Math.min(elapsed / duration, 1);
+ +        const easeOut = 1 - Math.pow(1 - progress, 3);
+ +        const current = start + (targetValue - start) * easeOut;
+ +        if (isCurrency) {
+ +            element.textContent = new Intl.NumberFormat('vi-VN').format(Math.round(current)) + (suffix || ' ₫');
+ +        } else if (decimals > 0) {
+ +            element.textContent = current.toFixed(decimals) + (suffix || '');
+ +        } else {
+ +            element.textContent = Math.round(current).toLocaleString('vi-VN') + (suffix || '');
+ +        }
+ +        if (progress < 1) requestAnimationFrame(update);
+ +    }
+ +    requestAnimationFrame(update);
+ +}
+ +
+ +function debounce(fn, delay = 250) {
+ +    let timer = null;
+ +    return function (...args) {
+ +        clearTimeout(timer);
+ +        timer = setTimeout(() => fn.apply(this, args), delay);
+ +    };
+ +}
+ +
+ +function escapeHtml(text) {
+ +    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+ +    return String(text).replace(/[&<>"']/g, (m) => map[m]);
+ +}
+ +
+ +/* ==========================================================================
+ +   6. REUSABLE SLIDING TABS & ACTIVE PILL INDICATOR
+ +   ========================================================================== */
+ +function initSlidingTabs(container, onTabChange) {
+ +    if (!container) return null;
+ +    const tabs = container.querySelectorAll('.tab-chip, .demo-pill-btn, .seg-btn');
+ +    if (!tabs.length) return null;
+ +
+ +    let pill = container.querySelector('.tab-indicator-pill');
+ +    if (!pill) {
+ +        pill = document.createElement('div');
+ +        pill.className = 'tab-indicator-pill';
+ +        container.insertBefore(pill, container.firstChild);
+ +    }
+ +
+ +    function updatePill(activeTab, animate = true) {
+ +        if (!activeTab || !container) return;
+ +        const tabRect = activeTab.getBoundingClientRect();
+ +        const containerRect = container.getBoundingClientRect();
+ +        const left = tabRect.left - containerRect.left + container.scrollLeft;
+ +        const top = tabRect.top - containerRect.top + container.scrollTop;
+ +        pill.style.transition = animate
+ +            ? 'transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), width 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), height 0.35s cubic-bezier(0.2, 0.9, 0.25, 1)'
+ +            : 'none';
+ +        pill.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+ +        pill.style.width = `${tabRect.width}px`;
+ +        pill.style.height = `${tabRect.height}px`;
+ +        if (!animate) {
+ +            requestAnimationFrame(() => {
+ +                pill.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), width 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), height 0.35s cubic-bezier(0.2, 0.9, 0.25, 1)';
+ +            });
+ +        }
+ +    }
+ +
+ +    const initialActive = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active') || tabs[0];
+ +    if (initialActive) {
+ +        requestAnimationFrame(() => updatePill(initialActive, false));
+ +        setTimeout(() => updatePill(initialActive, false), 60);
+ +    }
+ +
+ +    tabs.forEach((tab) => {
+ +        tab.addEventListener('click', () => {
+ +            tabs.forEach((t) => t.classList.remove('active'));
+ +            tab.classList.add('active');
+ +            updatePill(tab, true);
+ +            if (typeof onTabChange === 'function') onTabChange(tab);
+ +        });
+ +    });
+ +
+ +    window.addEventListener('resize', () => {
+ +        const current = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active');
+ +        if (current) updatePill(current, false);
+ +    });
+ +
+ +    return {
+ +        update: (tab) => updatePill(tab, true),
+ +        refresh: () => {
+ +            const current = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active');
+ +            if (current) updatePill(current, false);
+ +        },
+ +    };
+ +}
+ +
+ +/* ==========================================================================
+ +   7. MODAL HELPERS DÙNG CHUNG
+ +   ========================================================================== */
+ +function openModal(id) {
+ +    const modal = document.getElementById(id);
+ +    if (!modal) return;
+ +    modal.style.display = 'flex';
+ +    requestAnimationFrame(() => modal.classList.add('active'));
+ +    document.body.style.overflow = 'hidden';
+ +}
+ +
+ +function closeModal(id) {
+ +    const modal = document.getElementById(id);
+ +    if (!modal) return;
+ +    modal.classList.remove('active');
+ +    document.body.style.overflow = '';
+ +    setTimeout(() => { modal.style.display = 'none'; }, 300);
+++=======
++ /**
++  * BookMooch Admin Console - Shared Utilities & Common Logic
++  * Dùng chung cho tất cả các trang Quản trị (Admin/Manager):
++  * Nạp Sidebar, Toggle Mobile Menu, Toast Notification, Format Số, Clipboard, Sliding Tabs.
++  */
++ 
++ document.addEventListener('DOMContentLoaded', async () => {
++     const isAdmin = await guardAdminSession();
++     if (!isAdmin) return;
++     await loadSidebarComponent();
++     initSidebarToggle();
++     initToastSystem();
++ });
++ 
++ /* ==========================================================================
++    0. GUARD PHIÊN ĐĂNG NHẬP VÀ KIỂM TRA QUYỀN ADMIN THỰC TẾ
++    ========================================================================== */
++ async function guardAdminSession() {
++     const isLoginPage = document.body.hasAttribute('data-public-page') || window.location.pathname.includes('login.html');
++     if (isLoginPage) return true;
++ 
++     try {
++         const res = await fetch('/api/account/me', {
++             credentials: 'include',
++             headers: { 'Accept': 'application/json' },
++             cache: 'no-store'
++         });
++ 
++         if (!res.ok) {
++             window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
++             return false;
++         }
++ 
++         const user = await res.json();
++         if (!user || user.role !== 'ADMIN') {
++             alert('Tài khoản của bạn (' + (user ? user.email : '') + ') không có quyền Quản trị viên (ADMIN) để truy cập trang này.');
++             window.location.href = '/buyer/html/home.html';
++             return false;
++         }
++ 
++         if (user.fullName) {
++             document.querySelectorAll('[data-admin-name]').forEach(el => el.textContent = user.fullName);
++             localStorage.setItem('bm_admin_name', user.fullName);
++         }
++         localStorage.setItem('bm_admin_role', 'Quản trị viên');
++         localStorage.setItem('bm_admin_session', 'active');
++         return true;
++     } catch (err) {
++         console.warn('Lỗi kiểm tra quyền admin:', err);
++         return true;
++     }
++ }
++ 
++ /* ==========================================================================
++    1. SIDEBAR COMPONENT LOADER (Tách sidebar thành file riêng)
++    ========================================================================== */
++ async function loadSidebarComponent() {
++     const container = document.getElementById('sidebarContainer');
++     if (!container) return;
++ 
++     const activePage = container.getAttribute('data-active') || '';
++     let htmlContent = '';
++ 
++     try {
++         const response = await fetch('sidebar.html');
++         if (response.ok) {
++             htmlContent = await response.text();
++         } else {
++             throw new Error('Fallback inline sidebar');
++         }
++     } catch (err) {
++         htmlContent = getFallbackSidebarTemplate();
++     }
++ 
++     container.outerHTML = htmlContent;
++ 
++     const navItems = document.querySelectorAll('.app-sidebar .nav-item');
++     navItems.forEach((item) => {
++         const pageKey = item.getAttribute('data-page');
++         item.classList.toggle('active', pageKey === activePage);
++     });
++ 
++     const adminName = localStorage.getItem('bm_admin_name') || 'Quản trị viên';
++     const adminRole = localStorage.getItem('bm_admin_role') || 'Super Admin';
++     const nameEl = document.querySelector('[data-admin-name]');
++     const roleEl = document.querySelector('[data-admin-role]');
++     if (nameEl) nameEl.textContent = adminName;
++     if (roleEl) roleEl.textContent = adminRole;
++ 
++     initSidebarToggle();
++ }
++ 
++ function getFallbackSidebarTemplate() {
++     return `
++   <aside class="app-sidebar" id="appSidebar">
++     <div class="sidebar-header">
++       <div class="sidebar-brand">
++         <div class="brand-icon"><span class="material-symbols-outlined">shield_person</span></div>
++         <div class="brand-info"><h1>BookMooch</h1><span>Admin Console</span></div>
++       </div>
++     </div>
++     <nav class="sidebar-nav">
++       <div class="nav-section-title">Tổng quan</div>
++       <a href="dashboard.html" class="nav-item" data-page="dashboard">
++         <div class="nav-item-content"><span class="material-symbols-outlined">space_dashboard</span><span>Admin Dashboard</span></div>
++       </a>
++       <div class="nav-section-title">Quản trị hệ thống</div>
++       <a href="accounts.html" class="nav-item" data-page="accounts">
++         <div class="nav-item-content"><span class="material-symbols-outlined">manage_accounts</span><span>Quản lý tài khoản</span></div>
++       </a>
++       <a href="staff.html" class="nav-item" data-page="staff">
++         <div class="nav-item-content"><span class="material-symbols-outlined">badge</span><span>Nhân sự &amp; phân quyền</span></div>
++       </a>
++       <a href="fees.html" class="nav-item" data-page="fees">
++         <div class="nav-item-content"><span class="material-symbols-outlined">request_quote</span><span>Biểu phí &amp; chính sách</span></div>
++       </a>
++       <a href="vouchers.html" class="nav-item" data-page="vouchers">
++         <div class="nav-item-content"><span class="material-symbols-outlined">local_activity</span><span>Voucher toàn hệ thống</span></div>
++       </a>
++       <div class="nav-section-title">Tài chính &amp; vận hành</div>
++       <a href="finance.html" class="nav-item" data-page="finance">
++         <div class="nav-item-content"><span class="material-symbols-outlined">finance</span><span>Doanh thu &amp; dòng tiền</span></div>
++       </a>
++       <a href="orders.html" class="nav-item" data-page="orders">
++         <div class="nav-item-content"><span class="material-symbols-outlined">package_2</span><span>Quản lý đơn hàng</span></div>
++       </a>
++     </nav>
++     <div class="sidebar-footer">
++       <div class="store-status-pill">
++         <div class="status-indicator"><span class="pulse-dot"></span><span>Hệ thống: Hoạt động ổn định</span></div>
++         <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">dns</span>
++       </div>
++       <div class="sidebar-actions">
++         <a href="#" class="sidebar-action-btn" onclick="showToast('Mở cài đặt tài khoản quản trị')">
++           <span class="material-symbols-outlined" style="font-size: 18px;">settings</span><span>Cài đặt</span>
++         </a>
++         <a href="/auth/logout" class="sidebar-action-btn logout" onclick="localStorage.removeItem('bm_admin_session')">
++           <span class="material-symbols-outlined" style="font-size: 18px;">logout</span><span>Đăng xuất</span>
++         </a>
++       </div>
++     </div>
++   </aside>`;
++ }
++ 
++ /* ==========================================================================
++    2. SIDEBAR RESPONSIVE TOGGLE (Mobile / Tablet)
++    ========================================================================== */
++ function initSidebarToggle() {
++     const toggleBtn = document.getElementById('sidebarToggle');
++     const sidebar = document.getElementById('appSidebar');
++ 
++     if (toggleBtn && sidebar) {
++         toggleBtn.onclick = (e) => {
++             e.stopPropagation();
++             sidebar.classList.toggle('open');
++         };
++         document.onclick = (e) => {
++             if (window.innerWidth <= 1024 && sidebar.classList.contains('open')) {
++                 if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
++                     sidebar.classList.remove('open');
++                 }
++             }
++         };
++     }
++ }
++ 
++ /* ==========================================================================
++    3. TOAST NOTIFICATION SYSTEM
++    ========================================================================== */
++ function initToastSystem() {
++     if (!document.getElementById('toastContainer')) {
++         const container = document.createElement('div');
++         container.id = 'toastContainer';
++         container.className = 'toast-container';
++         document.body.appendChild(container);
++     }
++ }
++ 
++ function showToast(message, type = 'info') {
++     let container = document.getElementById('toastContainer');
++     if (!container) {
++         container = document.createElement('div');
++         container.id = 'toastContainer';
++         container.className = 'toast-container';
++         document.body.appendChild(container);
++     }
++ 
++     const toast = document.createElement('div');
++     toast.className = `toast toast-${type}`;
++ 
++     let icon = 'info';
++     let iconColor = 'var(--primary-container)';
++     if (type === 'success' || message.includes('thành công') || message.includes('✅')) {
++         icon = 'check_circle';
++         iconColor = 'var(--success)';
++     } else if (type === 'danger' || message.includes('thất bại') || message.includes('lỗi') || message.includes('từ chối')) {
++         icon = 'error';
++         iconColor = 'var(--danger)';
++     } else if (type === 'warning' || message.includes('Lưu ý') || message.includes('Cảnh báo')) {
++         icon = 'warning';
++         iconColor = 'var(--warning)';
++     }
++ 
++     toast.innerHTML = `
++     <span class="material-symbols-outlined" style="color: ${iconColor}; font-size: 20px;">${icon}</span>
++     <span style="font-size: 0.88rem; font-weight: 500;">${message}</span>
++   `;
++ 
++     container.appendChild(toast);
++     setTimeout(() => {
++         toast.style.opacity = '0';
++         toast.style.transform = 'translateX(100%)';
++         toast.style.transition = 'all 0.3s ease';
++         setTimeout(() => toast.parentNode && toast.parentNode.removeChild(toast), 300);
++     }, 3400);
++ }
++ 
++ /* ==========================================================================
++    4. CLIPBOARD COPY UTILITY
++    ========================================================================== */
++ function copyText(text) {
++     const done = () => showToast(`Đã sao chép: ${text}`, 'success');
++     if (navigator.clipboard && navigator.clipboard.writeText) {
++         navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text));
++     } else {
++         fallbackCopy(text);
++     }
++ }
++ 
++ function fallbackCopy(text) {
++     const temp = document.createElement('textarea');
++     temp.value = text;
++     document.body.appendChild(temp);
++     temp.select();
++     document.execCommand('copy');
++     document.body.removeChild(temp);
++     showToast(`Đã sao chép: ${text}`, 'success');
++ }
++ 
++ /* ==========================================================================
++    5. NUMBER FORMATTERS & COUNT-UP ANIMATION
++    ========================================================================== */
++ function formatNumber(num) {
++     if (isNaN(num)) return '0';
++     return new Intl.NumberFormat('vi-VN').format(num);
++ }
++ 
++ function parseFormattedNumber(str) {
++     if (!str) return 0;
++     return parseInt(str.toString().replace(/\D/g, ''), 10) || 0;
++ }
++ 
++ function animateCountUp(element, targetValue, duration = 1200, isCurrency = true, decimals = 0, suffix = '') {
++     if (!element) return;
++     const start = 0;
++     const startTime = performance.now();
++     function update(currentTime) {
++         const elapsed = currentTime - startTime;
++         const progress = Math.min(elapsed / duration, 1);
++         const easeOut = 1 - Math.pow(1 - progress, 3);
++         const current = start + (targetValue - start) * easeOut;
++         if (isCurrency) {
++             element.textContent = new Intl.NumberFormat('vi-VN').format(Math.round(current)) + (suffix || ' ₫');
++         } else if (decimals > 0) {
++             element.textContent = current.toFixed(decimals) + (suffix || '');
++         } else {
++             element.textContent = Math.round(current).toLocaleString('vi-VN') + (suffix || '');
++         }
++         if (progress < 1) requestAnimationFrame(update);
++     }
++     requestAnimationFrame(update);
++ }
++ 
++ function debounce(fn, delay = 250) {
++     let timer = null;
++     return function (...args) {
++         clearTimeout(timer);
++         timer = setTimeout(() => fn.apply(this, args), delay);
++     };
++ }
++ 
++ function escapeHtml(text) {
++     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
++     return String(text).replace(/[&<>"']/g, (m) => map[m]);
++ }
++ 
++ /* ==========================================================================
++    6. REUSABLE SLIDING TABS & ACTIVE PILL INDICATOR
++    ========================================================================== */
++ function initSlidingTabs(container, onTabChange) {
++     if (!container) return null;
++     const tabs = container.querySelectorAll('.tab-chip, .demo-pill-btn, .seg-btn');
++     if (!tabs.length) return null;
++ 
++     let pill = container.querySelector('.tab-indicator-pill');
++     if (!pill) {
++         pill = document.createElement('div');
++         pill.className = 'tab-indicator-pill';
++         container.insertBefore(pill, container.firstChild);
++     }
++ 
++     function updatePill(activeTab, animate = true) {
++         if (!activeTab || !container) return;
++         const tabRect = activeTab.getBoundingClientRect();
++         const containerRect = container.getBoundingClientRect();
++         const left = tabRect.left - containerRect.left + container.scrollLeft;
++         const top = tabRect.top - containerRect.top + container.scrollTop;
++         pill.style.transition = animate
++             ? 'transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), width 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), height 0.35s cubic-bezier(0.2, 0.9, 0.25, 1)'
++             : 'none';
++         pill.style.transform = `translate3d(${left}px, ${top}px, 0)`;
++         pill.style.width = `${tabRect.width}px`;
++         pill.style.height = `${tabRect.height}px`;
++         if (!animate) {
++             requestAnimationFrame(() => {
++                 pill.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), width 0.35s cubic-bezier(0.2, 0.9, 0.25, 1), height 0.35s cubic-bezier(0.2, 0.9, 0.25, 1)';
++             });
++         }
++     }
++ 
++     const initialActive = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active') || tabs[0];
++     if (initialActive) {
++         requestAnimationFrame(() => updatePill(initialActive, false));
++         setTimeout(() => updatePill(initialActive, false), 60);
++     }
++ 
++     tabs.forEach((tab) => {
++         tab.addEventListener('click', () => {
++             tabs.forEach((t) => t.classList.remove('active'));
++             tab.classList.add('active');
++             updatePill(tab, true);
++             if (typeof onTabChange === 'function') onTabChange(tab);
++         });
++     });
++ 
++     window.addEventListener('resize', () => {
++         const current = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active');
++         if (current) updatePill(current, false);
++     });
++ 
++     return {
++         update: (tab) => updatePill(tab, true),
++         refresh: () => {
++             const current = container.querySelector('.tab-chip.active, .demo-pill-btn.active, .seg-btn.active');
++             if (current) updatePill(current, false);
++         },
++     };
++ }
++ 
++ /* ==========================================================================
++    7. MODAL HELPERS DÙNG CHUNG
++    ========================================================================== */
++ function openModal(id) {
++     const modal = document.getElementById(id);
++     if (!modal) return;
++     modal.style.display = 'flex';
++     requestAnimationFrame(() => modal.classList.add('active'));
++     document.body.style.overflow = 'hidden';
++ }
++ 
++ function closeModal(id) {
++     const modal = document.getElementById(id);
++     if (!modal) return;
++     modal.classList.remove('active');
++     document.body.style.overflow = '';
++     setTimeout(() => { modal.style.display = 'none'; }, 300);
+++>>>>>>> 8c359a750eff0108b9f1b43e703cb04d7d1bd344
+  }
+diff --cc comicworm/src/main/resources/static/shared/js/account-api.js
+index a1eb452,7ec92f7..0000000
+--- a/comicworm/src/main/resources/static/shared/js/account-api.js
++++ b/comicworm/src/main/resources/static/shared/js/account-api.js
+@@@ -74,7 -74,7 +74,12 @@@
+      root.BookMoochAccountApi = {
+          baseUrl, currentUser, updateProfile, changePassword,
+          loginUrl: () => baseUrl() + '/auth/login',
+++<<<<<<< HEAD
+ +        upgradeUrl: () => baseUrl() + '/user/html/upgrade-seller.html',
+ +        sellerUrl: () => baseUrl() + '/seller/html/index.html'
+++=======
++         upgradeUrl: () => baseUrl() + '/user/seller-upgrade',
++         sellerUrl: () => baseUrl() + '/seller/html/orders.html'
+++>>>>>>> 8c359a750eff0108b9f1b43e703cb04d7d1bd344
+      };
+  })(window);
+diff --cc comicworm/src/main/resources/static/shared/sidebar/sidebar.js
+index afd1f2b,d513880..0000000
+--- a/comicworm/src/main/resources/static/shared/sidebar/sidebar.js
++++ b/comicworm/src/main/resources/static/shared/sidebar/sidebar.js
+@@@ -1,137 -1,136 +1,276 @@@
+++<<<<<<< HEAD
+ +// Renders navigation from the account authenticated by the backend.
+ +const commonGroups = [
+ +    { title: "Tài khoản & Khám phá", items: [
+ +        ["◈", "Trang Chủ ComicHub", "../../buyer/html/home.html"],
+ +        ["★", "Master Portal", "../../index.html"],
+ +        ["◉", "Hồ sơ cá nhân", "../../user/html/profile.html"],
+ +        ["⌂", "Quản lý địa chỉ", "../../user/html/manage_address.html"],
+ +        ["¤", "Ví & Rút tiền", "../../seller/html/wallet.html"]
+ +    ] },
+ +    { title: "Mua hàng & Đơn hàng", items: [
+ +        ["+", "Đăng tin tìm mua", "../../buyer/html/page1.html"],
+ +        ["▣", "Quản lý đơn hàng mua", "../../buyer/html/page2.html"],
+ +        ["↗", "Trạng thái đơn hàng GHN", "../../buyer/html/page3.html"],
+ +        ["★", "Truyện yêu thích", "../../buyer/html/page6.html"]
+ +    ] },
+ +    { title: "Trao đổi & Đàm phán", items: [
+ +        ["⇄", "Phòng trao đổi giá", "../../exchange/html/dealing-room.html"],
+ +        ["💬", "Chat đàm phán", "../../exchange/html/dealing-chat.html"],
+ +        ["≋", "Đơn hàng trao đổi", "../../exchange/html/exchange-orders.html"]
+ +    ] },
+ +    { title: "Hỗ trợ & Chăm sóc", items: [
+ +        ["!", "Gửi khiếu nại", "../../user/html/complain.html"],
+ +        ["?", "Gửi yêu cầu hỗ trợ", "../../user/html/request_support.html"],
+ +        ["◷", "Đánh giá truyện", "../../buyer/html/page4.html"]
+ +    ] }
+ +];
+ +
+ +const roleGroups = {
+ +    SELLER: { title: "Giao diện Người bán", items: [
+ +        ["◈", "Kênh Người Bán", "../../seller/html/index.html"],
+ +        ["★", "Nâng cấp Người bán & Cấp bậc", "../../seller/html/seller-tier.html"],
+ +        ["+", "Đăng bán truyện", "../../seller/html/dang-ban-truyen.html"],
+ +        ["▤", "Quản lý bài đăng", "../../seller/html/quan-ly-bai-dang.html"],
+ +        ["▦", "Quản lý sản phẩm", "../../seller/html/quan-ly-san-pham.html"],
+ +        ["▣", "Đơn hàng bán", "../../seller/html/orders.html"],
+ +        ["◇", "Voucher shop", "../../seller/html/quan-ly-voucher.html"],
+ +        ["▥", "Thống kê doanh thu", "../../seller/html/revenue.html"]
+ +    ] },
+ +    ADMIN: { title: "Quản trị / Kiểm duyệt", items: [
+ +        ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
+ +        ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
+ +        ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
+ +        ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
+ +        ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
+ +        ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
+ +    ] },
+ +    MANAGER: { title: "Quản trị / Kiểm duyệt", items: [
+ +        ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
+ +        ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
+ +        ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
+ +        ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
+ +        ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
+ +        ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
+ +    ] }
+ +};
+ +
+ +function renderGroup(group, currentPath) {
+ +    const section = document.createElement("section");
+ +    section.className = "sidebar-group";
+ +    section.innerHTML = `<h2 class="sidebar-group-title">${group.title}</h2>`;
+ +    const curPath = (currentPath || window.location.pathname || "").toLowerCase().replace(/\\/g, "/");
+ +    const curFile = curPath.split("/").pop();
+ +    group.items.forEach(([icon, label, href]) => {
+ +        const link = document.createElement("a");
+ +        let isActive = false;
+ +        try {
+ +            const targetUrl = new URL(href, window.location.href);
+ +            const targetPath = targetUrl.pathname.toLowerCase().replace(/\\/g, "/");
+ +            const targetFile = targetPath.split("/").pop();
+ +            isActive = Boolean(targetFile && curFile && targetFile === curFile) || curPath.endsWith(targetPath) || curPath === targetPath;
+ +        } catch { }
+ +        link.className = `sidebar-link ${isActive ? "active" : ""}`;
+ +        link.href = href;
+ +        link.innerHTML = `<span class="sidebar-link-icon" aria-hidden="true">${icon}</span><span>${label}</span>`;
+ +        section.append(link);
+ +    });
+ +    return section;
+ +}
+ +
+ +function logout() {
+ +    const keysToClear = [
+ +        "bookmooch_session",
+ +        "bookmooch_profile",
+ +        "bookmooch_avatar",
+ +        "userRole",
+ +        "userName",
+ +        "rememberMe"
+ +    ];
+ +    keysToClear.forEach((key) => {
+ +        localStorage.removeItem(key);
+ +        sessionStorage.removeItem(key);
+ +    });
+ +    window.location.href = window.BookMoochAccountApi.baseUrl() + "/auth/logout";
+ +}
+ +
+ +async function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
+ +    if (!mount) return;
+ +    const template = `
+ +        <aside class="app-sidebar" data-sidebar aria-label="Điều hướng chính">
+ +            <div class="sidebar-brand">ComicHub <span>Hub</span></div>
+ +            <div class="sidebar-profile"><span class="sidebar-avatar" data-sidebar-avatar>BM</span><div><strong data-sidebar-name>Thành viên</strong><small data-sidebar-role>BUYER</small></div></div>
+ +            <nav data-sidebar-nav></nav>
+ +            <button class="sidebar-logout" type="button" data-sidebar-logout>Đăng xuất</button>
+ +        </aside>`;
+ +    mount.innerHTML = template;
+ +    const account = await window.BookMoochAccountApi.currentUser().catch(() => null);
+ +    const role = account?.role === "ADMIN" ? "ADMIN" : account?.isSeller ? "SELLER" : "BUYER";
+ +    const userName = account?.fullName || "Khách";
+ +    const nameEl = mount.querySelector("[data-sidebar-name]");
+ +    const roleEl = mount.querySelector("[data-sidebar-role]");
+ +    const avatarEl = mount.querySelector("[data-sidebar-avatar]");
+ +    const logoutButton = mount.querySelector("[data-sidebar-logout]");
+ +    if (nameEl) nameEl.textContent = userName;
+ +    if (roleEl) roleEl.textContent = role;
+ +    if (avatarEl) avatarEl.textContent = userName.slice(0, 2).toUpperCase();
+ +    if (logoutButton) logoutButton.addEventListener("click", logout);
+ +    const currentPath = window.location.pathname;
+ +    const navigation = mount.querySelector("[data-sidebar-nav]");
+ +    if (navigation) {
+ +        commonGroups.forEach((group) => navigation.append(renderGroup({ ...group,
+ +            items: group.items.filter((item) => account?.isSeller || !item[2].includes("/seller/"))
+ +        }, currentPath)));
+ +        if (account?.isSeller) navigation.append(renderGroup(roleGroups.SELLER, currentPath));
+ +        if (role === "ADMIN") navigation.append(renderGroup(roleGroups.ADMIN, currentPath));
+ +        if (account && !account.isSeller) navigation.append(renderGroup({ title: "Kênh Người bán", items: [
+ +            ["+", "Nâng cấp lên Người bán", window.BookMoochAccountApi.upgradeUrl()]
+ +        ] }, currentPath));
+ +    }
+ +}
+ +
+ +if (document.readyState === "loading") {
+ +    document.addEventListener("DOMContentLoaded", () => mountSidebar());
+ +} else {
+ +    mountSidebar();
+ +}
+ +
+ +window.mountSidebar = mountSidebar;
+++=======
++ // Renders navigation from the account authenticated by the backend.
++ const commonGroups = [
++     { title: "Tài khoản & Khám phá", items: [
++         ["◈", "Trang Chủ ComicHub", "../../buyer/html/home.html"],
++         ["★", "Master Portal", "../../index.html"],
++         ["◉", "Hồ sơ cá nhân", "../../user/html/profile.html"],
++         ["⌂", "Quản lý địa chỉ", "../../user/html/manage_address.html"],
++         ["¤", "Ví & Rút tiền", "../../seller/html/wallet.html"]
++     ] },
++     { title: "Mua hàng & Đơn hàng", items: [
++         ["+", "Đăng tin tìm mua", "../../buyer/html/page1.html"],
++         ["▣", "Quản lý đơn hàng mua", "../../buyer/html/page2.html"],
++         ["↗", "Trạng thái đơn hàng GHN", "../../buyer/html/page3.html"],
++         ["★", "Truyện yêu thích", "../../buyer/html/page6.html"]
++     ] },
++     { title: "Trao đổi & Đàm phán", items: [
++         ["⇄", "Phòng trao đổi giá", "../../exchange/html/dealing-room.html"],
++         ["💬", "Chat đàm phán", "../../exchange/html/dealing-chat.html"],
++         ["≋", "Đơn hàng trao đổi", "../../exchange/html/exchange-orders.html"]
++     ] },
++     { title: "Hỗ trợ & Chăm sóc", items: [
++         ["!", "Gửi khiếu nại", "../../user/html/complain.html"],
++         ["?", "Gửi yêu cầu hỗ trợ", "../../user/html/request_support.html"],
++         ["◷", "Đánh giá truyện", "../../buyer/html/page4.html"]
++     ] }
++ ];
++ 
++ const roleGroups = {
++     SELLER: { title: "Giao diện Người bán", items: [
++         ["◈", "Kênh Người Bán", "../../seller/html/orders.html"],
++         ["+", "Đăng bán truyện", "../../seller/html/dang-ban-truyen.html"],
++         ["▤", "Quản lý bài đăng", "../../seller/html/quan-ly-bai-dang.html"],
++         ["▦", "Quản lý sản phẩm", "../../seller/html/quan-ly-san-pham.html"],
++         ["▣", "Đơn hàng bán", "../../seller/html/orders.html"],
++         ["◇", "Voucher shop", "../../seller/html/quan-ly-voucher.html"],
++         ["▥", "Thống kê doanh thu", "../../seller/html/revenue.html"]
++     ] },
++     ADMIN: { title: "Quản trị / Kiểm duyệt", items: [
++         ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
++         ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
++         ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
++         ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
++         ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
++         ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
++     ] },
++     MANAGER: { title: "Quản trị / Kiểm duyệt", items: [
++         ["◆", "Admin Dashboard", "../../tu/html/dashboard.html"],
++         ["✓", "Kiểm duyệt bài đăng", "../../Toan/html/postModeration.html"],
++         ["!", "Khiếu nại & báo cáo", "../../Toan/html/report_resolution.html"],
++         ["♙", "Quản lý tài khoản", "../../tu/html/accounts.html"],
++         ["₫", "Cấu hình biểu phí", "../../tu/html/fees.html"],
++         ["↥", "Bàn CSKH", "../../Toan/html/customer-support.html"]
++     ] }
++ };
++ 
++ function renderGroup(group, currentPath) {
++     const section = document.createElement("section");
++     section.className = "sidebar-group";
++     section.innerHTML = `<h2 class="sidebar-group-title">${group.title}</h2>`;
++     const curPath = (currentPath || window.location.pathname || "").toLowerCase().replace(/\\/g, "/");
++     const curFile = curPath.split("/").pop();
++     group.items.forEach(([icon, label, href]) => {
++         const link = document.createElement("a");
++         let isActive = false;
++         try {
++             const targetUrl = new URL(href, window.location.href);
++             const targetPath = targetUrl.pathname.toLowerCase().replace(/\\/g, "/");
++             const targetFile = targetPath.split("/").pop();
++             isActive = Boolean(targetFile && curFile && targetFile === curFile) || curPath.endsWith(targetPath) || curPath === targetPath;
++         } catch { }
++         link.className = `sidebar-link ${isActive ? "active" : ""}`;
++         link.href = href;
++         link.innerHTML = `<span class="sidebar-link-icon" aria-hidden="true">${icon}</span><span>${label}</span>`;
++         section.append(link);
++     });
++     return section;
++ }
++ 
++ function logout() {
++     const keysToClear = [
++         "bookmooch_session",
++         "bookmooch_profile",
++         "bookmooch_avatar",
++         "userRole",
++         "userName",
++         "rememberMe"
++     ];
++     keysToClear.forEach((key) => {
++         localStorage.removeItem(key);
++         sessionStorage.removeItem(key);
++     });
++     window.location.href = window.BookMoochAccountApi.baseUrl() + "/auth/logout";
++ }
++ 
++ async function mountSidebar(mount = document.querySelector("[data-sidebar-mount]")) {
++     if (!mount) return;
++     const template = `
++         <aside class="app-sidebar" data-sidebar aria-label="Điều hướng chính">
++             <div class="sidebar-brand">ComicHub <span>Hub</span></div>
++             <div class="sidebar-profile"><span class="sidebar-avatar" data-sidebar-avatar>BM</span><div><strong data-sidebar-name>Thành viên</strong><small data-sidebar-role>BUYER</small></div></div>
++             <nav data-sidebar-nav></nav>
++             <button class="sidebar-logout" type="button" data-sidebar-logout>Đăng xuất</button>
++         </aside>`;
++     mount.innerHTML = template;
++     const account = await window.BookMoochAccountApi.currentUser().catch(() => null);
++     const role = account?.role === "ADMIN" ? "ADMIN" : account?.isSeller ? "SELLER" : "BUYER";
++     const userName = account?.fullName || "Khách";
++     const nameEl = mount.querySelector("[data-sidebar-name]");
++     const roleEl = mount.querySelector("[data-sidebar-role]");
++     const avatarEl = mount.querySelector("[data-sidebar-avatar]");
++     const logoutButton = mount.querySelector("[data-sidebar-logout]");
++     if (nameEl) nameEl.textContent = userName;
++     if (roleEl) roleEl.textContent = role;
++     if (avatarEl) avatarEl.textContent = userName.slice(0, 2).toUpperCase();
++     if (logoutButton) logoutButton.addEventListener("click", logout);
++     const currentPath = window.location.pathname;
++     const navigation = mount.querySelector("[data-sidebar-nav]");
++     if (navigation) {
++         commonGroups.forEach((group) => navigation.append(renderGroup({ ...group,
++             items: group.items.filter((item) => account?.isSeller || !item[2].includes("/seller/"))
++         }, currentPath)));
++         if (account?.isSeller) navigation.append(renderGroup(roleGroups.SELLER, currentPath));
++         if (role === "ADMIN") navigation.append(renderGroup(roleGroups.ADMIN, currentPath));
++         if (account && !account.isSeller) navigation.append(renderGroup({ title: "Kênh Người bán", items: [
++             ["+", "Nâng cấp lên Người bán", window.BookMoochAccountApi.upgradeUrl()]
++         ] }, currentPath));
++     }
++ }
++ 
++ if (document.readyState === "loading") {
++     document.addEventListener("DOMContentLoaded", () => mountSidebar());
++ } else {
++     mountSidebar();
++ }
++ 
++ window.mountSidebar = mountSidebar;
+++>>>>>>> 8c359a750eff0108b9f1b43e703cb04d7d1bd344

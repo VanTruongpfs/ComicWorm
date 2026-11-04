@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const statMaxPosts = document.getElementById("statMaxPosts");
   const statCommission = document.getElementById("statCommission");
   const statOrders = document.getElementById("statOrders");
+  const statReviews = document.getElementById("statReviews");
+  const statRating = document.getElementById("statRating");
   const tiersGrid = document.getElementById("tiersGrid");
 
   const pendingAlert = document.getElementById("pendingAlert");
@@ -66,6 +68,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (statCommission) statCommission.textContent = `${tierInfo.commissionRate}%`;
     if (statOrders) statOrders.textContent = tierInfo.totalCompletedOrders || 0;
+    if (statReviews) statReviews.textContent = tierInfo.totalReviews || 0;
+    if (statRating) statRating.textContent = `${(tierInfo.averageRating || 0).toFixed(1)}★`;
 
     // Hiển thị trạng thái đơn PENDING nếu có
     if (tierInfo.pendingRequest) {
@@ -104,16 +108,50 @@ document.addEventListener("DOMContentLoaded", async () => {
         .map((b) => `<li><span class="material-symbols-outlined">check_circle</span> ${b}</li>`)
         .join("");
 
+      // Khối điều kiện
+      let criteriaHtml = "";
+      if (tier.level > 1) {
+        const orderMet = (tierInfo.totalCompletedOrders || 0) >= tier.minCompletedOrders;
+        const reviewMet = (tierInfo.totalReviews || 0) >= tier.minReviews;
+        const ratingMet = tier.minRating <= 0 || (tierInfo.averageRating || 0) >= tier.minRating;
+
+        criteriaHtml = `
+          <div class="tier-criteria-box">
+            <div class="criteria-title"><span class="material-symbols-outlined" style="font-size:16px;">rule</span> Điều kiện đạt chuẩn:</div>
+            <div class="criteria-item ${orderMet ? 'met' : 'unmet'}">
+              <span class="material-symbols-outlined">${orderMet ? 'check' : 'close'}</span>
+              Đơn hoàn tất: ≥ ${tier.minCompletedOrders} (có: ${tierInfo.totalCompletedOrders || 0})
+            </div>
+            <div class="criteria-item ${reviewMet ? 'met' : 'unmet'}">
+              <span class="material-symbols-outlined">${reviewMet ? 'check' : 'close'}</span>
+              Đánh giá: ≥ ${tier.minReviews} (có: ${tierInfo.totalReviews || 0})
+            </div>
+            <div class="criteria-item ${ratingMet ? 'met' : 'unmet'}">
+              <span class="material-symbols-outlined">${ratingMet ? 'check' : 'close'}</span>
+              Số sao TB: ≥ ${tier.minRating.toFixed(1)}★ (có: ${(tierInfo.averageRating || 0).toFixed(1)}★)
+            </div>
+          </div>
+        `;
+      } else {
+        criteriaHtml = `
+          <div class="tier-criteria-box">
+            <div class="criteria-title"><span class="material-symbols-outlined" style="font-size:16px;">verified_user</span> Điều kiện: Mở gian hàng mới</div>
+            <div class="criteria-item met"><span class="material-symbols-outlined">check</span> Dành cho thành viên mới bắt đầu</div>
+          </div>
+        `;
+      }
+
       let actionBtnHtml = "";
       if (isCurrent) {
         actionBtnHtml = `<button class="btn-upgrade-select disabled" disabled>Cấp độ hiện tại</button>`;
       } else if (isPassed) {
         actionBtnHtml = `<button class="btn-upgrade-select disabled" disabled>Đã đạt được</button>`;
+      } else if (hasPending) {
+        actionBtnHtml = `<button class="btn-upgrade-select disabled" disabled>Đang có đơn chờ duyệt</button>`;
+      } else if (!tier.eligible) {
+        actionBtnHtml = `<button class="btn-upgrade-select disabled" title="${tier.ineligibilityReason || 'Chưa đủ điều kiện'}" disabled>Chưa đạt điều kiện</button>`;
       } else {
-        const disabledAttr = hasPending ? "disabled" : "";
-        const btnClass = hasPending ? "disabled" : "primary";
-        const btnText = hasPending ? "Đang có đơn chờ duyệt" : `Nâng cấp lên Cấp ${tier.level}`;
-        actionBtnHtml = `<button class="btn-upgrade-select ${btnClass}" data-level="${tier.level}" ${disabledAttr}>${btnText}</button>`;
+        actionBtnHtml = `<button class="btn-upgrade-select primary" data-level="${tier.level}">Nâng cấp lên Cấp ${tier.level}</button>`;
       }
 
       card.innerHTML = `
@@ -123,6 +161,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <span class="material-symbols-outlined" style="color:${tier.badgeColor}; font-size:24px;">military_tech</span>
           </div>
           <div class="tier-fee">${Number(tier.fee).toLocaleString('vi-VN')}₫</div>
+          ${criteriaHtml}
           <ul class="tier-perks">
             ${perksHtml}
             <li><span class="material-symbols-outlined">payments</span> Rút tiền: ${tier.withdrawSpeed}</li>
@@ -141,6 +180,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function openCheckout(tier) {
+    if (!tier.eligible && tier.level > 1) {
+      alert("Bạn chưa đủ điều kiện để nâng cấp lên cấp này:\n" + (tier.ineligibilityReason || "Chưa đạt chỉ tiêu đơn hàng/đánh giá/số sao."));
+      return;
+    }
+
     selectedTargetTier = tier;
     uploadedProofUrl = "";
     if (proofUploadStatus) proofUploadStatus.style.display = "none";
@@ -174,15 +218,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const file = e.target.files[0];
       if (!file) return;
 
+      if (file.size > 20 * 1024 * 1024) {
+        proofUploadStatus.style.display = "block";
+        proofUploadStatus.style.color = "#ef4444";
+        proofUploadStatus.textContent = "Lỗi: Ảnh quá lớn (" + (file.size / 1024 / 1024).toFixed(1) + "MB). Vui lòng chọn ảnh dưới 20MB.";
+        return;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
       try {
-        if (proofUploadStatus) {
-          proofUploadStatus.style.display = "block";
-          proofUploadStatus.style.color = "#3b82f6";
-          proofUploadStatus.textContent = "Đang tải ảnh biên lai lên máy chủ...";
-        }
+        proofUploadStatus.style.display = "block";
+        proofUploadStatus.style.color = "#3b82f6";
+        proofUploadStatus.textContent = "Đang tải ảnh biên lai lên...";
 
         const res = await fetch("/api/seller/tier/upload-proof", {
           method: "POST",
@@ -191,40 +240,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || "Không thể tải ảnh lên máy chủ");
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || ("Tải ảnh thất bại (HTTP " + res.status + ")"));
         }
 
         const data = await res.json();
         uploadedProofUrl = data.url;
-
-        if (proofUploadStatus) {
-          proofUploadStatus.style.color = "#10b981";
-          proofUploadStatus.textContent = "✓ Tải ảnh biên lai thành công!";
-        }
+        proofUploadStatus.style.color = "#10b981";
+        proofUploadStatus.textContent = "✓ Tải ảnh thành công!";
       } catch (err) {
-        console.error(err);
-        if (proofUploadStatus) {
-          proofUploadStatus.style.color = "#ef4444";
-          proofUploadStatus.textContent = "Lỗi tải ảnh: " + err.message;
+        proofUploadStatus.style.color = "#ef4444";
+        const msg = err.message || "";
+        if (msg.includes("Failed to fetch")) {
+          proofUploadStatus.textContent = "Lỗi upload (Failed to fetch): Máy chủ từ chối kết nối hoặc ảnh vượt quá dung lượng. Vui lòng khởi động lại Spring Boot và thử lại!";
+        } else {
+          proofUploadStatus.textContent = "Lỗi upload: " + msg;
         }
       }
     });
   }
 
-  // Submit Upgrade Request
+  // Submit upgrade request
   if (btnSubmitUpgrade) {
     btnSubmitUpgrade.addEventListener("click", async () => {
       if (!selectedTargetTier) return;
-
       if (!uploadedProofUrl) {
-        alert("Vui lòng tải lên ảnh chụp biên lai chuyển khoản (Bill) trước khi gửi!");
-        return;
-      }
-
-      const shopNameVal = modalShopName ? modalShopName.value.trim() : "";
-      if (!shopNameVal) {
-        alert("Vui lòng nhập tên gian hàng / Shop!");
+        alert("Vui lòng tải lên ảnh chụp biên lai chuyển khoản (Bill)!");
         return;
       }
 
@@ -234,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const body = {
           toLevel: selectedTargetTier.level,
-          shopName: shopNameVal,
+          shopName: modalShopName ? modalShopName.value.trim() : "",
           shopDescription: modalShopDesc ? modalShopDesc.value.trim() : "",
           paymentProofUrl: uploadedProofUrl,
           transactionCode: modalTransactionCode ? modalTransactionCode.value.trim() : ""
@@ -248,22 +289,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || "Gửi yêu cầu thất bại");
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || "Gửi yêu cầu thất bại");
         }
 
-        alert("✓ Gửi yêu cầu nâng cấp thành công! Vui lòng chờ Admin kiểm tra và duyệt trong vòng 24h.");
+        alert("✓ Gửi yêu cầu nâng cấp thành công! Vui lòng đợi Admin kiểm tra biên lai và phê duyệt.");
         if (checkoutModal) checkoutModal.style.display = "none";
-        await loadData();
+        loadData();
       } catch (err) {
-        alert(err.message);
+        alert("Lỗi: " + err.message);
       } finally {
         btnSubmitUpgrade.disabled = false;
-        btnSubmitUpgrade.textContent = "Gửi yêu cầu & Xác nhận đã chuyển khoản";
+        btnSubmitUpgrade.textContent = "Gửi xác nhận & Biên lai";
       }
     });
   }
 
   loadData();
 });
-
