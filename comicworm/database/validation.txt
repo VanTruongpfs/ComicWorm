@@ -1,10 +1,10 @@
-C:\Program Files\MySQL\MySQL Server 9.0\bin\mysqld.exe  Ver 9.0.1 for Win64 on x86_64 (MySQL Community Server - GPL)
-Isolated datadir: C:\Users\PC\AppData\Local\Temp\codex-comicworm-scope-k0e5ein6\data
+D:\wampp\bin\mysql\mysql8.4.7\bin\mysqld.exe  Ver 8.4.7 for Win64 on x86_64 (MySQL Community Server - GPL)
+Isolated datadir: C:\Users\PC\AppData\Local\Temp\codex-comicworm-scope-jhricxpx\data
 Source: Nhom8_ChucNang.docx
 
 PASS: DDL imports with all FK/CHECK constraints
 PASS: reference seed
-PASS: 32 tables / 232 columns / 49 foreign keys
+PASS: 35 tables / 263 columns / 56 foreign keys
 PASS: out-of-scope modules are absent
 PASS: local and Google-only login identities
 PASS: rejects account without password or Google identity
@@ -37,9 +37,5 @@ PASS: all example screen/statistics queries run
 PASS: rejects hard deleting historical seller
 
 Completed: DDL import + 32 integration checks.
-Scope: 25 functions, 32 tables, 232 columns.
+Scope: 25 functions, 35 tables, 263 columns.
 API permissions, actual provider/AI execution and cross-row/concurrent business workflows are not implemented by these schema files.
-
-PASS: generated SQL/DBML are reproducible; seven valid TableGroup identifiers; all 25 functions mapped.
-PASS: dbdiagram parses the grouped file without a TableGroup identifier error; TableGroup display requires a paid plan.
-PASS: standard DBML displays 0 errors; diagram title/source updated to document scope.

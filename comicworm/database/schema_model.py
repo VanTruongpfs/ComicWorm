@@ -36,6 +36,26 @@ used_at datetime
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 ''', 'tg_auth')
 fk('password_reset_tokens', 'user_id', 'users')
+table('seller_applications', '''
+id bigint [pk, not null, increment]
+user_id bigint [not null]
+status varchar(20) [not null, default: 'PENDING', check: `status IN ('PENDING', 'APPROVED', 'REJECTED')`]
+id_number char(12) [not null]
+id_full_name varchar(100) [not null]
+id_date_of_birth date [not null]
+id_issue_date date [not null]
+id_issue_place varchar(200) [not null]
+submitted_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+reviewed_by bigint
+reviewed_at datetime
+review_note varchar(500)
+''', 'tg_auth')
+fk('seller_applications', 'user_id', 'users')
+fk('seller_applications', 'reviewed_by', 'users')
+index('seller_applications', 'status,submitted_at', key='idx_seller_application_status')
+index('seller_applications', 'user_id,submitted_at', key='idx_seller_application_user')
+check('seller_applications', 'ck_seller_application_reject_note', "status <> 'REJECTED' OR review_note IS NOT NULL")
+note('seller_applications', 'Hồ sơ đăng ký mở bán. CCCD là dữ liệu mẫu để demo; không lưu ảnh.')
 
 table('categories', '''
 id int [pk, not null, increment]
@@ -230,6 +250,8 @@ id bigint [pk, not null, increment]
 order_item_id bigint [not null, unique]
 buyer_id bigint [not null]
 rating int [not null, check: `rating BETWEEN 1 AND 5`]
+product_quality_rating int
+seller_attitude_rating int
 content text
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]

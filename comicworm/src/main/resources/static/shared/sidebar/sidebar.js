@@ -122,7 +122,7 @@ async function mountSidebar(mount = document.querySelector("[data-sidebar-mount]
         if (account?.isSeller) navigation.append(renderGroup(roleGroups.SELLER, currentPath));
         if (role === "ADMIN") navigation.append(renderGroup(roleGroups.ADMIN, currentPath));
         if (account && !account.isSeller) navigation.append(renderGroup({ title: "Kênh Người bán", items: [
-            ["+", "Nâng cấp lên Người bán", window.BookMoochAccountApi.upgradeUrl()]
+            ["+", "Đăng ký Người bán", window.BookMoochAccountApi.upgradeUrl()]
         ] }, currentPath));
     }
 }

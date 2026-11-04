@@ -24,7 +24,7 @@
     if (response.status === 413) throw new Error('Mỗi ảnh tối đa 5 MB, tối đa 8 ảnh mỗi sản phẩm.');
     if (response.status === 401) { const error = new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'); error.loginRequired = true; throw error; }
     if (response.status === 403) {
-      const error = new Error(method === 'GET' ? 'Bạn cần nâng cấp lên Người bán.' : 'Không có quyền thực hiện thao tác. Vui lòng tải lại trang và kiểm tra tài khoản.');
+      const error = new Error(method === 'GET' ? 'Bạn cần đăng ký Người bán.' : 'Không có quyền thực hiện thao tác. Vui lòng tải lại trang và kiểm tra tài khoản.');
       error.sellerRequired = method === 'GET'; throw error;
     }
     let data;

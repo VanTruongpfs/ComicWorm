@@ -3,20 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nâng cấp tài khoản Người bán | ComicHub</title>
+    <title>Đăng ký Người bán | ComicHub</title>
     <link rel="stylesheet" th:href="@{/auth/css/auth-shared.css}">
+    <style>
+        .auth-card { width: min(100%, 560px); }
+        .status-box { margin: 0 0 22px; padding: 14px 16px; border-radius: 10px; border-left: 4px solid var(--tertiary-default); background: var(--tertiary-light); }
+        .status-box.rejected { border-left-color: #b91c1c; background: #fee2e2; }
+        .status-box p { margin: 4px 0 0; }
+        .id-samples { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; }
+        .id-samples figure { margin: 0; }
+        .id-samples img { width: 100%; border: 1px solid var(--border-color); border-radius: 8px; }
+        .id-samples figcaption { color: var(--neutral-default); font-size: .8rem; text-align: center; }
+        .demo-note { margin: -8px 0 0; color: var(--neutral-default); font-size: .82rem; }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0 0 22px; }
+        .summary dt { color: var(--neutral-default); }
+        .summary dd { margin: 0; font-weight: 600; }
+        @media (max-width: 420px) { .field-row, .id-samples { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 <main class="auth-page">
-    <section class="auth-card" aria-labelledby="upgrade-title">
+    <section class="auth-card" aria-labelledby="register-title">
         <p class="auth-brand"><a th:href="@{/user/html/profile.html}">← Hồ sơ cá nhân</a></p>
-        <h1 class="auth-title" id="upgrade-title">Trở thành Người bán</h1>
-        <p class="auth-subtitle">Xin chào <span th:text="${fullName}">bạn</span>. Bạn cần nâng cấp tài khoản thành Người bán để vào kênh seller và xem thống kê doanh thu.</p>
-        <p class="auth-subtitle">Sau khi nâng cấp, bạn có thể đăng bán truyện, quản lý gian hàng và xem báo cáo của mình. Bạn vẫn có thể mua và trao đổi truyện như trước.</p>
-        <p class="field-error" role="alert" th:if="${csrfExpired}">Phiên xác nhận đã hết hạn. Vui lòng bấm “Nâng cấp lên Người bán” lần nữa để xác nhận.</p>
-        <form class="auth-form" th:action="@{/user/seller-upgrade}" method="post">
-            <button class="auth-button" type="submit">Nâng cấp lên Người bán</button>
-        </form>
+        <h1 class="auth-title" id="register-title">Đăng ký Người bán</h1>
+        <p class="auth-subtitle">Xin chào <span th:text="${fullName}">bạn</span>. Gửi thông tin CCCD để đăng ký bán hàng;
+            sau khi quản trị viên duyệt, bạn có thể đăng bán truyện, quản lý gian hàng và xem báo cáo của mình.</p>
+
+        <!-- Đang chờ duyệt: chỉ xem lại thông tin đã gửi -->
+        <th:block th:if="${sellerApplication != null and sellerApplication.status() == 'PENDING'}">
+            <div class="status-box" role="status">
+                <strong>Hồ sơ đang chờ duyệt.</strong>
+                <p>Gửi lúc <span th:text="${#temporals.format(sellerApplication.submittedAt(), 'HH:mm dd/MM/yyyy')}">--</span>.
+                    Quản trị viên sẽ xem xét và cấp quyền Người bán cho bạn.</p>
+            </div>
+            <dl class="summary">
+                <dt>Số CCCD</dt><dd th:text="${sellerApplication.idNumber()}">001099012345</dd>
+                <dt>Họ tên</dt><dd th:text="${sellerApplication.idFullName()}">NGUYỄN VĂN MẪU</dd>
+                <dt>Ngày sinh</dt><dd th:text="${#temporals.format(sellerApplication.idDateOfBirth(), 'dd/MM/yyyy')}">01/01/1999</dd>
+                <dt>Ngày cấp</dt><dd th:text="${#temporals.format(sellerApplication.idIssueDate(), 'dd/MM/yyyy')}">15/06/2021</dd>
+                <dt>Nơi cấp</dt><dd th:text="${sellerApplication.idIssuePlace()}">Cục Cảnh sát</dd>
+            </dl>
+        </th:block>
+
+        <!-- Chưa có hồ sơ hoặc bị từ chối: hiện form -->
+        <th:block th:unless="${sellerApplication != null and sellerApplication.status() == 'PENDING'}">
+            <div class="status-box rejected" role="alert"
+                 th:if="${sellerApplication != null and sellerApplication.status() == 'REJECTED'}">
+                <strong>Hồ sơ trước đã bị từ chối.</strong>
+                <p>Lý do: <span th:text="${sellerApplication.reviewNote()}">Ảnh mờ</span></p>
+                <p>Vui lòng kiểm tra lại thông tin và gửi lại hồ sơ.</p>
+            </div>
+            <p class="field-error" role="alert" th:if="${csrfExpired}">Phiên xác nhận đã hết hạn. Vui lòng bấm “Gửi hồ sơ” lần nữa.</p>
+
+            <form class="auth-form" th:action="@{/user/seller-upgrade}" th:object="${form}" method="post">
+                <p class="field-error" role="alert" th:if="${#fields.hasGlobalErrors()}" th:text="${#fields.globalErrors()[0]}"></p>
+
+                <div class="id-samples">
+                    <figure>
+                        <img th:src="@{/user/images/cccd-sample-front.svg}" alt="Ảnh minh họa CCCD mẫu mặt trước">
+                        <figcaption>Mặt trước (mẫu)</figcaption>
+                    </figure>
+                    <figure>
+                        <img th:src="@{/user/images/cccd-sample-back.svg}" alt="Ảnh minh họa CCCD mẫu mặt sau">
+                        <figcaption>Mặt sau (mẫu)</figcaption>
+                    </figure>
+                </div>
+                <p class="demo-note">Thông tin CCCD hiện là dữ liệu mẫu để demo; ảnh chỉ để minh họa và không được tải lên.</p>
+
+                <div class="field">
+                    <label for="idNumber">Số CCCD</label>
+                    <input id="idNumber" th:field="*{idNumber}" inputmode="numeric" maxlength="12" pattern="\d{12}" required
+                           th:attr="aria-invalid=${#fields.hasErrors('idNumber')}">
+                    <span class="field-error" th:errors="*{idNumber}"></span>
+                </div>
+                <div class="field">
+                    <label for="idFullName">Họ tên trên CCCD</label>
+                    <input id="idFullName" th:field="*{idFullName}" maxlength="100" required
+                           th:attr="aria-invalid=${#fields.hasErrors('idFullName')}">
+                    <span class="field-error" th:errors="*{idFullName}"></span>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="idDateOfBirth">Ngày sinh</label>
+                        <input id="idDateOfBirth" type="date" th:field="*{idDateOfBirth}" required
+                               th:attr="aria-invalid=${#fields.hasErrors('idDateOfBirth')}">
+                        <span class="field-error" th:errors="*{idDateOfBirth}"></span>
+                    </div>
+                    <div class="field">
+                        <label for="idIssueDate">Ngày cấp</label>
+                        <input id="idIssueDate" type="date" th:field="*{idIssueDate}" required
+                               th:attr="aria-invalid=${#fields.hasErrors('idIssueDate')}">
+                        <span class="field-error" th:errors="*{idIssueDate}"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="idIssuePlace">Nơi cấp</label>
+                    <input id="idIssuePlace" th:field="*{idIssuePlace}" maxlength="200" required
+                           th:attr="aria-invalid=${#fields.hasErrors('idIssuePlace')}">
+                    <span class="field-error" th:errors="*{idIssuePlace}"></span>
+                </div>
+                <button class="auth-button" type="submit">Gửi hồ sơ</button>
+            </form>
+        </th:block>
+
         <p class="auth-switch"><a class="text-link" th:href="@{/buyer/html/home.html}">Về Chợ ComicHub</a></p>
     </section>
 </main>
