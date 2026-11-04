@@ -57,7 +57,7 @@
       if (ticket !== requestId) return;
       report = null; clear(); set(status, error.message);
       if (error.loginRequired) { const link = document.createElement('a'); link.href = API.loginUrl(); link.textContent = ' Đăng nhập'; status.appendChild(link); }
-      if (error.sellerRequired) { const link = document.createElement('a'); link.href = API.upgradeUrl(); link.textContent = ' Nâng cấp lên Người bán'; status.appendChild(link); }
+      if (error.sellerRequired) { const link = document.createElement('a'); link.href = API.upgradeUrl(); link.textContent = ' Đăng ký Người bán'; status.appendChild(link); }
     } finally { if (ticket === requestId) { root.setAttribute('aria-busy', 'false'); root.querySelectorAll('.page-header button').forEach(button => { if (button.textContent.includes('CSV')) button.disabled = !report; }); } }
   }
   function render() {

@@ -37,143 +37,233 @@ let currentPagination = {
 let liveLoadedRecords = [];
 
 /* ==========================================================================
-   DUYỆT ĐĂNG KÝ NGƯỜI BÁN (MOCK UI)
+   DUYỆT ĐĂNG KÝ NGƯỜI BÁN — /api/admin/seller-applications
    ========================================================================== */
-const sellerApplications = [
-    { id: 'SR-3001', applicantName: 'Đặng Thị Lan', applicantId: 'U-12001', email: 'lan.dang@gmail.com', phone: '0901.222.333', shopName: 'Góc Sách Xưa', category: 'Văn học trong nước, Truyện tranh', address: 'Quận 7, TP.HCM', idCardNo: '079204xxxxxx', submitted: '25/09/2026', status: 'pending' },
-    { id: 'SR-3002', applicantName: 'Phan Gia Huy', applicantId: 'U-12045', email: 'huy.phan@gmail.com', phone: '0912.555.678', shopName: 'Huy Comic Store', category: 'Truyện tranh / Manga', address: 'Quận Tân Bình, TP.HCM', idCardNo: '079301xxxxxx', submitted: '24/09/2026', status: 'pending' },
-    { id: 'SR-3003', applicantName: 'Lâm Ngọc Diễm', applicantId: 'U-12078', email: 'diem.lam@gmail.com', phone: '0987.111.222', shopName: 'Diễm Books Hà Nội', category: 'Truyện thiếu nhi, Light Novel', address: 'Quận Đống Đa, Hà Nội', idCardNo: '001199xxxxxx', submitted: '23/09/2026', status: 'pending' },
-    { id: 'SR-3004', applicantName: 'Nguyễn Hữu Thịnh', applicantId: 'U-12090', email: 'thinh.nguyen@gmail.com', phone: '0933.444.555', shopName: 'Thịnh Sách Cũ', category: 'Truyện hiếm / Bản sưu tầm', address: 'TP. Cần Thơ', idCardNo: '092210xxxxxx', submitted: '22/09/2026', status: 'pending' },
-    { id: 'SR-2988', applicantName: 'Vương Bảo Trân', applicantId: 'U-11987', email: 'tran.vuong@gmail.com', phone: '0977.222.111', shopName: 'Trân Book Corner', category: 'Tiểu thuyết / Truyện dài', address: 'Quận Hải Châu, Đà Nẵng', idCardNo: '048187xxxxxx', submitted: '18/09/2026', status: 'approved', decidedNote: 'Hồ sơ hợp lệ, đã cấp quyền người bán.' },
-    { id: 'SR-2975', applicantName: 'Đinh Quang Vinh', applicantId: 'U-11955', email: 'vinh.dinh@gmail.com', phone: '0966.333.444', shopName: 'Vinh Truyện Tranh', category: 'Truyện tranh / Manga', address: 'Quận Bình Tân, TP.HCM', idCardNo: '079185xxxxxx', submitted: '15/09/2026', status: 'rejected', decidedNote: 'Giấy tờ tuỳ thân mờ, không xác minh được thông tin.' },
-];
+const SELLER_APP_API = '/api/admin/seller-applications';
 
 const sellerAppStatusMeta = {
-    pending: { label: 'Chờ duyệt', badge: 'warning' },
-    approved: { label: 'Đã duyệt', badge: 'success' },
-    rejected: { label: 'Đã từ chối', badge: 'danger' },
+    PENDING: { label: 'Chờ duyệt', badge: 'warning' },
+    APPROVED: { label: 'Đã duyệt', badge: 'success' },
+    REJECTED: { label: 'Đã từ chối', badge: 'danger' },
 };
+const sellerAppFilterStatus = { pending: 'PENDING', approved: 'APPROVED', rejected: 'REJECTED' };
 
+let sellerAppRows = [];
 let currentSellerAppTarget = null;
+let sellerAppBusy = false;
 
-function renderSellerApps() {
+async function sellerAppRequest(path, options = {}) {
+    const res = await fetch(SELLER_APP_API + path, {
+        ...options,
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json', ...(options.headers || {}) },
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+        const error = new Error((body && body.message) || (res.status === 401 || res.status === 403
+            ? 'Phiên đăng nhập quản trị đã hết hạn. Vui lòng tải lại trang.'
+            : `Yêu cầu thất bại (mã ${res.status}).`));
+        error.status = res.status;
+        throw error;
+    }
+    return body;
+}
+
+// A fresh token per write: CSRF tokens rotate on login/logout (AuthController).
+async function sellerAppWrite(path, body) {
+    const csrf = await sellerAppRequest('/csrf');
+    const headers = { [csrf.headerName]: csrf.token };
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    return sellerAppRequest(path, { method: 'POST', headers, body: body === undefined ? undefined : JSON.stringify(body) });
+}
+
+function sellerAppInitials(name) {
+    return String(name || '?').trim().split(/\s+/).slice(-2).map((w) => w[0]).join('').toUpperCase();
+}
+
+function formatAppDate(value) {
+    if (!value) return '—';
+    const [y, m, d] = String(value).split('T')[0].split('-');
+    return d && m && y ? `${d}/${m}/${y}` : escapeHtml(value);
+}
+
+function formatAppDateTime(value) {
+    if (!value) return '—';
+    const time = String(value).split('T')[1] || '';
+    return `${escapeHtml(time.slice(0, 5))} ${formatAppDate(value)}`.trim();
+}
+
+function currentSellerAppStatus() {
     const activeTab = document.querySelector('#sellerAppFilterTabs .tab-chip.active');
-    const filter = activeTab ? activeTab.dataset.filter : 'pending';
-    const rows = sellerApplications.filter((a) => a.status === filter);
+    return sellerAppFilterStatus[activeTab ? activeTab.dataset.filter : 'pending'] || 'PENDING';
+}
 
+function setSellerAppPendingCount(count) {
+    const badgeEl = document.getElementById('sellerAppPendingCount');
+    if (badgeEl) badgeEl.textContent = count;
+    const tabCountEl = document.getElementById('sellerAppPendingTabCount');
+    if (tabCountEl) tabCountEl.textContent = count;
+    const kpiEl = document.getElementById('kpiPendingSellerApps');
+    if (kpiEl) kpiEl.textContent = count;
+}
+
+async function refreshSellerAppPendingCount() {
+    try {
+        const pending = await sellerAppRequest('?status=PENDING');
+        setSellerAppPendingCount(pending.length);
+    } catch (_) { /* the table already shows load errors */ }
+}
+
+async function renderSellerApps() {
     const body = document.getElementById('sellerAppTableBody');
     if (!body) return;
+    const status = currentSellerAppStatus();
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Đang tải hồ sơ...</td></tr>`;
+    let rows;
+    try {
+        rows = await sellerAppRequest(`?status=${status}`);
+    } catch (err) {
+        if (status !== currentSellerAppStatus()) return;
+        sellerAppRows = [];
+        body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--danger-text);">Không tải được hồ sơ: ${escapeHtml(err.message)}</td></tr>`;
+        return;
+    }
+    // The admin may have switched filter while this request was in flight.
+    if (status !== currentSellerAppStatus()) return;
+    sellerAppRows = rows;
+    if (status === 'PENDING') setSellerAppPendingCount(rows.length);
+    else refreshSellerAppPendingCount();
+
     body.innerHTML = rows.length ? rows.map((a) => {
-        const meta = sellerAppStatusMeta[a.status];
-        const initials = a.applicantName.split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase();
+        const meta = sellerAppStatusMeta[a.status] || { label: escapeHtml(a.status), badge: 'info' };
         return `
     <tr>
       <td>
         <div class="identity-cell">
-          <div class="avatar-chip role-seller">${initials}</div>
+          <div class="avatar-chip role-buyer">${escapeHtml(sellerAppInitials(a.userFullName))}</div>
           <div class="identity-text">
-            <span class="identity-name">${escapeHtml(a.applicantName)}</span>
-            <span class="identity-sub">${a.applicantId} · ${escapeHtml(a.email)}</span>
+            <span class="identity-name">${escapeHtml(a.userFullName || '—')}</span>
+            <span class="identity-sub">#${Number(a.userId)}</span>
           </div>
         </div>
       </td>
-      <td style="font-weight:700; color:var(--text-main);">${escapeHtml(a.shopName)}</td>
-      <td style="color:var(--text-muted);">${escapeHtml(a.category)}</td>
-      <td style="color:var(--text-muted); white-space:nowrap;">${a.submitted}</td>
+      <td style="color:var(--text-muted);">${escapeHtml(a.userEmail || '—')}</td>
+      <td style="font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums;">${escapeHtml(a.idNumber)}</td>
+      <td style="color:var(--text-muted); white-space:nowrap;">${formatAppDateTime(a.submittedAt)}</td>
       <td style="text-align:center;"><span class="badge badge-${meta.badge}"><span class="badge-dot"></span>${meta.label}</span></td>
       <td style="text-align:center;">
         <div style="display:flex; gap:6px; justify-content:center;">
-          <button class="btn btn-outline btn-sm" onclick="viewSellerAppDetail('${a.id}')">Xem hồ sơ</button>
-          ${a.status === 'pending' ? `
-          <button class="btn btn-primary btn-sm" onclick="openApproveAppModal('${a.id}')">Duyệt</button>
-          <button class="btn btn-sm" style="background:var(--danger-bg); color:var(--danger-text);" onclick="openRejectAppModal('${a.id}')">Từ chối</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="viewSellerAppDetail(${Number(a.id)})">Xem hồ sơ</button>
+          ${a.status === 'PENDING' ? `
+          <button class="btn btn-primary btn-sm" onclick="openApproveAppModal(${Number(a.id)})">Duyệt</button>
+          <button class="btn btn-sm" style="background:var(--danger-bg); color:var(--danger-text);" onclick="openRejectAppModal(${Number(a.id)})">Từ chối</button>` : ''}
         </div>
       </td>
     </tr>`;
     }).join('') : `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Không có hồ sơ nào ở trạng thái này</td></tr>`;
+}
 
-    const pendingCount = sellerApplications.filter((a) => a.status === 'pending').length;
-    const badgeEl = document.getElementById('sellerAppPendingCount');
-    if (badgeEl) badgeEl.textContent = pendingCount;
-    const tabCountEl = document.getElementById('sellerAppPendingTabCount');
-    if (tabCountEl) tabCountEl.textContent = pendingCount;
+function findSellerApp(id) {
+    return sellerAppRows.find((x) => x.id === id);
+}
+
+function sellerAppDisplayName(a) {
+    return a.userFullName || a.userEmail || `#${a.userId}`;
 }
 
 function viewSellerAppDetail(id) {
-    const a = sellerApplications.find((x) => x.id === id);
+    const a = findSellerApp(id);
     if (!a) return;
-    const meta = sellerAppStatusMeta[a.status];
+    const meta = sellerAppStatusMeta[a.status] || { label: escapeHtml(a.status), badge: 'info' };
     document.getElementById('sellerAppDetailBody').innerHTML = `
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
-      <div class="avatar-chip role-seller" style="width:52px; height:52px; font-size:1.05rem;">${a.applicantName.split(' ').slice(-2).map((w) => w[0]).join('').toUpperCase()}</div>
+      <div class="avatar-chip role-buyer" style="width:52px; height:52px; font-size:1.05rem;">${escapeHtml(sellerAppInitials(a.userFullName))}</div>
       <div>
-        <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${escapeHtml(a.applicantName)}</div>
-        <div style="font-size:.8rem; color:var(--text-muted);">${a.applicantId} · Nộp ngày ${a.submitted}</div>
+        <div style="font-weight:800; font-size:1.05rem; color:var(--text-main);">${escapeHtml(a.userFullName || '—')}</div>
+        <div style="font-size:.8rem; color:var(--text-muted);">#${Number(a.userId)} · ${escapeHtml(a.userEmail || '')} · Gửi lúc ${formatAppDateTime(a.submittedAt)}</div>
       </div>
       <span class="badge badge-${meta.badge}" style="margin-left:auto;"><span class="badge-dot"></span>${meta.label}</span>
     </div>
     <div class="stat-mini-row" style="margin-bottom:14px;">
-      <div class="stat-mini"><h5>Tên gian hàng</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.shopName)}</div></div>
-      <div class="stat-mini"><h5>Danh mục kinh doanh</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.category)}</div></div>
-      <div class="stat-mini"><h5>Email</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.email)}</div></div>
-      <div class="stat-mini"><h5>Số điện thoại</h5><div class="val" style="font-size:.86rem;">${a.phone}</div></div>
-      <div class="stat-mini"><h5>Địa chỉ gian hàng</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.address)}</div></div>
-      <div class="stat-mini"><h5>Số CMND/CCCD</h5><div class="val" style="font-size:.86rem;">${a.idCardNo}</div></div>
+      <div class="stat-mini"><h5>Số CCCD</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.idNumber)}</div></div>
+      <div class="stat-mini"><h5>Họ tên trên CCCD</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.idFullName)}</div></div>
+      <div class="stat-mini"><h5>Ngày sinh</h5><div class="val" style="font-size:.86rem;">${formatAppDate(a.idDateOfBirth)}</div></div>
+      <div class="stat-mini"><h5>Ngày cấp</h5><div class="val" style="font-size:.86rem;">${formatAppDate(a.idIssueDate)}</div></div>
+      <div class="stat-mini" style="grid-column:1 / -1;"><h5>Nơi cấp</h5><div class="val" style="font-size:.86rem;">${escapeHtml(a.idIssuePlace)}</div></div>
     </div>
-    ${a.decidedNote ? `<div style="padding:12px 14px; border-radius:var(--radius-md); background:${a.status === 'approved' ? 'var(--success-bg)' : 'var(--danger-bg)'}; color:${a.status === 'approved' ? 'var(--success-text)' : 'var(--danger-text)'}; font-size:.82rem; line-height:1.55;"><strong>${a.status === 'approved' ? 'Đã duyệt:' : 'Đã từ chối:'}</strong> ${escapeHtml(a.decidedNote)}</div>` : ''}
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+      <img src="/user/images/cccd-sample-front.svg" alt="Ảnh minh họa CCCD mẫu mặt trước" style="width:100%; border:1px solid var(--border-color); border-radius:8px;">
+      <img src="/user/images/cccd-sample-back.svg" alt="Ảnh minh họa CCCD mẫu mặt sau" style="width:100%; border:1px solid var(--border-color); border-radius:8px;">
+    </div>
+    <p style="font-size:.76rem; color:var(--text-muted); margin:0 0 12px;">Thông tin CCCD hiện là dữ liệu mẫu để demo; ảnh chỉ để minh họa.</p>
+    ${a.status === 'REJECTED' && a.reviewNote ? `<div style="padding:12px 14px; border-radius:var(--radius-md); background:var(--danger-bg); color:var(--danger-text); font-size:.82rem; line-height:1.55;"><strong>Lý do từ chối:</strong> ${escapeHtml(a.reviewNote)}</div>` : ''}
+    ${a.status === 'APPROVED' ? `<div style="padding:12px 14px; border-radius:var(--radius-md); background:var(--success-bg); color:var(--success-text); font-size:.82rem; line-height:1.55;"><strong>Đã duyệt:</strong> tài khoản đã được cấp quyền Người bán.</div>` : ''}
   `;
     const actions = document.getElementById('sellerAppDetailActions');
-    actions.innerHTML = a.status === 'pending'
+    actions.innerHTML = a.status === 'PENDING'
         ? `<button class="btn btn-outline" onclick="closeModal('sellerAppDetailModal')">Đóng</button>
-           <button class="btn btn-sm" style="background:var(--danger-bg); color:var(--danger-text);" onclick="closeModal('sellerAppDetailModal'); openRejectAppModal('${a.id}');">Từ chối</button>
-           <button class="btn btn-primary" onclick="closeModal('sellerAppDetailModal'); openApproveAppModal('${a.id}');">Duyệt gian hàng</button>`
+           <button class="btn btn-sm" style="background:var(--danger-bg); color:var(--danger-text);" onclick="closeModal('sellerAppDetailModal'); openRejectAppModal(${Number(a.id)});">Từ chối</button>
+           <button class="btn btn-primary" onclick="closeModal('sellerAppDetailModal'); openApproveAppModal(${Number(a.id)});">Duyệt hồ sơ</button>`
         : `<button class="btn btn-outline" onclick="closeModal('sellerAppDetailModal')">Đóng</button>`;
     openModal('sellerAppDetailModal');
 }
 
 function openApproveAppModal(id) {
-    const a = sellerApplications.find((x) => x.id === id);
+    const a = findSellerApp(id);
     if (!a) return;
     currentSellerAppTarget = id;
-    document.getElementById('approveAppShopName').textContent = a.shopName;
-    document.getElementById('approveAppApplicant').textContent = a.applicantName;
+    document.getElementById('approveAppApplicant').textContent = sellerAppDisplayName(a);
     openModal('sellerAppApproveModal');
 }
 
-function confirmApproveApp() {
-    if (!currentSellerAppTarget) return;
-    const a = sellerApplications.find((x) => x.id === currentSellerAppTarget);
-    if (a) {
-        a.status = 'approved';
-        a.decidedNote = 'Hồ sơ hợp lệ, đã cấp quyền người bán.';
-        renderSellerApps();
-        showToast(`Đã duyệt gian hàng "${a.shopName}" cho ${a.applicantName}`, 'success');
-    }
-    closeModal('sellerAppApproveModal');
-    currentSellerAppTarget = null;
-}
-
 function openRejectAppModal(id) {
-    const a = sellerApplications.find((x) => x.id === id);
+    const a = findSellerApp(id);
     if (!a) return;
     currentSellerAppTarget = id;
-    document.getElementById('rejectAppShopName').textContent = a.shopName;
+    document.getElementById('rejectAppApplicant').textContent = sellerAppDisplayName(a);
+    const reason = document.getElementById('rejectAppReason');
+    reason.value = '';
+    document.getElementById('rejectAppReasonError').textContent = '';
     openModal('sellerAppRejectModal');
+    reason.focus();
+}
+
+async function decideSellerApp(modalId, path, body, successMessage) {
+    if (!currentSellerAppTarget || sellerAppBusy) return;
+    sellerAppBusy = true;
+    try {
+        await sellerAppWrite(`/${currentSellerAppTarget}/${path}`, body);
+        closeModal(modalId);
+        currentSellerAppTarget = null;
+        showToast(successMessage, 'success');
+        await renderSellerApps();
+    } catch (err) {
+        showToast(err.message, 'danger');
+        // Already handled by another admin, or gone: close and show the current list.
+        if (err.status === 409 || err.status === 404) {
+            closeModal(modalId);
+            currentSellerAppTarget = null;
+            await renderSellerApps();
+        }
+    } finally {
+        sellerAppBusy = false;
+    }
+}
+
+function confirmApproveApp() {
+    const a = findSellerApp(currentSellerAppTarget);
+    const name = a ? sellerAppDisplayName(a) : '';
+    decideSellerApp('sellerAppApproveModal', 'approve', undefined, `Đã duyệt hồ sơ và cấp quyền Người bán cho ${name}.`);
 }
 
 function confirmRejectApp() {
-    if (!currentSellerAppTarget) return;
-    const a = sellerApplications.find((x) => x.id === currentSellerAppTarget);
-    if (a) {
-        const reasonSelect = document.getElementById('rejectAppReasonSelect');
-        const reasonText = reasonSelect.options[reasonSelect.selectedIndex].text;
-        a.status = 'rejected';
-        a.decidedNote = reasonText;
-        renderSellerApps();
-        showToast(`Đã từ chối đăng ký gian hàng "${a.shopName}"`, 'danger');
-    }
-    closeModal('sellerAppRejectModal');
-    currentSellerAppTarget = null;
+    const reason = document.getElementById('rejectAppReason').value.trim();
+    const errorEl = document.getElementById('rejectAppReasonError');
+    if (!reason) { errorEl.textContent = 'Vui lòng nhập lý do từ chối.'; return; }
+    if (reason.length > 500) { errorEl.textContent = 'Lý do từ chối tối đa 500 ký tự.'; return; }
+    errorEl.textContent = '';
+    decideSellerApp('sellerAppRejectModal', 'reject', { reason }, 'Đã từ chối hồ sơ đăng ký Người bán.');
 }
 
 /* ==========================================================================

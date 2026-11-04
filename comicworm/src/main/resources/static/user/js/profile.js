@@ -48,17 +48,17 @@ async function loadAccount() {
         const account = await accountApi.currentUser();
         if (!account) {
             roleInfo = ["Chưa đăng nhập", "U", "Đăng nhập", accountApi.loginUrl()];
-            hint.textContent = "Đăng nhập để xem tài khoản và nâng cấp lên Người bán.";
+            hint.textContent = "Đăng nhập để xem tài khoản và đăng ký Người bán.";
         } else {
             authenticated = true;
             saved.displayName = account.fullName || "Thành viên";
             saved.email = account.email;
             roleInfo = account.isSeller
                 ? ["Người bán", "S", "Mở kênh Người bán", accountApi.sellerUrl()]
-                : [account.role === "ADMIN" ? "Quản trị viên" : "Khách hàng", account.role === "ADMIN" ? "A" : "U", "Nâng cấp lên Người bán", accountApi.upgradeUrl()];
+                : [account.role === "ADMIN" ? "Quản trị viên" : "Khách hàng", account.role === "ADMIN" ? "A" : "U", "Đăng ký Người bán", accountApi.upgradeUrl()];
             hint.textContent = account.isSeller
                 ? "Tài khoản đã có quyền Người bán. Bạn có thể xem thống kê của gian hàng mình."
-                : "Bạn cần nâng cấp lên Người bán để vào kênh seller và xem thống kê doanh thu.";
+                : "Bạn cần đăng ký Người bán để vào kênh seller và xem thống kê doanh thu.";
         }
     } catch (error) {
         roleInfo = ["Chưa xác thực", "U", "Đăng nhập", accountApi.loginUrl()];

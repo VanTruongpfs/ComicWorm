@@ -33,6 +33,13 @@ sản phẩm, tài khoản và vector đã tạo, cần xuất/nhập bản sao 
 Nếu nhập một bản sao DB đã có schema thì không chạy lại `schema.sql` lên nó.
 Ảnh sản phẩm vẫn nằm trên Cloudinary/Picsum theo URL lưu trong DB.
 
+Với DB đã có từ trước, chạy các file trong `database/migrations/` mà DB chưa có
+**trước khi** khởi động app. Profile `local` dùng `ddl-auto=update`: nếu app
+chạy trước, Hibernate tự tạo bảng mới nhưng thiếu ràng buộc CHECK và khóa ngoại
+có tên. Ví dụ `20261104_seller_applications.sql` tạo bảng hồ sơ đăng ký Người
+bán; nếu bảng đã bị Hibernate tạo và còn rỗng, `DROP TABLE seller_applications;`
+rồi chạy lại file.
+
 Tạo file cấu hình local nếu chưa có:
 
 ```powershell

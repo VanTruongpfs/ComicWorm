@@ -1,5 +1,14 @@
 package com.example.comicworm;
 
+import com.example.comicworm.dto.request.SellerApplicationForm;
+import com.example.comicworm.dto.response.SellerApplicationDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
 import com.example.comicworm.config.SecurityConfig;
 import com.example.comicworm.config.filters.JwtAuthenticationFilter;
 import com.example.comicworm.controller.AccountController;
@@ -13,7 +22,7 @@ import com.example.comicworm.model.User;
 import com.example.comicworm.model.enums.AccountStatus;
 import com.example.comicworm.model.enums.UserRole;
 import com.example.comicworm.repository.UserRepository;
-import com.example.comicworm.service.account.SellerUpgradeService;
+import com.example.comicworm.service.account.SellerApplicationService;
 import com.example.comicworm.service.analytics.AnalyticsService;
 import com.example.comicworm.service.auth.IAuthService;
 import com.example.comicworm.utils.JwtUtils;
@@ -43,12 +52,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.comicworm.service.account.AccountProfileService;
 @WebMvcTest(controllers = {ViewController.class, SellerAccountController.class, AccountController.class,
         AnalyticsController.class, AuthController.class})
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, SellerUpgradeService.class, AccountProfileService.class})
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class, AccountProfileService.class})
 class SellerAccessTests {
     @Autowired MockMvc mvc;
-    @Autowired SellerUpgradeService upgrades;
     @Autowired CsrfTokenRepository csrfTokens;
     @MockitoBean UserRepository users;
+    @MockitoBean SellerApplicationService applications;
     @MockitoBean UserDetailsService details;
     @MockitoBean JwtUtils jwt;
     @MockitoBean AnalyticsService analytics;
@@ -74,12 +83,12 @@ class SellerAccessTests {
         mvc.perform(get(path).with(user(principal(true)))).andExpect(status().isOk());
     }
 
-    @Test void headAndAdminCannotBypassSellerUpgrade() throws Exception {
+    @Test void headCannotBypassSellerCheckButAdminsMayOpenSellerPages() throws Exception {
         var admin = account(1, false); admin.setRole(UserRole.ADMIN);
         mvc.perform(head("/seller/html/revenue.html").with(user(principal(false))))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/seller/html/index.html").with(user(new CustomUserDetails(admin))))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test void assetsStayPublicAndStatisticsRemainRoleProtected() throws Exception {
@@ -93,21 +102,91 @@ class SellerAccessTests {
         verifyNoInteractions(analytics);
     }
 
-    @Test void upgradeEndpointIsForbiddenForBuyers() throws Exception {
-        mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
-                .andExpect(status().isForbidden());
-        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))).with(csrf()))
-                .andExpect(status().isForbidden());
-        mvc.perform(get("/user/seller-upgrade").with(user(principal(true))))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("/seller/html/index.html"));
+    SellerApplicationDTO application(String status, String note) {
+        return new SellerApplicationDTO(3L, 7L, "User 7", "user7@example.invalid", status, "001099012345",
+                "NGUYỄN VĂN MẪU", LocalDate.of(1999, 1, 1), LocalDate.of(2021, 6, 15), "Cục Cảnh sát",
+                LocalDateTime.of(2026, 11, 4, 8, 0), null, note);
     }
 
-    @Test void upgradeRequiresLoginAndDisallowsNonSellers() throws Exception {
-        mvc.perform(get("/user/seller-upgrade")).andExpect(status().isFound());
-        mvc.perform(get("/user/seller-upgrade").with(user(principal(false)))).andExpect(status().isForbidden());
-        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))).with(csrf()))
+    MockHttpServletRequestBuilder sampleSubmission() {
+        return sampleSubmission(SellerApplicationForm.sample().idDateOfBirth().toString());
+    }
+
+    MockHttpServletRequestBuilder sampleSubmission(String dateOfBirth) {
+        var sample = SellerApplicationForm.sample();
+        return post("/user/seller-upgrade").with(user(principal(false))).with(csrf())
+                .param("idNumber", sample.idNumber()).param("idFullName", sample.idFullName())
+                .param("idDateOfBirth", dateOfBirth)
+                .param("idIssueDate", sample.idIssueDate().toString())
+                .param("idIssuePlace", sample.idIssuePlace());
+    }
+
+    @Test void registrationRequiresLogin() throws Exception {
+        mvc.perform(get("/user/seller-upgrade")).andExpect(status().isFound())
+                .andExpect(redirectedUrlPattern("**/auth/login"));
+    }
+
+    @Test void buyerSeesPrefilledFormWhenNoApplication() throws Exception {
+        when(applications.latestFor(7L)).thenReturn(Optional.empty());
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("form", SellerApplicationForm.sample()))
+                .andExpect(content().string(containsString("001099012345")))
+                .andExpect(content().string(containsString("cccd-sample-front.svg")))
+                .andExpect(content().string(containsString("Gửi hồ sơ")));
+    }
+
+    @Test void buyerSubmitsApplicationAndStaysBuyer() throws Exception {
+        mvc.perform(sampleSubmission())
+                .andExpect(status().isFound()).andExpect(redirectedUrl("/user/seller-upgrade"));
+        verify(applications).submit(7L, SellerApplicationForm.sample());
+        mvc.perform(get("/seller/html/index.html").with(user(principal(false))))
                 .andExpect(status().isForbidden());
-        verifyNoInteractions(users);
+    }
+
+    @Test void pendingApplicationIsShownReadOnly() throws Exception {
+        when(applications.latestFor(7L)).thenReturn(Optional.of(application("PENDING", null)));
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("đang chờ duyệt")))
+                .andExpect(content().string(not(containsString("Gửi hồ sơ"))));
+    }
+
+    @Test void rejectedApplicationShowsReasonAndForm() throws Exception {
+        when(applications.latestFor(7L)).thenReturn(Optional.of(application("REJECTED", "Ảnh mờ")));
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(false))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ảnh mờ")))
+                .andExpect(content().string(containsString("Gửi hồ sơ")));
+    }
+
+    @Test void malformedDateShowsFieldErrorInsteadOf500() throws Exception {
+        mvc.perform(sampleSubmission("abc"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("form", "idDateOfBirth"));
+        verify(applications, never()).submit(any(), any());
+    }
+
+    @Test void serviceValidationErrorIsShownOnTheForm() throws Exception {
+        when(applications.submit(any(), any())).thenThrow(
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn cần đủ 18 tuổi để đăng ký bán hàng."));
+        mvc.perform(sampleSubmission())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Bạn cần đủ 18 tuổi")));
+    }
+
+    @Test void postWithoutCsrfIsRejected() throws Exception {
+        mvc.perform(post("/user/seller-upgrade").with(user(principal(false))).param("idNumber", "001099012345"))
+                .andExpect(status().isForbidden());
+        verify(applications, never()).submit(any(), any());
+    }
+
+    @Test void sellerIsRedirectedToSellerHome() throws Exception {
+        mvc.perform(get("/user/seller-upgrade").with(user(principal(true))))
+                .andExpect(status().isFound()).andExpect(redirectedUrl("/seller/html/index.html"));
+        mvc.perform(post("/user/seller-upgrade").with(user(principal(true))).with(csrf()))
+                .andExpect(status().isFound()).andExpect(redirectedUrl("/seller/html/index.html"));
+        verify(applications, never()).submit(any(), any());
     }
 
     @Test void sellerAccountWithJwtCanOpenStatisticsAndSellerPages() throws Exception {
@@ -124,22 +203,6 @@ class SellerAccessTests {
         mvc.perform(get("/api/analytics/seller?from=2026-10-01&to=2026-10-03&sellerId=999").cookie(cookie))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.sellerId").value("7"));
         verify(analytics).report(LocalDate.of(2026,10,1), LocalDate.of(2026,10,3), "day", 7L, "User 7");
-    }
-
-    @Test void upgradeIsIdempotentAndInactiveOrDeletedAccountsAreRejected() {
-        User seller = account(7, true); when(users.findById(7L)).thenReturn(Optional.of(seller));
-        upgrades.upgrade(principal(true)); verify(users, never()).save(any());
-        for (AccountStatus status : List.of(AccountStatus.LOCKED, AccountStatus.PENDING_VERIFY)) {
-            User blocked = account(7, false); blocked.setAccountStatus(status);
-            when(users.findById(7L)).thenReturn(Optional.of(blocked));
-            assertEquals(403, assertThrows(ResponseStatusException.class, () -> upgrades.upgrade(principal(false))).getStatusCode().value());
-            assertFalse(blocked.getIsSeller());
-        }
-        User deleted = account(7, false); deleted.setDeletedAt(LocalDateTime.now());
-        when(users.findById(7L)).thenReturn(Optional.of(deleted));
-        assertThrows(ResponseStatusException.class, () -> upgrades.upgrade(principal(false)));
-        assertThrows(ResponseStatusException.class, () -> upgrades.upgrade(null));
-        verify(users, never()).save(any());
     }
 
     @Test void accountIdentityRequiresLoginAndLogoutClearsBothJwtCookies() throws Exception {

@@ -1,5 +1,6 @@
 package com.example.comicworm.service.imagesearch;
 
+import com.example.comicworm.utils.ProcessWatchdog;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class ImageEmbeddingProcessManager implements AutoCloseable {
     private final AtomicBoolean closing = new AtomicBoolean();
     private final Object processLock = new Object();
     private volatile Process ownedProcess;
+    private volatile Process watchdog;
 
     public ImageEmbeddingProcessManager(ImageSearchProperties properties, ObjectMapper json) {
         this.properties = properties;
@@ -95,6 +97,11 @@ public class ImageEmbeddingProcessManager implements AutoCloseable {
             synchronized (processLock) {
                 if (closing.get()) return;
                 ownedProcess = launch(command, root, logFile);
+                try {
+                    watchdog = startWatchdog(ownedProcess);
+                } catch (IOException error) {
+                    log.warn("Could not start the image model watchdog; if the app is force-stopped, end python.exe manually.");
+                }
             }
             log.info("Starting local CLIP image model. Startup progress: {}", logFile);
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(
@@ -175,6 +182,11 @@ public class ImageEmbeddingProcessManager implements AutoCloseable {
         return builder.start();
     }
 
+    /** Kills the Python process tree if the JVM is force-stopped without running shutdown hooks. */
+    Process startWatchdog(Process child) throws IOException {
+        return ProcessWatchdog.start(child);
+    }
+
     @Override
     @PreDestroy
     public void close() {
@@ -183,6 +195,7 @@ public class ImageEmbeddingProcessManager implements AutoCloseable {
         synchronized (processLock) {
             Process process = ownedProcess;
             if (process == null) return;
+            ProcessWatchdog.stop(watchdog);
             var children = process.descendants().toList();
             children.forEach(ProcessHandle::destroy);
             process.destroy();
