@@ -45,6 +45,29 @@ Table password_reset_tokens {
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 }
 
+Table seller_applications {
+  id bigint [pk, increment, not null]
+  user_id bigint [not null]
+  status varchar(20) [not null, default: 'PENDING', check: `status IN ('PENDING', 'APPROVED', 'REJECTED')`]
+  id_number char(12) [not null]
+  id_full_name varchar(100) [not null]
+  id_date_of_birth date [not null]
+  id_issue_date date [not null]
+  id_issue_place varchar(200) [not null]
+  submitted_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  reviewed_by bigint
+  reviewed_at datetime
+  review_note varchar(500)
+  indexes {
+    (status, submitted_at) [name: 'idx_seller_application_status']
+    (user_id, submitted_at) [name: 'idx_seller_application_user']
+  }
+  checks {
+    `status <> 'REJECTED' OR review_note IS NOT NULL` [name: 'ck_seller_application_reject_note']
+  }
+  Note: 'Hồ sơ đăng ký mở bán. CCCD là dữ liệu mẫu để demo; không lưu ảnh.'
+}
+
 Table user_addresses {
   id bigint [pk, increment, not null]
   user_id bigint [not null]
@@ -268,6 +291,8 @@ Table reviews {
   order_item_id bigint [unique, not null]
   buyer_id bigint [not null]
   rating int [not null, check: `rating BETWEEN 1 AND 5`]
+  product_quality_rating int
+  seller_attitude_rating int
   content text
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'SQL: ON UPDATE CURRENT_TIMESTAMP']
@@ -445,6 +470,8 @@ Table notifications {
 
 Ref fk_auth_sessions_user_id: auth_sessions.user_id > users.id [delete: restrict, update: restrict]
 Ref fk_password_reset_tokens_user_id: password_reset_tokens.user_id > users.id [delete: restrict, update: restrict]
+Ref fk_seller_applications_user_id: seller_applications.user_id > users.id [delete: restrict, update: restrict]
+Ref fk_seller_applications_reviewed_by: seller_applications.reviewed_by >? users.id [delete: restrict, update: restrict]
 Ref fk_categories_parent_id: categories.parent_id >? categories.id [delete: restrict, update: restrict]
 Ref fk_products_seller_id: products.seller_id > users.id [delete: restrict, update: restrict]
 Ref fk_products_category_id: products.category_id > categories.id [delete: restrict, update: restrict]

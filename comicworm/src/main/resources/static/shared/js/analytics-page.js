@@ -130,7 +130,7 @@
         }
         if (err.sellerRequired) {
           const link = document.createElement('a');
-          link.href = window.BookMoochAnalyticsApi.upgradeUrl(); link.textContent = ' Nâng cấp lên Người bán';
+          link.href = window.BookMoochAnalyticsApi.upgradeUrl(); link.textContent = ' Đăng ký Người bán';
           el('analyticsError').appendChild(link);
         }
         destroyCharts();

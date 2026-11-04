@@ -42,6 +42,25 @@ CREATE TABLE `password_reset_tokens` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `seller_applications` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  `id_number` CHAR(12) NOT NULL,
+  `id_full_name` VARCHAR(100) NOT NULL,
+  `id_date_of_birth` DATE NOT NULL,
+  `id_issue_date` DATE NOT NULL,
+  `id_issue_place` VARCHAR(200) NOT NULL,
+  `submitted_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `reviewed_by` BIGINT NULL,
+  `reviewed_at` DATETIME NULL,
+  `review_note` VARCHAR(500) NULL,
+  KEY `idx_seller_application_status` (`status`, `submitted_at`),
+  KEY `idx_seller_application_user` (`user_id`, `submitted_at`),
+  CONSTRAINT `ck_seller_application_reject_note` CHECK (status <> 'REJECTED' OR review_note IS NOT NULL),
+  CONSTRAINT `ck_seller_applications_status` CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `user_addresses` (
   `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `user_id` BIGINT NOT NULL,
@@ -426,6 +445,8 @@ CREATE TABLE `notifications` (
 
 ALTER TABLE `auth_sessions` ADD CONSTRAINT `fk_auth_sessions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `password_reset_tokens` ADD CONSTRAINT `fk_password_reset_tokens_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `seller_applications` ADD CONSTRAINT `fk_seller_applications_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `seller_applications` ADD CONSTRAINT `fk_seller_applications_reviewed_by` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`);
 ALTER TABLE `categories` ADD CONSTRAINT `fk_categories_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `categories` (`id`);
 ALTER TABLE `products` ADD CONSTRAINT `fk_products_seller_id` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`);
 ALTER TABLE `products` ADD CONSTRAINT `fk_products_category_id` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
@@ -478,36 +499,3 @@ ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_room_
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_recipient_id` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
-
-
-CREATE TABLE IF NOT EXISTS seller_profiles (
-  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL UNIQUE,
-  shop_name VARCHAR(150) NOT NULL,
-  shop_description TEXT NULL,
-  level INT NOT NULL DEFAULT 1,
-  	otal_completed_orders INT NOT NULL DEFAULT 0,
-  	otal_revenue DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS seller_upgrade_requests (
-  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL,
-  rom_level INT NOT NULL DEFAULT 0,
-  	o_level INT NOT NULL,
-  shop_name VARCHAR(150) NULL,
-  shop_description TEXT NULL,
-  ee_amount DECIMAL(15,2) NOT NULL,
-  payment_method VARCHAR(50) NOT NULL DEFAULT 'MANUAL_TRANSFER',
-  payment_proof_url TEXT NULL,
-  	ransaction_code VARCHAR(100) NULL,
-  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-  dmin_id BIGINT NULL,
-  ejection_reason TEXT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  eviewed_at DATETIME NULL,
-  INDEX idx_upgrade_user (user_id, status),
-  INDEX idx_upgrade_status (status, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

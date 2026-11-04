@@ -21,7 +21,7 @@
     catch (_) { throw new Error('Không kết nối được backend. Vui lòng kiểm tra server và kết nối database.'); }
     if (response.status === 401) { const error = new Error('Vui lòng đăng nhập tài khoản trong database để xem báo cáo.'); error.loginRequired = true; throw error; }
     if (response.status === 403) {
-      const error = new Error(role === 'admin' ? 'Tài khoản không có quyền quản trị.' : 'Bạn cần nâng cấp tài khoản lên Người bán để xem thống kê.');
+      const error = new Error(role === 'admin' ? 'Tài khoản không có quyền quản trị.' : 'Bạn cần đăng ký Người bán để xem thống kê.');
       error.sellerRequired = role === 'seller';
       throw error;
     }

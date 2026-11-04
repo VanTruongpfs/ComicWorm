@@ -71,7 +71,7 @@ def main():
         report.append('PASS: DDL imports with all FK/CHECK constraints')
         print('DDL import passed; testing the reduced schema.', flush=True)
         ok('reference seed', (ROOT / 'seed.sql').read_text(encoding='utf-8-sig'))
-        ok('32 tables / 232 columns / 49 foreign keys', "SELECT (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()),(SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE()),(SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE());", '32\t232\t49')
+        ok('35 tables / 263 columns / 56 foreign keys', "SELECT (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()),(SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE()),(SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE());", '35\t263\t56')
         ok('out-of-scope modules are absent', "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('wallets','transactions','withdraw_requests','vouchers','voucher_usages','user_kyc','fee_policies','platform_revenues','support_tickets','post_reports','appeal_requests','want_list_posts','order_disputes','seller_shops','staff_profiles','permissions');", '0')
         ok('local and Google-only login identities', "INSERT INTO users (id,email,password_hash,full_name,is_seller) VALUES (101,'buyer@test.invalid','test-only-hash','Buyer',FALSE),(102,'seller@test.invalid','test-only-hash','Seller',TRUE),(103,'other@test.invalid','test-only-hash','Other',FALSE); INSERT INTO users (id,email,google_sub,full_name) VALUES (104,'google@test.invalid','google-test-subject','Google user');")
         reject('account without password or Google identity', "INSERT INTO users(email,full_name) VALUES ('no-login@test.invalid','None');", 3819)
@@ -102,7 +102,7 @@ def main():
         ok('product consultation history', "INSERT INTO consultation_sessions(id,user_id) VALUES (101,101); INSERT INTO consultation_messages(session_id,sender_type,content,suggested_product_ids) VALUES (101,'USER','Suggest a book',NULL),(101,'ASSISTANT','Try this title',JSON_ARRAY(101));")
         ok('all example screen/statistics queries run', (ROOT / 'example_queries.sql').read_text(encoding='utf-8-sig'))
         reject('hard deleting historical seller', 'DELETE FROM users WHERE id=102;', 1451)
-        report.append(f'\nCompleted: DDL import + {passed} integration checks.\nScope: 25 functions, 32 tables, 232 columns.\nAPI permissions, actual provider/AI execution and cross-row/concurrent business workflows are not implemented by these schema files.')
+        report.append(f'\nCompleted: DDL import + {passed} integration checks.\nScope: 25 functions, 35 tables, 263 columns.\nAPI permissions, actual provider/AI execution and cross-row/concurrent business workflows are not implemented by these schema files.')
         (ROOT / 'validation.txt').write_text('\n'.join(report) + '\n', encoding='utf-8')
         print('\n'.join(report))
     finally:

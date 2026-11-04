@@ -55,7 +55,7 @@
                     <div class="kpi-content">
                         <span class="kpi-label">Người bán đang hoạt động</span>
                         <span class="kpi-value" style="color:#2563eb;" id="kpiActiveSellers">4.208</span>
-                        <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">storefront</span> 96 chờ duyệt gian hàng</span>
+                        <span class="kpi-trend info"><span class="material-symbols-outlined" style="font-size:16px;">storefront</span> <span id="kpiPendingSellerApps">0</span>&nbsp;hồ sơ chờ duyệt</span>
                     </div>
                     <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">storefront</span></div>
                 </div>
@@ -161,16 +161,16 @@
 
                 <div class="content-card">
                     <div class="content-card-header">
-                        <div class="content-card-title"><span class="material-symbols-outlined">storefront</span> Đơn đăng ký mở gian hàng</div>
+                        <div class="content-card-title"><span class="material-symbols-outlined">storefront</span> Hồ sơ đăng ký Người bán</div>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table" id="sellerAppTable">
                             <thead>
                             <tr>
                                 <th>Người đăng ký</th>
-                                <th>Tên gian hàng</th>
-                                <th>Danh mục kinh doanh</th>
-                                <th>Ngày nộp</th>
+                                <th>Email</th>
+                                <th>Số CCCD</th>
+                                <th>Ngày gửi</th>
                                 <th style="text-align:center;">Trạng thái</th>
                                 <th style="text-align:center;">Thao tác</th>
                             </tr>
@@ -185,7 +185,7 @@
                         <div class="policy-icon-circle"><span class="material-symbols-outlined">storefront</span></div>
                         <div class="policy-text">
                             <h4>Quy trình duyệt đăng ký người bán</h4>
-                            <p>Hồ sơ cần xác minh CMND/CCCD và thông tin gian hàng hợp lệ trước khi được cấp quyền đăng bán trên sàn.</p>
+                            <p>Hồ sơ cần thông tin CCCD hợp lệ trước khi tài khoản được cấp quyền đăng bán trên sàn.</p>
                         </div>
                     </div>
                     <button class="btn btn-outline btn-sm" onclick="openModal('sellerPolicyModal')">Xem quy trình đầy đủ</button>
@@ -275,8 +275,8 @@
 <div class="modal-backdrop" id="sellerAppApproveModal" style="display:none;">
     <div class="modal-dialog">
         <div class="modal-icon-circle success"><span class="material-symbols-outlined" style="font-size:32px;">check_circle</span></div>
-        <h3 class="modal-title">Duyệt gian hàng</h3>
-        <p class="modal-desc">Xác nhận duyệt gian hàng <strong id="approveAppShopName">...</strong> của <strong id="approveAppApplicant">...</strong>? Tài khoản sẽ được cấp quyền Người bán ngay sau khi xác nhận.</p>
+        <h3 class="modal-title">Duyệt hồ sơ Người bán</h3>
+        <p class="modal-desc">Xác nhận duyệt hồ sơ của <strong id="approveAppApplicant">...</strong>? Tài khoản sẽ được cấp quyền Người bán ngay sau khi xác nhận.</p>
         <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal('sellerAppApproveModal')">Huỷ</button>
             <button class="btn btn-primary" onclick="confirmApproveApp()"><span class="material-symbols-outlined" style="font-size:16px;">check</span> Xác nhận duyệt</button>
@@ -289,15 +289,11 @@
     <div class="modal-dialog">
         <div class="modal-icon-circle danger"><span class="material-symbols-outlined" style="font-size:32px;">block</span></div>
         <h3 class="modal-title">Từ chối đăng ký người bán</h3>
-        <p class="modal-desc">Vui lòng chọn lý do từ chối hồ sơ <strong id="rejectAppShopName">...</strong>. Người đăng ký sẽ nhận được thông báo lý do này.</p>
+        <p class="modal-desc">Nhập lý do từ chối hồ sơ của <strong id="rejectAppApplicant">...</strong>. Người đăng ký sẽ thấy lý do này trên trang đăng ký và có thể gửi lại hồ sơ.</p>
         <div style="text-align:left; margin-bottom:20px;">
-            <label style="font-size:.82rem; font-weight:700; display:block; margin-bottom:6px; color:var(--text-main);">Lý do từ chối:</label>
-            <select id="rejectAppReasonSelect" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:.85rem; background:#fff;">
-                <option value="doc_invalid">Giấy tờ tuỳ thân không hợp lệ / không rõ nét</option>
-                <option value="info_mismatch">Thông tin gian hàng không khớp hồ sơ</option>
-                <option value="duplicate">Trùng với gian hàng đã đăng ký trước đó</option>
-                <option value="policy_violation">Danh mục kinh doanh vi phạm chính sách sàn</option>
-            </select>
+            <label for="rejectAppReason" style="font-size:.82rem; font-weight:700; display:block; margin-bottom:6px; color:var(--text-main);">Lý do từ chối (bắt buộc):</label>
+            <textarea id="rejectAppReason" rows="3" maxlength="500" required placeholder="Ví dụ: Ảnh CCCD mờ, không đọc được số CCCD." style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:.85rem; font-family:inherit; resize:vertical;"></textarea>
+            <p id="rejectAppReasonError" role="alert" style="margin:6px 0 0; color:var(--danger-text); font-size:.8rem;"></p>
         </div>
         <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal('sellerAppRejectModal')">Quay lại</button>
@@ -313,34 +309,34 @@
             <h3 class="modal-title" style="margin:0;">Quy trình duyệt đăng ký người bán</h3>
             <button onclick="closeModal('sellerPolicyModal')" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;">&times;</button>
         </div>
-        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Áp dụng cho mọi tài khoản đăng ký mở gian hàng bán sách trên nền tảng.</p>
+        <p class="modal-desc" style="text-align:left; margin-bottom:18px;">Áp dụng cho mọi tài khoản đăng ký trở thành Người bán trên nền tảng.</p>
         <div class="policy-step-list">
             <div class="policy-step">
                 <div class="policy-step-num">1</div>
                 <div class="policy-step-text">
                     <h5>Nộp hồ sơ đăng ký</h5>
-                    <p>Người dùng điền tên gian hàng, danh mục kinh doanh, địa chỉ và ảnh CMND/CCCD trong ứng dụng.</p>
+                    <p>Người dùng điền thông tin CCCD trên trang “Đăng ký Người bán” (hiện là dữ liệu mẫu để demo).</p>
                 </div>
             </div>
             <div class="policy-step">
                 <div class="policy-step-num">2</div>
                 <div class="policy-step-text">
                     <h5>Kiểm tra tự động</h5>
-                    <p>Hệ thống rà soát trùng lặp thông tin gian hàng và định dạng giấy tờ trước khi chuyển cho Admin.</p>
+                    <p>Hệ thống kiểm tra số CCCD 12 chữ số, đủ 18 tuổi và ngày cấp hợp lệ; mỗi tài khoản chỉ có một hồ sơ chờ duyệt.</p>
                 </div>
             </div>
             <div class="policy-step">
                 <div class="policy-step-num">3</div>
                 <div class="policy-step-text">
                     <h5>Xác minh hồ sơ</h5>
-                    <p>Admin đối chiếu giấy tờ tuỳ thân, thông tin liên hệ và danh mục kinh doanh với chính sách sàn.</p>
+                    <p>Admin đối chiếu thông tin CCCD với tài khoản đăng ký.</p>
                 </div>
             </div>
             <div class="policy-step">
                 <div class="policy-step-num">4</div>
                 <div class="policy-step-text">
                     <h5>Ra quyết định</h5>
-                    <p>Duyệt gian hàng hoặc từ chối kèm lý do cụ thể để người đăng ký biết cách bổ sung hồ sơ.</p>
+                    <p>Duyệt hồ sơ hoặc từ chối kèm lý do cụ thể để người đăng ký biết cách bổ sung hồ sơ.</p>
                 </div>
             </div>
             <div class="policy-step">
@@ -354,7 +350,7 @@
                 <div class="policy-step-num">6</div>
                 <div class="policy-step-text">
                     <h5>Đăng ký lại nếu bị từ chối</h5>
-                    <p>Người dùng có thể chỉnh sửa hồ sơ và nộp lại đơn đăng ký sau 7 ngày kể từ khi bị từ chối.</p>
+                    <p>Người dùng xem lý do trên trang đăng ký, chỉnh sửa và gửi lại hồ sơ ngay.</p>
                 </div>
             </div>
         </div>

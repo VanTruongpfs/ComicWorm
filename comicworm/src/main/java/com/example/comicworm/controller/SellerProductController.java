@@ -148,7 +148,7 @@ public class SellerProductController {
 
     private Long seller(CustomUserDetails user) {
         if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập.");
-        if (!user.isSeller()) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn cần nâng cấp lên Người bán.");
+        if (!user.isSeller()) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn cần đăng ký Người bán.");
         return user.getId();
     }
 

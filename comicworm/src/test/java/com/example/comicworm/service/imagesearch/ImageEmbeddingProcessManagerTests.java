@@ -46,6 +46,20 @@ class ImageEmbeddingProcessManagerTests {
         manager = spy(new ImageEmbeddingProcessManager(properties, new ObjectMapper()));
         doReturn(false).when(manager).isHealthy();
         doReturn(false).when(manager).isPortOccupied(any(URI.class));
+        doReturn(null).when(manager).startWatchdog(any());
+    }
+
+    @Test void launchedRuntimeIsGuardedByAWatchdogThatIsStoppedFirst() throws Exception {
+        Process process = process();
+        Process watchdog = process();
+        doReturn(false, true).when(manager).isHealthy();
+        doReturn(process).when(manager).launch(anyList(), any(), any());
+        doReturn(watchdog).when(manager).startWatchdog(process);
+        manager.ensureStarted();
+        manager.close();
+        var order = inOrder(watchdog, process);
+        order.verify(watchdog).destroyForcibly();
+        order.verify(process).destroy();
     }
 
     @AfterEach void cleanup() { manager.close(); }

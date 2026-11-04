@@ -50,17 +50,17 @@ public class ChatAiController {
             Bạn là bộ phân loại ý định và trích xuất thực thể (NLU) cho hệ thống sàn truyện tranh ComicWorm.
             Nhiệm vụ: Phân loại ý định người dùng (intent) và trích xuất thông tin (slots) ra JSON chuẩn.
 
-            BẮT BUỘC chỉ được chọn 1 trong 10 INTENT sau:
-            1. SEARCH_COMIC: Tìm kiếm truyện theo tên, từ khóa chung.
-            2. FILTER_PRICE: Tìm truyện theo khoảng giá, tình trạng, số tập.
-            3. CHECK_STOCK: Kiểm tra tồn kho của truyện/tập truyện.
-            4. ASK_EDITION: Hỏi về phiên bản (bìa cứng, bìa mềm, bản đặc biệt, boxset).
-            5. CHECK_CONDITION: Hỏi quy định/đánh giá tình trạng truyện (mới, cũ, like new).
-            6. NEWEST_COMIC: Tìm truyện mới cập nhật, mới lên kệ.
-            7. POPULAR_BESTSELLER: Tìm truyện hot, bán chạy, thịnh hành.
-            8. POLICY_INQUIRY: Hỏi chính sách mua bán, giao hàng, đổi trả, tích điểm, hoàn tất đơn.
-            9. TRADE_EXCHANGE_INQUIRY: Hỏi quy trình trao đổi/đổi truyện C2C (Exchange Room).
-            10. GREETING_CHITCHAT: Chào hỏi, cảm ơn, trò chuyện xã giao.
+            BẮT BUỘC chỉ được chọn 1 trong các INTENT sau và ghi đúng TÊN intent (không ghi số):
+            - SEARCH_COMIC: Tìm kiếm truyện theo tên, từ khóa chung.
+            - FILTER_PRICE: Tìm truyện theo khoảng giá, tình trạng, số tập.
+            - CHECK_STOCK: Kiểm tra tồn kho của truyện/tập truyện.
+            - ASK_EDITION: Hỏi về phiên bản (bìa cứng, bìa mềm, bản đặc biệt, boxset).
+            - CHECK_CONDITION: Hỏi quy định/đánh giá tình trạng truyện (mới, cũ, like new).
+            - NEWEST_COMIC: Tìm truyện mới cập nhật, mới lên kệ.
+            - POPULAR_BESTSELLER: Tìm truyện hot, bán chạy, thịnh hành.
+            - POLICY_INQUIRY: Hỏi chính sách mua bán, giao hàng, phí ship, đổi trả, tích điểm, hoàn tất đơn.
+            - TRADE_EXCHANGE_INQUIRY: Hỏi quy trình trao đổi/đổi truyện C2C (Exchange Room).
+            - GREETING_CHITCHAT: Chào hỏi, cảm ơn, trò chuyện xã giao.
 
             Các trường slots có thể trích xuất (nếu có):
             - keyword: Tên truyện, tên tác giả hoặc từ khóa chính (String)
@@ -110,7 +110,7 @@ public class ChatAiController {
             // =========================================================================
             JsonNode nluJson = extractNlu(userMsg);
             String intent = nluJson != null && nluJson.hasNonNull("intent")
-                    ? nluJson.get("intent").asText().trim().toUpperCase()
+                    ? normalizeIntent(nluJson.get("intent").asText())
                     : "SEARCH_COMIC";
             JsonNode slots = nluJson != null ? nluJson.path("slots") : null;
 
@@ -432,6 +432,20 @@ public class ChatAiController {
     private String formatCurrency(Number amount) {
         if (amount == null) return "Chưa có giá";
         return currencyFormatter.format(amount) + " đ";
+    }
+
+    /** Thứ tự khớp danh sách intent trong NLU_SYSTEM_PROMPT; model đôi khi trả về số thứ tự thay vì tên. */
+    private static final List<String> INTENTS = List.of(
+            "SEARCH_COMIC", "FILTER_PRICE", "CHECK_STOCK", "ASK_EDITION", "CHECK_CONDITION",
+            "NEWEST_COMIC", "POPULAR_BESTSELLER", "POLICY_INQUIRY", "TRADE_EXCHANGE_INQUIRY", "GREETING_CHITCHAT");
+
+    private static String normalizeIntent(String raw) {
+        String intent = raw.trim().toUpperCase();
+        if (intent.matches("\\d{1,2}")) {
+            int index = Integer.parseInt(intent) - 1;
+            return index >= 0 && index < INTENTS.size() ? INTENTS.get(index) : intent;
+        }
+        return intent;
     }
 
     private static String textOrNull(JsonNode n, String field) {
