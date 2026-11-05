@@ -7,6 +7,8 @@ import com.example.comicworm.model.enums.OrderPaymentStatus;
 import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.repository.*;
 import com.example.comicworm.service.IOrderService;
+import com.example.comicworm.service.LoyaltyService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final UserAddressRepository userAddressRepository;
+    private LoyaltyService loyaltyService;
 
     public OrderServiceImpl(
             CartRepository cartRepository,
@@ -232,6 +235,11 @@ public class OrderServiceImpl implements IOrderService {
         return checkoutCode;
     }
 
+    @Autowired
+    public void setLoyaltyService(LoyaltyService loyaltyService) {
+        this.loyaltyService = loyaltyService;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public CheckoutSummaryDTO getCheckoutSummary(String checkoutCode, Long buyerId) {
@@ -279,16 +287,37 @@ public class OrderServiceImpl implements IOrderService {
                     .sellerName(sellerName)
                     .subtotalAmount(order.getSubtotalAmount())
                     .shippingFee(order.getShippingFee())
+                    .pointsDiscount(order.getPointsDiscount())
                     .totalAmount(order.getTotalAmount())
                     .status(order.getStatus() != null ? order.getStatus().name() : "WAITING_PAYMENT")
                     .items(itemDTOs)
                     .build();
         }).toList();
 
+        BigDecimal pointsDiscount = orders.stream()
+                .map(Order::getPointsDiscount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long pointsBalance = 0;
+        long maxRedeemablePoints = 0;
+        BigDecimal redeemVndPerPoint = BigDecimal.ONE;
+        if (loyaltyService != null) {
+            pointsBalance = loyaltyService.getMyAccount(batch.getBuyerId()).pointsBalance();
+            redeemVndPerPoint = loyaltyService.getRedeemVndPerPoint();
+            // Mức giảm bằng điểm được chốt ở lần thanh toán đầu tiên nên đợt đã dùng điểm không cho dùng thêm.
+            maxRedeemablePoints = pointsDiscount.signum() > 0
+                    ? 0
+                    : Math.min(pointsBalance, loyaltyService.maxRedeemablePoints(orders));
+        }
+
         return CheckoutSummaryDTO.builder()
                 .checkoutCode(batch.getCheckoutCode())
                 .buyerId(batch.getBuyerId())
                 .totalAmount(batch.getTotalAmount())
+                .pointsDiscount(pointsDiscount)
+                .pointsBalance(pointsBalance)
+                .maxRedeemablePoints(maxRedeemablePoints)
+                .redeemVndPerPoint(redeemVndPerPoint)
                 .expiresAt(batch.getExpiresAt())
                 .recipientName(recipientName)
                 .recipientPhone(recipientPhone)

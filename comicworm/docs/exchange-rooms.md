@@ -19,6 +19,14 @@ node tools/verify_exchange_room_browser.cjs
 
 Kiểm thử trình duyệt dùng API giả lập trong bộ nhớ cho hai tài khoản và một người quan sát, kiểm tra lỗi API, tải lại trang, mất WebSocket, phòng đóng và phòng rỗng. Báo cáo và ảnh nằm trong `build/reports/exchange-room/`.
 
-## Phạm vi bước tạo đơn
+## Tạo đơn, admin duyệt và ký quỹ tiền bù
 
-Các trang `negotiation-order`, `shipping-fee` và `exchange-orders` hiện vẫn là giao diện dữ liệu mẫu; chưa có API tạo đơn trao đổi từ đề xuất được chọn. Nút trong phòng mở bước tạo đơn với đúng mã phòng và đề xuất, chưa lưu đơn vận chuyển thật vào MySQL. Giá trị `COMPLETED` ở đây thể hiện hoàn tất xác nhận thỏa thuận, chưa thể hiện giao hàng hoàn tất.
+1. Sau khi phòng `COMPLETED`, mỗi bên nhận truyện tạo một đơn COD (`POST /api/exchange/rooms/{id}/orders`): 1 đơn khi mua bằng tiền, 2 đơn khi đổi truyện. Tồn kho của mọi bên được giữ ngay ở đơn đầu tiên.
+2. Khi đủ đơn, giao dịch (`exchange_offers.admin_review_status`) chuyển `NOT_SUBMITTED` → `PENDING` và hiện ở trang admin `admin/html/exchange-deals.html`. Bên gửi chỉ bấm được **Xác nhận chuẩn bị hàng** khi `APPROVED`; API trả 409 nếu chưa duyệt. Hai bên vẫn hủy được trước khi gửi hàng.
+3. Admin **duyệt** hoặc **từ chối** (bắt buộc lý do). Từ chối sẽ hủy giao dịch: trả tồn kho, hủy đơn và payment. Hai bên nhận thông báo.
+4. Khi người trả bù xác nhận đã nhận truyện và trả COD, sàn giữ đúng số tiền bù trong `exchange_escrows` (`HELD`). Phí ship không vào ký quỹ. Khi mọi đơn `COMPLETED`, ký quỹ thành `READY`.
+5. Ở tab **Ký quỹ tiền bù**, admin **giải ngân** (chỉ khi `READY`) vào ví của người nhận bù, hoặc **hoàn tiền** (`HELD`/`READY`) vào ví của người trả. Cả hai bắt buộc ghi chú. Ví (`wallets`, `wallet_transactions`) chỉ nhận tiền; chưa có rút tiền. Người dùng xem ở `user/html/wallet.html`.
+
+Mỗi khoản ký quỹ chỉ cộng ví một lần (`wallet_transactions.escrow_id` unique). Thứ tự khóa: phòng, ký quỹ, ví. Giao dịch đã có đơn trước khi có bước duyệt được migration `20261105_exchange_review_escrow.sql` đặt `APPROVED`. Thiết kế: `docs/superpowers/specs/2026-11-05-exchange-admin-review-escrow-design.md`.
+
+Giá trị `COMPLETED` của phòng thể hiện hoàn tất xác nhận thỏa thuận, chưa thể hiện giao hàng hoàn tất.

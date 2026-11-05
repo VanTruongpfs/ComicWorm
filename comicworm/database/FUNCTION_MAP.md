@@ -19,15 +19,15 @@ sung; không kế thừa các module ngoài danh sách từ schema 76 bảng.
 | B09 | Biểu đồ cột theo khoảng ngày | orders.completed_at/subtotal_amount, payments/refunds; tính bằng SELECT |
 | B10 | Biểu đồ tròn và Admin quản lý user/product/order | users.role/status, products.category/moderation_status, orders.status; thống kê/CRUD qua API |
 | B11 | Seller quản lý sản phẩm/doanh thu/đơn | products.seller_id, orders.seller_id, order_items; báo cáo từ đơn đã hoàn tất |
-| B12 | Phòng trao đổi truyện tranh | exchange_rooms/members/messages/offers/offer_items |
+| B12 | Phòng trao đổi truyện tranh | exchange_rooms/members/messages/offers/offer_items; exchange_offers.admin_review_status (admin duyệt trước khi gửi hàng); exchange_escrows giữ tiền bù, giải ngân/hoàn vào wallets/wallet_transactions |
 | T01 | Đăng nhập Google | users.google_sub duy nhất; password_hash có thể NULL cho tài khoản chỉ Google |
 | T02 | Cập nhật thông tin cá nhân | users.full_name/email/phone/avatar_url/updated_at |
 | T03 | Cập nhật trạng thái đơn hàng | orders.status, order_status_history: người đổi, trạng thái trước/sau, thời gian |
-| T04 | Hủy đơn: quy trình, thông báo, hoàn tiền | orders.cancel_*/stock_released_at, notifications, refunds, payment allocation |
+| T04 | Hủy đơn: quy trình, thông báo, hoàn tiền | orders.cancel_*/stock_released_at, orders.refund_request_* (yêu cầu hoàn tiền 7 ngày sau giao), notifications, refunds, payment allocation |
 | T05 | Đánh giá sản phẩm đã mua | reviews.order_item_id/buyer_id/rating/content; một review/item đã mua |
 | T06 | Lọc sản phẩm theo thương hiệu/loại/... | categories/publishers/authors, products.price/condition/edition/year; thương hiệu truyện được map NXB |
 | T07 | Trả lời bình luận | review_replies: phản hồi của seller cho bình luận đánh giá sản phẩm |
-| T08 | Tự động tích điểm khi mua | loyalty_accounts và loyalty_transactions: EARN/REVERSAL, chống cộng trùng |
+| T08 | Tự động tích điểm khi mua, dùng điểm giảm giá | loyalty_accounts và loyalty_transactions: EARN/REVERSAL/REDEEM/REDEEM_RETURN, chống cộng trùng; orders.points_discount |
 | T09 | Trang chủ sản phẩm bán chạy | SUM(order_items.quantity) của orders COMPLETED, không lưu bảng/counter riêng |
 | T10 | Trang chủ sản phẩm mới nhất | products.created_at, chỉ tin APPROVED/active/chưa xóa |
 | S01 | Tìm sản phẩm bằng hình ảnh | product_images + product_image_features.embedding/model_name |
@@ -59,12 +59,15 @@ sung; không kế thừa các module ngoài danh sách từ schema 76 bảng.
 | reviews | Đánh giá đã mua theo order_item |
 | review_replies | Seller trả lời bình luận đánh giá |
 | loyalty_accounts | Tổng điểm để hiển thị hồ sơ |
-| loyalty_transactions | Cộng/đảo điểm theo đơn và kiểm tra không cộng hai lần |
+| loyalty_transactions | Cộng/đảo/trừ/hoàn điểm theo đơn và kiểm tra không ghi hai lần |
 | exchange_rooms | Tin được trao đổi, host, đề nghị chọn và trạng thái phòng |
 | exchange_room_members | Thành viên; FK bảo đảm chỉ thành viên gửi tin/đề nghị |
-| exchange_offers | Đề nghị, người gửi, sách/khoản bù thỏa thuận và hai xác nhận |
+| exchange_offers | Đề nghị, người gửi, sách/khoản bù thỏa thuận, hai xác nhận và kết quả admin duyệt |
 | exchange_offer_items | Sản phẩm/số lượng/chủ và snapshot sách được đề nghị |
 | exchange_messages | Tin nhắn text/ảnh trong phòng và chống gửi trùng |
+| exchange_escrows | Tiền bù sàn giữ sau khi người trả bù thanh toán COD; HELD/READY/RELEASED/REFUNDED và admin xử lý |
+| wallets | Số dư ví trong app; chỉ nhận tiền giải ngân/hoàn từ ký quỹ trao đổi |
+| wallet_transactions | Lịch sử cộng ví; mỗi khoản ký quỹ chỉ ghi một lần (escrow_id unique) |
 | product_image_features | Embedding/version mô hình cho tìm kiếm ảnh |
 | product_classifications | Truyện/không phải truyện, độ tin cậy, kết quả/lỗi phân loại |
 | consultation_sessions | Phiên chatbot của user hoặc khách |
@@ -99,7 +102,10 @@ chưa hủy, chưa có AI result), không phải tính năng bổ sung ngoài t�
   FK xác thực order_item tồn tại nhưng quyền/điều kiện đã mua phải kiểm tra API.
 - Tích điểm khi đơn PAID và COMPLETED, lock loyalty_account, ghi balance +
   transaction idempotent cùng transaction. Quy tắc số tiền/điểm cấu hình backend,
-  không suy ra từ tài liệu. Không có đổi điểm/voucher/rút điểm thành tiền.
+  không suy ra từ tài liệu (mặc định 2% số tiền thực trả). Người mua dùng điểm
+  khi thanh toán (mặc định 1 điểm = 1đ), chỉ trừ vào tiền hàng, chia theo tỷ lệ
+  tiền hàng giữa các đơn của đợt; hủy đơn/hoàn tiền thì trả lại điểm. Không có
+  voucher hoặc rút điểm thành tiền.
 - Phòng có một host là chủ target_product; các buyer là thành viên. Sản phẩm
   trao đổi có thể thuộc user chưa là seller, seller_id của products là owner.
   Mỗi đề nghị chứa sản phẩm đúng owner/quantity; payer bù nếu có phải là một
@@ -123,8 +129,8 @@ chưa hủy, chưa có AI result), không phải tính năng bổ sung ngoài t�
 ## Các phần đã loại
 
 RBAC chi tiết/staff; KYC/seller applications/shop bank; wishlist/want-list;
-voucher/Coins redemption; SKU riêng/supplier/giá vốn/ngưỡng tồn; ví/withdraw/
-escrow; fee policies/platform commissions; CSKH ticket/SLA/Tier 2; community
+voucher; SKU riêng/supplier/giá vốn/ngưỡng tồn; rút tiền khỏi ví (withdraw),
+ví/escrow cho đơn mua thường; fee policies/platform commissions; CSKH ticket/SLA/Tier 2; community
 posts/reports/appeals; dispute/return evidence; shipping tracking hai chiều;
 audit console. Chúng không nằm trong 25 chức năng của tài liệu.
 

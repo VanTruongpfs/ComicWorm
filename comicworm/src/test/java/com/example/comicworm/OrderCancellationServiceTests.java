@@ -19,6 +19,7 @@ import com.example.comicworm.repository.PaymentAllocationRepository;
 import com.example.comicworm.repository.PaymentRepository;
 import com.example.comicworm.repository.ProductRepository;
 import com.example.comicworm.repository.RefundRepository;
+import com.example.comicworm.service.LoyaltyService;
 import com.example.comicworm.service.NotificationService;
 import com.example.comicworm.service.OrderCancellationService;
 import com.example.comicworm.service.OrderStatusService;
@@ -48,6 +49,7 @@ class OrderCancellationServiceTests {
     private PaymentRepository paymentRepository;
     private RefundRepository refundRepository;
     private NotificationService notificationService;
+    private LoyaltyService loyaltyService;
     private OrderCancellationService service;
     private Order order;
     private Product product;
@@ -65,9 +67,10 @@ class OrderCancellationServiceTests {
         paymentRepository = mock(PaymentRepository.class);
         refundRepository = mock(RefundRepository.class);
         notificationService = mock(NotificationService.class);
+        loyaltyService = mock(LoyaltyService.class);
         service = new OrderCancellationService(orderRepository, orderItemRepository, productRepository,
                 exchangeOrderLinkRepository, orderStatusService, allocationRepository,
-                paymentRepository, refundRepository, notificationService);
+                paymentRepository, refundRepository, notificationService, loyaltyService);
 
         order = order(OrderStatus.WAITING_PAYMENT, OrderPaymentStatus.PENDING);
         product = new Product();
@@ -103,6 +106,7 @@ class OrderCancellationServiceTests {
         assertEquals(1L, order.getCancelledBy());
         verify(productRepository, times(1)).findAllByIdInForUpdate(anyCollection());
         verify(orderStatusService, times(1)).transition(order, OrderStatus.CANCELLED, 1L, "Đặt nhầm");
+        verify(loyaltyService, times(1)).returnRedeemedPoints(order);
         verify(notificationService, times(1)).notify(
                 2L, 10L, "Đơn hàng đã bị hủy", "Người mua đã hủy đơn hàng ORD-10.",
                 "ORDER_CANCELLED:10:2");
@@ -114,7 +118,7 @@ class OrderCancellationServiceTests {
                 () -> service.cancel(10L, 99L, CancelActor.BUYER, "Hủy"));
         assertEquals(HttpStatus.FORBIDDEN, wrongBuyer.getStatusCode());
 
-        order.setStatus(OrderStatus.PACKING);
+        order.setStatus(OrderStatus.SHIPPING);
         ResponseStatusException buyerStatus = assertThrows(ResponseStatusException.class,
                 () -> service.cancel(10L, 1L, CancelActor.BUYER, "Hủy"));
         assertEquals(HttpStatus.CONFLICT, buyerStatus.getStatusCode());
@@ -142,7 +146,8 @@ class OrderCancellationServiceTests {
                     case SYSTEM -> null;
                 };
                 boolean allowed = switch (actor) {
-                    case BUYER -> status == OrderStatus.WAITING_PAYMENT || status == OrderStatus.WAITING_CONFIRM;
+                    case BUYER -> status == OrderStatus.WAITING_PAYMENT
+                            || status == OrderStatus.WAITING_CONFIRM || status == OrderStatus.PACKING;
                     case SELLER -> status == OrderStatus.WAITING_CONFIRM || status == OrderStatus.PACKING;
                     case ADMIN -> status == OrderStatus.WAITING_PAYMENT
                             || status == OrderStatus.WAITING_CONFIRM || status == OrderStatus.PACKING;

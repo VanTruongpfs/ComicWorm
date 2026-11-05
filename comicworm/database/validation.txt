@@ -1,10 +1,10 @@
-D:\wampp\bin\mysql\mysql8.4.7\bin\mysqld.exe  Ver 8.4.7 for Win64 on x86_64 (MySQL Community Server - GPL)
-Isolated datadir: C:\Users\PC\AppData\Local\Temp\codex-comicworm-scope-jhricxpx\data
+C:\Program Files\MySQL\MySQL Server 9.0\bin\mysqld.exe  Ver 9.0.1 for Win64 on x86_64 (MySQL Community Server - GPL)
+Isolated datadir: C:\Users\PC\AppData\Local\Temp\codex-comicworm-scope-r5jh40qq\data
 Source: Nhom8_ChucNang.docx
 
 PASS: DDL imports with all FK/CHECK constraints
 PASS: reference seed
-PASS: 35 tables / 263 columns / 56 foreign keys
+PASS: 38 tables / 297 columns / 66 foreign keys
 PASS: out-of-scope modules are absent
 PASS: local and Google-only login identities
 PASS: rejects account without password or Google identity
@@ -16,6 +16,7 @@ PASS: cart row
 PASS: rejects duplicate cart product
 PASS: checkout/order snapshots
 PASS: rejects order total mismatch
+PASS: rejects points discount above subtotal
 PASS: online payment allocation and callback
 PASS: rejects duplicate payment callback
 PASS: order cancellation/history/notification/refund
@@ -24,11 +25,19 @@ PASS: purchased item review and seller reply
 PASS: rejects second review for one purchased item
 PASS: loyalty posting
 PASS: rejects double earning on retried key
+PASS: points redemption and return
+PASS: rejects redeem with positive delta
 PASS: exchange room members and item proposal
 PASS: rejects room target belongs to another owner
 PASS: rejects selecting offer from another room
 PASS: rejects non-member chat sender
 PASS: valid exchange message
+PASS: rejects admin rejection without reason
+PASS: admin review and escrow payout to wallet
+PASS: rejects second escrow for one deal
+PASS: rejects escrow resolved without note
+PASS: rejects second wallet credit for one escrow
+PASS: rejects negative wallet balance
 PASS: image search features and classification result
 PASS: rejects embedding is not an array
 PASS: rejects classification success missing result
@@ -36,6 +45,6 @@ PASS: product consultation history
 PASS: all example screen/statistics queries run
 PASS: rejects hard deleting historical seller
 
-Completed: DDL import + 32 integration checks.
-Scope: 25 functions, 35 tables, 263 columns.
+Completed: DDL import + 41 integration checks.
+Scope: 25 functions, 38 tables, 297 columns.
 API permissions, actual provider/AI execution and cross-row/concurrent business workflows are not implemented by these schema files.

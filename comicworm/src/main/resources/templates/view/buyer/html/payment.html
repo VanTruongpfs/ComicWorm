@@ -469,6 +469,20 @@
                         </div>
                     </div>
 
+                    <!-- DÙNG ĐIỂM THƯỞNG (hiện khi tải được đợt checkout) -->
+                    <div class="points-redeem-section" id="points-redeem-section" hidden>
+                        <div class="voucher-section-top">
+                            <label for="points-to-use" class="voucher-label">Dùng điểm thưởng:</label>
+                            <span class="points-balance-text" id="points-balance-text">Bạn có 0 điểm</span>
+                        </div>
+                        <div class="voucher-input-bar">
+                            <i class="fa-solid fa-coins voucher-input-icon"></i>
+                            <input type="number" id="points-to-use" class="voucher-field" min="0" step="1" value="0" inputmode="numeric">
+                            <button type="button" class="btn-apply-voucher" id="btn-use-max-points">Dùng tối đa</button>
+                        </div>
+                        <p class="points-hint" id="points-hint"></p>
+                    </div>
+
                     <!-- BẢNG TÍNH TOÁN CHI PHÍ -->
                     <div class="summary-breakdown-list">
                         <div class="breakdown-item">
@@ -497,6 +511,10 @@
                         <div class="breakdown-item discount-item">
                             <span class="item-label">Ưu đãi miễn phí vận chuyển:</span>
                             <span class="item-value text-discount">-35.000₫</span>
+                        </div>
+                        <div class="breakdown-item points-discount-row" id="points-discount-row" hidden>
+                            <span class="item-label">Giảm bằng điểm thưởng:</span>
+                            <span class="item-value text-points" id="points-discount-value">-0₫</span>
                         </div>
                         <div class="summary-separator-line"></div>
 

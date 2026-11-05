@@ -102,6 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
         voucherBookDiscount: 50000,
         voucherShipDiscount: 35000,
         paymentMethod: 'vnpay',
+        // Điểm thưởng: 1 điểm giảm redeemVndPerPoint đồng, chỉ trừ vào tiền hàng.
+        pointsBalance: 0,
+        maxRedeemablePoints: 0,
+        redeemVndPerPoint: 1,
+        pointsToUse: 0,
+        appliedPointsDiscount: 0,
         orderCode: 'CHUB' + Math.floor(100000 + Math.random() * 900000)
     };
 
@@ -116,11 +122,22 @@ document.addEventListener('DOMContentLoaded', () => {
             effectiveShipping = Math.max(0, orderState.expressShippingFee - orderState.voucherShipDiscount);
         }
 
+        // Đợt đã chốt điểm ở lần thanh toán trước thì dùng số đã chốt, không tính lại.
+        const pointsDiscount = orderState.appliedPointsDiscount > 0
+            ? orderState.appliedPointsDiscount
+            : orderState.pointsToUse * orderState.redeemVndPerPoint;
+
         const totalPayable =
             orderState.booksSubtotal +
             orderState.barterCompensation +
             effectiveShipping -
-            orderState.voucherBookDiscount;
+            orderState.voucherBookDiscount -
+            pointsDiscount;
+
+        const pointsRow = document.getElementById('points-discount-row');
+        const pointsValueEl = document.getElementById('points-discount-value');
+        if (pointsRow) pointsRow.hidden = pointsDiscount <= 0;
+        if (pointsValueEl) pointsValueEl.textContent = `-${formatMoney(pointsDiscount)}`;
 
         const subtotalEl = document.querySelector('.summary-subtotal-val, .summary-breakdown-list .breakdown-item:nth-child(1) .item-value');
         const barterEl = document.querySelector('.summary-barter-val, .summary-breakdown-list .breakdown-item:nth-child(2) .item-value');
@@ -790,6 +807,61 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --------------------------------------------------------------------------
+    // 7b. DÙNG ĐIỂM THƯỞNG ĐỂ GIẢM GIÁ
+    // --------------------------------------------------------------------------
+    const pointsSection = document.getElementById('points-redeem-section');
+    const pointsInput = document.getElementById('points-to-use');
+    const btnUseMaxPoints = document.getElementById('btn-use-max-points');
+    const pointsBalanceText = document.getElementById('points-balance-text');
+    const pointsHint = document.getElementById('points-hint');
+
+    const setPointsToUse = (raw) => {
+        let value = Math.floor(Number(raw) || 0);
+        value = Math.max(0, Math.min(value, orderState.maxRedeemablePoints));
+        orderState.pointsToUse = value;
+        if (pointsInput && String(pointsInput.value) !== String(value)) pointsInput.value = value;
+        recalculateOrder();
+    };
+
+    const renderPointsSection = (data) => {
+        if (!pointsSection) return;
+        orderState.pointsBalance = Number(data.pointsBalance) || 0;
+        orderState.maxRedeemablePoints = Number(data.maxRedeemablePoints) || 0;
+        orderState.redeemVndPerPoint = Number(data.redeemVndPerPoint) || 1;
+        orderState.appliedPointsDiscount = Number(data.pointsDiscount) || 0;
+        orderState.pointsToUse = 0;
+
+        pointsSection.hidden = false;
+        if (pointsBalanceText) {
+            pointsBalanceText.textContent = `Bạn có ${orderState.pointsBalance.toLocaleString('vi-VN')} điểm`;
+        }
+        const locked = orderState.appliedPointsDiscount > 0;
+        const unusable = locked || orderState.maxRedeemablePoints <= 0;
+        if (pointsInput) {
+            pointsInput.value = 0;
+            pointsInput.max = orderState.maxRedeemablePoints;
+            pointsInput.disabled = unusable;
+        }
+        if (btnUseMaxPoints) btnUseMaxPoints.disabled = unusable;
+        if (pointsHint) {
+            if (locked) {
+                pointsHint.textContent = `Đơn này đã được giảm ${formatMoney(orderState.appliedPointsDiscount)} bằng điểm ở lần thanh toán trước.`;
+            } else if (orderState.maxRedeemablePoints <= 0) {
+                pointsHint.textContent = 'Bạn chưa có điểm để dùng. Điểm được tích khi đơn hàng hoàn tất.';
+            } else {
+                pointsHint.textContent = `1 điểm = ${formatMoney(orderState.redeemVndPerPoint)} · Dùng tối đa ${orderState.maxRedeemablePoints.toLocaleString('vi-VN')} điểm (không trừ vào phí vận chuyển).`;
+            }
+        }
+    };
+
+    if (pointsInput) {
+        pointsInput.addEventListener('input', () => setPointsToUse(pointsInput.value));
+    }
+    if (btnUseMaxPoints) {
+        btnUseMaxPoints.addEventListener('click', () => setPointsToUse(orderState.maxRedeemablePoints));
+    }
+
+    // --------------------------------------------------------------------------
     // 8. TẢI DỮ LIỆU ĐỢT CHECKOUT TỪ DATABASE
     // --------------------------------------------------------------------------
     const urlParams = new URLSearchParams(window.location.search);
@@ -917,6 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 orderState.standardShippingOriginal = 0;
             }
 
+            renderPointsSection(data);
             recalculateOrder();
         } catch (err) {
             console.warn('Không tải được đợt checkout từ DB:', err);
@@ -959,7 +1032,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const res = await fetch(`/api/checkout/${currentCheckoutCode}/pay`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ method: selectedMethod })
+                        body: JSON.stringify({
+                            method: selectedMethod,
+                            pointsToUse: orderState.appliedPointsDiscount > 0 ? 0 : orderState.pointsToUse
+                        })
                     });
 
                     if (res.status === 401) {

@@ -184,6 +184,7 @@ Table orders {
   seller_id bigint [not null]
   subtotal_amount decimal(15,2) [not null, check: `subtotal_amount >= 0`]
   shipping_fee decimal(15,2) [not null, default: 0, check: `shipping_fee >= 0`]
+  points_discount decimal(15,2) [not null, default: 0, check: `points_discount >= 0`]
   total_amount decimal(15,2) [not null, check: `total_amount >= 0`]
   recipient_name varchar(100) [not null]
   recipient_phone varchar(20) [not null]
@@ -196,6 +197,11 @@ Table orders {
   cancelled_at datetime
   stock_released_at datetime
   completed_at datetime
+  refund_request_status varchar(20) [check: `refund_request_status IN ('PENDING', 'APPROVED', 'REJECTED')`]
+  refund_request_reason text
+  refund_reject_reason text
+  refund_requested_at datetime
+  refund_decided_at datetime
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'SQL: ON UPDATE CURRENT_TIMESTAMP']
   indexes {
@@ -204,7 +210,9 @@ Table orders {
     (status, completed_at) [name: 'idx_order_reports']
   }
   checks {
-    `total_amount = subtotal_amount + shipping_fee` [name: 'ck_order_total']
+    `total_amount = subtotal_amount + shipping_fee - points_discount` [name: 'ck_order_total']
+    `points_discount <= subtotal_amount` [name: 'ck_order_points_discount']
+    `refund_request_status IS NULL OR refund_request_status <> 'REJECTED' OR refund_reject_reason IS NOT NULL` [name: 'ck_order_refund_reject_reason']
   }
 }
 
@@ -282,7 +290,28 @@ Table refunds {
   failure_reason text
   completed_at datetime
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
-  Note: 'Hoàn về giao dịch thanh toán gốc khi hủy đơn. Không có ví nội bộ hoặc yêu cầu rút tiền.'
+  Note: 'Hoàn về giao dịch thanh toán gốc khi hủy đơn hoặc khi người bán đồng ý yêu cầu hoàn tiền sau giao hàng. Không có ví nội bộ hoặc yêu cầu rút tiền.'
+}
+
+Table wallets {
+  user_id bigint [pk, not null]
+  balance decimal(15,2) [not null, default: 0, check: `balance >= 0`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`, note: 'SQL: ON UPDATE CURRENT_TIMESTAMP']
+  Note: 'Ví trong app; chỉ nhận tiền giải ngân/hoàn từ ký quỹ trao đổi. Chưa có rút tiền.'
+}
+
+Table wallet_transactions {
+  id bigint [pk, increment, not null]
+  user_id bigint [not null]
+  amount decimal(15,2) [not null, check: `amount > 0`]
+  type varchar(30) [not null, check: `type IN ('ESCROW_RELEASE', 'ESCROW_REFUND')`]
+  escrow_id bigint [unique, not null]
+  balance_after decimal(15,2) [not null, check: `balance_after >= 0`]
+  note varchar(500)
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  indexes {
+    (user_id, id) [name: 'idx_wallet_history']
+  }
 }
 
 // tg_reviews_points
@@ -317,13 +346,13 @@ Table loyalty_transactions {
   id bigint [pk, increment, not null]
   user_id bigint [not null]
   order_id bigint [not null]
-  transaction_type varchar(20) [not null, check: `transaction_type IN ('EARN', 'REVERSAL')`]
+  transaction_type varchar(20) [not null, check: `transaction_type IN ('EARN', 'REVERSAL', 'REDEEM', 'REDEEM_RETURN')`]
   points_delta bigint [not null, check: `points_delta <> 0`]
   balance_after bigint [not null, check: `balance_after >= 0`]
   idempotency_key varchar(100) [unique, not null]
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   checks {
-    `(transaction_type = 'EARN' AND points_delta > 0) OR (transaction_type = 'REVERSAL' AND points_delta < 0)` [name: 'ck_loyalty_sign']
+    `(transaction_type IN ('EARN', 'REDEEM_RETURN') AND points_delta > 0) OR (transaction_type IN ('REVERSAL', 'REDEEM') AND points_delta < 0)` [name: 'ck_loyalty_sign']
   }
 }
 
@@ -363,10 +392,16 @@ Table exchange_offers {
   host_confirmed boolean [not null, default: false]
   created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
   responded_at datetime
+  admin_review_status varchar(20) [not null, default: 'NOT_SUBMITTED', check: `admin_review_status IN ('NOT_SUBMITTED', 'PENDING', 'APPROVED', 'REJECTED')`]
+  reviewed_by bigint
+  reviewed_at datetime
+  review_note varchar(500)
   indexes {
+    admin_review_status [name: 'idx_offer_admin_review']
     (id, room_id) [unique, name: 'uq_offer_room']
   }
   checks {
+    `admin_review_status <> 'REJECTED' OR review_note IS NOT NULL` [name: 'ck_offer_reject_note']
     `(cash_compensation = 0 AND compensation_payer_id IS NULL) OR (cash_compensation > 0 AND compensation_payer_id IS NOT NULL)` [name: 'ck_offer_compensation']
   }
 }
@@ -410,6 +445,30 @@ Table exchange_order_links {
   indexes {
     (room_id, recipient_id) [unique, name: 'uq_exchange_recipient']
   }
+}
+
+Table exchange_escrows {
+  id bigint [pk, increment, not null]
+  room_id bigint [not null]
+  offer_id bigint [unique, not null]
+  payer_id bigint [not null]
+  payee_id bigint [not null]
+  source_order_id bigint [not null]
+  amount decimal(15,2) [not null, check: `amount > 0`]
+  status varchar(20) [not null, default: 'HELD', check: `status IN ('HELD', 'READY', 'RELEASED', 'REFUNDED')`]
+  held_at datetime [not null]
+  ready_at datetime
+  resolved_at datetime
+  resolved_by bigint
+  resolution_note varchar(500)
+  indexes {
+    (status, id) [name: 'idx_escrow_status']
+  }
+  checks {
+    `payer_id <> payee_id` [name: 'ck_escrow_parties']
+    `status NOT IN ('RELEASED', 'REFUNDED') OR (resolved_at IS NOT NULL AND resolved_by IS NOT NULL AND resolution_note IS NOT NULL)` [name: 'ck_escrow_resolution']
+  }
+  Note: 'Sàn giữ tiền bù khi người trả bù thanh toán COD; admin giải ngân vào ví người nhận hoặc hoàn vào ví người trả. Phí ship không vào ký quỹ.'
 }
 
 // tg_ai
@@ -509,6 +568,7 @@ Ref fk_exchange_room_members_room_id: exchange_room_members.room_id > exchange_r
 Ref fk_exchange_room_members_user_id: exchange_room_members.user_id > users.id [delete: restrict, update: restrict]
 Ref fk_offer_room_member: exchange_offers.(room_id, buyer_id) > exchange_room_members.(room_id, user_id) [delete: restrict, update: restrict]
 Ref fk_exchange_offers_compensation_payer_id: exchange_offers.compensation_payer_id >? users.id [delete: restrict, update: restrict]
+Ref fk_exchange_offers_reviewed_by: exchange_offers.reviewed_by >? users.id [delete: restrict, update: restrict]
 Ref fk_room_selected_offer: exchange_offers.(id, room_id) ?- exchange_rooms.(selected_offer_id, id) [delete: restrict, update: restrict]
 Ref fk_exchange_offer_items_offer_id: exchange_offer_items.offer_id > exchange_offers.id [delete: restrict, update: restrict]
 Ref fk_offer_product_owner: exchange_offer_items.(product_id, owner_id) > products.(id, seller_id) [delete: restrict, update: restrict]
@@ -524,5 +584,14 @@ Ref fk_exchange_order_links_room_id: exchange_order_links.room_id > exchange_roo
 Ref fk_exchange_order_links_offer_id: exchange_order_links.offer_id > exchange_offers.id [delete: restrict, update: restrict]
 Ref fk_exchange_order_links_recipient_id: exchange_order_links.recipient_id > users.id [delete: restrict, update: restrict]
 Ref fk_exchange_order_links_order_id: orders.id - exchange_order_links.order_id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_room_id: exchange_escrows.room_id > exchange_rooms.id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_offer_id: exchange_offers.id - exchange_escrows.offer_id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_payer_id: exchange_escrows.payer_id > users.id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_payee_id: exchange_escrows.payee_id > users.id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_source_order_id: exchange_escrows.source_order_id > orders.id [delete: restrict, update: restrict]
+Ref fk_exchange_escrows_resolved_by: exchange_escrows.resolved_by >? users.id [delete: restrict, update: restrict]
+Ref fk_wallets_user_id: users.id - wallets.user_id [delete: restrict, update: restrict]
+Ref fk_wallet_transactions_user_id: wallet_transactions.user_id > wallets.user_id [delete: restrict, update: restrict]
+Ref fk_wallet_transactions_escrow_id: exchange_escrows.id - wallet_transactions.escrow_id [delete: restrict, update: restrict]
 
 // Optional groups: bookmooch.grouped.dbml (requires TableGroup support).

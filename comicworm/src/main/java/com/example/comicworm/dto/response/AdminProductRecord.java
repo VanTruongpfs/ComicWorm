@@ -48,6 +48,15 @@ public record AdminProductRecord(
                 .filter(img -> img.getImageType() == ProductImageType.DETAIL)
                 .map(ProductImage::getImageUrl)
                 .toList();
+        // Sản phẩm cũ có thể chưa đồng bộ cột cover_image_url: lấy ảnh COVER, rồi ảnh chi tiết đầu tiên.
+        String cover = product.getCoverImageUrl();
+        if (cover == null || cover.isBlank()) {
+            cover = images.stream()
+                    .filter(img -> img.getImageType() == ProductImageType.COVER)
+                    .map(ProductImage::getImageUrl)
+                    .findFirst()
+                    .orElse(details.isEmpty() ? null : details.get(0));
+        }
 
         return new AdminProductRecord(
                 product.getId(),
@@ -57,7 +66,7 @@ public record AdminProductRecord(
                 product.getTitle(),
                 product.getSlug(),
                 product.getDescription(),
-                product.getCoverImageUrl(),
+                cover,
                 details,
                 product.getCategoryId(),
                 product.getCategory() != null ? product.getCategory().getName() : null,

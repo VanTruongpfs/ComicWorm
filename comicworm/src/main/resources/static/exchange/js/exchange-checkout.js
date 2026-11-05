@@ -7,16 +7,44 @@
     function itemsHTML(items) {
         return items.map(i => `<div class="ex-item">${image(i.coverImageUrl || i.cover, i.titleSnapshot || i.title)}<div><strong>${esc(i.titleSnapshot || i.title)}</strong><small>${i.quantity || 1} bộ · ${i.conditionSnapshot ?? i.conditionPercent}%</small></div></div>`).join('');
     }
+    // Admin duyệt giao dịch sau khi đủ đơn nhận truyện; bên gửi chỉ chuẩn bị hàng khi đã duyệt.
+    function reviewHTML(ctx) {
+        if (!ctx.orders.length) return '';
+        switch (ctx.reviewStatus) {
+            case 'PENDING': return '<p class="ex-review ex-review-pending">Admin đang duyệt giao dịch. Bên gửi chỉ chuẩn bị và gửi truyện sau khi được duyệt.</p>';
+            case 'APPROVED': return '<p class="ex-review ex-review-ok">Admin đã duyệt giao dịch.</p>';
+            case 'REJECTED': return `<p class="ex-review ex-review-rejected">Admin đã từ chối giao dịch${ctx.reviewNote ? `: ${esc(ctx.reviewNote)}` : ''}. Các đơn liên quan đã bị hủy.</p>`;
+            default: return '<p class="ex-review ex-review-pending">Chờ bên còn lại tạo đơn nhận truyện, sau đó giao dịch được gửi admin duyệt.</p>';
+        }
+    }
+    // Tiền bù do sàn giữ: chỉ về ví người nhận khi mọi đơn hoàn tất và admin giải ngân.
+    function escrowHTML(ctx) {
+        const e = ctx.escrow;
+        if (!e) return '';
+        const amount = money(e.amount);
+        const text = {
+            HELD: `Sàn đang giữ ${amount} tiền bù của ${esc(e.payerName)}. Tiền về ví ${esc(e.payeeName)} sau khi mọi đơn hoàn tất và admin giải ngân.`,
+            READY: `Mọi đơn đã hoàn tất. Chờ admin giải ngân ${amount} vào ví ${esc(e.payeeName)}.`,
+            RELEASED: `Admin đã giải ngân ${amount} vào ví ${esc(e.payeeName)}.`,
+            REFUNDED: `Admin đã hoàn ${amount} vào ví ${esc(e.payerName)}${e.resolutionNote ? `. Lý do: ${esc(e.resolutionNote)}` : ''}.`
+        }[e.status] || '';
+        return `<p class="ex-review ex-escrow">${text} <a href="/user/html/wallet.html">Xem ví</a></p>`;
+    }
     function summary(ctx) {
         const r = ctx.room, o = r.offers.find(o => o.id === r.selectedOfferId);
-        return `<section class="ex-panel"><h2>Thỏa thuận #${o.id}</h2><p>Phòng <a href="${roomURL(r.id)}">${esc(r.roomCode)}</a> · ${r.status === 'COMPLETED' ? 'Hai bên đã xác nhận' : esc(status(r.status))}</p><h3>${esc(r.hostName)} gửi</h3>${itemsHTML([{ title: r.targetProductTitle, cover: r.targetProductCover, conditionPercent: r.targetProductCondition, quantity: 1 }])}<h3>${esc(o.buyerName)} gửi</h3>${itemsHTML(o.items)}<p>${Number(o.cashCompensation) ? `${o.compensationPayerId === r.hostId ? esc(r.hostName) : esc(o.buyerName)} thanh toán ${money(o.cashCompensation)}` : 'Không bù tiền'}</p>${r.status !== 'CANCELLED' && !ctx.orders.length ? `<button class="danger" data-cancel-room="${r.id}">Hủy giao dịch</button>` : ''}</section>`;
+        return `<section class="ex-panel"><h2>Thỏa thuận #${o.id}</h2><p>Phòng <a href="${roomURL(r.id)}">${esc(r.roomCode)}</a> · ${r.status === 'COMPLETED' ? 'Hai bên đã xác nhận' : esc(status(r.status))}</p>${reviewHTML(ctx)}${escrowHTML(ctx)}<h3>${esc(r.hostName)} gửi</h3>${itemsHTML([{ title: r.targetProductTitle, cover: r.targetProductCover, conditionPercent: r.targetProductCondition, quantity: 1 }])}<h3>${esc(o.buyerName)} gửi</h3>${itemsHTML(o.items)}<p>${Number(o.cashCompensation) ? `${o.compensationPayerId === r.hostId ? esc(r.hostName) : esc(o.buyerName)} thanh toán ${money(o.cashCompensation)} (sàn giữ tiền đến khi giải ngân)` : 'Không bù tiền'}</p>${r.status !== 'CANCELLED' && !ctx.orders.length ? `<button class="danger" data-cancel-room="${r.id}">Hủy giao dịch</button>` : ''}</section>`;
     }
     function orderHTML(o, ctx) {
         const userId = ctx.room.currentUserId;
         const canCancel = ctx.room.status !== 'CANCELLED' && !ctx.orders.some(x => ['SHIPPING', 'DELIVERED', 'COMPLETED'].includes(x.status));
+        const approved = ctx.reviewStatus === 'APPROVED';
         let actions = '';
-        if (o.sellerId === userId && o.status === 'WAITING_CONFIRM') actions += `<button data-status="ACCEPT" data-order="${o.id}">Xác nhận chuẩn bị hàng</button>`;
-        if (o.sellerId === userId && o.status === 'PACKING') actions += `<button data-status="SHIP" data-order="${o.id}">Đã gửi hàng</button>`;
+        if (o.sellerId === userId && o.status === 'WAITING_CONFIRM') {
+            actions += approved
+                ? `<button data-status="ACCEPT" data-order="${o.id}">Xác nhận chuẩn bị hàng</button>`
+                : '<span class="ex-review-hint">Chờ admin duyệt để chuẩn bị hàng</span>';
+        }
+        if (o.sellerId === userId && o.status === 'PACKING' && approved) actions += `<button data-status="SHIP" data-order="${o.id}">Đã gửi hàng</button>`;
         if (o.buyerId === userId && ['SHIPPING', 'DELIVERED'].includes(o.status)) actions += `<button data-status="RECEIVE" data-order="${o.id}">Đã nhận truyện và trả tiền COD</button>`;
         if (canCancel && o.status !== 'CANCELLED') actions += `<button class="danger" data-status="CANCEL" data-order="${o.id}">Hủy toàn bộ giao dịch</button>`;
         return `<article class="ex-panel" data-order-id="${o.id}"><h3>${esc(o.orderCode)} · ${esc(status(o.status))}</h3><p>${esc(o.sellerName)} → ${esc(o.buyerName)}</p>${itemsHTML(o.items)}<p>Người nhận: <strong>${esc(o.recipientName)}</strong> · ${esc(o.recipientPhone)}</p><p>${esc(o.shippingAddress)}</p><p>${o.shippingMethod === 'EXPRESS' ? 'Giao nhanh' : 'Giao tiêu chuẩn'} · COD · ${o.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chờ thanh toán khi nhận hàng'}</p><div class="ex-total"><span>Tiền thỏa thuận</span><strong>${money(o.subtotalAmount)}</strong></div><div class="ex-total"><span>Phí vận chuyển</span><strong>${money(o.shippingFee)}</strong></div><div class="ex-total"><span>Tổng thanh toán</span><strong>${money(o.totalAmount)}</strong></div>${o.note ? `<p>Ghi chú: ${esc(o.note)}</p>` : ''}<div class="ex-actions">${actions}</div></article>`;
@@ -53,7 +81,7 @@
         const select = `<label>Địa chỉ nhận truyện của bạn<select id="receiveAddress" required>${addresses.length ? addresses.map(a => `<option value="${a.id}" ${String(a.id) === String(selectedAddress) ? 'selected' : ''}>${esc(a.recipientName)} · ${esc(a.phone)} · ${esc([a.addressDetail, a.ward, a.district, a.province].join(', '))}</option>`).join('') : '<option value="">Chưa có địa chỉ, hãy thêm bên dưới</option>'}</select></label>`;
         const shipping = data.shippingOptions.find(s => s.code === draft.shippingMethod) || data.shippingOptions[0];
         const fee = shipping?.fee || 0;
-        content.innerHTML += `<div class="ex-grid"><section class="ex-panel"><h2>Đơn nhận truyện của bạn</h2><p>Mỗi bên nhận truyện tạo một đơn riêng. Người gửi chỉ được gửi hàng sau khi đủ ${data.requiredOrderCount} đơn cần thiết.</p><form id="exchangeOrderForm" class="ex-form">${select}<label>Ghi chú<textarea id="orderNote" maxlength="1000">${esc(draft.note || '')}</textarea></label>${view === 'shipping' ? `<label>Vận chuyển<select id="shippingMethod">${data.shippingOptions.map(s => `<option value="${esc(s.code)}" ${s.code === shipping?.code ? 'selected' : ''}>${esc(s.name)} · ${money(s.fee)}</option>`).join('')}</select></label><p>Thanh toán: COD. Thanh toán khoản tiền thỏa thuận và phí vận chuyển khi nhận truyện.</p><button type="submit" ${addresses.length ? '' : 'disabled'}>Xác nhận tạo đơn COD</button>` : `<button type="submit" ${addresses.length ? '' : 'disabled'}>Tiếp tục vận chuyển</button>`}</form></section><aside class="ex-panel"><h2>Tổng thanh toán</h2><div class="ex-total"><span>Tiền bạn phải trả theo thỏa thuận</span><strong>${money(data.cashToPay)}</strong></div><div class="ex-total"><span>Vận chuyển</span><strong id="shippingFee">${view === 'shipping' ? money(fee) : 'Chọn ở bước tiếp theo'}</strong></div><div class="ex-total"><span>Tổng COD</span><strong id="orderTotal">${money(Number(data.cashToPay) + (view === 'shipping' ? Number(fee) : 0))}</strong></div><p>Phí vận chuyển được tính theo bảng phí của hệ thống và kiểm tra lại khi tạo đơn.</p></aside></div>${addressForm()}`;
+        content.innerHTML += `<div class="ex-grid"><section class="ex-panel"><h2>Đơn nhận truyện của bạn</h2><p>Mỗi bên nhận truyện tạo một đơn riêng. Khi đủ ${data.requiredOrderCount} đơn cần thiết, giao dịch được gửi admin duyệt; người gửi chỉ gửi hàng sau khi admin duyệt.</p><form id="exchangeOrderForm" class="ex-form">${select}<label>Ghi chú<textarea id="orderNote" maxlength="1000">${esc(draft.note || '')}</textarea></label>${view === 'shipping' ? `<label>Vận chuyển<select id="shippingMethod">${data.shippingOptions.map(s => `<option value="${esc(s.code)}" ${s.code === shipping?.code ? 'selected' : ''}>${esc(s.name)} · ${money(s.fee)}</option>`).join('')}</select></label><p>Thanh toán: COD. Thanh toán khoản tiền thỏa thuận và phí vận chuyển khi nhận truyện.</p><button type="submit" ${addresses.length ? '' : 'disabled'}>Xác nhận tạo đơn COD</button>` : `<button type="submit" ${addresses.length ? '' : 'disabled'}>Tiếp tục vận chuyển</button>`}</form></section><aside class="ex-panel"><h2>Tổng thanh toán</h2><div class="ex-total"><span>Tiền bạn phải trả theo thỏa thuận</span><strong>${money(data.cashToPay)}</strong></div><div class="ex-total"><span>Vận chuyển</span><strong id="shippingFee">${view === 'shipping' ? money(fee) : 'Chọn ở bước tiếp theo'}</strong></div><div class="ex-total"><span>Tổng COD</span><strong id="orderTotal">${money(Number(data.cashToPay) + (view === 'shipping' ? Number(fee) : 0))}</strong></div><p>Phí vận chuyển được tính theo bảng phí của hệ thống và kiểm tra lại khi tạo đơn.</p></aside></div>${addressForm()}`;
     }
     async function load() {
         if (view === 'orders') {

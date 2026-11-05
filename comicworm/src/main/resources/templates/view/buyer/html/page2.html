@@ -314,6 +314,49 @@
     </div>
   </dialog>
 
+  <!-- Hộp thoại yêu cầu hoàn tiền (trong 7 ngày sau khi giao) -->
+  <dialog class="buyer-order-dialog cancel-dialog" id="orderRefundModal" aria-labelledby="refundModalTitle">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title-group">
+          <div class="dialog-icon-badge">
+            <span class="material-symbols-outlined">currency_exchange</span>
+          </div>
+          <div>
+            <h2 id="refundModalTitle">Yêu Cầu Hoàn Tiền</h2>
+            <span class="dialog-order-code" id="refundModalCode">#ORD-...</span>
+          </div>
+        </div>
+        <button type="button" class="dialog-close-btn" data-close-refund aria-label="Đóng">&times;</button>
+      </div>
+
+      <form id="orderRefundForm" class="dialog-form">
+        <div class="cancel-warning-box">
+          <span class="material-symbols-outlined">info</span>
+          <div>
+            <strong>Lưu ý:</strong>
+            <span id="refundModalDeadline">Mỗi đơn hàng chỉ gửi được một yêu cầu hoàn tiền. Người bán sẽ xem xét và phản hồi.</span>
+          </div>
+        </div>
+
+        <div class="form-field-group">
+          <label for="refundReason">Lý do yêu cầu hoàn tiền: <span class="required">*</span></label>
+          <textarea id="refundReason" class="form-input" rows="4" maxlength="500" required placeholder="Ví dụ: Truyện bị rách bìa, thiếu tập, không đúng mô tả..."></textarea>
+        </div>
+
+        <div id="refundModalError" class="cancel-error-alert" role="alert" style="display: none;"></div>
+
+        <div class="dialog-footer">
+          <button type="button" class="btn btn-outline" data-close-refund>Quay lại</button>
+          <button type="submit" class="btn btn-danger" id="confirmRefundSubmitBtn">
+            <span class="material-symbols-outlined">send</span>
+            <span>Gửi yêu cầu</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
 <div id="toast" class="toast"></div>
 
 <script src="../../shared/js/account-api.js"></script>

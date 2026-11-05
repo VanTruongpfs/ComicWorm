@@ -691,6 +691,59 @@ img { display: block; max-width: 100%; }
   transform: translateY(-1px);
 }
 
+.btn-refund-order {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.btn-refund-order:hover {
+  background: #dbeafe;
+  border-color: #60a5fa;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Trạng thái yêu cầu hoàn tiền (T04) */
+.refund-request-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.refund-request-badge .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.refund-request-badge.refund-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.refund-request-badge.refund-approved {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.refund-request-badge.refund-rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.refund-request-item .info-val {
+  display: block;
+  margin-top: 4px;
+}
+
 .btn-review {
   background: #fefce8;
   color: #ca8a04;

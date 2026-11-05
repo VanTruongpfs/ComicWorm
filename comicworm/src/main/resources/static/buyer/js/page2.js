@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Modals & Safe Dialog Helpers
   const getDetailModal = () => document.getElementById("orderDetailModal");
   const getCancelModal = () => document.getElementById("orderCancelModal");
+  const getRefundModal = () => document.getElementById("orderRefundModal");
 
   function showDialog(dialog) {
     if (!dialog) return;
@@ -52,6 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const PAGE_SIZE = 6;
   const state = { group: "all", q: "", page: 0, loading: false };
   let currentCancelOrderCode = null;
+  let currentRefundOrderCode = null;
+  const refundForm = document.getElementById("orderRefundForm");
+  const refundReason = document.getElementById("refundReason");
+  const refundModalError = document.getElementById("refundModalError");
+  const confirmRefundSubmitBtn = document.getElementById("confirmRefundSubmitBtn");
   let toastTimer;
   let searchTimer;
   let requestSeq = 0;
@@ -113,9 +119,32 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(error.message, "error");
   }
 
-  /* Đơn hàng có thể hủy nếu chưa vận chuyển (WAITING_PAYMENT hoặc WAITING_CONFIRM) */
+  /* Đơn hàng có thể hủy nếu chưa bàn giao vận chuyển (chờ thanh toán, chờ xác nhận, đang đóng gói) */
   function canCancelOrder(status) {
-    return status === "WAITING_PAYMENT" || status === "WAITING_CONFIRM";
+    return status === "WAITING_PAYMENT" || status === "WAITING_CONFIRM" || status === "PACKING";
+  }
+
+  /* Yêu cầu hoàn tiền: server trả refundEligibleUntil khi đơn còn trong hạn 7 ngày sau giao. */
+  const anyDialogOpen = () => isDialogOpen(getDetailModal()) || isDialogOpen(getCancelModal())
+    || isDialogOpen(getRefundModal());
+
+  function refundBadge(o) {
+    if (!o.refundRequestStatus) return "";
+    const tone = { PENDING: "refund-pending", APPROVED: "refund-approved", REJECTED: "refund-rejected" }[o.refundRequestStatus] || "";
+    const iconName = { PENDING: "hourglass_top", APPROVED: "price_check", REJECTED: "block" }[o.refundRequestStatus] || "info";
+    return `<span class="refund-request-badge ${tone}">
+        <span class="material-symbols-outlined">${iconName}</span>
+        <span>${esc(api.REFUND_REQUEST_LABELS[o.refundRequestStatus] || o.refundRequestStatus)}</span>
+      </span>`;
+  }
+
+  function refundButton(o, act = "refund-order") {
+    if (!o.refundEligibleUntil) return "";
+    return `<button type="button" class="btn btn-refund-order" data-act="${act}" data-code="${esc(o.orderCode)}"
+        data-deadline="${esc(o.refundEligibleUntil)}" title="Yêu cầu hoàn tiền trước ${esc(when(o.refundEligibleUntil))}">
+        <span class="material-symbols-outlined">currency_exchange</span>
+        <span>Yêu cầu hoàn tiền</span>
+      </button>`;
   }
 
   /* ---------- Render Danh sách đơn hàng ---------- */
@@ -173,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="material-symbols-outlined">${icon(o.status)}</span>
               <span>${esc(api.LABELS[o.status] || o.status)}</span>
             </span>
+            ${refundBadge(o)}
           </div>
         </div>
 
@@ -206,6 +236,8 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="material-symbols-outlined">cancel</span>
               <span>Hủy đơn</span>
             </button>` : ''}
+
+            ${refundButton(o)}
 
             ${review}
           </div>
@@ -417,6 +449,13 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="info-label"><i class="fa-solid fa-comment-dots"></i> Ghi chú người mua:</span>
               <span class="info-val">${esc(d.buyerNote)}</span>
             </div>` : ""}
+            ${s.refundRequestStatus ? `
+            <div class="info-item full-width refund-request-item">
+              <span class="info-label"><i class="fa-solid fa-money-bill-transfer"></i> Yêu cầu hoàn tiền:</span>
+              <span class="info-val">${refundBadge(s)}</span>
+              ${s.refundRequestReason ? `<span class="info-val">Lý do của bạn: ${esc(s.refundRequestReason)}</span>` : ""}
+              ${s.refundRejectReason ? `<span class="info-val danger-text">Người bán từ chối: ${esc(s.refundRejectReason)}</span>` : ""}
+            </div>` : ""}
             ${d.cancelReason ? `
             <div class="info-item full-width cancel-reason-item">
               <span class="info-label"><i class="fa-solid fa-triangle-exclamation"></i> Lý do hủy đơn:</span>
@@ -441,6 +480,11 @@ document.addEventListener("DOMContentLoaded", () => {
               <span>Phí vận chuyển:</span>
               <span>${s.shippingFee > 0 ? money(s.shippingFee) : '<strong style="color:#16a34a">Miễn phí</strong>'}</span>
             </div>
+            ${Number(s.pointsDiscount) > 0 ? `
+            <div class="breakdown-row">
+              <span>Giảm giá bằng điểm thưởng:</span>
+              <span style="color:#16a34a">-${money(s.pointsDiscount)}</span>
+            </div>` : ''}
             <div class="breakdown-row total-row">
               <span>Tổng số tiền thanh toán:</span>
               <strong class="grand-total">${money(s.totalAmount)}</strong>
@@ -459,11 +503,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Nút hành động trong footer modal
     if (detailModalFooterActions) {
-      detailModalFooterActions.innerHTML = canCancel ? `
+      detailModalFooterActions.innerHTML = (canCancel ? `
         <button type="button" class="btn btn-danger" data-act="cancel-from-detail" data-code="${esc(s.orderCode)}">
           <span class="material-symbols-outlined">cancel</span>
           <span>Hủy đơn hàng</span>
-        </button>` : "";
+        </button>` : "") + refundButton(s, "refund-from-detail");
     }
   }
 
@@ -576,6 +620,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /* ---------- Modal Yêu cầu hoàn tiền ---------- */
+
+  function openRefundModal(button) {
+    const cleanCode = String(button.dataset.code || "").trim().replace(/^#/, "");
+    const modal = getRefundModal();
+    if (!cleanCode || !modal) return;
+    currentRefundOrderCode = cleanCode;
+
+    document.getElementById("refundModalCode").textContent = `#${cleanCode}`;
+    document.getElementById("refundModalDeadline").textContent =
+      `Bạn có thể gửi yêu cầu đến ${when(button.dataset.deadline)}. Mỗi đơn hàng chỉ gửi được một yêu cầu; người bán sẽ xem xét và phản hồi.`;
+    refundReason.value = "";
+    refundModalError.style.display = "none";
+    refundModalError.textContent = "";
+    confirmRefundSubmitBtn.disabled = false;
+    confirmRefundSubmitBtn.innerHTML = '<span class="material-symbols-outlined">send</span><span>Gửi yêu cầu</span>';
+    showDialog(modal);
+    refundReason.focus();
+  }
+
+  refundForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentRefundOrderCode || confirmRefundSubmitBtn.disabled) return;
+    const reason = refundReason.value.trim();
+    if (!reason) {
+      refundModalError.textContent = "Vui lòng nhập lý do yêu cầu hoàn tiền.";
+      refundModalError.style.display = "block";
+      return;
+    }
+
+    confirmRefundSubmitBtn.disabled = true;
+    confirmRefundSubmitBtn.innerHTML = '<div class="spinner-sm"></div> Đang gửi yêu cầu...';
+    refundModalError.style.display = "none";
+
+    try {
+      await api.requestRefund(currentRefundOrderCode, reason);
+      showToast(`Đã gửi yêu cầu hoàn tiền cho đơn #${currentRefundOrderCode}. Vui lòng chờ người bán phản hồi.`, "success");
+      closeDialog(getRefundModal());
+      closeDialog(getDetailModal());
+      await load();
+    } catch (error) {
+      if (error.loginRequired) { handleError(error); return; }
+      refundModalError.textContent = error.message || "Không thể gửi yêu cầu hoàn tiền. Vui lòng thử lại.";
+      refundModalError.style.display = "block";
+      confirmRefundSubmitBtn.disabled = false;
+      confirmRefundSubmitBtn.innerHTML = '<span class="material-symbols-outlined">send</span><span>Gửi yêu cầu</span>';
+    }
+  });
+
   /* ---------- Lắng nghe sự kiện click ---------- */
 
   document.addEventListener("click", (event) => {
@@ -589,6 +682,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (event.target === cancelModal) {
       closeDialog(cancelModal);
+      return;
+    }
+    if (event.target === getRefundModal() || event.target.closest("[data-close-refund]")) {
+      closeDialog(getRefundModal());
+      return;
+    }
+
+    // Nút yêu cầu hoàn tiền (thẻ đơn hoặc chi tiết đơn)
+    const refundBtn = event.target.closest('[data-act="refund-order"], [data-act="refund-from-detail"]');
+    if (refundBtn) {
+      event.preventDefault();
+      openRefundModal(refundBtn);
       return;
     }
 
@@ -675,20 +780,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Tự động làm mới khi quay lại tab */
   window.addEventListener("focus", () => {
-    if (!isDialogOpen(getDetailModal()) && !isDialogOpen(getCancelModal())) {
+    if (!anyDialogOpen()) {
       load(true);
     }
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && !isDialogOpen(getDetailModal()) && !isDialogOpen(getCancelModal())) {
+    if (!document.hidden && !anyDialogOpen()) {
       load(true);
     }
   });
 
   /* Polling định kỳ mỗi 20s để nhận cập nhật trạng thái từ phía người bán */
   setInterval(() => {
-    if (!document.hidden && !isDialogOpen(getDetailModal()) && !isDialogOpen(getCancelModal())) {
+    if (!document.hidden && !anyDialogOpen()) {
       load(true);
     }
   }, 20000);

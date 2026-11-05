@@ -98,29 +98,42 @@
     <section class="panel review-panel">
       <div id="reviewAlertBox" style="display:none; padding:14px 18px; border-radius:8px; margin-bottom:16px; font-weight:500;"></div>
 
-      <!-- Bộ chọn đơn hàng / sản phẩm đã mua -->
-      <div id="itemSelectorContainer" style="display:none; background:#f7fafc; padding:12px 16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:18px;">
-        <label for="itemSelectDropdown" style="display:block; font-size:13px; font-weight:700; color:#4a5568; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
-          <i class="fa-solid fa-list-check" style="margin-right:6px; color:#3182ce;"></i>Chọn sản phẩm đã mua để đánh giá:
-        </label>
-        <select id="itemSelectDropdown" style="width:100%; padding:10px 14px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px; background:#fff; font-family:inherit; color:#2d3748; cursor:pointer;">
-        </select>
+      <!-- DANH SÁCH SẢN PHẨM: CHƯA ĐÁNH GIÁ / ĐÃ ĐÁNH GIÁ -->
+      <div id="reviewListView">
+        <div class="review-tabs" role="tablist" aria-label="Trạng thái đánh giá">
+          <button type="button" class="review-tab active" id="tabPending" role="tab" aria-selected="true" aria-controls="pendingList" data-tab="pending">
+            Chưa đánh giá <span class="tab-count" id="pendingCount">0</span>
+          </button>
+          <button type="button" class="review-tab" id="tabReviewed" role="tab" aria-selected="false" aria-controls="reviewedList" data-tab="reviewed">
+            Đã đánh giá <span class="tab-count" id="reviewedCount">0</span>
+          </button>
+        </div>
+        <p class="review-list-note" id="reviewScopeNote" hidden></p>
+        <div class="review-list" id="pendingList" role="tabpanel" aria-labelledby="tabPending">
+          <p class="review-empty">Đang tải danh sách sản phẩm...</p>
+        </div>
+        <div class="review-list" id="reviewedList" role="tabpanel" aria-labelledby="tabReviewed" hidden></div>
+        <p class="review-list-note" id="waitingNote" hidden></p>
       </div>
+
+      <!-- FORM ĐÁNH GIÁ MỘT SẢN PHẨM -->
+      <div id="reviewFormView" hidden>
+      <button type="button" class="back-to-list" id="backToList">← Quay lại danh sách</button>
 
       <div class="panel-title">
         <div>
-          <h2 id="orderTitle">Đánh giá đơn hàng #ORD-8831</h2>
-          <p id="productSubTitle">Fullmetal Alchemist Kanzenban trọn bộ 1-18 Boxset</p>
+          <h2 id="orderTitle">Đánh giá đơn hàng</h2>
+          <p id="productSubTitle"></p>
         </div>
         <span class="completed" id="orderStatusBadge">✓ Đã hoàn thành</span>
       </div>
 
       <div class="product-row" id="productCardRow">
-        <img id="productImg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCJZJ6k_V5R2hMAVbpWhv29djFhlWGXRjfhzZElI-tGuft3Oqr53Y9Rf5VbQjjCW1BRZyODlP4QvMBfuQ9WyinRywLTL7qh6szaWWqIgNwT2k1Xz4QKxaqXMpJJ3RgZxxV_oiI7hWOMphoxNNf-dOtpEdNZdf9Y7h1oq8reXmgcc3Cdq6EpRPup01dSxV9kO6dEXC2k8CIdrloj2C3WOoItZwbMbSkOc1WSLtPhPpehg3gJnJPXX2D8A" alt="Sản phẩm">
+        <img id="productImg" src="" alt="Sản phẩm">
         <div>
-          <h3 id="productTitle">Fullmetal Alchemist Kanzenban</h3>
-          <p id="productCondition">18 tập • Collector Grade 98%</p>
-          <strong id="productPrice">1.850.000₫</strong>
+          <h3 id="productTitle"></h3>
+          <p id="productCondition"></p>
+          <strong id="productPrice"></strong>
         </div>
       </div>
 
@@ -190,6 +203,7 @@
         <button class="btn secondary" id="saveDraft">Lưu nháp</button>
         <button class="btn primary" id="submitReview">Gửi đánh giá</button>
       </div>
+      </div>
     </section>
 
     <aside class="side">
@@ -200,7 +214,7 @@
         <ul><li>Không đánh giá sai sự thật</li><li>Không đăng thông tin cá nhân</li><li>Tôn trọng cộng đồng Otaku</li></ul>
       </section>
 
-      <section class="panel seller">
+      <section class="panel seller" id="sellerPanel" hidden>
         <div class="seller-head"><div class="avatar large" id="sellerSideAvatar">OS</div><div><h3 id="sellerSideName">OtakuStoreVN</h3><span>Người bán đối tác ComicWorm</span></div></div>
         <div class="seller-score"><strong>5.0</strong><span>★★★★★</span><small>Độ hài lòng người mua</small></div>
       </section>

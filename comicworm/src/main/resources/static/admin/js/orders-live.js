@@ -102,7 +102,7 @@
           <div>Người mua: ${esc(s.buyerName)} • Người bán: ${esc(s.sellerName)}</div>
           <div>Người nhận: ${esc(s.recipientName)} • ${esc(d.recipientPhone)}<br>${esc(d.shippingAddress)}</div>
           <ul style="padding-left:18px;margin:0;">${items}</ul>
-          <div>Tạm tính ${money(s.subtotalAmount)} • Ship ${money(s.shippingFee)} • <strong>Tổng ${money(s.totalAmount)}</strong></div>
+          <div>Tạm tính ${money(s.subtotalAmount)} • Ship ${money(s.shippingFee)}${Number(s.pointsDiscount) > 0 ? ` • Điểm -${money(s.pointsDiscount)}` : ''} • <strong>Tổng ${money(s.totalAmount)}</strong></div>
           ${d.buyerNote ? `<div>Ghi chú: ${esc(d.buyerNote)}</div>` : ''}
           <div><strong>Lịch sử trạng thái</strong><ul style="padding-left:18px;margin:6px 0 0;">${history}</ul></div>
         </div>`;

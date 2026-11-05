@@ -5,7 +5,7 @@ const commonGroups = [
         ["★", "Master Portal", "../../index.html"],
         ["◉", "Hồ sơ cá nhân", "../../user/html/profile.html"],
         ["⌂", "Quản lý địa chỉ", "../../user/html/manage_address.html"],
-        ["¤", "Ví & Rút tiền", "../../seller/html/wallet.html"]
+        ["¤", "Ví của tôi", "../../user/html/wallet.html"]
     ] },
     { title: "Mua hàng & Đơn hàng", items: [
         ["+", "Đăng tin tìm mua", "../../buyer/html/page1.html"],

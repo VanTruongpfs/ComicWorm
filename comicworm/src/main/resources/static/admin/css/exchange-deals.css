@@ -1,0 +1,74 @@
+/* Admin: duyệt đơn trao đổi & ký quỹ tiền bù */
+[hidden] { display: none !important; }
+
+.xd-page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.xd-page-head .page-title { margin: 0 0 4px; }
+.xd-page-sub { margin: 0; color: var(--text-secondary); font-size: 0.9rem; max-width: 760px; }
+.xd-page-head .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+.xd-views { margin: 4px 0 16px; width: fit-content; }
+.xd-views .nav-badge { margin-left: 6px; }
+#dealFilterTabs, #escrowFilterTabs { margin-bottom: 16px; }
+
+.xd-muted { color: var(--text-muted); font-size: 0.82rem; }
+
+.xd-deal-list { display: flex; flex-direction: column; gap: 16px; }
+.xd-deal {
+    background: var(--surface-card); border: 1px solid var(--border-color, #e5e7eb); border-radius: 14px;
+    padding: 18px 20px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+.xd-deal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.xd-deal-head h3 { margin: 0 0 2px; font-size: 1.02rem; }
+.xd-deal-head p { margin: 0; }
+
+.xd-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+.xd-parties section { background: var(--surface-muted, #f8fafc); border-radius: 10px; padding: 12px 14px; }
+.xd-parties h4 { margin: 0 0 8px; font-size: 0.9rem; }
+.xd-target { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
+.xd-target img { width: 42px; height: 58px; object-fit: cover; border-radius: 6px; background: #e2e8f0; }
+.xd-books { margin: 0; padding-left: 18px; font-size: 0.88rem; }
+.xd-books li + li { margin-top: 3px; }
+
+.xd-cash { margin: 0 0 8px; font-size: 0.9rem; }
+.xd-escrow-line { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; margin-bottom: 10px; }
+
+.xd-orders { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 4px; }
+.xd-orders th { text-align: left; font-weight: 700; color: var(--text-secondary); padding: 7px 8px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+.xd-orders td { padding: 8px; border-bottom: 1px solid var(--surface-container, #f1f5f9); vertical-align: top; }
+
+.xd-reject-note { margin: 10px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--danger-bg); color: var(--danger-text); font-size: 0.86rem; }
+.xd-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+.xd-danger { color: var(--danger) !important; border-color: var(--danger) !important; }
+.xd-danger:hover { background: var(--danger-bg) !important; }
+.btn.xd-danger-solid { background: var(--danger); border-color: var(--danger); }
+
+.xd-table-card { background: var(--surface-card); border: 1px solid var(--border-color, #e5e7eb); border-radius: 14px; overflow: hidden; }
+.xd-table-card .data-table th, .xd-table-card .data-table td { padding: 12px 10px; vertical-align: middle; }
+.xd-table-card .badge, .xd-nowrap { white-space: nowrap; }
+.xd-times { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; }
+.xd-note-cell { max-width: 180px; font-size: 0.82rem; overflow-wrap: anywhere; }
+.xd-row-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.xd-row-actions .btn { white-space: nowrap; }
+
+.xd-empty { text-align: center; padding: 36px 12px; color: var(--text-muted); }
+.xd-empty .material-symbols-outlined { font-size: 36px; }
+.xd-empty p { margin: 6px 0 0; }
+
+.xd-modal { max-width: 480px; text-align: left; }
+.xd-note-label { display: block; margin-top: 12px; font-size: 0.86rem; font-weight: 600; }
+.xd-note-label textarea {
+    display: block; width: 100%; margin-top: 6px; padding: 10px 12px; resize: vertical; font: inherit;
+    border: 1px solid var(--border-color, #d1d5db); border-radius: 8px;
+}
+.xd-note-label textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+.xd-note-label small { display: block; text-align: right; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+.xd-modal-error { margin: 10px 0 0; color: var(--danger-text); font-size: 0.86rem; }
+
+@media (max-width: 900px) {
+    .xd-parties { grid-template-columns: 1fr; }
+    .xd-page-head { flex-direction: column; }
+    .xd-orders thead { display: none; }
+    .xd-orders td { display: block; border: 0; padding: 3px 0; }
+    .xd-orders tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--surface-container, #f1f5f9); }
+}

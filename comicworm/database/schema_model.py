@@ -151,6 +151,7 @@ buyer_id bigint [not null]
 seller_id bigint [not null]
 subtotal_amount decimal(15,2) [not null, check: `subtotal_amount >= 0`]
 shipping_fee decimal(15,2) [not null, default: 0, check: `shipping_fee >= 0`]
+points_discount decimal(15,2) [not null, default: 0, check: `points_discount >= 0`]
 total_amount decimal(15,2) [not null, check: `total_amount >= 0`]
 recipient_name varchar(100) [not null]
 recipient_phone varchar(20) [not null]
@@ -163,12 +164,19 @@ cancel_reason text
 cancelled_at datetime
 stock_released_at datetime
 completed_at datetime
+refund_request_status varchar(20) [check: `refund_request_status IN ('PENDING', 'APPROVED', 'REJECTED')`]
+refund_request_reason text
+refund_reject_reason text
+refund_requested_at datetime
+refund_decided_at datetime
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 ''', 'tg_orders_payments')
 for column, parent in [('checkout_id','checkout_batches'), ('buyer_id','users'), ('seller_id','users'), ('cancelled_by','users')]:
     fk('orders', column, parent)
-check('orders', 'ck_order_total', 'total_amount = subtotal_amount + shipping_fee')
+check('orders', 'ck_order_total', 'total_amount = subtotal_amount + shipping_fee - points_discount')
+check('orders', 'ck_order_points_discount', 'points_discount <= subtotal_amount')
+check('orders', 'ck_order_refund_reject_reason', "refund_request_status IS NULL OR refund_request_status <> 'REJECTED' OR refund_reject_reason IS NOT NULL")
 index('orders', 'buyer_id,created_at', key='idx_buyer_history')
 index('orders', 'seller_id,status,created_at', key='idx_seller_orders')
 index('orders', 'status,completed_at', key='idx_order_reports')
@@ -243,7 +251,7 @@ completed_at datetime
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 ''', 'tg_orders_payments')
 fk('refunds', 'payment_id,order_id', 'payment_allocations', 'payment_id,order_id', key='fk_refund_paid_order')
-note('refunds', 'Hoàn về giao dịch thanh toán gốc khi hủy đơn. Không có ví nội bộ hoặc yêu cầu rút tiền.')
+note('refunds', 'Hoàn về giao dịch thanh toán gốc khi hủy đơn hoặc khi người bán đồng ý yêu cầu hoàn tiền sau giao hàng. Không có ví nội bộ hoặc yêu cầu rút tiền.')
 
 table('reviews', '''
 id bigint [pk, not null, increment]
@@ -278,7 +286,7 @@ table('loyalty_transactions', '''
 id bigint [pk, not null, increment]
 user_id bigint [not null]
 order_id bigint [not null]
-transaction_type varchar(20) [not null, check: `transaction_type IN ('EARN', 'REVERSAL')`]
+transaction_type varchar(20) [not null, check: `transaction_type IN ('EARN', 'REVERSAL', 'REDEEM', 'REDEEM_RETURN')`]
 points_delta bigint [not null, check: `points_delta <> 0`]
 balance_after bigint [not null, check: `balance_after >= 0`]
 idempotency_key varchar(100) [not null, unique]
@@ -286,7 +294,7 @@ created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 ''', 'tg_reviews_points')
 fk('loyalty_transactions', 'user_id', 'loyalty_accounts', 'user_id')
 fk('loyalty_transactions', 'order_id', 'orders')
-check('loyalty_transactions', 'ck_loyalty_sign', "(transaction_type = 'EARN' AND points_delta > 0) OR (transaction_type = 'REVERSAL' AND points_delta < 0)")
+check('loyalty_transactions', 'ck_loyalty_sign', "(transaction_type IN ('EARN', 'REDEEM_RETURN') AND points_delta > 0) OR (transaction_type IN ('REVERSAL', 'REDEEM') AND points_delta < 0)")
 
 table('exchange_rooms', '''
 id bigint [pk, not null, increment]
@@ -320,9 +328,16 @@ buyer_confirmed boolean [not null, default: false]
 host_confirmed boolean [not null, default: false]
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 responded_at datetime
+admin_review_status varchar(20) [not null, default: 'NOT_SUBMITTED', check: `admin_review_status IN ('NOT_SUBMITTED', 'PENDING', 'APPROVED', 'REJECTED')`]
+reviewed_by bigint
+reviewed_at datetime
+review_note varchar(500)
 ''', 'tg_exchange')
 fk('exchange_offers', 'room_id,buyer_id', 'exchange_room_members', 'room_id,user_id', key='fk_offer_room_member')
 fk('exchange_offers', 'compensation_payer_id', 'users')
+fk('exchange_offers', 'reviewed_by', 'users')
+check('exchange_offers', 'ck_offer_reject_note', "admin_review_status <> 'REJECTED' OR review_note IS NOT NULL")
+index('exchange_offers', 'admin_review_status', key='idx_offer_admin_review')
 index('exchange_offers', 'id,room_id', unique=True, key='uq_offer_room')
 check('exchange_offers', 'ck_offer_compensation', '(cash_compensation = 0 AND compensation_payer_id IS NULL) OR (cash_compensation > 0 AND compensation_payer_id IS NOT NULL)')
 index('exchange_rooms', 'selected_offer_id,id', unique=True, key='uq_room_selected_offer')
@@ -428,3 +443,46 @@ shipping_method varchar(30) [not null]
 index('exchange_order_links', 'room_id,recipient_id', unique=True, key='uq_exchange_recipient')
 for column, parent in [('room_id', 'exchange_rooms'), ('offer_id', 'exchange_offers'), ('recipient_id', 'users'), ('order_id', 'orders')]:
     fk('exchange_order_links', column, parent)
+
+# Admin review and escrow of the cash compensation in exchange deals; payouts land in an in-app wallet.
+table('exchange_escrows', '''
+id bigint [pk, not null, increment]
+room_id bigint [not null]
+offer_id bigint [not null, unique]
+payer_id bigint [not null]
+payee_id bigint [not null]
+source_order_id bigint [not null]
+amount decimal(15,2) [not null, check: `amount > 0`]
+status varchar(20) [not null, default: 'HELD', check: `status IN ('HELD', 'READY', 'RELEASED', 'REFUNDED')`]
+held_at datetime [not null]
+ready_at datetime
+resolved_at datetime
+resolved_by bigint
+resolution_note varchar(500)
+''', 'tg_exchange')
+for column, parent in [('room_id', 'exchange_rooms'), ('offer_id', 'exchange_offers'), ('payer_id', 'users'), ('payee_id', 'users'), ('source_order_id', 'orders'), ('resolved_by', 'users')]:
+    fk('exchange_escrows', column, parent)
+check('exchange_escrows', 'ck_escrow_parties', 'payer_id <> payee_id')
+check('exchange_escrows', 'ck_escrow_resolution', "status NOT IN ('RELEASED', 'REFUNDED') OR (resolved_at IS NOT NULL AND resolved_by IS NOT NULL AND resolution_note IS NOT NULL)")
+index('exchange_escrows', 'status,id', key='idx_escrow_status')
+note('exchange_escrows', 'Sàn giữ tiền bù khi người trả bù thanh toán COD; admin giải ngân vào ví người nhận hoặc hoàn vào ví người trả. Phí ship không vào ký quỹ.')
+table('wallets', '''
+user_id bigint [pk, not null]
+balance decimal(15,2) [not null, default: 0, check: `balance >= 0`]
+updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+''', 'tg_orders_payments')
+fk('wallets', 'user_id', 'users')
+note('wallets', 'Ví trong app; chỉ nhận tiền giải ngân/hoàn từ ký quỹ trao đổi. Chưa có rút tiền.')
+table('wallet_transactions', '''
+id bigint [pk, not null, increment]
+user_id bigint [not null]
+amount decimal(15,2) [not null, check: `amount > 0`]
+type varchar(30) [not null, check: `type IN ('ESCROW_RELEASE', 'ESCROW_REFUND')`]
+escrow_id bigint [not null, unique]
+balance_after decimal(15,2) [not null, check: `balance_after >= 0`]
+note varchar(500)
+created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+''', 'tg_orders_payments')
+fk('wallet_transactions', 'user_id', 'wallets', 'user_id')
+fk('wallet_transactions', 'escrow_id', 'exchange_escrows')
+index('wallet_transactions', 'user_id,id', key='idx_wallet_history')

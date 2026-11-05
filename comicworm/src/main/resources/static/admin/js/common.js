@@ -124,6 +124,9 @@ function getFallbackSidebarTemplate() {
       <a href="orders.html" class="nav-item" data-page="orders">
         <div class="nav-item-content"><span class="material-symbols-outlined">package_2</span><span>Quản lý đơn hàng</span></div>
       </a>
+      <a href="exchange-deals.html" class="nav-item" data-page="exchange-deals">
+        <div class="nav-item-content"><span class="material-symbols-outlined">swap_horiz</span><span>Đơn trao đổi &amp; ký quỹ</span></div>
+      </a>
     </nav>
     <div class="sidebar-footer">
       <div class="store-status-pill">

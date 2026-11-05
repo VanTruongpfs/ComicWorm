@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- In-app wallet: balance and credits from exchange escrows (payouts and refunds). No withdrawal yet. -->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ví của tôi | BookMooch</title>
+    <link rel="stylesheet" href="../../shared/styles/global-design-tokens.css">
+    <link rel="stylesheet" href="../../shared/sidebar/sidebar.css">
+    <link rel="stylesheet" href="../css/wallet.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div data-sidebar-mount></div>
+        <main class="app-main">
+            <header class="page-header">
+                <div>
+                    <p class="eyebrow">Tài khoản &amp; Hồ sơ</p>
+                    <h1 class="page-title">Ví của tôi</h1>
+                    <p class="page-subtitle">Tiền bù từ giao dịch trao đổi được sàn giữ, rồi giải ngân hoặc hoàn vào ví này sau khi admin xử lý.</p>
+                </div>
+            </header>
+
+            <p class="wallet-alert" data-wallet-alert hidden></p>
+
+            <section class="surface-card wallet-balance-card">
+                <p class="wallet-label">Số dư hiện tại</p>
+                <p class="wallet-balance" data-wallet-balance>—</p>
+                <p class="wallet-hint">Chức năng rút tiền chưa được mở. <a href="../../exchange/html/exchange-orders.html">Xem đơn trao đổi</a></p>
+            </section>
+
+            <section class="surface-card">
+                <h2 class="wallet-section-title">Lịch sử giao dịch ví</h2>
+                <ol class="wallet-history" data-wallet-history aria-live="polite">
+                    <li class="wallet-empty">Đang tải...</li>
+                </ol>
+            </section>
+        </main>
+    </div>
+    <script src="../../shared/js/account-api.js"></script>
+    <script src="../../shared/sidebar/sidebar.js"></script>
+    <script src="../js/wallet.js"></script>
+</body>
+</html>

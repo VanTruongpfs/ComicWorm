@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/orders/*/confirm-received").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/orders/*/refund-request").authenticated()
 
                         // ---- Public API & Public Pages ----
                         .requestMatchers("/auth/**", "/api/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()

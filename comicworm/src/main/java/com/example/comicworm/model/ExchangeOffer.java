@@ -1,6 +1,7 @@
 package com.example.comicworm.model;
 
 import com.example.comicworm.model.enums.ExchangeOfferStatus;
+import com.example.comicworm.model.enums.ExchangeReviewStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -68,6 +69,23 @@ public class ExchangeOffer {
 
     @Column(name = "responded_at", nullable = true, columnDefinition = "datetime")
     private LocalDateTime respondedAt;
+
+    /** Admin review before shipping. The column default lets ddl-auto add it to existing rows. */
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "admin_review_status", nullable = false, length = 20,
+            columnDefinition = "varchar(20) not null default 'NOT_SUBMITTED'")
+    private ExchangeReviewStatus adminReviewStatus = ExchangeReviewStatus.NOT_SUBMITTED;
+
+    @Column(name = "reviewed_by", nullable = true)
+    private Long reviewedBy;
+
+    @Column(name = "reviewed_at", nullable = true, columnDefinition = "datetime")
+    private LocalDateTime reviewedAt;
+
+    @Column(name = "review_note", nullable = true, length = 500)
+    private String reviewNote;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @Setter(AccessLevel.NONE)

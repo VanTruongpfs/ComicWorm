@@ -175,6 +175,7 @@ CREATE TABLE `orders` (
   `seller_id` BIGINT NOT NULL,
   `subtotal_amount` DECIMAL(15,2) NOT NULL,
   `shipping_fee` DECIMAL(15,2) NOT NULL DEFAULT 0,
+  `points_discount` DECIMAL(15,2) NOT NULL DEFAULT 0,
   `total_amount` DECIMAL(15,2) NOT NULL,
   `recipient_name` VARCHAR(100) NOT NULL,
   `recipient_phone` VARCHAR(20) NOT NULL,
@@ -187,17 +188,26 @@ CREATE TABLE `orders` (
   `cancelled_at` DATETIME NULL,
   `stock_released_at` DATETIME NULL,
   `completed_at` DATETIME NULL,
+  `refund_request_status` VARCHAR(20) NULL,
+  `refund_request_reason` TEXT NULL,
+  `refund_reject_reason` TEXT NULL,
+  `refund_requested_at` DATETIME NULL,
+  `refund_decided_at` DATETIME NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY `idx_buyer_history` (`buyer_id`, `created_at`),
   KEY `idx_seller_orders` (`seller_id`, `status`, `created_at`),
   KEY `idx_order_reports` (`status`, `completed_at`),
-  CONSTRAINT `ck_order_total` CHECK (total_amount = subtotal_amount + shipping_fee),
+  CONSTRAINT `ck_order_total` CHECK (total_amount = subtotal_amount + shipping_fee - points_discount),
+  CONSTRAINT `ck_order_points_discount` CHECK (points_discount <= subtotal_amount),
+  CONSTRAINT `ck_order_refund_reject_reason` CHECK (refund_request_status IS NULL OR refund_request_status <> 'REJECTED' OR refund_reject_reason IS NOT NULL),
   CONSTRAINT `ck_orders_subtotal_amount` CHECK (subtotal_amount >= 0),
   CONSTRAINT `ck_orders_shipping_fee` CHECK (shipping_fee >= 0),
+  CONSTRAINT `ck_orders_points_discount` CHECK (points_discount >= 0),
   CONSTRAINT `ck_orders_total_amount` CHECK (total_amount >= 0),
   CONSTRAINT `ck_orders_status` CHECK (status IN ('WAITING_PAYMENT', 'WAITING_CONFIRM', 'PACKING', 'SHIPPING', 'DELIVERED', 'COMPLETED', 'CANCELLED')),
-  CONSTRAINT `ck_orders_payment_status` CHECK (payment_status IN ('PENDING', 'PAID', 'PARTIALLY_REFUNDED', 'REFUNDED'))
+  CONSTRAINT `ck_orders_payment_status` CHECK (payment_status IN ('PENDING', 'PAID', 'PARTIALLY_REFUNDED', 'REFUNDED')),
+  CONSTRAINT `ck_orders_refund_request_status` CHECK (refund_request_status IN ('PENDING', 'APPROVED', 'REJECTED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `order_items` (
@@ -277,6 +287,28 @@ CREATE TABLE `refunds` (
   CONSTRAINT `ck_refunds_status` CHECK (status IN ('PENDING', 'PROCESSING', 'SUCCEEDED', 'FAILED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `wallets` (
+  `user_id` BIGINT NOT NULL PRIMARY KEY,
+  `balance` DECIMAL(15,2) NOT NULL DEFAULT 0,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `ck_wallets_balance` CHECK (balance >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `wallet_transactions` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `amount` DECIMAL(15,2) NOT NULL,
+  `type` VARCHAR(30) NOT NULL,
+  `escrow_id` BIGINT NOT NULL UNIQUE,
+  `balance_after` DECIMAL(15,2) NOT NULL,
+  `note` VARCHAR(500) NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_wallet_history` (`user_id`, `id`),
+  CONSTRAINT `ck_wallet_transactions_amount` CHECK (amount > 0),
+  CONSTRAINT `ck_wallet_transactions_type` CHECK (type IN ('ESCROW_RELEASE', 'ESCROW_REFUND')),
+  CONSTRAINT `ck_wallet_transactions_balance_after` CHECK (balance_after >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `reviews` (
   `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `order_item_id` BIGINT NOT NULL UNIQUE,
@@ -315,8 +347,8 @@ CREATE TABLE `loyalty_transactions` (
   `balance_after` BIGINT NOT NULL,
   `idempotency_key` VARCHAR(100) NOT NULL UNIQUE,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT `ck_loyalty_sign` CHECK ((transaction_type = 'EARN' AND points_delta > 0) OR (transaction_type = 'REVERSAL' AND points_delta < 0)),
-  CONSTRAINT `ck_loyalty_transactions_transaction_type` CHECK (transaction_type IN ('EARN', 'REVERSAL')),
+  CONSTRAINT `ck_loyalty_sign` CHECK ((transaction_type IN ('EARN', 'REDEEM_RETURN') AND points_delta > 0) OR (transaction_type IN ('REVERSAL', 'REDEEM') AND points_delta < 0)),
+  CONSTRAINT `ck_loyalty_transactions_transaction_type` CHECK (transaction_type IN ('EARN', 'REVERSAL', 'REDEEM', 'REDEEM_RETURN')),
   CONSTRAINT `ck_loyalty_transactions_points_delta` CHECK (points_delta <> 0),
   CONSTRAINT `ck_loyalty_transactions_balance_after` CHECK (balance_after >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -353,10 +385,17 @@ CREATE TABLE `exchange_offers` (
   `host_confirmed` BOOLEAN NOT NULL DEFAULT false,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `responded_at` DATETIME NULL,
+  `admin_review_status` VARCHAR(20) NOT NULL DEFAULT 'NOT_SUBMITTED',
+  `reviewed_by` BIGINT NULL,
+  `reviewed_at` DATETIME NULL,
+  `review_note` VARCHAR(500) NULL,
+  KEY `idx_offer_admin_review` (`admin_review_status`),
   UNIQUE KEY `uq_offer_room` (`id`, `room_id`),
+  CONSTRAINT `ck_offer_reject_note` CHECK (admin_review_status <> 'REJECTED' OR review_note IS NOT NULL),
   CONSTRAINT `ck_offer_compensation` CHECK ((cash_compensation = 0 AND compensation_payer_id IS NULL) OR (cash_compensation > 0 AND compensation_payer_id IS NOT NULL)),
   CONSTRAINT `ck_exchange_offers_cash_compensation` CHECK (cash_compensation >= 0),
-  CONSTRAINT `ck_exchange_offers_status` CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'WITHDRAWN'))
+  CONSTRAINT `ck_exchange_offers_status` CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'WITHDRAWN')),
+  CONSTRAINT `ck_exchange_offers_admin_review_status` CHECK (admin_review_status IN ('NOT_SUBMITTED', 'PENDING', 'APPROVED', 'REJECTED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `exchange_offer_items` (
@@ -392,6 +431,27 @@ CREATE TABLE `exchange_order_links` (
   `order_id` BIGINT NOT NULL UNIQUE,
   `shipping_method` VARCHAR(30) NOT NULL,
   UNIQUE KEY `uq_exchange_recipient` (`room_id`, `recipient_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `exchange_escrows` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `room_id` BIGINT NOT NULL,
+  `offer_id` BIGINT NOT NULL UNIQUE,
+  `payer_id` BIGINT NOT NULL,
+  `payee_id` BIGINT NOT NULL,
+  `source_order_id` BIGINT NOT NULL,
+  `amount` DECIMAL(15,2) NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'HELD',
+  `held_at` DATETIME NOT NULL,
+  `ready_at` DATETIME NULL,
+  `resolved_at` DATETIME NULL,
+  `resolved_by` BIGINT NULL,
+  `resolution_note` VARCHAR(500) NULL,
+  KEY `idx_escrow_status` (`status`, `id`),
+  CONSTRAINT `ck_escrow_parties` CHECK (payer_id <> payee_id),
+  CONSTRAINT `ck_escrow_resolution` CHECK (status NOT IN ('RELEASED', 'REFUNDED') OR (resolved_at IS NOT NULL AND resolved_by IS NOT NULL AND resolution_note IS NOT NULL)),
+  CONSTRAINT `ck_exchange_escrows_amount` CHECK (amount > 0),
+  CONSTRAINT `ck_exchange_escrows_status` CHECK (status IN ('HELD', 'READY', 'RELEASED', 'REFUNDED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `product_image_features` (
@@ -484,6 +544,7 @@ ALTER TABLE `exchange_room_members` ADD CONSTRAINT `fk_exchange_room_members_roo
 ALTER TABLE `exchange_room_members` ADD CONSTRAINT `fk_exchange_room_members_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 ALTER TABLE `exchange_offers` ADD CONSTRAINT `fk_offer_room_member` FOREIGN KEY (`room_id`, `buyer_id`) REFERENCES `exchange_room_members` (`room_id`, `user_id`);
 ALTER TABLE `exchange_offers` ADD CONSTRAINT `fk_exchange_offers_compensation_payer_id` FOREIGN KEY (`compensation_payer_id`) REFERENCES `users` (`id`);
+ALTER TABLE `exchange_offers` ADD CONSTRAINT `fk_exchange_offers_reviewed_by` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`);
 ALTER TABLE `exchange_rooms` ADD CONSTRAINT `fk_room_selected_offer` FOREIGN KEY (`selected_offer_id`, `id`) REFERENCES `exchange_offers` (`id`, `room_id`);
 ALTER TABLE `exchange_offer_items` ADD CONSTRAINT `fk_exchange_offer_items_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
 ALTER TABLE `exchange_offer_items` ADD CONSTRAINT `fk_offer_product_owner` FOREIGN KEY (`product_id`, `owner_id`) REFERENCES `products` (`id`, `seller_id`);
@@ -499,3 +560,12 @@ ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_room_
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_recipient_id` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);
 ALTER TABLE `exchange_order_links` ADD CONSTRAINT `fk_exchange_order_links_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_room_id` FOREIGN KEY (`room_id`) REFERENCES `exchange_rooms` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_offer_id` FOREIGN KEY (`offer_id`) REFERENCES `exchange_offers` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_payer_id` FOREIGN KEY (`payer_id`) REFERENCES `users` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_payee_id` FOREIGN KEY (`payee_id`) REFERENCES `users` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_source_order_id` FOREIGN KEY (`source_order_id`) REFERENCES `orders` (`id`);
+ALTER TABLE `exchange_escrows` ADD CONSTRAINT `fk_exchange_escrows_resolved_by` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`);
+ALTER TABLE `wallets` ADD CONSTRAINT `fk_wallets_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `wallet_transactions` ADD CONSTRAINT `fk_wallet_transactions_user_id` FOREIGN KEY (`user_id`) REFERENCES `wallets` (`user_id`);
+ALTER TABLE `wallet_transactions` ADD CONSTRAINT `fk_wallet_transactions_escrow_id` FOREIGN KEY (`escrow_id`) REFERENCES `exchange_escrows` (`id`);
