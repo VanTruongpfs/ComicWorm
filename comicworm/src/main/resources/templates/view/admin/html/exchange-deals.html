@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt đơn trao đổi &amp; ký quỹ | BookMooch Admin Console</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-common.css">
+    <link rel="stylesheet" href="../css/exchange-deals.css">
+</head>
+<body>
+<div class="app-container">
+    <div id="sidebarContainer" data-active="exchange-deals"></div>
+
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle"><span class="material-symbols-outlined">menu</span></button>
+                <div class="store-selector">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span>Trung tâm Quản trị</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-profile-menu">
+                    <div class="user-details">
+                        <div class="user-name" data-admin-name>Quản trị viên</div>
+                        <div class="user-role">Quản trị viên</div>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=9d4300&color=fff&bold=true" class="user-avatar" alt="Avatar quản trị viên">
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <div class="xd-page-head">
+                <div>
+                    <h2 class="page-title">Duyệt đơn trao đổi &amp; ký quỹ tiền bù</h2>
+                    <p class="xd-page-sub">Duyệt giao dịch trước khi hai bên gửi truyện. Tiền bù được sàn giữ khi người trả thanh toán COD và chỉ về ví người nhận khi admin giải ngân.</p>
+                </div>
+                <button class="btn btn-outline btn-sm" id="xdRefresh" type="button">
+                    <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> Tải lại
+                </button>
+            </div>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Giao dịch chờ duyệt</span>
+                        <span class="kpi-value" id="kpiPendingDeals">0</span>
+                        <span class="kpi-trend info">Cần quyết định trước khi gửi hàng</span>
+                    </div>
+                    <div class="kpi-icon-wrapper warning"><span class="material-symbols-outlined" style="font-size:26px;">pending_actions</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Sàn đang giữ</span>
+                        <span class="kpi-value" id="kpiHeld">0₫</span>
+                        <span class="kpi-trend info" id="kpiHeldCount">0 khoản</span>
+                    </div>
+                    <div class="kpi-icon-wrapper info"><span class="material-symbols-outlined" style="font-size:26px;">lock</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Sẵn sàng giải ngân</span>
+                        <span class="kpi-value" id="kpiReady">0₫</span>
+                        <span class="kpi-trend positive" id="kpiReadyCount">0 khoản</span>
+                    </div>
+                    <div class="kpi-icon-wrapper primary"><span class="material-symbols-outlined" style="font-size:26px;">account_balance_wallet</span></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <span class="kpi-label">Đã giải ngân / đã hoàn</span>
+                        <span class="kpi-value" id="kpiResolved">0₫</span>
+                        <span class="kpi-trend info" id="kpiResolvedDetail">0₫ đã hoàn</span>
+                    </div>
+                    <div class="kpi-icon-wrapper success"><span class="material-symbols-outlined" style="font-size:26px;">task_alt</span></div>
+                </div>
+            </section>
+
+            <div class="seg-control xd-views" id="xdViewTabs">
+                <button class="seg-btn active" type="button" data-view="deals">Duyệt đơn trao đổi <span class="nav-badge" id="xdPendingBadge">0</span></button>
+                <button class="seg-btn" type="button" data-view="escrows">Ký quỹ tiền bù</button>
+            </div>
+
+            <section id="dealsView">
+                <div class="filter-tabs-bar" id="dealFilterTabs">
+                    <button class="tab-chip active" type="button" data-status="PENDING">Chờ duyệt</button>
+                    <button class="tab-chip" type="button" data-status="APPROVED">Đã duyệt</button>
+                    <button class="tab-chip" type="button" data-status="REJECTED">Đã từ chối</button>
+                </div>
+                <div id="dealList" class="xd-deal-list" aria-live="polite"></div>
+            </section>
+
+            <section id="escrowsView" hidden>
+                <div class="filter-tabs-bar" id="escrowFilterTabs">
+                    <button class="tab-chip active" type="button" data-status="ALL">Tất cả</button>
+                    <button class="tab-chip" type="button" data-status="HELD">Đang giữ</button>
+                    <button class="tab-chip" type="button" data-status="READY">Sẵn sàng giải ngân</button>
+                    <button class="tab-chip" type="button" data-status="RELEASED">Đã giải ngân</button>
+                    <button class="tab-chip" type="button" data-status="REFUNDED">Đã hoàn</button>
+                </div>
+                <div class="xd-table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Khoản</th>
+                                <th>Phòng</th>
+                                <th>Người trả → Người nhận</th>
+                                <th>Số tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thời gian</th>
+                                <th>Ghi chú</th>
+                                <th style="text-align:right;">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody id="escrowTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- XÁC NHẬN THAO TÁC: duyệt / từ chối / giải ngân / hoàn tiền -->
+<div class="modal-backdrop" id="xdActionModal" style="display:none;">
+    <div class="modal-dialog xd-modal" role="dialog" aria-modal="true" aria-labelledby="xdModalTitle">
+        <h3 class="modal-title" id="xdModalTitle">Xác nhận</h3>
+        <p class="modal-desc" id="xdModalDesc"></p>
+        <label class="xd-note-label" id="xdNoteWrap" for="xdNote">
+            <span id="xdNoteLabel">Ghi chú</span>
+            <textarea id="xdNote" maxlength="500" rows="3"></textarea>
+            <small><span id="xdNoteCount">0</span>/500</small>
+        </label>
+        <p class="xd-modal-error" id="xdModalError" hidden></p>
+        <div class="modal-actions">
+            <button class="btn btn-outline" type="button" id="xdModalCancel">Quay lại</button>
+            <button class="btn btn-primary" type="button" id="xdModalConfirm">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/common.js"></script>
+<script src="../js/exchange-deals.js"></script>
+</body>
+</html>

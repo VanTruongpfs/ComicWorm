@@ -19,6 +19,14 @@ public class CheckoutSummaryDTO {
     private String checkoutCode;
     private Long buyerId;
     private BigDecimal totalAmount;
+    /** Tổng tiền đã giảm bằng điểm cho cả đợt (0 nếu chưa dùng điểm). */
+    private BigDecimal pointsDiscount;
+    /** Số điểm hiện có của người mua. */
+    private Long pointsBalance;
+    /** Số điểm tối đa còn được dùng cho đợt này (0 nếu đợt đã dùng điểm). */
+    private Long maxRedeemablePoints;
+    /** Số đồng được giảm cho mỗi điểm. */
+    private BigDecimal redeemVndPerPoint;
     private LocalDateTime expiresAt;
     private String recipientName;
     private String recipientPhone;
@@ -37,6 +45,7 @@ public class CheckoutSummaryDTO {
         private String sellerName;
         private BigDecimal subtotalAmount;
         private BigDecimal shippingFee;
+        private BigDecimal pointsDiscount;
         private BigDecimal totalAmount;
         private String status;
         private List<CheckoutOrderItemDTO> items;

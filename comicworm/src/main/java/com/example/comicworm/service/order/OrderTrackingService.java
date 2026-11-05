@@ -12,7 +12,9 @@ import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.OrderStatusHistoryRepository;
 import com.example.comicworm.repository.UserRepository;
 import com.example.comicworm.service.OrderCompletionService;
+import com.example.comicworm.service.OrderRefundRequestService;
 import com.example.comicworm.service.OrderStatusService;
+import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +70,9 @@ public class OrderTrackingService {
     private final OrderStatusService statusService;
     private final OrderCompletionService completionService;
     private final ExchangeOrderLinkRepository exchangeLinks;
+
+    @Value("${app.order.refund-request-days:7}")
+    private int refundDays = 7;
 
     public OrderTrackingService(OrderRepository orders, OrderItemRepository items,
                                 OrderStatusHistoryRepository histories, UserRepository users,
@@ -220,6 +225,8 @@ public class OrderTrackingService {
                 .stream().collect(Collectors.groupingBy(OrderItem::getOrderId));
         Map<Long, String> sellers = userNames(list.stream()
                 .flatMap(o -> java.util.stream.Stream.of(o.getSellerId(), o.getBuyerId())).toList());
+        Map<Long, LocalDateTime> deliveredAt = deliveredAt(list, viewerId);
+        LocalDateTime now = LocalDateTime.now();
         List<OrderDTOs.Summary> out = new ArrayList<>();
         for (Order o : list) {
             List<OrderDTOs.Item> its = byOrder.getOrDefault(o.getId(), List.of()).stream()
@@ -227,13 +234,34 @@ public class OrderTrackingService {
                             i.getConditionPercent(), i.getUnitPrice(), i.getQuantity(),
                             i.getUnitPrice().multiply(java.math.BigDecimal.valueOf(i.getQuantity()))))
                     .toList();
+            LocalDateTime refundEligibleUntil = o.getBuyerId().equals(viewerId)
+                    ? OrderRefundRequestService.eligibleUntil(o, deliveredAt.get(o.getId()),
+                            exchangeOrderIds.contains(o.getId()), refundDays, now)
+                    : null;
             out.add(new OrderDTOs.Summary(o.getOrderCode(), o.getStatus().name(), o.getPaymentStatus().name(),
                     o.getSellerId(), sellers.getOrDefault(o.getSellerId(), ""),
                     sellers.getOrDefault(o.getBuyerId(), ""), o.getRecipientName(),
-                    o.getSubtotalAmount(), o.getShippingFee(), o.getTotalAmount(),
+                    o.getSubtotalAmount(), o.getShippingFee(), o.getPointsDiscount(), o.getTotalAmount(),
                     its.stream().mapToInt(OrderDTOs.Item::quantity).sum(), its,
-                    o.getCreatedAt(), o.getCompletedAt(), nextFor(o, viewerId, admin, exchangeOrderIds)));
+                    o.getCreatedAt(), o.getCompletedAt(), nextFor(o, viewerId, admin, exchangeOrderIds),
+                    o.getRefundRequestStatus() == null ? null : o.getRefundRequestStatus().name(),
+                    o.getRefundRequestReason(), o.getRefundRejectReason(), refundEligibleUntil));
         }
+        return out;
+    }
+
+    /** Mốc giao hàng (lần đầu DELIVERED/COMPLETED) của các đơn người xem là người mua. */
+    private Map<Long, LocalDateTime> deliveredAt(List<Order> list, Long viewerId) {
+        List<Long> ids = list.stream()
+                .filter(o -> o.getBuyerId().equals(viewerId)
+                        && OrderRefundRequestService.DELIVERED_STATUSES.contains(o.getStatus()))
+                .map(Order::getId)
+                .toList();
+        if (ids.isEmpty()) return Map.of();
+        Map<Long, LocalDateTime> out = new HashMap<>();
+        List<Object[]> rows = histories.findFirstReachedAtByOrderIds(ids, OrderRefundRequestService.DELIVERED_STATUSES);
+        if (rows == null) return out;
+        for (Object[] r : rows) out.put((Long) r[0], (LocalDateTime) r[1]);
         return out;
     }
 

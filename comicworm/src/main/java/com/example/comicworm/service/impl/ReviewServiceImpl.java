@@ -7,10 +7,12 @@ import com.example.comicworm.mapper.ProductMapper;
 import com.example.comicworm.model.Order;
 import com.example.comicworm.model.OrderItem;
 import com.example.comicworm.model.Review;
+import com.example.comicworm.model.ReviewReply;
 import com.example.comicworm.model.User;
 import com.example.comicworm.model.enums.OrderStatus;
 import com.example.comicworm.repository.OrderItemRepository;
 import com.example.comicworm.repository.OrderRepository;
+import com.example.comicworm.repository.ReviewReplyRepository;
 import com.example.comicworm.repository.ReviewRepository;
 import com.example.comicworm.repository.UserRepository;
 import com.example.comicworm.service.IReviewService;
@@ -20,9 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewReplyRepository reviewReplyRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -101,10 +104,11 @@ public class ReviewServiceImpl implements IReviewService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem thông tin đơn hàng này");
         }
 
-        Optional<Review> existingReview = reviewRepository.findByOrderItemId(item.getId());
+        Review review = reviewRepository.findByOrderItemId(item.getId()).orElse(null);
         User seller = userRepository.findById(order.getSellerId()).orElse(null);
+        Map<Long, ReviewReply> replyMap = review == null ? Map.of() : repliesByReviewId(List.of(review));
 
-        return toReviewableItemDTO(order, item, seller, existingReview.orElse(null));
+        return toReviewableItemDTO(order, item, seller, review, replyMap);
     }
 
     @Override
@@ -127,9 +131,10 @@ public class ReviewServiceImpl implements IReviewService {
                 .collect(Collectors.toMap(Review::getOrderItemId, Function.identity(), (a, b) -> a));
 
         User seller = userRepository.findById(order.getSellerId()).orElse(null);
+        Map<Long, ReviewReply> replyMap = repliesByReviewId(reviewMap.values());
 
         return items.stream()
-                .map(it -> toReviewableItemDTO(order, it, seller, reviewMap.get(it.getId())))
+                .map(it -> toReviewableItemDTO(order, it, seller, reviewMap.get(it.getId()), replyMap))
                 .toList();
     }
 
@@ -153,9 +158,10 @@ public class ReviewServiceImpl implements IReviewService {
                 .collect(Collectors.toMap(Review::getOrderItemId, Function.identity(), (a, b) -> a));
 
         User seller = userRepository.findById(order.getSellerId()).orElse(null);
+        Map<Long, ReviewReply> replyMap = repliesByReviewId(reviewMap.values());
 
         return items.stream()
-                .map(it -> toReviewableItemDTO(order, it, seller, reviewMap.get(it.getId())))
+                .map(it -> toReviewableItemDTO(order, it, seller, reviewMap.get(it.getId()), replyMap))
                 .toList();
     }
 
@@ -186,6 +192,7 @@ public class ReviewServiceImpl implements IReviewService {
 
         Map<Long, User> sellerMap = userRepository.findAllById(orders.stream().map(Order::getSellerId).distinct().toList())
                 .stream().collect(Collectors.toMap(User::getId, Function.identity(), (a, b) -> a));
+        Map<Long, ReviewReply> replyMap = repliesByReviewId(reviewMap.values());
 
         List<ReviewableItemDTO> result = new java.util.ArrayList<>();
         for (OrderItem it : allItems) {
@@ -193,7 +200,7 @@ public class ReviewServiceImpl implements IReviewService {
             if (o != null) {
                 User s = sellerMap.get(o.getSellerId());
                 Review r = reviewMap.get(it.getId());
-                result.add(toReviewableItemDTO(o, it, s, r));
+                result.add(toReviewableItemDTO(o, it, s, r, replyMap));
             }
         }
 
@@ -214,8 +221,20 @@ public class ReviewServiceImpl implements IReviewService {
         return result;
     }
 
-    private ReviewableItemDTO toReviewableItemDTO(Order order, OrderItem item, User seller, Review review) {
+    private Map<Long, ReviewReply> repliesByReviewId(Collection<Review> reviews) {
+        if (reviews.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+        return reviewReplyRepository.findByReviewIdIn(reviewIds).stream()
+                .collect(Collectors.toMap(ReviewReply::getReviewId, Function.identity(), (a, b) -> a));
+    }
+
+    private ReviewableItemDTO toReviewableItemDTO(
+            Order order, OrderItem item, User seller, Review review, Map<Long, ReviewReply> replyMap) {
         boolean reviewed = review != null;
+        ReviewReply reply = reviewed ? replyMap.get(review.getId()) : null;
+        String sellerName = seller != null ? seller.getFullName() : "Người bán";
         return ReviewableItemDTO.builder()
                 .orderItemId(item.getId())
                 .orderId(order.getId())
@@ -228,13 +247,20 @@ public class ReviewServiceImpl implements IReviewService {
                 .quantity(item.getQuantity())
                 .orderStatus(order.getStatus() != null ? order.getStatus().name() : null)
                 .sellerId(order.getSellerId())
-                .sellerName(seller != null ? seller.getFullName() : "Người bán")
+                .sellerName(sellerName)
                 .reviewed(reviewed)
+                .reviewId(reviewed ? review.getId() : null)
                 .existingRating(reviewed ? review.getRating() : null)
                 .existingProductQualityRating(reviewed ? (review.getProductQualityRating() != null ? review.getProductQualityRating() : review.getRating()) : null)
                 .existingSellerAttitudeRating(reviewed ? (review.getSellerAttitudeRating() != null ? review.getSellerAttitudeRating() : review.getRating()) : null)
                 .existingContent(reviewed ? review.getContent() : null)
                 .existingCreatedAt(reviewed ? review.getCreatedAt() : null)
+                .sellerReply(reply == null ? null : ReviewableItemDTO.SellerReply.builder()
+                        .content(reply.getContent())
+                        .sellerName(sellerName)
+                        .createdAt(reply.getCreatedAt())
+                        .updatedAt(reply.getUpdatedAt())
+                        .build())
                 .build();
     }
 }

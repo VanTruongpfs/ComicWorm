@@ -161,239 +161,374 @@ function renderPreviews() {
 }
 
 // ==============================
-// Dynamic Data Loading from API
+// Danh sách Chưa đánh giá / Đã đánh giá
 // ==============================
-let currentOrderItemId = null;
+const FALLBACK_COVER = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80";
+const DRAFT_KEY_PREFIX = "comicworm-review-draft:";
+
+const pageParams = new URLSearchParams(window.location.search);
+const alertBox = document.getElementById("reviewAlertBox");
+const listView = document.getElementById("reviewListView");
+const formView = document.getElementById("reviewFormView");
+const pendingList = document.getElementById("pendingList");
+const reviewedList = document.getElementById("reviewedList");
+const submitButton = document.getElementById("submitReview");
+const saveDraftBtn = document.getElementById("saveDraft");
+const sellerPanel = document.getElementById("sellerPanel");
+
 let allLoadedItems = [];
+let currentItem = null;
 
-async function loadReviewTarget() {
-    const params = new URLSearchParams(window.location.search);
-    const orderItemIdParam = params.get("orderItemId");
-    const orderIdParam = params.get("orderId");
-    const orderCodeParam = params.get("orderCode");
+function showAlert(html, type = "info") {
+    if (!alertBox) return;
+    const palette = {
+        error: ["#fff5f5", "#c53030", "#feb2b2"],
+        warning: ["#fff5f5", "#c53030", "#feb2b2"],
+        success: ["#f0fff4", "#276749", "#9ae6b4"],
+        info: ["#ebf8ff", "#2b6cb0", "#bee3f8"]
+    };
+    const [bg, color, border] = palette[type] || palette.info;
+    alertBox.style.display = "block";
+    alertBox.style.background = bg;
+    alertBox.style.color = color;
+    alertBox.style.border = `1px solid ${border}`;
+    // Chỉ truyền HTML tĩnh do trang tự tạo, không chứa dữ liệu người dùng.
+    alertBox.innerHTML = html;
+}
 
-    const alertBox = document.getElementById("reviewAlertBox");
-    const submitBtn = document.getElementById("submitReview");
-    const saveDraftBtn = document.getElementById("saveDraft");
-    const selectorContainer = document.getElementById("itemSelectorContainer");
-    const selectDropdown = document.getElementById("itemSelectDropdown");
+function hideAlert() {
+    if (alertBox) alertBox.style.display = "none";
+}
 
-    function showAlert(msg, type = "info") {
-        if (!alertBox) return;
-        alertBox.style.display = "block";
-        if (type === "warning" || type === "error") {
-            alertBox.style.background = "#fff5f5";
-            alertBox.style.color = "#c53030";
-            alertBox.style.border = "1px solid #feb2b2";
-        } else if (type === "success") {
-            alertBox.style.background = "#f0fff4";
-            alertBox.style.color = "#276749";
-            alertBox.style.border = "1px solid #9ae6b4";
-        } else {
-            alertBox.style.background = "#ebf8ff";
-            alertBox.style.color = "#2b6cb0";
-            alertBox.style.border = "1px solid #bee3f8";
+function formatPrice(value) {
+    return `${Number(value || 0).toLocaleString("vi-VN")}₫`;
+}
+
+function formatDate(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("vi-VN");
+}
+
+function starString(rating) {
+    const value = Math.max(0, Math.min(5, Number(rating) || 0));
+    return "★".repeat(value) + "☆".repeat(5 - value);
+}
+
+function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+}
+
+function isPending(item) {
+    return item.orderStatus === "COMPLETED" && !item.reviewed;
+}
+
+function reviewApiUrl() {
+    if (pageParams.get("orderItemId")) return `/api/reviews/item/${encodeURIComponent(pageParams.get("orderItemId"))}`;
+    if (pageParams.get("orderId")) return `/api/reviews/order/${encodeURIComponent(pageParams.get("orderId"))}`;
+    if (pageParams.get("orderCode")) return `/api/reviews/order-code/${encodeURIComponent(pageParams.get("orderCode"))}`;
+    return "/api/reviews/my-items";
+}
+
+async function fetchReviewItems() {
+    const res = await fetch(reviewApiUrl(), { credentials: "include", cache: "no-store" });
+    if (res.status === 401) {
+        const error = new Error("unauthorized");
+        error.status = 401;
+        throw error;
+    }
+    if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Không thể tải thông tin đơn hàng từ máy chủ.");
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : [data];
+}
+
+function itemThumb(item) {
+    const img = el("img", "review-item-thumb");
+    img.src = item.imageUrl || FALLBACK_COVER;
+    img.alt = item.productTitle || "Sản phẩm";
+    img.loading = "lazy";
+    img.addEventListener("error", () => { img.src = FALLBACK_COVER; }, { once: true });
+    return img;
+}
+
+function itemHeader(item) {
+    const head = el("div", "review-item-head");
+    head.appendChild(el("h3", "review-item-title", item.productTitle || "Sản phẩm"));
+    head.appendChild(el("span", "review-item-order", `#${item.orderCode || item.orderId}`));
+    return head;
+}
+
+function createPendingCard(item) {
+    const card = el("article", "review-item");
+    card.dataset.orderItemId = String(item.orderItemId);
+    card.appendChild(itemThumb(item));
+
+    const body = el("div", "review-item-body");
+    body.appendChild(itemHeader(item));
+    body.appendChild(el("p", "review-item-meta",
+        `${item.sellerName || "Người bán"} • ${formatPrice(item.unitPrice)} • SL: ${item.quantity || 1}`));
+    card.appendChild(body);
+
+    const action = el("button", "btn primary review-item-action", "Đánh giá");
+    action.type = "button";
+    action.addEventListener("click", () => openReviewForm(item));
+    card.appendChild(action);
+    return card;
+}
+
+function createReviewedCard(item) {
+    const card = el("article", "review-item reviewed");
+    card.dataset.orderItemId = String(item.orderItemId);
+    card.appendChild(itemThumb(item));
+
+    const body = el("div", "review-item-body");
+    body.appendChild(itemHeader(item));
+    body.appendChild(el("p", "review-item-meta", `${item.sellerName || "Người bán"} • ${formatPrice(item.unitPrice)}`));
+
+    const ratingLine = el("div", "review-item-rating");
+    const stars = el("span", "review-item-stars", starString(item.existingRating));
+    stars.setAttribute("aria-label", `${item.existingRating || 0} trên 5 sao`);
+    ratingLine.appendChild(stars);
+    ratingLine.appendChild(el("span", "review-item-date", `Đánh giá ngày ${formatDate(item.existingCreatedAt)}`));
+    body.appendChild(ratingLine);
+
+    body.appendChild(el("p", "review-item-sub",
+        `Chất lượng: ${item.existingProductQualityRating || item.existingRating}★ • `
+        + `Thái độ người bán: ${item.existingSellerAttitudeRating || item.existingRating}★`));
+
+    const content = (item.existingContent || "").trim();
+    body.appendChild(el("p", content ? "review-item-content" : "review-item-content muted",
+        content || "Bạn không để lại nhận xét."));
+
+    const reply = item.sellerReply;
+    if (reply && reply.content) {
+        const box = el("div", "seller-reply-box");
+        const replyHead = el("div", "seller-reply-head");
+        replyHead.appendChild(el("strong", null, `${reply.sellerName || item.sellerName || "Người bán"} phản hồi`));
+        const edited = reply.updatedAt && reply.createdAt && reply.updatedAt !== reply.createdAt;
+        replyHead.appendChild(el("span", null,
+            formatDate(edited ? reply.updatedAt : reply.createdAt) + (edited ? " (đã sửa)" : "")));
+        box.appendChild(replyHead);
+        box.appendChild(el("p", null, reply.content));
+        body.appendChild(box);
+    } else {
+        body.appendChild(el("p", "seller-reply-empty", "Người bán chưa phản hồi đánh giá này."));
+    }
+
+    card.appendChild(body);
+    return card;
+}
+
+function renderList(container, items, factory, emptyText) {
+    if (!container) return;
+    container.replaceChildren();
+    if (items.length === 0) {
+        container.appendChild(el("p", "review-empty", emptyText));
+        return;
+    }
+    items.forEach((item) => container.appendChild(factory(item)));
+}
+
+function renderReviewLists() {
+    const pending = allLoadedItems.filter(isPending);
+    const reviewed = allLoadedItems
+        .filter((it) => it.reviewed)
+        .sort((a, b) => String(b.existingCreatedAt || "").localeCompare(String(a.existingCreatedAt || "")));
+    const waiting = allLoadedItems.filter((it) => !it.reviewed && it.orderStatus !== "COMPLETED");
+
+    document.getElementById("pendingCount").textContent = pending.length;
+    document.getElementById("reviewedCount").textContent = reviewed.length;
+
+    renderList(pendingList, pending, createPendingCard,
+        "Không có sản phẩm nào đang chờ bạn đánh giá. Chỉ đơn hàng đã hoàn tất mới có thể đánh giá.");
+    renderList(reviewedList, reviewed, createReviewedCard, "Bạn chưa đánh giá sản phẩm nào.");
+
+    const waitingNote = document.getElementById("waitingNote");
+    if (waitingNote) {
+        waitingNote.hidden = waiting.length === 0;
+        waitingNote.textContent = waiting.length
+            ? `Còn ${waiting.length} sản phẩm thuộc đơn hàng chưa hoàn tất. Bạn có thể đánh giá sau khi đơn hàng được giao thành công.`
+            : "";
+    }
+
+    const scopeNote = document.getElementById("reviewScopeNote");
+    const scoped = pageParams.get("orderId") || pageParams.get("orderCode") || pageParams.get("orderItemId");
+    if (scopeNote) {
+        scopeNote.hidden = !scoped;
+        scopeNote.replaceChildren();
+        if (scoped) {
+            const first = allLoadedItems[0];
+            scopeNote.appendChild(document.createTextNode(
+                `Đang hiển thị sản phẩm của đơn #${first ? (first.orderCode || first.orderId) : ""}. `));
+            const allLink = el("a", null, "Xem tất cả sản phẩm đã mua");
+            allLink.href = "page4.html";
+            scopeNote.appendChild(allLink);
         }
-        alertBox.innerHTML = msg;
     }
+    return { pending, reviewed };
+}
 
-    function hideAlert() {
-        if (alertBox) alertBox.style.display = "none";
+function switchTab(tab) {
+    document.querySelectorAll(".review-tab").forEach((btn) => {
+        const active = btn.dataset.tab === tab;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-selected", String(active));
+    });
+    if (pendingList) pendingList.hidden = tab !== "pending";
+    if (reviewedList) reviewedList.hidden = tab !== "reviewed";
+}
+
+document.querySelectorAll(".review-tab").forEach((btn) => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
+
+function highlightCard(orderItemId) {
+    const card = document.querySelector(`.review-item[data-order-item-id="${CSS.escape(String(orderItemId))}"]`);
+    if (!card) return;
+    card.classList.add("highlight");
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => card.classList.remove("highlight"), 2500);
+}
+
+function showListView() {
+    currentItem = null;
+    if (formView) formView.hidden = true;
+    if (listView) listView.hidden = false;
+    if (sellerPanel) sellerPanel.hidden = true;
+}
+
+const backToListBtn = document.getElementById("backToList");
+if (backToListBtn) {
+    backToListBtn.addEventListener("click", () => {
+        hideAlert();
+        showListView();
+    });
+}
+
+// ==============================
+// Form đánh giá cho một sản phẩm
+// ==============================
+function resetForm() {
+    ["overall", "quality", "seller"].forEach((key) => setRatingValue(key, 0));
+    if (reviewText) {
+        reviewText.value = "";
+        reviewText.disabled = false;
     }
+    if (counter) counter.textContent = "0";
+    document.querySelectorAll(".tags button.selected").forEach((btn) => btn.classList.remove("selected"));
+    uploadedFiles = [];
+    renderPreviews();
+}
 
+function restoreDraft(orderItemId) {
+    const saved = localStorage.getItem(DRAFT_KEY_PREFIX + orderItemId);
+    if (!saved) return;
     try {
-        let apiUrl = "";
-        if (orderItemIdParam) {
-            apiUrl = `/api/reviews/item/${orderItemIdParam}`;
-        } else if (orderIdParam) {
-            apiUrl = `/api/reviews/order/${orderIdParam}`;
-        } else if (orderCodeParam) {
-            apiUrl = `/api/reviews/order-code/${encodeURIComponent(orderCodeParam)}`;
-        } else {
-            apiUrl = `/api/reviews/my-items`;
+        const data = JSON.parse(saved);
+        if (data.overall) setRatingValue("overall", data.overall);
+        if (data.quality) setRatingValue("quality", data.quality);
+        if (data.seller) setRatingValue("seller", data.seller);
+        if (data.content && reviewText) {
+            reviewText.value = data.content;
+            if (counter) counter.textContent = data.content.length;
         }
+    } catch (_) {
+        localStorage.removeItem(DRAFT_KEY_PREFIX + orderItemId);
+    }
+}
 
-        const res = await fetch(apiUrl, { credentials: "include" });
-        if (res.status === 401) {
-            showAlert("Vui lòng <a href='/auth/login' style='text-decoration:underline; font-weight:bold; color:#2b6cb0;'>đăng nhập</a> để xem các đơn hàng đã mua và thực hiện đánh giá truyện.", "warning");
-            isFormDisabled = true;
-            if (submitBtn) submitBtn.disabled = true;
-            if (saveDraftBtn) saveDraftBtn.style.display = "none";
-            return;
-        }
+function openReviewForm(item) {
+    if (!item || !isPending(item)) return;
+    currentItem = item;
+    hideAlert();
 
-        if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            showAlert(errData.message || "Không thể tải thông tin đơn hàng từ máy chủ.", "error");
-            if (submitBtn) submitBtn.disabled = true;
-            return;
-        }
+    document.getElementById("orderTitle").textContent = `Đánh giá đơn hàng #${item.orderCode || item.orderId}`;
+    document.getElementById("productSubTitle").textContent = item.productTitle || "";
+    document.getElementById("productTitle").textContent = item.productTitle || "";
+    const productImg = document.getElementById("productImg");
+    productImg.src = item.imageUrl || FALLBACK_COVER;
+    productImg.alt = item.productTitle || "Sản phẩm";
+    document.getElementById("productCondition").textContent =
+        `Độ mới ${item.conditionPercent || 100}% • Số lượng: ${item.quantity || 1}`;
+    document.getElementById("productPrice").textContent = formatPrice(item.unitPrice);
 
-        const rawData = await res.json();
-        const items = Array.isArray(rawData) ? rawData : [rawData];
-        allLoadedItems = items;
+    const sellerName = item.sellerName || "Người bán";
+    document.getElementById("sellerSideName").textContent = sellerName;
+    document.getElementById("sellerSideAvatar").textContent = sellerName.substring(0, 2).toUpperCase();
+    if (sellerPanel) sellerPanel.hidden = false;
 
-        if (items.length === 0) {
-            showAlert("Bạn chưa có đơn hàng nào đã hoàn tất giao hàng (COMPLETED) trong hệ thống để đánh giá.<br>Chỉ những đơn hàng đã giao thành công mới có thể gửi đánh giá.", "info");
-            isFormDisabled = true;
-            if (submitBtn) submitBtn.disabled = true;
-            if (saveDraftBtn) saveDraftBtn.style.display = "none";
-            return;
-        }
-
-        // Render Dropdown nếu có nhiều sản phẩm
-        if (items.length > 1 && selectorContainer && selectDropdown) {
-            selectorContainer.style.display = "block";
-            selectDropdown.innerHTML = "";
-            items.forEach((item, index) => {
-                const opt = document.createElement("option");
-                opt.value = item.orderItemId;
-                const statusTag = item.reviewed ? "✓ [Đã đánh giá]" : "★ [Chưa đánh giá]";
-                const priceFormatted = Number(item.unitPrice || 0).toLocaleString("vi-VN");
-                opt.textContent = `${statusTag} #${item.orderCode} - ${item.productTitle} (${priceFormatted}₫)`;
-                selectDropdown.appendChild(opt);
-            });
-
-            selectDropdown.addEventListener("change", (e) => {
-                const selectedId = Number(e.target.value);
-                const target = items.find((it) => it.orderItemId === selectedId);
-                if (target) displaySelectedItem(target);
-            });
-        }
-
-        // Chọn item mục tiêu: ưu tiên item khớp orderItemId/orderCode, hoặc item chưa đánh giá đầu tiên
-        let chosenItem = null;
-        if (orderItemIdParam) {
-            chosenItem = items.find((it) => String(it.orderItemId) === String(orderItemIdParam));
-        } else if (orderCodeParam) {
-            chosenItem = items.find((it) => String(it.orderCode) === String(orderCodeParam));
-        }
-        if (!chosenItem) {
-            chosenItem = items.find((it) => !it.reviewed && it.orderStatus === "COMPLETED") || items[0];
-        }
-
-        if (selectDropdown && chosenItem) {
-            selectDropdown.value = chosenItem.orderItemId;
-        }
-
-        displaySelectedItem(chosenItem);
-
-    } catch (e) {
-        console.error("Lỗi khi tải dữ liệu đánh giá từ DB:", e);
-        showAlert("Lỗi kết nối khi tải dữ liệu từ máy chủ. Vui lòng tải lại trang.", "error");
+    isFormDisabled = false;
+    resetForm();
+    restoreDraft(item.orderItemId);
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Gửi đánh giá";
+    }
+    if (saveDraftBtn) {
+        saveDraftBtn.disabled = false;
+        saveDraftBtn.style.display = "inline-block";
     }
 
-    function displaySelectedItem(item) {
-        if (!item) return;
-        currentOrderItemId = item.orderItemId;
+    if (listView) listView.hidden = true;
+    if (formView) formView.hidden = false;
+    formView?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
-        const orderTitle = document.getElementById("orderTitle");
-        const productSubTitle = document.getElementById("productSubTitle");
-        const orderStatusBadge = document.getElementById("orderStatusBadge");
-        const productImg = document.getElementById("productImg");
-        const productTitle = document.getElementById("productTitle");
-        const productCondition = document.getElementById("productCondition");
-        const productPrice = document.getElementById("productPrice");
-        const sellerSideName = document.getElementById("sellerSideName");
-        const sellerSideAvatar = document.getElementById("sellerSideAvatar");
-
-        if (orderTitle) orderTitle.textContent = `Đánh giá đơn hàng #${item.orderCode || item.orderId}`;
-        if (productSubTitle) productSubTitle.textContent = item.productTitle || "";
-        if (productTitle) productTitle.textContent = item.productTitle || "";
-        if (productImg) {
-            if (item.imageUrl) {
-                productImg.src = item.imageUrl;
-            } else {
-                productImg.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80";
-            }
-        }
-        if (productCondition) {
-            productCondition.textContent = `Độ mới ${item.conditionPercent || 100}% • Số lượng: ${item.quantity || 1}`;
-        }
-        if (productPrice) {
-            const price = Number(item.unitPrice || 0).toLocaleString("vi-VN");
-            productPrice.textContent = `${price}₫`;
-        }
-        if (sellerSideName && item.sellerName) {
-            sellerSideName.textContent = item.sellerName;
-        }
-        if (sellerSideAvatar && item.sellerName) {
-            sellerSideAvatar.textContent = item.sellerName.substring(0, 2).toUpperCase();
-        }
-
-        // 1. Kiểm tra trạng thái đơn hàng COMPLETED
-        if (item.orderStatus !== "COMPLETED") {
-            isFormDisabled = true;
-            if (orderStatusBadge) {
-                orderStatusBadge.textContent = "Chưa hoàn tất";
-                orderStatusBadge.style.background = "#fed7d7";
-                orderStatusBadge.style.color = "#c53030";
-            }
-            showAlert(`⚠️ Đơn hàng này <strong>chưa hoàn tất thành công</strong> (${item.orderStatus}). Bạn chỉ có thể đánh giá sau khi đơn hàng được giao thành công.`, "warning");
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = "Chưa thể đánh giá";
-            }
-            if (saveDraftBtn) saveDraftBtn.style.display = "none";
-            return;
-        }
-
-        if (orderStatusBadge) {
-            orderStatusBadge.textContent = "✓ Đã hoàn thành";
-            orderStatusBadge.style.background = "#c6f6d5";
-            orderStatusBadge.style.color = "#22543d";
-        }
-
-        // 2. Kiểm tra đã đánh giá chưa
-        if (item.reviewed) {
-            isFormDisabled = true;
-            const reviewDate = item.existingCreatedAt ? new Date(item.existingCreatedAt).toLocaleDateString("vi-VN") : "trước đó";
-            showAlert(`✓ Bạn đã đánh giá sản phẩm này (${item.existingRating}★) vào ngày <strong>${reviewDate}</strong>.`, "success");
-            setRatingValue("overall", item.existingRating);
-            setRatingValue("quality", item.existingProductQualityRating || item.existingRating);
-            setRatingValue("seller", item.existingSellerAttitudeRating || item.existingRating);
-            if (reviewText) {
-                reviewText.value = item.existingContent || "";
-                reviewText.disabled = true;
-                if (counter) counter.textContent = reviewText.value.length;
-            }
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = "✓ Đã đánh giá";
-            }
-            if (saveDraftBtn) saveDraftBtn.style.display = "none";
+// ==============================
+// Tải dữ liệu
+// ==============================
+async function loadReviewList() {
+    try {
+        allLoadedItems = await fetchReviewItems();
+    } catch (error) {
+        if (error.status === 401) {
+            showAlert("Vui lòng <a href='/auth/login' style='text-decoration:underline; font-weight:bold; color:#2b6cb0;'>đăng nhập</a> để xem các sản phẩm đã mua và đánh giá truyện.", "warning");
         } else {
-            // Chưa đánh giá -> Mở form cho phép đánh giá
-            isFormDisabled = false;
-            hideAlert();
-            setRatingValue("overall", 0);
-            setRatingValue("quality", 0);
-            setRatingValue("seller", 0);
-            if (reviewText) {
-                reviewText.value = "";
-                reviewText.disabled = false;
-                if (counter) counter.textContent = "0";
-            }
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Gửi đánh giá";
-            }
-            if (saveDraftBtn) {
-                saveDraftBtn.disabled = false;
-                saveDraftBtn.style.display = "inline-block";
-            }
+            console.error("Lỗi khi tải dữ liệu đánh giá:", error);
+            showAlert("Không thể tải danh sách sản phẩm đã mua. Vui lòng tải lại trang.", "error");
         }
+        allLoadedItems = [];
+        renderReviewLists();
+        return null;
     }
+    return renderReviewLists();
+}
+
+async function initReviewPage() {
+    const lists = await loadReviewList();
+    if (!lists) return;
+
+    const targetId = pageParams.get("orderItemId");
+    const target = targetId ? allLoadedItems.find((it) => String(it.orderItemId) === String(targetId)) : null;
+
+    if (target && isPending(target)) {
+        switchTab("pending");
+        openReviewForm(target);
+        return;
+    }
+    if (target && target.reviewed) {
+        switchTab("reviewed");
+        highlightCard(target.orderItemId);
+        return;
+    }
+    if (target) {
+        showAlert("⚠️ Đơn hàng của sản phẩm này <strong>chưa hoàn tất</strong>. Bạn chỉ có thể đánh giá sau khi đơn hàng được giao thành công.", "warning");
+    }
+    switchTab(lists.pending.length > 0 || lists.reviewed.length === 0 ? "pending" : "reviewed");
 }
 
 // ==============================
 // Submit Review Handler
 // ==============================
-const submitButton = document.getElementById("submitReview");
-
 if (submitButton) {
     submitButton.addEventListener("click", async () => {
-        if (isFormDisabled) return;
+        if (isFormDisabled || !currentItem) return;
 
         const overall = Number(criteriaConfig.overall.group?.dataset.value || 0);
         const quality = Number(criteriaConfig.quality.group?.dataset.value || 0);
@@ -415,30 +550,21 @@ if (submitButton) {
             return;
         }
 
-        const content = reviewText ? reviewText.value.trim() : "";
-        const orderItemIdToSubmit = currentOrderItemId || new URLSearchParams(window.location.search).get("orderItemId");
-
-        if (!orderItemIdToSubmit) {
-            showToast("Không tìm thấy thông tin sản phẩm trong đơn để gửi đánh giá.");
-            return;
-        }
-
+        const orderItemId = currentItem.orderItemId;
         submitButton.disabled = true;
         submitButton.textContent = "Đang gửi...";
 
         try {
             const response = await fetch("/api/reviews", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({
-                    orderItemId: Number(orderItemIdToSubmit),
+                    orderItemId: Number(orderItemId),
                     rating: overall,
                     productQualityRating: quality,
                     sellerAttitudeRating: seller,
-                    content: content
+                    content: reviewText ? reviewText.value.trim() : ""
                 })
             });
 
@@ -450,18 +576,13 @@ if (submitButton) {
                 return;
             }
 
+            localStorage.removeItem(DRAFT_KEY_PREFIX + orderItemId);
             showToast("✓ Đã gửi đánh giá thành công! Cảm ơn bạn.");
-            submitButton.textContent = "✓ Đã gửi";
             isFormDisabled = true;
-
-            // Xóa bản nháp
-            localStorage.removeItem("comicworm-review-draft");
-
-            // Điều hướng quay lại trang Quản lý đơn hàng sau 1.5s
-            setTimeout(() => {
-                window.location.href = "page2.html";
-            }, 1500);
-
+            showListView();
+            await loadReviewList();
+            switchTab("reviewed");
+            highlightCard(orderItemId);
         } catch (error) {
             console.error("Lỗi gửi đánh giá:", error);
             showToast("Lỗi kết nối máy chủ khi gửi đánh giá.");
@@ -472,38 +593,23 @@ if (submitButton) {
 }
 
 // ==============================
-// Draft Handling
+// Draft Handling (lưu theo từng sản phẩm)
 // ==============================
-const saveDraftBtn = document.getElementById("saveDraft");
 if (saveDraftBtn) {
     saveDraftBtn.addEventListener("click", () => {
-        if (isFormDisabled) return;
+        if (isFormDisabled || !currentItem) return;
         const draft = {
             overall: criteriaConfig.overall.group?.dataset.value,
             quality: criteriaConfig.quality.group?.dataset.value,
             seller: criteriaConfig.seller.group?.dataset.value,
             content: reviewText ? reviewText.value : ""
         };
-        localStorage.setItem("comicworm-review-draft", JSON.stringify(draft));
+        localStorage.setItem(DRAFT_KEY_PREFIX + currentItem.orderItemId, JSON.stringify(draft));
         showToast("Đã lưu bản nháp đánh giá trên thiết bị.");
     });
 }
 
-// Khôi phục nháp nếu chưa có đánh giá
 document.addEventListener("DOMContentLoaded", () => {
-    loadReviewTarget();
-
-    const savedDraft = localStorage.getItem("comicworm-review-draft");
-    if (savedDraft && !isFormDisabled) {
-        try {
-            const data = JSON.parse(savedDraft);
-            if (data.overall) setRatingValue("overall", data.overall);
-            if (data.quality) setRatingValue("quality", data.quality);
-            if (data.seller) setRatingValue("seller", data.seller);
-            if (data.content && reviewText) {
-                reviewText.value = data.content;
-                if (counter) counter.textContent = data.content.length;
-            }
-        } catch (_) {}
-    }
+    localStorage.removeItem("comicworm-review-draft"); // khóa nháp dùng chung cũ, không còn dùng
+    initReviewPage();
 });

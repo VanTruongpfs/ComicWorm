@@ -9,6 +9,9 @@
   const detailDialog = document.getElementById('sellerOrderDetailModal');
   const statusDialog = document.getElementById('sellerOrderStatusModal');
   const submitButton = document.getElementById('sellerOrderStatusSubmit');
+  const refundDialog = document.getElementById('sellerRefundModal');
+  const refundSubmit = document.getElementById('sellerRefundSubmit');
+  const refundState = { code: null, action: null, busy: false };
   let requestSeq = 0, detailSeq = 0, searchTimer;
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -32,6 +35,18 @@
   function advanceButton(o) {
     return o.nextStatus ? `<button class="btn btn-primary btn-sm" data-act="advance" data-code="${esc(o.orderCode)}" data-next="${esc(o.nextStatus)}">${esc(api.NEXT_ACTION[o.nextStatus] || 'Cập nhật trạng thái')}</button>` : '';
   }
+  /* Yêu cầu hoàn tiền sau giao (T04): người bán đồng ý hoặc từ chối. */
+  const REFUND_BADGE = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
+  function refundBadge(o) {
+    if (!o.refundRequestStatus) return '';
+    const text = o.refundRequestStatus === 'PENDING' ? 'Yêu cầu hoàn tiền' : (api.REFUND_REQUEST_LABELS[o.refundRequestStatus] || o.refundRequestStatus);
+    return `<div class="orders-refund-badge"><span class="badge badge-${REFUND_BADGE[o.refundRequestStatus] || 'warning'}">${esc(text)}</span></div>`;
+  }
+  function refundButtons(o) {
+    if (o.refundRequestStatus !== 'PENDING') return '';
+    return `<button class="btn btn-primary btn-sm" data-act="refund-approve" data-code="${esc(o.orderCode)}">Đồng ý hoàn tiền</button>`
+      + `<button class="btn btn-outline btn-sm" data-act="refund-reject" data-code="${esc(o.orderCode)}">Từ chối</button>`;
+  }
   function row(o, index) {
     const first = o.items[0] || {}, img = safeImg(first.imageUrl);
     return `<tr data-code="${esc(o.orderCode)}" data-status="${esc(o.status)}">
@@ -40,8 +55,8 @@
       <td><div class="product-cell">${img ? `<img src="${esc(img)}" alt="${esc(first.title)}" class="comic-thumbnail" loading="lazy">` : ''}<div class="product-meta"><div class="product-title">${esc(first.title || 'Đơn hàng')}${o.items.length > 1 ? ` (+${o.items.length - 1})` : ''}</div><div class="product-tags">${esc(o.itemCount)} cuốn</div></div></div></td>
       <td><div class="customer-cell"><span class="customer-name">${esc(o.recipientName)}</span><span class="customer-sub">${esc(o.buyerName)}</span></div></td>
       <td><div class="price-cell"><span class="price-amount">${money(o.totalAmount)}</span><span class="price-note">Phí giao hàng: ${money(o.shippingFee)}</span></div></td>
-      <td style="text-align:center;"><span class="badge badge-${badge(o.status)}"><span class="badge-dot"></span>${esc(label(o.status))}</span></td>
-      <td><div class="orders-row-actions"><button class="btn btn-outline btn-sm" data-act="detail" data-code="${esc(o.orderCode)}">Chi tiết</button>${advanceButton(o)}</div></td>
+      <td style="text-align:center;"><span class="badge badge-${badge(o.status)}"><span class="badge-dot"></span>${esc(label(o.status))}</span>${refundBadge(o)}</td>
+      <td><div class="orders-row-actions"><button class="btn btn-outline btn-sm" data-act="detail" data-code="${esc(o.orderCode)}">Chi tiết</button>${refundButtons(o)}${advanceButton(o)}</div></td>
     </tr>`;
   }
   function renderPager(p) {
@@ -96,10 +111,11 @@
       target.innerHTML = `<div class="orders-detail-summary"><strong>#${esc(s.orderCode)}</strong><span class="badge badge-${badge(s.status)}">${esc(label(s.status))}</span></div>
         <dl class="orders-detail-fields"><dt>Người mua</dt><dd>${esc(s.buyerName)}</dd><dt>Người nhận</dt><dd>${esc(s.recipientName)} · ${esc(d.recipientPhone)}</dd><dt>Địa chỉ giao hàng</dt><dd>${esc(d.shippingAddress)}</dd><dt>Thanh toán</dt><dd>${esc(({ PENDING: 'Chờ thanh toán', PAID: 'Đã thanh toán', REFUNDED: 'Đã hoàn tiền', PARTIALLY_REFUNDED: 'Đã hoàn một phần' })[s.paymentStatus] || s.paymentStatus)}</dd></dl>
         <h3>Sản phẩm</h3><ul class="orders-detail-items">${s.items.map((i) => `<li><span>${esc(i.title)} · ${esc(i.quantity)} × ${money(i.unitPrice)}</span><strong>${money(i.lineTotal)}</strong></li>`).join('')}</ul>
-        <p>Tạm tính: ${money(s.subtotalAmount)} · Phí giao hàng: ${money(s.shippingFee)}</p><p><strong>Tổng thanh toán: ${money(s.totalAmount)}</strong></p>
+        <p>Tạm tính: ${money(s.subtotalAmount)} · Phí giao hàng: ${money(s.shippingFee)}${Number(s.pointsDiscount) > 0 ? ` · Người mua dùng điểm: -${money(s.pointsDiscount)}` : ''}</p><p><strong>Tổng thanh toán: ${money(s.totalAmount)}</strong></p>
         ${d.buyerNote ? `<p>Ghi chú người mua: ${esc(d.buyerNote)}</p>` : ''}${d.cancelReason ? `<p>Lý do hủy: ${esc(d.cancelReason)}</p>` : ''}
+        ${s.refundRequestStatus ? `<h3>Yêu cầu hoàn tiền</h3>${refundBadge(s)}<p>Lý do của người mua: ${esc(s.refundRequestReason)}</p>${s.refundRejectReason ? `<p>Lý do từ chối: ${esc(s.refundRejectReason)}</p>` : ''}` : ''}
         <h3>Lịch sử trạng thái</h3><ol class="orders-history">${history}</ol>`;
-      actions.innerHTML = advanceButton(s);
+      actions.innerHTML = refundButtons(s) + advanceButton(s);
     } catch (error) {
       if (mine !== detailSeq || !detailDialog.open) return;
       target.textContent = error.message; handleError(error);
@@ -134,12 +150,58 @@
       statusDialog.querySelector('[data-close-dialog]').disabled = false;
     }
   });
+  function openRefund(button) {
+    if (refundState.busy) return;
+    refundState.code = button.dataset.code;
+    refundState.action = button.dataset.act === 'refund-approve' ? 'approve' : 'reject';
+    const approve = refundState.action === 'approve';
+    if (detailDialog.open) detailDialog.close();
+    document.getElementById('sellerRefundTitle').textContent = approve ? 'Đồng ý hoàn tiền' : 'Từ chối hoàn tiền';
+    document.getElementById('sellerRefundDescription').textContent = approve
+      ? `Đồng ý hoàn tiền cho đơn #${refundState.code}? Đơn sẽ chuyển sang “Đã hoàn tiền” và người mua được thông báo.`
+      : `Từ chối yêu cầu hoàn tiền của đơn #${refundState.code}. Người mua sẽ thấy lý do bạn nhập.`;
+    document.getElementById('sellerRefundReasonGroup').hidden = approve;
+    document.getElementById('sellerRefundReason').value = '';
+    document.getElementById('sellerRefundError').textContent = '';
+    refundSubmit.disabled = false;
+    refundSubmit.textContent = approve ? 'Đồng ý hoàn tiền' : 'Xác nhận từ chối';
+    refundDialog.showModal();
+  }
+  document.getElementById('sellerRefundForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (refundState.busy || !refundState.code || refundSubmit.disabled) return;
+    const { code, action } = refundState;
+    const reason = document.getElementById('sellerRefundReason').value.trim();
+    if (action === 'reject' && !reason) {
+      document.getElementById('sellerRefundError').textContent = 'Vui lòng nhập lý do từ chối.';
+      return;
+    }
+    refundState.busy = true; refundSubmit.disabled = true; refundSubmit.textContent = 'Đang xử lý...';
+    document.getElementById('sellerRefundError').textContent = '';
+    try {
+      if (action === 'approve') await api.approveRefund(code);
+      else await api.rejectRefund(code, reason);
+      refundDialog.close();
+      notify(action === 'approve' ? `Đã hoàn tiền đơn #${code}.` : `Đã từ chối yêu cầu hoàn tiền đơn #${code}.`, 'success');
+      await load();
+    } catch (error) {
+      document.getElementById('sellerRefundError').textContent = error.message;
+      if (error.status === 409 || error.status === 404) await load();
+      else refundSubmit.disabled = false;
+      if (error.loginRequired) handleError(error);
+    } finally {
+      refundState.busy = false;
+      if (!refundSubmit.disabled) refundSubmit.textContent = action === 'approve' ? 'Đồng ý hoàn tiền' : 'Xác nhận từ chối';
+    }
+  });
+  refundDialog.addEventListener('cancel', (event) => { if (refundState.busy) event.preventDefault(); });
   document.addEventListener('click', (event) => {
     const close = event.target.closest('[data-close-dialog]');
     if (close) close.closest('dialog').close();
     const button = event.target.closest('[data-act]');
     if (button?.dataset.act === 'detail') openDetail(button.dataset.code);
     if (button?.dataset.act === 'advance') openStatus(button);
+    if (button?.dataset.act === 'refund-approve' || button?.dataset.act === 'refund-reject') openRefund(button);
     const page = event.target.closest('#ordersPaginationControls [data-page]');
     if (page && !page.disabled) { state.page = Number(page.dataset.page); load(); }
   });

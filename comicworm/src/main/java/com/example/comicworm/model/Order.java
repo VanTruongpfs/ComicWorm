@@ -2,6 +2,7 @@ package com.example.comicworm.model;
 
 import com.example.comicworm.model.enums.OrderPaymentStatus;
 import com.example.comicworm.model.enums.OrderStatus;
+import com.example.comicworm.model.enums.RefundRequestStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -60,6 +61,12 @@ public class Order {
     @Column(name = "shipping_fee", nullable = false, precision = 15, scale = 2)
     private BigDecimal shippingFee = new BigDecimal("0");
 
+    /** Số tiền hàng được giảm bằng điểm thưởng; total_amount đã trừ khoản này. */
+    @NotNull
+    @DecimalMin(value = "0")
+    @Column(name = "points_discount", nullable = false, precision = 15, scale = 2)
+    private BigDecimal pointsDiscount = BigDecimal.ZERO;
+
     @NotNull
     @DecimalMin(value = "0")
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
@@ -108,6 +115,23 @@ public class Order {
 
     @Column(name = "completed_at", nullable = true, columnDefinition = "datetime")
     private LocalDateTime completedAt;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "refund_request_status", nullable = true, length = 20)
+    private RefundRequestStatus refundRequestStatus;
+
+    @Column(name = "refund_request_reason", nullable = true, columnDefinition = "text")
+    private String refundRequestReason;
+
+    @Column(name = "refund_reject_reason", nullable = true, columnDefinition = "text")
+    private String refundRejectReason;
+
+    @Column(name = "refund_requested_at", nullable = true, columnDefinition = "datetime")
+    private LocalDateTime refundRequestedAt;
+
+    @Column(name = "refund_decided_at", nullable = true, columnDefinition = "datetime")
+    private LocalDateTime refundDecidedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, columnDefinition = "timestamp", updatable = false)

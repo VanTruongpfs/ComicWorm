@@ -268,7 +268,8 @@ public class ChatAiController {
                                - Đơn hàng sẽ tự động chuyển sang trạng thái COMPLETED sau **7 ngày** kể từ khi giao thành công nếu người mua không gửi khiếu nại.
 
                             🎁 **4. Tích điểm thưởng (Loyalty):**
-                               - Tự động tích lũy **1 điểm thưởng cho mỗi 10.000 VNĐ** giá trị đơn hàng hoàn tất. Điểm có thể dùng để đổi ưu đãi tại trang cá nhân.
+                               - Tự động tích lũy điểm bằng **2% số tiền thực trả** của đơn hàng hoàn tất.
+                               - Khi thanh toán có thể dùng điểm để giảm giá: **1 điểm = 1 VNĐ** (1.000 điểm giảm 1.000đ), tối đa bằng tiền hàng, không trừ vào phí vận chuyển. Đơn bị hủy hoặc hoàn tiền sẽ được trả lại điểm đã dùng.
 
                             🛡️ **5. Kiểm duyệt chất lượng:**
                                - 100% truyện đăng bán phải qua kiểm duyệt nội dung của Quản trị viên trước khi hiển thị công khai.

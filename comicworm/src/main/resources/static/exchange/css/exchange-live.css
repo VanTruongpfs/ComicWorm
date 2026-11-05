@@ -37,3 +37,12 @@
     .ex-panel h3 { overflow-wrap: anywhere; }
     #dealSearch { display: block; width: 100%; padding: 8px; margin-block: 8px; }
 }
+
+/* Trạng thái admin duyệt giao dịch và ký quỹ tiền bù */
+.ex-review { padding: 10px 12px; border-radius: 8px; margin: 10px 0; font-size: 0.92rem; }
+.ex-review-pending { background: #fff7ed; color: #9a3412; }
+.ex-review-ok { background: #ecfdf5; color: #065f46; }
+.ex-review-rejected { background: #fef2f2; color: #991b1b; }
+.ex-escrow { background: #eff6ff; color: #1e3a8a; }
+.ex-escrow a { color: inherit; font-weight: 700; text-decoration: underline; }
+.ex-review-hint { align-self: center; color: #9a3412; font-size: 0.88rem; font-weight: 600; }

@@ -1327,6 +1327,44 @@ img {
     line-height: 1;
 }
 
+/* Loyalty Points */
+.points-redeem-section {
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.points-redeem-section[hidden],
+.points-discount-row[hidden] {
+    display: none;
+}
+
+.points-balance-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--success);
+}
+
+.points-redeem-section .voucher-field {
+    padding-right: 110px;
+}
+
+.points-redeem-section .voucher-field:disabled,
+.points-redeem-section .btn-apply-voucher:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.points-hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--neutral-slate);
+}
+
+.breakdown-item .text-points {
+    color: var(--success);
+}
+
 /* Breakdown List */
 .summary-breakdown-list {
     display: flex;

@@ -31,6 +31,7 @@ public class ExchangeOrderService {
     private final PaymentAllocationRepository allocations;
     private final UserRepository users;
     private final IExchangeRoomService roomService;
+    private final ExchangeEscrowService escrowService;
     @Value("${app.exchange.shipping.standard-fee:25000}") private BigDecimal standardFee;
     @Value("${app.exchange.shipping.express-fee:40000}") private BigDecimal expressFee;
 
@@ -60,7 +61,41 @@ public class ExchangeOrderService {
         return new ExchangeCheckoutDTO(roomService.getRoomDetail(roomId, userId),
             links.findByRoomIdOrderByIdAsc(roomId).stream().map(this::dto).toList(),
             shippingOptions(), List.of("COD"), userId.equals(offer.getBuyerId()) || hasTrade,
-            hasTrade ? 2 : 1, userId.equals(offer.getCompensationPayerId()) ? offer.getCashCompensation() : BigDecimal.ZERO);
+            hasTrade ? 2 : 1, userId.equals(offer.getCompensationPayerId()) ? offer.getCashCompensation() : BigDecimal.ZERO,
+            offer.getAdminReviewStatus().name(), offer.getReviewNote(), escrowService.forOffer(offer.getId()));
+    }
+    private int requiredOrders(ExchangeOffer offer) { return offeredItems.findByOfferId(offer.getId()).isEmpty() ? 1 : 2; }
+    private boolean allOrdersCreated(ExchangeRoom room, ExchangeOffer offer) {
+        return links.findByRoomIdOrderByIdAsc(room.getId()).size() >= requiredOrders(offer);
+    }
+
+    /** Puts the deal in the admin queue once every required delivery order exists. Returns true if it moved. */
+    public boolean submitForReviewIfReady(ExchangeRoom room, ExchangeOffer offer) {
+        if (offer.getAdminReviewStatus() != ExchangeReviewStatus.NOT_SUBMITTED || !allOrdersCreated(room, offer)) return false;
+        offer.setAdminReviewStatus(ExchangeReviewStatus.PENDING);
+        return true;
+    }
+
+    /**
+     * The sender may only prepare or ship after an admin approved the deal. A deal still NOT_SUBMITTED with every order
+     * already created predates the review step (the migration marks those APPROVED); it keeps working as before.
+     */
+    private void requireApproved(ExchangeRoom room, ExchangeOffer offer) {
+        if (offer.getAdminReviewStatus() == ExchangeReviewStatus.NOT_SUBMITTED && allOrdersCreated(room, offer)) {
+            offer.setAdminReviewStatus(ExchangeReviewStatus.APPROVED);
+            offer.setReviewedAt(LocalDateTime.now());
+            offer.setReviewNote("Giao dịch tạo trước khi có bước duyệt");
+        }
+        switch (offer.getAdminReviewStatus()) {
+            case APPROVED -> { }
+            case PENDING -> throw error(HttpStatus.CONFLICT, "Giao dịch đang chờ admin duyệt, chưa thể chuẩn bị hàng");
+            case REJECTED -> throw error(HttpStatus.CONFLICT, "Admin đã từ chối giao dịch này");
+            default -> throw error(HttpStatus.CONFLICT, "Cần cả hai bên tạo đơn nhận truyện trước khi gửi hàng");
+        }
+    }
+
+    public List<ExchangeOrderDTO> orderDtos(Long roomId) {
+        return links.findByRoomIdOrderByIdAsc(roomId).stream().map(this::dto).toList();
     }
     @Transactional(readOnly = true)
     public List<ExchangeCheckoutDTO> myDeals(Long userId) {
@@ -139,6 +174,7 @@ public class ExchangeOrderService {
         var link = new ExchangeOrderLink(); link.setRoomId(roomId); link.setOfferId(offer.getId());
         link.setRecipientId(userId); link.setOrderId(order.getId()); link.setShippingMethod(shipping.code());
         link = links.save(link); record(order, null, userId, "Tạo đơn nhận truyện; thanh toán COD khi nhận hàng");
+        submitForReviewIfReady(room, offer);
         return dto(link);
     }
 
@@ -147,7 +183,7 @@ public class ExchangeOrderService {
         var room = room(link.getRoomId(), userId, true);
         var offer = selected(room, userId);
         var order = orders.findById(orderId).orElseThrow();
-        if ("CANCEL".equals(action)) { cancel(room, offer, userId); return dto(link); }
+        if ("CANCEL".equals(action)) { cancel(room, offer, userId, PARTY_CANCEL_REASON); return dto(link); }
         if (room.getStatus() == ExchangeRoomStatus.CANCELLED || order.getStatus() == OrderStatus.CANCELLED)
             throw error(HttpStatus.CONFLICT, "Giao dịch đã hủy");
         var previous = order.getStatus();
@@ -166,9 +202,9 @@ public class ExchangeOrderService {
                 || (next == OrderStatus.SHIPPING && previous != OrderStatus.PACKING)
                 || (receive && previous != OrderStatus.SHIPPING && previous != OrderStatus.DELIVERED))
             throw error(HttpStatus.CONFLICT, "Trạng thái đơn không cho phép thao tác này");
-        int required = offeredItems.findByOfferId(offer.getId()).isEmpty() ? 1 : 2;
-        if (links.findByRoomIdOrderByIdAsc(room.getId()).size() < required)
+        if (!allOrdersCreated(room, offer))
             throw error(HttpStatus.CONFLICT, "Cần cả hai bên tạo đơn nhận truyện trước khi gửi hàng");
+        if (!receive) requireApproved(room, offer);
         order.setStatus(next);
         if (receive) {
             order.setCompletedAt(LocalDateTime.now()); order.setPaymentStatus(OrderPaymentStatus.PAID);
@@ -177,14 +213,26 @@ public class ExchangeOrderService {
             });
         }
         record(order, previous, userId, receive ? "Người nhận xác nhận đã nhận truyện và thanh toán COD" : action);
+        if (receive) {
+            var dealOrders = links.findByRoomIdOrderByIdAsc(room.getId()).stream()
+                .map(l -> orders.findById(l.getOrderId()).orElseThrow()).toList();
+            escrowService.onOrderReceived(room, offer, order, dealOrders);
+        }
         return dto(link);
     }
 
     public void cancelDeal(Long roomId, Long userId) {
         var room = room(roomId, userId, true);
-        cancel(room, selected(room, userId), userId);
+        cancel(room, selected(room, userId), userId, PARTY_CANCEL_REASON);
     }
-    private void cancel(ExchangeRoom room, ExchangeOffer offer, Long userId) {
+
+    /** Cancels a deal an admin rejected. The caller holds the room lock; nothing has shipped while review is pending. */
+    public void cancelByAdmin(ExchangeRoom room, ExchangeOffer offer, Long adminId, String reason) {
+        cancel(room, offer, adminId, reason);
+    }
+
+    private static final String PARTY_CANCEL_REASON = "Hủy giao dịch trao đổi trước khi gửi hàng";
+    private void cancel(ExchangeRoom room, ExchangeOffer offer, Long userId, String reason) {
         var roomOrders = links.findByRoomIdOrderByIdAsc(room.getId()).stream().map(l -> orders.findById(l.getOrderId()).orElseThrow()).toList();
         if (roomOrders.stream().anyMatch(o -> Set.of(OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.COMPLETED).contains(o.getStatus())))
             throw error(HttpStatus.CONFLICT, "Không thể hủy khi một bên đã gửi hàng");
@@ -202,7 +250,7 @@ public class ExchangeOrderService {
         for (var order : roomOrders) {
             var previous = order.getStatus(); order.setStatus(OrderStatus.CANCELLED);
             order.setCancelledBy(userId); order.setCancelledAt(LocalDateTime.now());
-            order.setCancelReason("Hủy giao dịch trao đổi trước khi gửi hàng"); order.setStockReleasedAt(LocalDateTime.now());
+            order.setCancelReason(reason); order.setStockReleasedAt(LocalDateTime.now());
             payments.findByCheckoutId(order.getCheckoutId()).forEach(p -> p.setStatus(PaymentStatus.CANCELLED));
             record(order, previous, userId, order.getCancelReason());
         }

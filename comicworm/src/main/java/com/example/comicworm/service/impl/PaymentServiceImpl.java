@@ -15,6 +15,7 @@ import com.example.comicworm.repository.OrderRepository;
 import com.example.comicworm.repository.PaymentAllocationRepository;
 import com.example.comicworm.repository.PaymentRepository;
 import com.example.comicworm.service.IPaymentService;
+import com.example.comicworm.service.LoyaltyService;
 import com.example.comicworm.service.OrderStatusService;
 import com.example.comicworm.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +43,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final PaymentAllocationRepository paymentAllocationRepository;
     private final VNPayConfig vnPayConfig;
     private OrderStatusService orderStatusService;
+    private LoyaltyService loyaltyService;
 
     public PaymentServiceImpl(
             CheckoutBatchRepository checkoutBatchRepository,
@@ -68,6 +70,11 @@ public class PaymentServiceImpl implements IPaymentService {
     @Autowired
     public void setOrderStatusService(OrderStatusService orderStatusService) {
         this.orderStatusService = orderStatusService;
+    }
+
+    @Autowired
+    public void setLoyaltyService(LoyaltyService loyaltyService) {
+        this.loyaltyService = loyaltyService;
     }
 
     @Override
@@ -105,6 +112,17 @@ public class PaymentServiceImpl implements IPaymentService {
                 : com.example.comicworm.model.enums.PaymentMethod.VNPAY;
         boolean isCod = (method == com.example.comicworm.model.enums.PaymentMethod.COD);
         boolean isVnPay = (method == com.example.comicworm.model.enums.PaymentMethod.VNPAY);
+
+        // Dùng điểm trước khi tạo payment để số tiền thanh toán/phân bổ đã trừ phần giảm giá.
+        long pointsToUse = (request != null && request.getPointsToUse() != null) ? request.getPointsToUse() : 0L;
+        if (pointsToUse < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điểm sử dụng không được âm");
+        }
+        if (pointsToUse > 0 && loyaltyService != null
+                && loyaltyService.redeemForCheckout(buyerId, batch, orders, pointsToUse) > 0) {
+            orderRepository.saveAll(orders);
+            checkoutBatchRepository.save(batch);
+        }
 
         Payment payment = new Payment();
         payment.setCheckoutId(batch.getId());

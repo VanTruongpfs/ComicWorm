@@ -52,6 +52,7 @@ public class OrderCancellationService {
     private final PaymentRepository paymentRepository;
     private final RefundRepository refundRepository;
     private final NotificationService notificationService;
+    private final LoyaltyService loyaltyService;
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public CancelResultDTO cancel(Long orderId, Long actorId, CancelActor actor, String reason) {
@@ -83,6 +84,7 @@ public class OrderCancellationService {
             createRefunds(order);
         }
         cancelPendingCodPayments(order);
+        loyaltyService.returnRedeemedPoints(order);
         notifyCancellation(order, actor, cleanReason);
         return result(order);
     }
@@ -96,8 +98,10 @@ public class OrderCancellationService {
                 if (!order.getBuyerId().equals(actorId)) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải người mua của đơn hàng");
                 }
+                // Người mua hủy được khi hàng chưa bàn giao cho vận chuyển.
                 if (order.getStatus() != OrderStatus.WAITING_PAYMENT
-                        && order.getStatus() != OrderStatus.WAITING_CONFIRM) {
+                        && order.getStatus() != OrderStatus.WAITING_CONFIRM
+                        && order.getStatus() != OrderStatus.PACKING) {
                     throw conflictCancellation();
                 }
             }

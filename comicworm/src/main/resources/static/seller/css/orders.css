@@ -244,3 +244,5 @@
   .orders-detail-items li { flex-direction: column; gap: 6px; }
   .orders-dialog-header, .orders-detail-summary { align-items: flex-start; }
 }
+.orders-refund-badge { margin-top: 6px; }
+#sellerRefundReasonGroup[hidden] { display: none; }

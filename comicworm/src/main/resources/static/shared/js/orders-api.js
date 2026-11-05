@@ -57,6 +57,27 @@
     }
     return parse(response);
   }
+  /* POST JSON kèm CSRF token (bắt buộc với /api/seller/**). */
+  async function postWithCsrf(path, body) {
+    let response;
+    try {
+      const csrfResponse = await root.fetch(baseUrl() + '/api/account/csrf', {
+        credentials: 'include', cache: 'no-store', headers: { Accept: 'application/json' }
+      });
+      if (csrfResponse.status === 401) throw loginRequired();
+      if (!csrfResponse.ok) throw new Error('csrf');
+      const csrf = await csrfResponse.json();
+      response = await root.fetch(`${baseUrl()}/api/${path}`, {
+        method: 'POST', credentials: 'include', cache: 'no-store',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', [csrf.headerName]: csrf.token },
+        body: JSON.stringify(body || {})
+      });
+    } catch (error) {
+      if (error.loginRequired) throw error;
+      throw new Error('Không kết nối được máy chủ. Vui lòng thử lại.');
+    }
+    return parse(response);
+  }
   async function patchStatus(code, status, note, area = 'admin') {
     let response;
     try {
@@ -90,6 +111,10 @@
     detail: (code) => get('orders/' + encodeURIComponent(code)),
     adminDetail: (code) => get('admin/orders/' + encodeURIComponent(code)),
     cancel: (code, reason) => cancelOrder(code, reason),
+    requestRefund: (code, reason) => postWithCsrf(`orders/${encodeURIComponent(code)}/refund-request`, { reason }),
+    approveRefund: (code) => postWithCsrf(`seller/orders/${encodeURIComponent(code)}/refund-request/approve`),
+    rejectRefund: (code, reason) => postWithCsrf(`seller/orders/${encodeURIComponent(code)}/refund-request/reject`, { reason }),
+    REFUND_REQUEST_LABELS: { PENDING: 'Chờ người bán duyệt hoàn tiền', APPROVED: 'Đã hoàn tiền', REJECTED: 'Từ chối hoàn tiền' },
     account: () => get('account/me'),
     updateSellerStatus: (code, status, note) => patchStatus(code, status, note, 'seller'),
     updateStatus: patchStatus, LABELS, NEXT_ACTION

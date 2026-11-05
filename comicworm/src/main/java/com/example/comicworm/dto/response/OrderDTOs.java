@@ -18,12 +18,15 @@ public final class OrderDTOs {
     /**
      * nextStatus: bước kế tiếp được server cho phép. Người bán xử lý đơn của mình đến DELIVERED;
      * người mua không đổi trạng thái ở API này. ADMIN có thể hoàn tất qua luồng thanh toán sẵn có.
+     * refundRequest*: yêu cầu hoàn tiền sau giao (T04). refundEligibleUntil chỉ có giá trị với người mua
+     * khi đơn còn được gửi yêu cầu hoàn tiền.
      */
     public record Summary(String orderCode, String status, String paymentStatus, Long sellerId,
                           String sellerName, String buyerName, String recipientName, BigDecimal subtotalAmount,
-                          BigDecimal shippingFee, BigDecimal totalAmount, int itemCount,
+                          BigDecimal shippingFee, BigDecimal pointsDiscount, BigDecimal totalAmount, int itemCount,
                           List<Item> items, LocalDateTime createdAt, LocalDateTime completedAt,
-                          String nextStatus) {}
+                          String nextStatus, String refundRequestStatus, String refundRequestReason,
+                          String refundRejectReason, LocalDateTime refundEligibleUntil) {}
 
     public record Detail(Summary summary, String buyerName, String recipientPhone, String shippingAddress,
                          String buyerNote, String cancelReason, List<HistoryEntry> history) {}
