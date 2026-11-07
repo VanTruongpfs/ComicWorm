@@ -96,6 +96,10 @@ moderation_status varchar(20) [not null, default: 'PENDING', check: `moderation_
 moderated_by bigint
 moderation_reason text
 moderated_at datetime
+ai_verdict varchar(20) [check: `ai_verdict IN ('VALID', 'INVALID')`]
+ai_reasons text
+ai_score decimal(5,4) [check: `ai_score BETWEEN 0 AND 1`]
+ai_classified_at datetime
 created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 deleted_at datetime

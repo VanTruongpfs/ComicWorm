@@ -11,7 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
         currentDetailProduct: null,
         currentRejectProductId: null,
         csrfInfo: null,
-        isBusy: false
+        isBusy: false,
+        // Tab "Chờ duyệt" chia 2 cột theo kết quả phân loại tự động, mỗi cột phân trang riêng.
+        columns: {
+            VALID: { page: 0, totalPages: 0, totalElements: 0, busy: false },
+            INVALID: { page: 0, totalPages: 0, totalElements: 0, busy: false }
+        }
     };
 
     // --- DOM Elements ---
@@ -28,6 +33,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const paginationBar = document.getElementById("paginationBar");
     const paginationInfo = document.getElementById("paginationInfo");
     const paginationControls = document.getElementById("paginationControls");
+    const productTableCard = document.getElementById("productTableCard");
+    const pendingSplitView = document.getElementById("pendingSplitView");
+    const unclassifiedNotice = document.getElementById("unclassifiedNotice");
+    const unclassifiedNoticeText = document.getElementById("unclassifiedNoticeText");
+    const columnEls = {
+        VALID: {
+            list: document.getElementById("validColumnList"),
+            pager: document.getElementById("validColumnPager"),
+            count: document.getElementById("validColumnCount")
+        },
+        INVALID: {
+            list: document.getElementById("invalidColumnList"),
+            pager: document.getElementById("invalidColumnPager"),
+            count: document.getElementById("invalidColumnCount")
+        }
+    };
 
     // KPI Counters
     const kpiPendingCount = document.getElementById("kpiPendingCount");
@@ -71,6 +92,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailHistoryContent = document.getElementById("detailHistoryContent");
     const detailModalRejectBtn = document.getElementById("detailModalRejectBtn");
     const detailModalApproveBtn = document.getElementById("detailModalApproveBtn");
+    const detailModalMarkValidBtn = document.getElementById("detailModalMarkValidBtn");
+    const detailAiBox = document.getElementById("detailAiBox");
+    const detailAiHeading = document.getElementById("detailAiHeading");
+    const detailAiContent = document.getElementById("detailAiContent");
 
     // Reject Modal Elements
     const rejectModal = document.getElementById("rejectProductModal");
@@ -124,6 +149,31 @@ document.addEventListener("DOMContentLoaded", () => {
         return String(val).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     }
 
+    function listingTypeLabel(type, long = false) {
+        if (type === "TRADE" || type === "EXCHANGE") return long ? "Trao đổi truyện" : "Trao đổi";
+        if (type === "SELL_AND_TRADE" || type === "BOTH") return long ? "Vừa bán vừa đổi" : "Bán & Đổi";
+        return long ? "Bán thông thường" : "Bán";
+    }
+
+    function multilineHtml(text) {
+        return escapeHtml(text).replace(/\n/g, "<br>");
+    }
+
+    function scoreHtml(score) {
+        if (score === null || score === undefined || score === "") return "";
+        const pct = Math.round(Number(score) * 100);
+        if (Number.isNaN(pct)) return "";
+        return `<span class="mod-ai-score" title="Độ tin cậy của bộ phân loại">Độ tin cậy ${pct}%</span>`;
+    }
+
+    function canApprove(p) {
+        return p.moderationStatus === "PENDING" && p.aiVerdict === "VALID";
+    }
+
+    function canMarkValid(p) {
+        return p.moderationStatus === "PENDING" && p.aiVerdict !== "VALID";
+    }
+
     async function api(url, options = {}) {
         const headers = { Accept: "application/json", ...(options.headers || {}) };
         if (options.method && options.method !== "GET") {
@@ -164,6 +214,20 @@ document.addEventListener("DOMContentLoaded", () => {
             if (tabRejectedBadge) tabRejectedBadge.textContent = rejected;
             if (tabAllBadge) tabAllBadge.textContent = total;
 
+            const pendingValid = Number(stats.pendingValid || 0);
+            const pendingInvalid = Number(stats.pendingInvalid || 0);
+            const pendingUnclassified = Number(stats.pendingUnclassified || 0);
+            if (!state.keyword) {
+                if (columnEls.VALID.count) columnEls.VALID.count.textContent = pendingValid;
+                if (columnEls.INVALID.count) columnEls.INVALID.count.textContent = pendingInvalid;
+            }
+            if (unclassifiedNotice) {
+                unclassifiedNotice.style.display = pendingUnclassified > 0 ? "flex" : "none";
+                if (unclassifiedNoticeText) {
+                    unclassifiedNoticeText.textContent = `${pendingUnclassified} sản phẩm đang chờ phân loại tự động, sẽ xuất hiện ở một trong hai cột sau ít phút.`;
+                }
+            }
+
             if (sidebarBadge) sidebarBadge.textContent = pending;
             if (statusIndicatorText) {
                 statusIndicatorText.textContent = `Trực tuyến • Đang có ${pending} bài chờ xử lý`;
@@ -174,7 +238,149 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Load and Render Product List ---
-    async function loadProducts() {
+    function loadProducts() {
+        const splitMode = state.status === "PENDING";
+        if (pendingSplitView) pendingSplitView.style.display = splitMode ? "block" : "none";
+        if (productTableCard) productTableCard.style.display = splitMode ? "none" : "block";
+        if (splitMode) {
+            return Promise.all([loadColumn("VALID"), loadColumn("INVALID")]);
+        }
+        return loadTable();
+    }
+
+    function resetPages() {
+        state.page = 0;
+        state.columns.VALID.page = 0;
+        state.columns.INVALID.page = 0;
+    }
+
+    async function refreshAll() {
+        await loadProducts();
+        await loadStats();
+    }
+
+    // --- Tab "Chờ duyệt": 2 cột Hợp lệ / Không hợp lệ ---
+    async function loadColumn(verdict) {
+        const col = state.columns[verdict];
+        const els = columnEls[verdict];
+        if (!col || !els || !els.list || col.busy) return;
+        col.busy = true;
+        els.list.innerHTML = `<div class="mod-loading-state"><div class="mod-spinner"></div><span>Đang tải...</span></div>`;
+        if (els.pager) els.pager.innerHTML = "";
+
+        let retryPreviousPage = false;
+        try {
+            const url = `/api/admin/products?status=PENDING&verdict=${verdict}&keyword=${encodeURIComponent(state.keyword)}&page=${col.page}&size=${state.size}`;
+            const data = await api(url);
+            const records = Array.isArray(data.Records) ? data.Records : [];
+            col.totalElements = Number(data.TotalRecordCount || 0);
+            col.totalPages = Number(data.TotalPages || 0);
+
+            // Trang hiện tại trống sau khi duyệt/từ chối hết -> lùi về trang cuối còn dữ liệu.
+            if (records.length === 0 && col.page > 0 && col.totalPages > 0) {
+                col.page = col.totalPages - 1;
+                retryPreviousPage = true;
+                return;
+            }
+
+            if (els.count) els.count.textContent = col.totalElements;
+            renderColumn(verdict, records);
+        } catch (err) {
+            els.list.innerHTML = `<div class="mod-split-empty mod-split-error">Lỗi tải dữ liệu: ${escapeHtml(err.message)}</div>`;
+            toast(err.message, "danger");
+        } finally {
+            col.busy = false;
+        }
+        if (retryPreviousPage) await loadColumn(verdict);
+    }
+
+    function renderColumn(verdict, products) {
+        const els = columnEls[verdict];
+        const col = state.columns[verdict];
+        els.list.innerHTML = "";
+
+        if (products.length === 0) {
+            const title = state.keyword
+                ? "Không tìm thấy sản phẩm nào"
+                : verdict === "VALID" ? "Không có sản phẩm hợp lệ chờ duyệt" : "Không có sản phẩm không hợp lệ";
+            const desc = state.keyword
+                ? `Không có kết quả khớp với "${escapeHtml(state.keyword)}".`
+                : verdict === "VALID" ? "Các sản phẩm hợp lệ đã được xử lý hết." : "Bộ phân loại chưa phát hiện tin đăng nào cần chú ý.";
+            els.list.innerHTML = `<div class="mod-split-empty"><strong>${title}</strong>${desc}</div>`;
+            return;
+        }
+
+        products.forEach(p => els.list.appendChild(buildCard(p, verdict)));
+
+        if (els.pager && col.totalPages > 1) {
+            els.pager.innerHTML = `
+                <button type="button" class="mod-page-btn" data-dir="-1" ${col.page === 0 ? "disabled" : ""}>&laquo; Trước</button>
+                <span>Trang ${col.page + 1}/${col.totalPages} · ${col.totalElements} sản phẩm</span>
+                <button type="button" class="mod-page-btn" data-dir="1" ${col.page >= col.totalPages - 1 ? "disabled" : ""}>Sau &raquo;</button>
+            `;
+            els.pager.querySelectorAll("button").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    col.page = Math.max(0, Math.min(col.totalPages - 1, col.page + Number(btn.dataset.dir)));
+                    loadColumn(verdict);
+                });
+            });
+        }
+    }
+
+    function buildCard(p, verdict) {
+        const card = document.createElement("article");
+        card.className = "mod-queue-card";
+        const coverImg = p.coverImageUrl || "https://placehold.co/100x130/e2e8f0/64748b?text=Comic";
+
+        let aiHtml = "";
+        if (verdict === "INVALID") {
+            aiHtml = `<div class="mod-ai-reasons"><strong>Lý do:</strong> ${multilineHtml(p.aiReasons || "Không rõ lý do.")}${scoreHtml(p.aiScore)}</div>`;
+        } else if (p.aiReasons) {
+            aiHtml = `<div class="mod-ai-note">${multilineHtml(p.aiReasons)}</div>`;
+        }
+
+        card.innerHTML = `
+            <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(p.title)}" class="mod-thumb" title="Click để phóng to ảnh bìa">
+            <div class="mod-queue-card-body">
+                <div class="mod-product-title" title="${escapeHtml(p.title)}">${escapeHtml(p.title || "Chưa có tiêu đề")}</div>
+                <div class="mod-product-sub">
+                    <span class="mod-id-chip">#${p.id}</span>
+                    <span class="mod-meta-chip">📚 ${escapeHtml(p.categoryName || "Chưa phân loại")}</span>
+                </div>
+                <div class="mod-queue-card-meta">
+                    <span><strong>${formatPrice(p.price)}</strong></span>
+                    <span>Mới ${p.conditionPercent ?? 100}% · ${listingTypeLabel(p.listingType)}</span>
+                    <span>👤 ${escapeHtml(p.sellerName || "Người bán")}</span>
+                    <span>🕒 ${formatDate(p.createdAt)}</span>
+                </div>
+                ${aiHtml}
+                <div class="mod-actions-cell">
+                    <button type="button" class="mod-btn-action mod-btn-view" data-action="view">Chi tiết</button>
+                    ${verdict === "VALID"
+                        ? `<button type="button" class="mod-btn-action mod-btn-approve" data-action="approve">✓ Duyệt</button>`
+                        : `<button type="button" class="mod-btn-action mod-btn-mark-valid" data-action="mark-valid">↺ Chuyển sang hợp lệ</button>`}
+                    <button type="button" class="mod-btn-action mod-btn-reject" data-action="reject">✕ Từ chối</button>
+                </div>
+            </div>
+        `;
+
+        card.querySelector(".mod-thumb")?.addEventListener("click", () => openLightbox(coverImg));
+        card.querySelector(".mod-product-title")?.addEventListener("click", () => openProductDetail(p.id));
+        card.querySelectorAll(".mod-btn-action").forEach(btn => {
+            btn.addEventListener("click", () => handleRowAction(btn.dataset.action, p));
+        });
+        return card;
+    }
+
+    function handleRowAction(action, p) {
+        if (action === "view") openProductDetail(p.id);
+        else if (action === "approve") confirmApprove(p.id, p.title);
+        else if (action === "mark-valid") confirmMarkValid(p.id, p.title);
+        else if (action === "reject") openRejectModal(p.id, p.title, p.aiVerdict === "INVALID" ? p.aiReasons : "");
+    }
+
+    // --- Các tab còn lại: bảng ---
+    async function loadTable() {
         if (state.isBusy) return;
         state.isBusy = true;
 
@@ -246,7 +452,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Status Badge Config
             let statusHtml = "";
             if (p.moderationStatus === "PENDING") {
-                statusHtml = `<span class="mod-badge mod-badge-pending">⏳ Chờ duyệt</span>`;
+                const chip = p.aiVerdict === "VALID"
+                    ? `<span class="mod-verdict-chip mod-verdict-valid">Hợp lệ</span>`
+                    : p.aiVerdict === "INVALID"
+                        ? `<span class="mod-verdict-chip mod-verdict-invalid">Không hợp lệ</span>`
+                        : `<span class="mod-verdict-chip mod-verdict-none">Chờ phân loại</span>`;
+                statusHtml = `<span class="mod-badge mod-badge-pending">⏳ Chờ duyệt</span><br>${chip}`;
             } else if (p.moderationStatus === "APPROVED") {
                 statusHtml = `<span class="mod-badge mod-badge-approved">✅ Đã duyệt</span>`;
             } else if (p.moderationStatus === "REJECTED") {
@@ -254,11 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 statusHtml = `<span class="mod-badge">${escapeHtml(p.moderationStatus)}</span>`;
             }
-
-            // Listing Type Config
-            let listingTypeLabel = "Bán";
-            if (p.listingType === "EXCHANGE") listingTypeLabel = "Trao đổi";
-            else if (p.listingType === "BOTH") listingTypeLabel = "Bán & Đổi";
 
             const coverImg = p.coverImageUrl || "https://placehold.co/100x130/e2e8f0/64748b?text=Comic";
 
@@ -291,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>
                 <td>
                     <span class="mod-condition-badge">✨ Mới ${p.conditionPercent ?? 100}%</span>
-                    <div style="font-size:12px; color:#475569; margin-top:4px;">Hình thức: <strong>${listingTypeLabel}</strong></div>
+                    <div style="font-size:12px; color:#475569; margin-top:4px;">Hình thức: <strong>${listingTypeLabel(p.listingType)}</strong></div>
                 </td>
                 <td>
                     <div style="font-size:12.5px; color:#334155; font-weight:500;">${formatDate(p.createdAt)}</div>
@@ -308,13 +514,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             </svg>
                             Chi tiết
                         </button>
-                        ${p.moderationStatus === "PENDING" ? `
+                        ${canMarkValid(p) ? `
+                            <button type="button" class="mod-btn-action mod-btn-mark-valid" data-action="mark-valid" data-id="${p.id}" title="Chuyển sang hợp lệ để có thể duyệt">
+                                ↺ Hợp lệ
+                            </button>
+                        ` : ""}
+                        ${canApprove(p) ? `
                             <button type="button" class="mod-btn-action mod-btn-approve" data-action="approve" data-id="${p.id}" title="Phê duyệt sản phẩm ngay">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
                                 Duyệt
                             </button>
+                        ` : ""}
+                        ${p.moderationStatus === "PENDING" ? `
                             <button type="button" class="mod-btn-action mod-btn-reject" data-action="reject" data-id="${p.id}" title="Từ chối bài đăng này">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -339,11 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.querySelectorAll(".mod-btn-action").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    const action = btn.dataset.action;
-                    const id = Number(btn.dataset.id);
-                    if (action === "view") openProductDetail(id);
-                    else if (action === "approve") confirmApprove(id, p.title);
-                    else if (action === "reject") openRejectModal(id, p.title);
+                    handleRowAction(btn.dataset.action, p);
                 });
             });
 
@@ -467,10 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Quick Tags
             if (detailConditionPercent) detailConditionPercent.textContent = `${p.conditionPercent ?? 100}%`;
-            let typeLabel = "Bán thông thường";
-            if (p.listingType === "EXCHANGE") typeLabel = "Trao đổi truyện";
-            else if (p.listingType === "BOTH") typeLabel = "Vừa bán vừa đổi";
-            if (detailListingType) detailListingType.textContent = typeLabel;
+            if (detailListingType) detailListingType.textContent = listingTypeLabel(p.listingType, true);
             if (detailStockQuantity) detailStockQuantity.textContent = `${p.stockQuantity ?? 0} cuốn`;
 
             // Price & Status Badge
@@ -516,6 +722,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 detailDescriptionText.textContent = p.description || "Người bán không cung cấp mô tả thêm.";
             }
 
+            // Kết quả phân loại tự động
+            if (detailAiBox && detailAiContent) {
+                if (p.moderationStatus === "PENDING") {
+                    detailAiBox.style.display = "block";
+                    if (p.aiVerdict === "VALID") {
+                        detailAiBox.className = "detail-history-box history-ai-valid";
+                        if (detailAiHeading) detailAiHeading.textContent = "✅ Phân loại tự động: Hợp lệ";
+                    } else if (p.aiVerdict === "INVALID") {
+                        detailAiBox.className = "detail-history-box history-ai-invalid";
+                        if (detailAiHeading) detailAiHeading.textContent = "⚠️ Phân loại tự động: Không hợp lệ";
+                    } else {
+                        detailAiBox.className = "detail-history-box history-ai-none";
+                        if (detailAiHeading) detailAiHeading.textContent = "⏱️ Đang chờ phân loại tự động";
+                    }
+                    const reasons = p.aiReasons
+                        ? `<p style="margin:0 0 6px; font-weight:600;">${multilineHtml(p.aiReasons)}${scoreHtml(p.aiScore)}</p>`
+                        : "";
+                    const when = p.aiClassifiedAt
+                        ? `<small style="color:#64748b;">Phân loại lúc ${formatDate(p.aiClassifiedAt)}</small>`
+                        : `<small style="color:#64748b;">Chỉ duyệt được sau khi sản phẩm được phân loại hợp lệ.</small>`;
+                    detailAiContent.innerHTML = reasons + when;
+                } else {
+                    detailAiBox.style.display = "none";
+                }
+            }
+
             // Moderation History
             if (detailHistoryBox && detailHistoryContent) {
                 if (p.moderationStatus === "REJECTED") {
@@ -540,9 +772,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Action Buttons Visibility in Modal
+            if (detailModalMarkValidBtn) {
+                detailModalMarkValidBtn.style.display = canMarkValid(p) ? "inline-flex" : "none";
+            }
             if (detailModalApproveBtn && detailModalRejectBtn) {
                 if (p.moderationStatus === "PENDING") {
-                    detailModalApproveBtn.style.display = "inline-flex";
+                    detailModalApproveBtn.style.display = canApprove(p) ? "inline-flex" : "none";
                     detailModalRejectBtn.style.display = "inline-flex";
                 } else if (p.moderationStatus === "APPROVED") {
                     detailModalApproveBtn.style.display = "none";
@@ -577,8 +812,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     detailModalRejectBtn?.addEventListener("click", () => {
+        const p = state.currentDetailProduct;
+        if (!p) return;
+        openRejectModal(p.id, p.title, p.aiVerdict === "INVALID" ? p.aiReasons : "");
+    });
+
+    detailModalMarkValidBtn?.addEventListener("click", () => {
         if (!state.currentDetailProduct) return;
-        openRejectModal(state.currentDetailProduct.id, state.currentDetailProduct.title);
+        confirmMarkValid(state.currentDetailProduct.id, state.currentDetailProduct.title);
     });
 
     // --- Quick Approve Logic ---
@@ -594,21 +835,37 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             toast(res.Message || "Đã phê duyệt sản phẩm thành công!", "success");
             closeDetailModal();
-            await loadProducts();
-            await loadStats();
+            await refreshAll();
+        } catch (err) {
+            toast(err.message, "danger");
+        }
+    }
+
+    // --- Chuyển sản phẩm "Không hợp lệ" sang "Hợp lệ" ---
+    async function confirmMarkValid(productId, productTitle) {
+        if (!confirm(`Chuyển sản phẩm #${productId} sang danh sách HỢP LỆ?\n\n"${productTitle}"\n\nDùng khi bộ phân loại đánh giá sai. Sau đó bạn có thể phê duyệt sản phẩm ở cột Hợp lệ.`)) {
+            return;
+        }
+
+        try {
+            const res = await api(`/api/admin/products/${productId}/mark-valid`, { method: "POST" });
+            toast(res.Message || "Đã chuyển sản phẩm sang danh sách hợp lệ.", "success");
+            closeDetailModal();
+            await refreshAll();
         } catch (err) {
             toast(err.message, "danger");
         }
     }
 
     // --- Reject Modal Logic ---
-    function openRejectModal(productId, productTitle) {
+    function openRejectModal(productId, productTitle, suggestedReason = "") {
         state.currentRejectProductId = productId;
         if (rejectModalProductTitle) {
             rejectModalProductTitle.textContent = `#${productId} - ${productTitle || "Sản phẩm"}`;
         }
-        if (rejectReasonInput) rejectReasonInput.value = "";
-        if (rejectCharCount) rejectCharCount.textContent = "0";
+        const prefill = (suggestedReason || "").trim().slice(0, 1000);
+        if (rejectReasonInput) rejectReasonInput.value = prefill;
+        if (rejectCharCount) rejectCharCount.textContent = String(prefill.length);
         if (rejectModal) rejectModal.style.display = "flex";
         rejectReasonInput?.focus();
     }
@@ -665,8 +922,7 @@ document.addEventListener("DOMContentLoaded", () => {
             toast(res.Message || "Đã từ chối kiểm duyệt sản phẩm.", "warning");
             closeRejectModal();
             closeDetailModal();
-            await loadProducts();
-            await loadStats();
+            await refreshAll();
         } catch (err) {
             toast(err.message, "danger");
         }
@@ -689,7 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
             state.keyword = keyword.trim();
-            state.page = 0;
+            resetPages();
             if (clearSearchBtn) {
                 clearSearchBtn.style.display = state.keyword ? "inline-block" : "none";
             }
@@ -712,13 +968,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (topSearchInput) topSearchInput.value = "";
         clearSearchBtn.style.display = "none";
         state.keyword = "";
-        state.page = 0;
+        resetPages();
         loadProducts();
     });
 
     pageSizeSelect?.addEventListener("change", (e) => {
         state.size = Number(e.target.value) || 10;
-        state.page = 0;
+        resetPages();
         loadProducts();
     });
 
@@ -739,7 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statusTabs.forEach(t => t.classList.remove("active"));
             tab.classList.add("active");
             state.status = tab.dataset.status || "PENDING";
-            state.page = 0;
+            resetPages();
             loadProducts();
         });
     });

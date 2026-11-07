@@ -1,5 +1,6 @@
 package com.example.comicworm.model;
 
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ListingType;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -130,6 +131,22 @@ public class Product {
     @Column(name = "moderated_at", nullable = true, columnDefinition = "datetime")
     private LocalDateTime moderatedAt;
 
+    /** Kết quả phân loại tự động (ProductClassificationJob); NULL = chưa phân loại. */
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "ai_verdict", nullable = true, length = 20)
+    private AiVerdict aiVerdict;
+
+    @Column(name = "ai_reasons", nullable = true, columnDefinition = "text")
+    private String aiReasons;
+
+    /** Độ tin cậy 0..1 của bộ phân loại, NULL nếu bộ phân loại không trả điểm. */
+    @Column(name = "ai_score", nullable = true, precision = 5, scale = 4)
+    private BigDecimal aiScore;
+
+    @Column(name = "ai_classified_at", nullable = true, columnDefinition = "datetime")
+    private LocalDateTime aiClassifiedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, columnDefinition = "timestamp", updatable = false)
     private LocalDateTime createdAt;
@@ -170,4 +187,12 @@ public class Product {
     @JsonIgnore
     @JoinColumn(name = "moderated_by", referencedColumnName = "id", insertable = false, updatable = false)
     private User moderator;
+
+    /** Xoá kết quả phân loại cũ để ProductClassificationJob phân loại lại sau khi người bán sửa tin. */
+    public void resetAiClassification() {
+        this.aiVerdict = null;
+        this.aiReasons = null;
+        this.aiScore = null;
+        this.aiClassifiedAt = null;
+    }
 }

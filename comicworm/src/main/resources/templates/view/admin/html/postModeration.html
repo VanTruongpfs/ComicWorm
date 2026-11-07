@@ -216,7 +216,7 @@
         </div>
 
         <!-- Table Container -->
-        <div class="mod-table-card">
+        <div class="mod-table-card" id="productTableCard" style="display:none;">
           <div class="mod-table-header-info">
             <span id="tableSummaryText">Đang tải danh sách bài chờ duyệt...</span>
           </div>
@@ -262,6 +262,38 @@
             <div class="pagination-buttons" id="paginationControls">
               <!-- Page buttons injected via JS -->
             </div>
+          </div>
+        </div>
+
+        <!-- Tab "Chờ duyệt": 2 cột theo kết quả phân loại tự động -->
+        <div id="pendingSplitView" class="mod-split-view">
+          <div id="unclassifiedNotice" class="mod-unclassified-notice" style="display:none;" role="status">
+            <span class="mod-unclassified-dot"></span>
+            <span id="unclassifiedNoticeText">0 sản phẩm đang chờ phân loại tự động.</span>
+          </div>
+          <div class="mod-split-grid">
+            <section class="mod-split-col mod-split-valid" aria-labelledby="validColumnTitle">
+              <header class="mod-split-head">
+                <div>
+                  <h2 id="validColumnTitle">✅ Hợp lệ</h2>
+                  <p>Đã qua phân loại, có thể phê duyệt</p>
+                </div>
+                <span class="mod-split-count" id="validColumnCount">0</span>
+              </header>
+              <div class="mod-split-list" id="validColumnList"></div>
+              <div class="mod-split-pager" id="validColumnPager"></div>
+            </section>
+            <section class="mod-split-col mod-split-invalid" aria-labelledby="invalidColumnTitle">
+              <header class="mod-split-head">
+                <div>
+                  <h2 id="invalidColumnTitle">⚠️ Không hợp lệ</h2>
+                  <p>Từ chối, hoặc chuyển sang hợp lệ nếu phân loại sai</p>
+                </div>
+                <span class="mod-split-count" id="invalidColumnCount">0</span>
+              </header>
+              <div class="mod-split-list" id="invalidColumnList"></div>
+              <div class="mod-split-pager" id="invalidColumnPager"></div>
+            </section>
           </div>
         </div>
       </main>
@@ -369,6 +401,12 @@
               </div>
             </div>
 
+            <!-- Kết quả phân loại tự động (chỉ hiện khi đang chờ duyệt) -->
+            <div class="detail-history-box" id="detailAiBox" style="display:none;">
+              <div class="history-heading" id="detailAiHeading">Phân loại tự động:</div>
+              <div id="detailAiContent"></div>
+            </div>
+
             <!-- Nhật ký kiểm duyệt (nếu đã từng duyệt hoặc từ chối) -->
             <div class="detail-history-box" id="detailHistoryBox" style="display:none;">
               <div class="history-heading" id="detailHistoryHeading">Nhật ký xử lý:</div>
@@ -387,6 +425,13 @@
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
             Từ chối duyệt
+          </button>
+          <button type="button" class="btn-modal-mark-valid" id="detailModalMarkValidBtn" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Chuyển sang hợp lệ
           </button>
           <button type="button" class="btn-modal-approve" id="detailModalApproveBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

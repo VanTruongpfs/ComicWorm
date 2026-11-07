@@ -7,6 +7,7 @@ import com.example.comicworm.model.Product;
 import com.example.comicworm.model.ProductImage;
 import com.example.comicworm.model.Publisher;
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.model.enums.ProductImageType;
 import com.example.comicworm.repository.AuthorRepository;
@@ -121,6 +122,10 @@ public class AdminModerationService {
     @Transactional
     public AdminProductModerationDTO approve(Long adminId, Long productId) {
         Product product = lockPending(productId);
+        if (product.getAiVerdict() != AiVerdict.VALID) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Chỉ duyệt được sản phẩm đã được phân loại hợp lệ.");
+        }
         product.setModerationStatus(ModerationStatus.APPROVED);
         product.setModerationReason(null);
         stamp(product, adminId);

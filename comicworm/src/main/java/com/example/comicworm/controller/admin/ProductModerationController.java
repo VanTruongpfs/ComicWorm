@@ -3,6 +3,7 @@ package com.example.comicworm.controller.admin;
 import com.example.comicworm.dto.general.auth.CustomUserDetails;
 import com.example.comicworm.dto.request.RejectProductRequest;
 import com.example.comicworm.dto.response.AdminProductRecord;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.service.admin.IProductModerationService;
 import jakarta.validation.Valid;
@@ -45,6 +46,7 @@ public class ProductModerationController {
     public Map<String, Object> list(
             @AuthenticationPrincipal CustomUserDetails user,
             @RequestParam(required = false, defaultValue = "PENDING") String status,
+            @RequestParam(required = false) String verdict,
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -60,7 +62,16 @@ public class ProductModerationController {
             }
         }
 
-        return moderationService.list(modStatus, keyword, page, size);
+        AiVerdict aiVerdict = null;
+        if (verdict != null && !verdict.isBlank()) {
+            try {
+                aiVerdict = AiVerdict.valueOf(verdict.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kết quả phân loại không hợp lệ (VALID, INVALID).");
+            }
+        }
+
+        return moderationService.list(modStatus, aiVerdict, keyword, page, size);
     }
 
     /**
@@ -115,6 +126,23 @@ public class ProductModerationController {
         return Map.of(
                 "Result", "OK",
                 "Message", "Đã từ chối kiểm duyệt sản phẩm.",
+                "Record", record
+        );
+    }
+
+    /**
+     * Admin ghi đè kết quả phân loại tự động: chuyển sản phẩm "Không hợp lệ" sang "Hợp lệ" để có thể duyệt.
+     */
+    @PostMapping("/{id:\\d+}/mark-valid")
+    public Map<String, Object> markValid(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long id
+    ) {
+        Long adminId = requireAdmin(user);
+        AdminProductRecord record = moderationService.markValid(id, adminId);
+        return Map.of(
+                "Result", "OK",
+                "Message", "Đã chuyển sản phẩm sang danh sách hợp lệ.",
                 "Record", record
         );
     }

@@ -2,6 +2,7 @@ package com.example.comicworm.dto.response;
 
 import com.example.comicworm.model.Product;
 import com.example.comicworm.model.ProductImage;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ListingType;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.model.enums.ProductImageType;
@@ -41,7 +42,11 @@ public record AdminProductRecord(
         String moderatedByName,
         LocalDateTime moderatedAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        AiVerdict aiVerdict,
+        String aiReasons,
+        BigDecimal aiScore,
+        LocalDateTime aiClassifiedAt
 ) {
     public static AdminProductRecord from(Product product, List<ProductImage> images) {
         List<String> details = images.stream()
@@ -89,7 +94,11 @@ public record AdminProductRecord(
                 product.getModerator() != null ? product.getModerator().getFullName() : null,
                 product.getModeratedAt(),
                 product.getCreatedAt(),
-                product.getUpdatedAt()
+                product.getUpdatedAt(),
+                product.getAiVerdict(),
+                product.getAiReasons(),
+                product.getAiScore(),
+                product.getAiClassifiedAt()
         );
     }
 }

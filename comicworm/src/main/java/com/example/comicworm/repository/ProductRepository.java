@@ -1,8 +1,13 @@
 package com.example.comicworm.repository;
 
 import com.example.comicworm.model.Product;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -36,6 +41,40 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> lockForModeration(@Param("id") Long id);
 
     long countByModerationStatusAndDeletedAtIsNull(ModerationStatus moderationStatus);
+
+    // ---- Phân loại tự động (ProductClassificationJob) ----
+    long countByModerationStatusAndAiVerdictAndDeletedAtIsNull(ModerationStatus moderationStatus, AiVerdict aiVerdict);
+
+    long countByModerationStatusAndAiVerdictIsNullAndDeletedAtIsNull(ModerationStatus moderationStatus);
+
+    @Query("""
+            select p.id from Product p
+            where p.moderationStatus = com.example.comicworm.model.enums.ModerationStatus.PENDING
+              and p.aiVerdict is null and p.deletedAt is null
+            order by p.id asc
+            """)
+    List<Long> findIdsAwaitingClassification(Pageable page);
+
+    /**
+     * Ghi kết quả phân loại nếu sản phẩm vẫn chờ duyệt, chưa có kết quả và chưa bị người bán sửa
+     * kể từ lúc đọc ({@code seenUpdatedAt}). Trả về 0 nếu sản phẩm đã thay đổi, khi đó bỏ qua kết quả cũ.
+     */
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            update Product p
+               set p.aiVerdict = :verdict, p.aiReasons = :reasons, p.aiScore = :score, p.aiClassifiedAt = :classifiedAt
+             where p.id = :id
+               and p.moderationStatus = com.example.comicworm.model.enums.ModerationStatus.PENDING
+               and p.aiVerdict is null and p.deletedAt is null
+               and p.updatedAt = :seenUpdatedAt
+            """)
+    int saveClassification(@Param("id") Long id,
+                           @Param("verdict") AiVerdict verdict,
+                           @Param("reasons") String reasons,
+                           @Param("score") BigDecimal score,
+                           @Param("classifiedAt") LocalDateTime classifiedAt,
+                           @Param("seenUpdatedAt") LocalDateTime seenUpdatedAt);
 
     interface InventorySummary {
         Long getProductCount();

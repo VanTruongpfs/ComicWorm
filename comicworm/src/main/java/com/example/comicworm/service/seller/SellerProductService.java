@@ -214,6 +214,7 @@ public class SellerProductService {
         product.setModeratedBy(null);
         product.setModeratedAt(null);
         product.setModerationReason(null);
+        product.resetAiClassification();
     }
 
     private Integer resolveCategoryId(SellerProductRequest request) {

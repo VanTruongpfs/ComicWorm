@@ -141,7 +141,7 @@ public class SellerProductImageService {
         product.setCoverImageUrl(images.findByProductIdOrderByDisplayOrderAscIdAsc(product.getId()).stream()
                 .filter(image -> image.getImageType() == ProductImageType.COVER).map(ProductImage::getImageUrl).findFirst().orElse(null));
         product.setModerationStatus(ModerationStatus.PENDING); product.setModeratedBy(null);
-        product.setModeratedAt(null); product.setModerationReason(null);
+        product.setModeratedAt(null); product.setModerationReason(null); product.resetAiClassification();
         product.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC)); products.saveAndFlush(product);
     }
 

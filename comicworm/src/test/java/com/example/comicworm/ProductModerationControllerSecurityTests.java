@@ -6,6 +6,7 @@ import com.example.comicworm.controller.admin.ProductModerationController;
 import com.example.comicworm.dto.general.auth.CustomUserDetails;
 import com.example.comicworm.dto.response.AdminProductRecord;
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ListingType;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.model.enums.UserRole;
@@ -75,7 +76,8 @@ class ProductModerationControllerSecurityTests {
                 "1-5", "Bìa mềm", 2024, 95, new BigDecimal("50000"),
                 10, ListingType.SELL, null, true,
                 status, reason, 999L, "Admin User", LocalDateTime.now(),
-                LocalDateTime.now(), LocalDateTime.now()
+                LocalDateTime.now(), LocalDateTime.now(),
+                AiVerdict.VALID, null, null, LocalDateTime.now()
         );
     }
 
@@ -149,7 +151,7 @@ class ProductModerationControllerSecurityTests {
     @Test
     void adminUser_ListProducts_Success() throws Exception {
         CustomUserDetails admin = userPrincipal(UserRole.ADMIN);
-        when(moderationService.list(eq(ModerationStatus.PENDING), any(), eq(0), eq(10)))
+        when(moderationService.list(eq(ModerationStatus.PENDING), eq(null), any(), eq(0), eq(10)))
                 .thenReturn(Map.of(
                         "Result", "OK",
                         "Records", List.of(sampleRecord(1L, ModerationStatus.PENDING, null)),
@@ -162,5 +164,44 @@ class ProductModerationControllerSecurityTests {
                 .andExpect(jsonPath("$.Result").value("OK"))
                 .andExpect(jsonPath("$.Records[0].id").value(1L))
                 .andExpect(jsonPath("$.Records[0].moderationStatus").value("PENDING"));
+    }
+
+    @Test
+    void adminUser_ListProducts_FiltersByVerdict() throws Exception {
+        CustomUserDetails admin = userPrincipal(UserRole.ADMIN);
+        when(moderationService.list(eq(ModerationStatus.PENDING), eq(AiVerdict.INVALID), any(), eq(0), eq(10)))
+                .thenReturn(Map.of("Result", "OK", "Records", List.of(), "TotalRecordCount", 0L));
+
+        mvc.perform(get("/api/admin/products?status=PENDING&verdict=invalid").with(user(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.Result").value("OK"));
+
+        mvc.perform(get("/api/admin/products?status=PENDING&verdict=MAYBE").with(user(admin)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.Result").value("ERROR"));
+    }
+
+    @Test
+    void markValid_RequiresAdminAndCsrf() throws Exception {
+        mvc.perform(post("/api/admin/products/1/mark-valid").with(csrf()))
+                .andExpect(status().isUnauthorized());
+
+        mvc.perform(post("/api/admin/products/1/mark-valid").with(user(userPrincipal(UserRole.USER))).with(csrf()))
+                .andExpect(status().isForbidden());
+
+        mvc.perform(post("/api/admin/products/1/mark-valid").with(user(userPrincipal(UserRole.ADMIN))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminUser_MarkValid_Success() throws Exception {
+        CustomUserDetails admin = userPrincipal(UserRole.ADMIN);
+        when(moderationService.markValid(eq(1L), eq(999L)))
+                .thenReturn(sampleRecord(1L, ModerationStatus.PENDING, null));
+
+        mvc.perform(post("/api/admin/products/1/mark-valid").with(user(admin)).with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.Result").value("OK"))
+                .andExpect(jsonPath("$.Record.aiVerdict").value("VALID"));
     }
 }
