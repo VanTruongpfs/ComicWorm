@@ -3,6 +3,7 @@ package com.example.comicworm.service.admin.impl;
 import com.example.comicworm.dto.response.AdminProductRecord;
 import com.example.comicworm.model.Product;
 import com.example.comicworm.model.ProductImage;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.repository.ProductImageRepository;
 import com.example.comicworm.repository.ProductRepository;
@@ -37,7 +38,7 @@ public class ProductModerationServiceImpl implements IProductModerationService {
     }
 
     @Override
-    public Map<String, Object> list(ModerationStatus status, String keyword, int page, int size) {
+    public Map<String, Object> list(ModerationStatus status, AiVerdict verdict, String keyword, int page, int size) {
         if (size < 1 || size > 100) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kích thước trang từ 1 đến 100.");
         }
@@ -53,6 +54,10 @@ public class ProductModerationServiceImpl implements IProductModerationService {
 
             if (status != null) {
                 predicates.add(cb.equal(root.get("moderationStatus"), status));
+            }
+
+            if (verdict != null) {
+                predicates.add(cb.equal(root.get("aiVerdict"), verdict));
             }
 
             if (!cleanKeyword.isBlank()) {
@@ -107,6 +112,14 @@ public class ProductModerationServiceImpl implements IProductModerationService {
     @Transactional
     public AdminProductRecord approve(Long id, Long adminId) {
         Product product = lockPending(id);
+        if (product.getAiVerdict() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Sản phẩm chưa được phân loại tự động, vui lòng thử lại sau ít phút.");
+        }
+        if (product.getAiVerdict() != AiVerdict.VALID) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Sản phẩm được phân loại không hợp lệ. Hãy từ chối hoặc chuyển sang hợp lệ trước khi duyệt.");
+        }
 
         product.setModerationStatus(ModerationStatus.APPROVED);
         product.setModeratedBy(adminId);
@@ -154,14 +167,44 @@ public class ProductModerationServiceImpl implements IProductModerationService {
     }
 
     @Override
+    @Transactional
+    public AdminProductRecord markValid(Long id, Long adminId) {
+        Product product = lockPending(id);
+        if (product.getAiVerdict() == AiVerdict.VALID) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Sản phẩm này đã ở trạng thái hợp lệ.");
+        }
+
+        String note = "Admin #" + adminId + " chuyển sang hợp lệ.";
+        String previous = product.getAiReasons();
+        product.setAiVerdict(AiVerdict.VALID);
+        product.setAiReasons(previous == null || previous.isBlank()
+                ? note
+                : note + "\nLý do phân loại trước đó: " + previous);
+        product.setAiScore(null);
+        product.setAiClassifiedAt(LocalDateTime.now(ZoneOffset.UTC));
+
+        Product saved = productRepository.saveAndFlush(product);
+        List<ProductImage> images =
+                productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(saved.getId());
+        return AdminProductRecord.from(saved, images);
+    }
+
+    @Override
     public Map<String, Long> countStats() {
-        long pending = productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.PENDING);
+        ModerationStatus pendingStatus = ModerationStatus.PENDING;
+        long pending = productRepository.countByModerationStatusAndDeletedAtIsNull(pendingStatus);
         long approved = productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.APPROVED);
         long rejected = productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.REJECTED);
+        long pendingValid = productRepository.countByModerationStatusAndAiVerdictAndDeletedAtIsNull(pendingStatus, AiVerdict.VALID);
+        long pendingInvalid = productRepository.countByModerationStatusAndAiVerdictAndDeletedAtIsNull(pendingStatus, AiVerdict.INVALID);
+        long pendingUnclassified = productRepository.countByModerationStatusAndAiVerdictIsNullAndDeletedAtIsNull(pendingStatus);
         return Map.of(
                 "pending", pending,
                 "approved", approved,
-                "rejected", rejected
+                "rejected", rejected,
+                "pendingValid", pendingValid,
+                "pendingInvalid", pendingInvalid,
+                "pendingUnclassified", pendingUnclassified
         );
     }
 

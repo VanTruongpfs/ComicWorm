@@ -1,6 +1,7 @@
 package com.example.comicworm;
 
 import com.example.comicworm.model.Product;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.repository.*;
 import com.example.comicworm.service.admin.AdminModerationService;
@@ -30,6 +31,7 @@ class AdminModerationServiceTests {
 
     @Test void approveMarksApprovedAndRecordsTheAdmin() {
         Product product = pending(5);
+        product.setAiVerdict(AiVerdict.VALID);
         product.setModerationReason("old reason");
         service.approve(1L, 5L);
         assertEquals(ModerationStatus.APPROVED, product.getModerationStatus());
@@ -37,6 +39,15 @@ class AdminModerationServiceTests {
         assertNotNull(product.getModeratedAt());
         assertNull(product.getModerationReason());
         verify(products).saveAndFlush(product);
+    }
+
+    @Test void approveIsRefusedUnlessClassifiedValid() {
+        Product product = pending(5);
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.approve(1L, 5L)).getStatusCode().value());
+        product.setAiVerdict(AiVerdict.INVALID);
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.approve(1L, 5L)).getStatusCode().value());
+        assertEquals(ModerationStatus.PENDING, product.getModerationStatus());
+        verify(products, never()).saveAndFlush(any());
     }
 
     @Test void rejectStoresTrimmedReasonAndRecordsTheAdmin() {

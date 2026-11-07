@@ -4,6 +4,7 @@ import com.example.comicworm.dto.request.RejectProductRequest;
 import com.example.comicworm.dto.response.AdminProductRecord;
 import com.example.comicworm.model.Product;
 import com.example.comicworm.model.User;
+import com.example.comicworm.model.enums.AiVerdict;
 import com.example.comicworm.model.enums.ModerationStatus;
 import com.example.comicworm.model.enums.UserRole;
 import com.example.comicworm.repository.ProductImageRepository;
@@ -70,7 +71,8 @@ class ProductModerationTests {
     @Test
     void testApproveProduct_Success() {
         Product p = createSampleProduct(1L, ModerationStatus.PENDING);
-        when(productRepository.findById(1L)).thenReturn(Optional.of(p));
+        p.setAiVerdict(AiVerdict.VALID);
+        when(productRepository.lockForModeration(1L)).thenReturn(Optional.of(p));
         when(productRepository.saveAndFlush(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(1L)).thenReturn(Collections.emptyList());
 
@@ -95,7 +97,7 @@ class ProductModerationTests {
     @Test
     void testRejectProduct_Success() {
         Product p = createSampleProduct(2L, ModerationStatus.PENDING);
-        when(productRepository.findById(2L)).thenReturn(Optional.of(p));
+        when(productRepository.lockForModeration(2L)).thenReturn(Optional.of(p));
         when(productRepository.saveAndFlush(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(2L)).thenReturn(Collections.emptyList());
 
@@ -127,7 +129,7 @@ class ProductModerationTests {
 
     @Test
     void testApproveOrReject_NotFound_ThrowsException() {
-        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+        when(productRepository.lockForModeration(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> moderationService.approve(999L, 1L));
         assertThrows(ResponseStatusException.class, () -> moderationService.reject(999L, 1L, "Lý do"));
@@ -144,7 +146,7 @@ class ProductModerationTests {
         when(productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.APPROVED)).thenReturn(10L);
         when(productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.REJECTED)).thenReturn(1L);
 
-        Map<String, Object> result = moderationService.list(ModerationStatus.PENDING, "", 0, 10);
+        Map<String, Object> result = moderationService.list(ModerationStatus.PENDING, null, "", 0, 10);
 
         assertEquals("OK", result.get("Result"));
         assertEquals(2L, result.get("TotalRecordCount"));
@@ -158,6 +160,69 @@ class ProductModerationTests {
     }
 
     @Test
+    void approve_RefusesUnclassifiedOrInvalidProducts() {
+        Product p = createSampleProduct(3L, ModerationStatus.PENDING);
+        when(productRepository.lockForModeration(3L)).thenReturn(Optional.of(p));
+
+        ResponseStatusException unclassified = assertThrows(ResponseStatusException.class, () -> moderationService.approve(3L, 1L));
+        assertEquals(409, unclassified.getStatusCode().value());
+
+        p.setAiVerdict(AiVerdict.INVALID);
+        ResponseStatusException invalid = assertThrows(ResponseStatusException.class, () -> moderationService.approve(3L, 1L));
+        assertEquals(409, invalid.getStatusCode().value());
+
+        assertEquals(ModerationStatus.PENDING, p.getModerationStatus());
+        verify(productRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void reject_IsAllowedForInvalidProducts() {
+        Product p = createSampleProduct(4L, ModerationStatus.PENDING);
+        p.setAiVerdict(AiVerdict.INVALID);
+        when(productRepository.lockForModeration(4L)).thenReturn(Optional.of(p));
+        when(productRepository.saveAndFlush(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AdminProductRecord record = moderationService.reject(4L, 1L, "Ảnh không phải truyện");
+
+        assertEquals(ModerationStatus.REJECTED, record.moderationStatus());
+    }
+
+    @Test
+    void markValid_OverridesInvalidVerdictAndKeepsPreviousReason() {
+        Product p = createSampleProduct(5L, ModerationStatus.PENDING);
+        p.setAiVerdict(AiVerdict.INVALID);
+        p.setAiReasons("Sản phẩm chưa có ảnh.");
+        p.setAiScore(new BigDecimal("0.9100"));
+        when(productRepository.lockForModeration(5L)).thenReturn(Optional.of(p));
+        when(productRepository.saveAndFlush(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AdminProductRecord record = moderationService.markValid(5L, 77L);
+
+        assertEquals(AiVerdict.VALID, record.aiVerdict());
+        assertEquals(ModerationStatus.PENDING, record.moderationStatus());
+        assertNull(record.aiScore());
+        assertNotNull(record.aiClassifiedAt());
+        assertTrue(record.aiReasons().startsWith("Admin #77 chuyển sang hợp lệ."));
+        assertTrue(record.aiReasons().contains("Sản phẩm chưa có ảnh."));
+        verify(productRepository).saveAndFlush(p);
+    }
+
+    @Test
+    void markValid_RefusesAlreadyValidOrModeratedProducts() {
+        Product valid = createSampleProduct(6L, ModerationStatus.PENDING);
+        valid.setAiVerdict(AiVerdict.VALID);
+        when(productRepository.lockForModeration(6L)).thenReturn(Optional.of(valid));
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> moderationService.markValid(6L, 1L)).getStatusCode().value());
+
+        Product approved = createSampleProduct(7L, ModerationStatus.APPROVED);
+        approved.setAiVerdict(AiVerdict.INVALID);
+        when(productRepository.lockForModeration(7L)).thenReturn(Optional.of(approved));
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> moderationService.markValid(7L, 1L)).getStatusCode().value());
+
+        verify(productRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
     void testCountStats() {
         when(productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.PENDING)).thenReturn(5L);
         when(productRepository.countByModerationStatusAndDeletedAtIsNull(ModerationStatus.APPROVED)).thenReturn(15L);
@@ -167,5 +232,17 @@ class ProductModerationTests {
         assertEquals(5L, stats.get("pending"));
         assertEquals(15L, stats.get("approved"));
         assertEquals(3L, stats.get("rejected"));
+    }
+
+    @Test
+    void testCountStats_SplitsPendingByVerdict() {
+        when(productRepository.countByModerationStatusAndAiVerdictAndDeletedAtIsNull(ModerationStatus.PENDING, AiVerdict.VALID)).thenReturn(4L);
+        when(productRepository.countByModerationStatusAndAiVerdictAndDeletedAtIsNull(ModerationStatus.PENDING, AiVerdict.INVALID)).thenReturn(2L);
+        when(productRepository.countByModerationStatusAndAiVerdictIsNullAndDeletedAtIsNull(ModerationStatus.PENDING)).thenReturn(1L);
+
+        Map<String, Long> stats = moderationService.countStats();
+        assertEquals(4L, stats.get("pendingValid"));
+        assertEquals(2L, stats.get("pendingInvalid"));
+        assertEquals(1L, stats.get("pendingUnclassified"));
     }
 }

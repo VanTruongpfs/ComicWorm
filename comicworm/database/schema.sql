@@ -115,6 +115,10 @@ CREATE TABLE `products` (
   `moderated_by` BIGINT NULL,
   `moderation_reason` TEXT NULL,
   `moderated_at` DATETIME NULL,
+  `ai_verdict` VARCHAR(20) NULL,
+  `ai_reasons` TEXT NULL,
+  `ai_score` DECIMAL(5,4) NULL,
+  `ai_classified_at` DATETIME NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` DATETIME NULL,
@@ -126,7 +130,9 @@ CREATE TABLE `products` (
   CONSTRAINT `ck_products_price` CHECK (price >= 0),
   CONSTRAINT `ck_products_stock_quantity` CHECK (stock_quantity >= 0),
   CONSTRAINT `ck_products_listing_type` CHECK (listing_type IN ('SELL', 'TRADE', 'SELL_AND_TRADE')),
-  CONSTRAINT `ck_products_moderation_status` CHECK (moderation_status IN ('PENDING', 'APPROVED', 'REJECTED'))
+  CONSTRAINT `ck_products_moderation_status` CHECK (moderation_status IN ('PENDING', 'APPROVED', 'REJECTED')),
+  CONSTRAINT `ck_products_ai_verdict` CHECK (ai_verdict IN ('VALID', 'INVALID')),
+  CONSTRAINT `ck_products_ai_score` CHECK (ai_score BETWEEN 0 AND 1)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `product_images` (
