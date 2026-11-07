@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.Normalizer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +73,11 @@ public class ChatAiController {
             - listingType: Hình thức đăng (SALE hoặc TRADE)
             - limit: Số lượng yêu cầu (Number)
 
+                Không được thay tên truyện bằng từ chung chung như "comic", "manga" hoặc "truyện tranh".
+                Giữ nguyên tên truyện người dùng nhắc đến trong keyword; editionType phải tách riêng, không ghép vào keyword.
+                Ví dụ: "tôi muốn tìm one bi" -> SEARCH_COMIC, keyword "One Piece".
+                Ví dụ: "tìm One Piece bìa cứng" -> ASK_EDITION, keyword "One Piece", editionType "bìa cứng".
+
             CHỈ trả về kết quả JSON duy nhất: {"intent": "...", "slots": {...}}
             """;
 
@@ -80,6 +86,9 @@ public class ChatAiController {
     private final IProductService productService;
     private final ObjectMapper mapper = new ObjectMapper();
     private final NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
+
+    @Value("${spring.ai.openai.chat.options.temperature:0.0}")
+    private double modelTemperature;
 
     @Autowired
     public ChatAiController(ObjectProvider<ChatModel> chatModelProvider,
@@ -113,6 +122,11 @@ public class ChatAiController {
                     ? normalizeIntent(nluJson.get("intent").asText())
                     : "SEARCH_COMIC";
             JsonNode slots = nluJson != null ? nluJson.path("slots") : null;
+            String searchKeyword = resolveSearchKeyword(userMsg, textOrNull(slots, "keyword"));
+            String editionType = resolveEditionType(userMsg, textOrNull(slots, "editionType"));
+            if (editionType != null && List.of("SEARCH_COMIC", "FILTER_PRICE", "ASK_EDITION").contains(intent)) {
+                intent = "ASK_EDITION";
+            }
 
             log.info("Qwen NLU Classification -> Intent: {}, Slots: {}", intent, slots);
 
@@ -124,26 +138,22 @@ public class ChatAiController {
 
             switch (intent) {
                 case "SEARCH_COMIC": {
-                    String keyword = textOrNull(slots, "keyword");
-                    if (keyword == null || keyword.isBlank()) {
-                        keyword = userMsg; // Fallback nếu slots không bóc tách được keyword
-                    }
-                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, keyword);
+                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, searchKeyword, editionType);
                     ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                     products = res.products();
 
                     if (!products.isEmpty()) {
                         botReply = "ComicWorm tìm thấy " + products.size() + " cuốn truyện phù hợp với từ khóa \""
-                                + keyword + "\" của bạn. Dưới đây là danh sách truyện có sẵn:";
+                                + searchKeyword + "\" của bạn. Dưới đây là danh sách truyện có sẵn:";
                     } else {
                         botReply = "Rất tiếc, ComicWorm hiện chưa tìm thấy cuốn truyện nào khớp với từ khóa \""
-                                + keyword + "\". Bạn có thể thử tìm theo tên tác giả, tập truyện khác hoặc tham khảo các truyện nổi bật bên dưới nhé!";
+                                + searchKeyword + "\". Bạn có thể thử tìm theo tên tác giả, tập truyện khác hoặc tham khảo các truyện nổi bật bên dưới nhé!";
                     }
                     break;
                 }
 
                 case "FILTER_PRICE": {
-                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, textOrNull(slots, "keyword"));
+                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, searchKeyword, editionType);
                     ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                     products = res.products();
 
@@ -158,7 +168,7 @@ public class ChatAiController {
                 }
 
                 case "CHECK_STOCK": {
-                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, textOrNull(slots, "keyword"));
+                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, searchKeyword, editionType);
                     ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                     products = res.products();
 
@@ -182,8 +192,8 @@ public class ChatAiController {
                 }
 
                 case "ASK_EDITION": {
-                    String edition = textOrNull(slots, "editionType");
-                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, textOrNull(slots, "keyword"));
+                    String edition = editionType;
+                    ProductSearchRequestAI searchReq = buildSearchRequest(slots, searchKeyword, edition);
                     ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                     products = res.products();
 
@@ -200,7 +210,7 @@ public class ChatAiController {
                 case "CHECK_CONDITION": {
                     String keyword = textOrNull(slots, "keyword");
                     if (keyword != null && !keyword.isBlank()) {
-                        ProductSearchRequestAI searchReq = buildSearchRequest(slots, keyword);
+                        ProductSearchRequestAI searchReq = buildSearchRequest(slots, searchKeyword, editionType);
                         ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                         products = res.products();
                     }
@@ -279,10 +289,11 @@ public class ChatAiController {
 
                 case "TRADE_EXCHANGE_INQUIRY": {
                     ProductSearchRequestAI searchReq = new ProductSearchRequestAI(
-                            textOrNull(slots, "keyword"),
+                            searchKeyword,
                             null,
                             null,
-                            "TRADE"
+                            "TRADE",
+                            null
                     );
                     ProductSearchResponseAI res = productSearchTool.apply(searchReq);
                     products = res.products();
@@ -374,12 +385,12 @@ public class ChatAiController {
     private ChatResponse callModel(List<Message> messages) {
         OpenAiChatOptions options = OpenAiChatOptions.builder()
                 .model(modelName)
-                .temperature(0.3) // Giảm nhiệt độ để NLU phân loại và trích xuất JSON chuẩn xác
+            .temperature(modelTemperature)
                 .build();
         return chatModel.call(new Prompt(messages, options));
     }
 
-    private ProductSearchRequestAI buildSearchRequest(JsonNode slots, String overrideKeyword) {
+    private ProductSearchRequestAI buildSearchRequest(JsonNode slots, String overrideKeyword, String overrideEdition) {
         String keyword = overrideKeyword != null && !overrideKeyword.isBlank()
                 ? overrideKeyword
                 : textOrNull(slots, "keyword");
@@ -400,17 +411,85 @@ public class ChatAiController {
 
         String listingType = textOrNull(slots, "listingType");
 
-        // Gộp thêm thông tin tập truyện hoặc phiên bản vào từ khóa tìm kiếm nếu có
-        String edition = textOrNull(slots, "editionType");
+        // Số tập bổ sung vào keyword; phiên bản được lọc riêng theo cột edition_type.
         String volume = textOrNull(slots, "volumeNumbers");
-        if (edition != null && !edition.isBlank()) {
-            keyword = (keyword != null) ? keyword + " " + edition : edition;
-        }
         if (volume != null && !volume.isBlank()) {
             keyword = (keyword != null) ? keyword + " " + volume : volume;
         }
 
-        return new ProductSearchRequestAI(keyword, maxPrice, minCondition, listingType);
+        String editionType = overrideEdition != null && !overrideEdition.isBlank()
+                ? overrideEdition
+                : textOrNull(slots, "editionType");
+
+        return new ProductSearchRequestAI(keyword, maxPrice, minCondition, listingType, editionType);
+    }
+
+    private static String resolveSearchKeyword(String userMsg, String modelKeyword) {
+        String candidate = stripEditionTerms(modelKeyword);
+        if (candidate != null && !candidate.isBlank() && !isGenericKeyword(candidate)
+                && hasKeywordEvidence(userMsg, candidate)) {
+            return canonicalizeKnownTitle(candidate);
+        }
+
+        String rawKeyword = stripEditionTerms(stripSearchPreamble(userMsg));
+        return canonicalizeKnownTitle(rawKeyword);
+    }
+
+    private static String resolveEditionType(String userMsg, String modelEdition) {
+        String normalized = normalizeSearchText(userMsg);
+        if (normalized.matches("(?s).*\\b(bia cung|hard ?cover)\\b.*")) return "bìa cứng";
+        if (normalized.matches("(?s).*\\b(bia mem|soft ?cover)\\b.*")) return "bìa mềm";
+        if (normalized.matches("(?s).*\\b(box ?set)\\b.*")) return "boxset";
+        if (normalized.matches("(?s).*\\b(ban dac biet|limited edition)\\b.*")) return "bản đặc biệt";
+        if (normalized.matches("(?s).*\\b(ban gioi han|limited)\\b.*")) return "bản giới hạn";
+        return modelEdition;
+    }
+
+    private static String stripSearchPreamble(String text) {
+        if (text == null) return null;
+        String stripped = text.trim().replaceFirst(
+                "(?iu)^\\s*(?:(?:tôi|mình|em|anh|chị|cho tôi|cho mình)\\s+)*(?:(?:muốn|cần|đang)\\s+)*(?:tìm|kiếm|xem|mua)\\s+",
+                "");
+        return stripped.replaceFirst("(?iu)\\s+(?:giúp tôi|giúp mình|với|nhé|ạ)\\s*$", "").trim();
+    }
+
+    private static String stripEditionTerms(String text) {
+        if (text == null) return null;
+        return text.replaceAll("(?iu)(?:bìa\\s*(?:cứng|mềm)|bia\\s*(?:cung|mem)|hard\\s*cover|soft\\s*cover|box\\s*set|boxset|bản\\s*(?:đặc biệt|giới hạn)|ban\\s*(?:dac biet|gioi han)|limited(?:\\s+edition)?)", " ")
+                .replaceAll("\\s+", " ").trim();
+    }
+
+    private static boolean isGenericKeyword(String keyword) {
+        String normalized = normalizeSearchText(keyword);
+        return List.of("comic", "comics", "comic book", "manga", "truyen", "truyen tranh", "sach")
+                .contains(normalized);
+    }
+
+    private static boolean hasKeywordEvidence(String userMsg, String keyword) {
+        String normalizedMessage = normalizeSearchText(userMsg);
+        String normalizedKeyword = normalizeSearchText(keyword);
+        if (normalizedMessage.contains(normalizedKeyword)) return true;
+
+        return List.of(normalizedKeyword.split("\\s+"))
+                .stream()
+                .filter(token -> token.length() >= 3 && !isGenericKeyword(token))
+                .anyMatch(normalizedMessage::contains);
+    }
+
+    private static String canonicalizeKnownTitle(String keyword) {
+        if (keyword == null) return null;
+        String normalized = normalizeSearchText(keyword);
+        if (normalized.matches("one\\s+bi(?:e)?") || normalized.equals("onepiece")) return "One Piece";
+        return keyword.trim();
+    }
+
+    private static String normalizeSearchText(String text) {
+        if (text == null) return "";
+        return Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private ProductChatSummaryDTO toChatSummary(ProductCardDTO card) {

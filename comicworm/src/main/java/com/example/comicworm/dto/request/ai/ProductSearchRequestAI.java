@@ -14,10 +14,13 @@ public record ProductSearchRequestAI(
         Integer minConditionPercent,
 
         @JsonPropertyDescription("Phương thức bài đăng: 'SELL' hoặc 'EXCHANGE'...")
-        String listingType
+        String listingType,
+
+        @JsonPropertyDescription("Phiên bản bìa hoặc loại ấn bản cần tìm...")
+        String editionType
 ) {
     @Override
     public String toString() {
-        return keyword + " " + maxPrice + " " + minConditionPercent + " " + listingType ;
+        return keyword + " " + maxPrice + " " + minConditionPercent + " " + listingType + " " + editionType;
     }
 }

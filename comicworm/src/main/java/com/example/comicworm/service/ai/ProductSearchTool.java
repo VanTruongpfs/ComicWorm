@@ -54,6 +54,10 @@ public class ProductSearchTool implements Function<ProductSearchRequestAI, Produ
                         "       OR LOWER(c.name) LIKE LOWER(:keyword)) ");
             }
 
+            if (request.editionType() != null && !request.editionType().isBlank()) {
+                jpql.append("  AND LOWER(p.editionType) LIKE LOWER(:editionType) ");
+            }
+
             if (request.maxPrice() != null) {
                 jpql.append("  AND p.price <= :maxPrice ");
             }
@@ -82,6 +86,10 @@ public class ProductSearchTool implements Function<ProductSearchRequestAI, Produ
                 String keyword = request.keyword().trim();
                 query.setParameter("keyword", "%" + keyword + "%");
                 query.setParameter("exactKeyword", keyword);
+            }
+
+            if (request.editionType() != null && !request.editionType().isBlank()) {
+                query.setParameter("editionType", "%" + request.editionType().trim() + "%");
             }
 
             if (request.maxPrice() != null) {
